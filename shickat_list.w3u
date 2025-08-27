@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<w3u version="1.0">
+  <channel>
+    <title>DAZN 1 (FHD)</title>
+    <url>acestream://ee4dc45720d3ec283f61189fbfc120c91d5141bf</url>
+  </channel>
+  <channel>
+    <title>DAZN 2 (FHD)</title>
+    <url>acestream://9adf7ac6531788ec022dbc14b77e1367f6c5bdc5</url>
+  </channel>
+  <channel>
+    <title>DAZN 3 (FHD)</title>
+    <url>acestream://6fb944e8985881ae6db89667aca6362e746255b6</url>
+  </channel>
+  <channel>
+    <title>DAZN F1 (FHD)</title>
+    <url>acestream://8c1155cdfae76eb582290c04904c98da066657c9</url>
+  </channel>
+  <channel>
+    <title>DAZN F1 (duplicate) (FHD)</title>
+    <url>acestream://ba6e1bdc8e03da60ff572557645eb04370af0cd0</url>
+  </channel>
+  <channel>
+    <title>DAZN LaLiga (FHD)</title>
+    <url>acestream://f8d5e39a49b9da0215bbd3d9efb8fb3d06b76892</url>
+  </channel>
+  <channel>
+    <title>DAZN LaLiga (duplicate) (FHD)</title>
+    <url>acestream://520950d296c952e1864a08e15af9f89f1ab514ec</url>
+  </channel>
+  <channel>
+    <title>DAZN LaLiga 2 (FHD)</title>
+    <url>acestream://ae16a8f004b1287ee1f53263ab265f72bba0daf5</url>
+  </channel>
+  <channel>
+    <title>LaLiga Hypermotion (FHD)</title>
+    <url>acestream://f15f997f457e49ad9697e65cf2d78db26ee875b9</url>
+  </channel>
+  <channel>
+    <title>LaLiga Hypermotion 2 (FHD)</title>
+    <url>acestream://1422d506c9f14c84b1249bf8ac0b0698cee7a659</url>
+  </channel>
+  <channel>
+    <title>LaLiga Hypermotion 3 (FHD)</title>
+    <url>acestream://d9297d3576c05551c08e0fe5bd85a793361a3cca</url>
+  </channel>
+  <channel>
+    <title>Movistar LaLiga (FHD)</title>
+    <url>acestream://07f2b92762cfff99bba785c2f5260c7934ca6034</url>
+  </channel>
+  <channel>
+    <title>Movistar LaLiga (duplicate) (FHD)</title>
+    <url>acestream://c32a2cf4631bad4bc40a15ee0f245ed30ad4d85c</url>
+  </channel>
+  <channel>
+    <title>Movistar Plus (FHD)</title>
+    <url>acestream://5d9a26e0a5f3e5f2ae027bd05635ab9a4fd4b51a</url>
+  </channel>
+  <channel>
+    <title>Movistar Plus (duplicate) (FHD)</title>
+    <url>acestream://5e24a1b9187fccb91553f7c7da4b36341386f74a</url>
+  </channel>
+  <channel>
+    <title>Movistar Liga de Campeones (FHD)</title>
+    <url>acestream://680187938f9305cce3ae240298f10e8695bf77c2</url>
+  </channel>
+  <channel>
+    <title>Movistar Liga de Campeones (duplicate) (FHD)</title>
+    <url>acestream://5c15c639207a080183b12fa63282b409c07401d6</url>
+  </channel>
+  <channel>
+    <title>Movistar Liga de Campeones 2 (FHD)</title>
+    <url>acestream://33c009a025508cb2186b9ce36279640bb2507bdf</url>
+  </channel>
+  <channel>
+    <title>Movistar Liga de Campeones 3 (FHD)</title>
+    <url>acestream://b96a9b23b5343ca748e126c9257f42e204d3f52c</url>
+  </channel>
+  <channel>
+    <title>Movistar Deportes (FHD)</title>
+    <url>acestream://751b9cb03d188ce70e6aac22c1bfb16a5d0b2237</url>
+  </channel>
+  <channel>
+    <title>Movistar Deportes (duplicate) (FHD)</title>
+    <url>acestream://a139afc03d1623c321f6b084f79def682c492efa</url>
+  </channel>
+  <channel>
+    <title>Movistar Deportes 2 (FHD)</title>
+    <url>acestream://438991226c3bc6a06e7bfda9bea9f769957dc366</url>
+  </channel>
+  <channel>
+    <title>Movistar Deportes 3 (FHD)</title>
+    <url>acestream://d5271a967767f761c8812c4b6195dd40f20126f7</url>
+  </channel>
+  <channel>
+    <title>Movistar Deportes 4 (FHD)</title>
+    <url>acestream://ebf3f251c1e119aefc6a1efc95c9b5d1909249e2</url>
+  </channel>
+  <channel>
+    <title>Movistar Deportes 5 (FHD)</title>
+    <url>acestream://0b708083541a46dc15216c8003d7bcf39c458b2a</url>
+  </channel>
+  <channel>
+    <title>Movistar Vamos (FHD)</title>
+    <url>acestream://1444a976d2cf6e7fdcee833ed36ee5e55632253f</url>
+  </channel>
+  <channel>
+    <title>Movistar Golf (FHD)</title>
+    <url>acestream://76a69812c66bfc4899e89df498220588a56e6064</url>
+  </channel>
+  <channel>
+    <title>Eurosport (FHD)</title>
+    <url>acestream://704e51760a644bc90aa22269bf841399a0414a</url>
+  </channel>
+  <channel>
+    <title>Eurosport 2 (FHD)</title>
+    <url>acestream://f8e861155c2a1959f8313b19f49d52e414313203</url>
+  </channel>
+  <channel>
+    <title>Movistar Estrenos (FHD)</title>
+    <url>acestream://6341392460596e63edf38b013bd137c015e44007</url>
+  </channel>
+  <channel>
+    <title>Movistar Documentales (FHD)</title>
+    <url>acestream://6cda7d2622bcafd6aef486016238936855927d7d</url>
+  </channel>
+  <channel>
+    <title>Movistar Originales (FHD)</title>
+    <url>acestream://1f092144252939810fd302cbd00d46de760b5dd7</url>
+  </channel>
+  <channel>
+    <title>Movistar Cine Español (FHD)</title>
+    <url>acestream://e47cdeba9d919d6a9b4fa3c72c8094178985f668</url>
+  </channel>
+  <channel>
+    <title>Movistar Vacaciones (FHD)</title>
+    <url>acestream://15123ab3458c59bf548fbf6e5503799e81da4de6</url>
+  </channel>
+  <channel>
+    <title>Movistar Western (FHD)</title>
+    <url>acestream://e740a34497c3ba5943613a06999e805e6bbfa159</url>
+  </channel>
+  <channel>
+    <title>Movistar Indie (FHD)</title>
+    <url>acestream://508ffdbab097339adb4f3d922070b5df2c114d01</url>
+  </channel>
+  <channel>
+    <title>Movistar Acción (FHD)</title>
+    <url>acestream://b125325f52e057b8e5ea17a8b60d512d13d44e53</url>
+  </channel>
+  <channel>
+    <title>Movistar Comedia (FHD)</title>
+    <url>acestream://90a3ad526f67f987f662eaf7d52e88004c796914</url>
+  </channel>
+  <channel>
+    <title>Movistar Drama (FHD)</title>
+    <url>acestream://edee311dc307e1638eeac880b11bb6f4759b0d83</url>
+  </channel>
+  <channel>
+    <title>Movistar Hits (FHD)</title>
+    <url>acestream://2b8e5c7438d56541df3467cc5986cf1e66014101</url>
+  </channel>
+  <channel>
+    <title>Movistar Clásicos (FHD)</title>
+    <url>acestream://f9d431a6839e7f9964a0884dc1f18d298d990f39</url>
+  </channel>
+</w3u>

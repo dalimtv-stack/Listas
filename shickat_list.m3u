@@ -1,0 +1,83 @@
+#EXTM3U
+#EXTINF:-1, DAZN 1 (FHD)
+acestream://ee4dc45720d3ec283f61189fbfc120c91d5141bf
+#EXTINF:-1, DAZN 2 (FHD)
+acestream://9adf7ac6531788ec022dbc14b77e1367f6c5bdc5
+#EXTINF:-1, DAZN 3 (FHD)
+acestream://6fb944e8985881ae6db89667aca6362e746255b6
+#EXTINF:-1, DAZN F1 (FHD)
+acestream://8c1155cdfae76eb582290c04904c98da066657c9
+#EXTINF:-1, DAZN F1 (duplicate) (FHD)
+acestream://ba6e1bdc8e03da60ff572557645eb04370af0cd0
+#EXTINF:-1, DAZN LaLiga (FHD)
+acestream://f8d5e39a49b9da0215bbd3d9efb8fb3d06b76892
+#EXTINF:-1, DAZN LaLiga (duplicate) (FHD)
+acestream://520950d296c952e1864a08e15af9f89f1ab514ec
+#EXTINF:-1, DAZN LaLiga 2 (FHD)
+acestream://ae16a8f004b1287ee1f53263ab265f72bba0daf5
+#EXTINF:-1, LaLiga Hypermotion (FHD)
+acestream://f15f997f457e49ad9697e65cf2d78db26ee875b9
+#EXTINF:-1, LaLiga Hypermotion 2 (FHD)
+acestream://1422d506c9f14c84b1249bf8ac0b0698cee7a659
+#EXTINF:-1, LaLiga Hypermotion 3 (FHD)
+acestream://d9297d3576c05551c08e0fe5bd85a793361a3cca
+#EXTINF:-1, Movistar LaLiga (FHD)
+acestream://07f2b92762cfff99bba785c2f5260c7934ca6034
+#EXTINF:-1, Movistar LaLiga (duplicate) (FHD)
+acestream://c32a2cf4631bad4bc40a15ee0f245ed30ad4d85c
+#EXTINF:-1, Movistar Plus (FHD)
+acestream://5d9a26e0a5f3e5f2ae027bd05635ab9a4fd4b51a
+#EXTINF:-1, Movistar Plus (duplicate) (FHD)
+acestream://5e24a1b9187fccb91553f7c7da4b36341386f74a
+#EXTINF:-1, Movistar Liga de Campeones (FHD)
+acestream://680187938f9305cce3ae240298f10e8695bf77c2
+#EXTINF:-1, Movistar Liga de Campeones (duplicate) (FHD)
+acestream://5c15c639207a080183b12fa63282b409c07401d6
+#EXTINF:-1, Movistar Liga de Campeones 2 (FHD)
+acestream://33c009a025508cb2186b9ce36279640bb2507bdf
+#EXTINF:-1, Movistar Liga de Campeones 3 (FHD)
+acestream://b96a9b23b5343ca748e126c9257f42e204d3f52c
+#EXTINF:-1, Movistar Deportes (FHD)
+acestream://751b9cb03d188ce70e6aac22c1bfb16a5d0b2237
+#EXTINF:-1, Movistar Deportes (duplicate) (FHD)
+acestream://a139afc03d1623c321f6b084f79def682c492efa
+#EXTINF:-1, Movistar Deportes 2 (FHD)
+acestream://438991226c3bc6a06e7bfda9bea9f769957dc366
+#EXTINF:-1, Movistar Deportes 3 (FHD)
+acestream://d5271a967767f761c8812c4b6195dd40f20126f7
+#EXTINF:-1, Movistar Deportes 4 (FHD)
+acestream://ebf3f251c1e119aefc6a1efc95c9b5d1909249e2
+#EXTINF:-1, Movistar Deportes 5 (FHD)
+acestream://0b708083541a46dc15216c8003d7bcf39c458b2a
+#EXTINF:-1, Movistar Vamos (FHD)
+acestream://1444a976d2cf6e7fdcee833ed36ee5e55632253f
+#EXTINF:-1, Movistar Golf (FHD)
+acestream://76a69812c66bfc4899e89df498220588a56e6064
+#EXTINF:-1, Eurosport (FHD)
+acestream://704e51760a644bc90aa22269bf841399a0414a
+#EXTINF:-1, Eurosport 2 (FHD)
+acestream://f8e861155c2a1959f8313b19f49d52e414313203
+#EXTINF:-1, Movistar Estrenos (FHD)
+acestream://6341392460596e63edf38b013bd137c015e44007
+#EXTINF:-1, Movistar Documentales (FHD)
+acestream://6cda7d2622bcafd6aef486016238936855927d7d
+#EXTINF:-1, Movistar Originales (FHD)
+acestream://1f092144252939810fd302cbd00d46de760b5dd7
+#EXTINF:-1, Movistar Cine Español (FHD)
+acestream://e47cdeba9d919d6a9b4fa3c72c8094178985f668
+#EXTINF:-1, Movistar Vacaciones (FHD)
+acestream://15123ab3458c59bf548fbf6e5503799e81da4de6
+#EXTINF:-1, Movistar Western (FHD)
+acestream://e740a34497c3ba5943613a06999e805e6bbfa159
+#EXTINF:-1, Movistar Indie (FHD)
+acestream://508ffdbab097339adb4f3d922070b5df2c114d01
+#EXTINF:-1, Movistar Acción (FHD)
+acestream://b125325f52e057b8e5ea17a8b60d512d13d44e53
+#EXTINF:-1, Movistar Comedia (FHD)
+acestream://90a3ad526f67f987f662eaf7d52e88004c796914
+#EXTINF:-1, Movistar Drama (FHD)
+acestream://edee311dc307e1638eeac880b11bb6f4759b0d83
+#EXTINF:-1, Movistar Hits (FHD)
+acestream://2b8e5c7438d56541df3467cc5986cf1e66014101
+#EXTINF:-1, Movistar Clásicos (FHD)
+acestream://f9d431a6839e7f9964a0884dc1f18d298d990f39
