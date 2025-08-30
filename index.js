@@ -1,4 +1,4 @@
-const { addonBuilder, serveHTTP } = require('stremio-addon-sdk');
+const { addonBuilder } = require('stremio-addon-sdk');
 const axios = require('axios');
 const crypto = require('crypto');
 
@@ -122,3 +122,14 @@ builder.defineStreamHandler(async function(args) {
           title: channel.name,
           behaviorHints: {
             notWebReady: true,
+            isExternal: true
+          }
+        }
+      ]
+    };
+  }
+  return { streams: [] };
+});
+
+// Handler para Vercel (serverless)
+module.exports = builder.getInterface();
