@@ -1,6 +1,7 @@
 const axios = require("axios");
 
-const m3uUrl = process.env.M3U_URL || "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/shickat_list.m3u";
+let cachedChannels = [];
+let m3uUrl = process.env.M3U_URL || "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/shickat_list.m3u";
 
 async function parseM3U(url) {
   try {
@@ -25,14 +26,25 @@ async function parseM3U(url) {
   }
 }
 
-let cachedChannels = [];
+function updateM3UConfig(config) {
+  if (config && config.m3uUrl) {
+    m3uUrl = config.m3uUrl;
+    cachedChannels = []; // Limpiar caché para forzar recarga
+  }
+}
 
 module.exports = async (req, res) => {
-  const path = req.url.split("?")[0];
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   if (req.method === "OPTIONS") {
     res.status(200).end();
+    return;
+  }
+
+  // Actualizar configuración si viene en el cuerpo de la solicitud
+  if (req.method === "POST" && req.body && req.body.config) {
+    updateM3UConfig(req.body.config);
+    res.status(200).json({ message: "Configuración actualizada" });
     return;
   }
 
@@ -41,6 +53,7 @@ module.exports = async (req, res) => {
   }
 
   try {
+    const path = req.url.split("?")[0];
     if (path.startsWith("/catalog")) {
       const metas = cachedChannels.map(c => ({
         id: c.id,
