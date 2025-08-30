@@ -1,12 +1,12 @@
 const { addonBuilder } = require('stremio-addon-sdk');
 const axios = require('axios');
 const crypto = require('crypto');
-const { parse } = require('url');  // Para parsear req.url
+const urlModule = require('url');  // Built-in de Node.js, sin dependencia externa
 
 // URL de la lista M3U
 const M3U_URL = 'https://raw.githubusercontent.com/dalimtv-stack/Listas/main/shickat_list.m3u';
 
-// Parsear M3U (sin cambios)
+// Parsear M3U
 async function getChannels() {
   try {
     const response = await axios.get(M3U_URL);
@@ -45,7 +45,7 @@ async function refreshChannels() {
   return cachedChannels;
 }
 
-// Manifest (sin cambios)
+// Manifest
 const manifest = {
   id: 'org.stremio.shickatacestream',
   version: '1.0.0',
@@ -64,7 +64,7 @@ const manifest = {
   idPrefixes: ['shickat:']
 };
 
-// Builder y handlers (sin cambios)
+// Builder
 const builder = new addonBuilder(manifest);
 
 builder.defineCatalogHandler(async function(args) {
@@ -127,36 +127,40 @@ builder.defineStreamHandler(async function(args) {
     };
   }
   return { streams: [] };
-});
+};
 
-// Obtener la interfaz del SDK
-const addonInterface = builder.getInterface();
-
-// Handler para Vercel Serverless: Parsea req y delega al SDK
+// Handler para Vercel Serverless
 module.exports = async (req, res) => {
-  const parsedUrl = parse(req.url, true);
+  // Manejo de OPTIONS para CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.status(200).end();
+    return;
+  }
+
+  const parsedUrl = urlModule.parse(req.url, true);
   const pathname = parsedUrl.pathname;
 
-  // Manejar /manifest.json explícitamente
   if (pathname === '/manifest.json') {
     res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.status(200).end(JSON.stringify(manifest));
     return;
   }
 
-  // Para otras rutas, usa el SDK (catálogo, meta, stream, etc.)
-  // El SDK espera un req/res compatibles, así que delega
   try {
-    const response = await addonInterface(req, res);
+    const response = await builder.getInterface()(req, res);
     if (response) {
-      // Si el SDK ya envió la respuesta, no hagas nada más
       return;
     }
   } catch (error) {
     console.error('Error en handler:', error);
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.status(500).json({ error: 'Internal Server Error' });
   }
 
-  // Fallback si no se maneja
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.status(404).json({ error: 'Not Found' });
 };
