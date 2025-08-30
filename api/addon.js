@@ -1,4 +1,5 @@
 const axios = require("axios");
+const crypto = require("crypto");
 
 let cachedChannels = [];
 let m3uUrl = process.env.M3U_URL || "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/shickat_list.m3u";
@@ -10,11 +11,14 @@ async function parseM3U(url) {
     const channels = [];
     for (let i = 0; i < lines.length - 1; i++) {
       if (lines[i].startsWith("#EXTINF")) {
-        const name = lines[i].split(",")[1]?.trim() || "Canal Desconocido";
+        const nameMatch = lines[i].match(/,(.+)$/);
+        const name = nameMatch ? nameMatch[1].trim() : "Canal Desconocido";
+        const logoMatch = lines[i].match(/tvg-logo="([^"]+)"/);
+        const logo = logoMatch ? logoMatch[1] : "https://upload.wikimedia.org/wikipedia/commons/3/35/Ace_Stream_logo.png";
         const aceUrl = lines[i + 1]?.trim();
         if (aceUrl && aceUrl.startsWith("acestream://")) {
-          const id = `acestream:${name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "")}`;
-          channels.push({ id, name, aceUrl });
+          const id = `acestream:${crypto.createHash("md5").update(aceUrl).digest("hex")}`;
+          channels.push({ id, name, aceUrl, logo });
           i++; // Saltar la URL procesada
         }
       }
@@ -36,6 +40,7 @@ function updateM3UConfig(config) {
 module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") {
     res.status(200).end();
     return;
@@ -44,6 +49,7 @@ module.exports = async (req, res) => {
   // Actualizar configuración si viene en el cuerpo de la solicitud
   if (req.method === "POST" && req.body && req.body.config) {
     updateM3UConfig(req.body.config);
+    await parseM3U(m3uUrl); // Recargar canales con la nueva URL
     res.status(200).json({ message: "Configuración actualizada" });
     return;
   }
@@ -59,7 +65,7 @@ module.exports = async (req, res) => {
         id: c.id,
         type: "tv",
         name: c.name,
-        poster: "https://upload.wikimedia.org/wikipedia/commons/3/35/Ace_Stream_logo.png"
+        poster: c.logo
       }));
       res.status(200).json({ metas });
     } else if (path.startsWith("/meta")) {
@@ -71,7 +77,7 @@ module.exports = async (req, res) => {
             id: ch.id,
             type: "tv",
             name: ch.name,
-            poster: "https://upload.wikimedia.org/wikipedia/commons/3/35/Ace_Stream_logo.png",
+            poster: ch.logo,
             links: [{ name: "AceStream", url: ch.aceUrl }]
           }
         });
