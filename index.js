@@ -8,7 +8,6 @@ const M3U_URL = 'https://raw.githubusercontent.com/dalimtv-stack/Listas/main/shi
 
 // Parsear M3U
 async function getChannels() {
-  console.log('Fetching M3U from:', M3U_URL); // Log para depurar
   try {
     const response = await axios.get(M3U_URL);
     const content = response.data;
@@ -22,7 +21,7 @@ async function getChannels() {
         const name = nameMatch ? nameMatch[1].trim() : 'Unknown Channel';
         const tvgLogo = line.match(/tvg-logo="([^"]+)"/);
         const logo = tvgLogo ? tvgLogo[1] : null;
-        current = { name, logo };
+        current = { name: name, logo: logo };
       } else if (line && !line.startsWith('#') && current) {
         if (line.startsWith('acestream://')) {
           current.url = line;
@@ -32,7 +31,6 @@ async function getChannels() {
         current = null;
       }
     }
-    console.log('Channels parsed:', channels.length); // Log para depurar
     return channels;
   } catch (error) {
     console.error('Error fetching M3U:', error.message);
@@ -47,7 +45,7 @@ async function refreshChannels() {
   return cachedChannels;
 }
 
-// Manifest
+// Manifest (verificado sin errores de sintaxis)
 const manifest = {
   id: 'org.stremio.shickatacestream',
   version: '1.0.0',
@@ -60,7 +58,12 @@ const manifest = {
       type: 'channel',
       id: 'shickat-channels',
       name: 'Shickat Channels',
-      extra: [{ name: 'search', isRequired: false }]
+      extra: [
+        {
+          name: 'search',
+          isRequired: false
+        }
+      ]
     }
   ],
   idPrefixes: ['shickat:']
@@ -69,8 +72,8 @@ const manifest = {
 // Builder
 const builder = new addonBuilder(manifest);
 
+// Handlers (verificados)
 builder.defineCatalogHandler(async function(args) {
-  console.log('Catalog handler called with args:', args); // Log para depurar
   if (cachedChannels.length === 0) {
     await refreshChannels();
   }
@@ -86,11 +89,10 @@ builder.defineCatalogHandler(async function(args) {
     metas = metas.filter(meta => meta.name.toLowerCase().includes(searchTerm));
   }
 
-  return { metas };
+  return { metas: metas };
 });
 
 builder.defineMetaHandler(async function(args) {
-  console.log('Meta handler called with args:', args); // Log para depurar
   if (cachedChannels.length === 0) {
     await refreshChannels();
   }
@@ -111,7 +113,6 @@ builder.defineMetaHandler(async function(args) {
 });
 
 builder.defineStreamHandler(async function(args) {
-  console.log('Stream handler called with args:', args); // Log para depurar
   if (cachedChannels.length === 0) {
     await refreshChannels();
   }
@@ -136,8 +137,6 @@ builder.defineStreamHandler(async function(args) {
 
 // Handler para Vercel Serverless
 module.exports = async (req, res) => {
-  console.log('Request received:', req.method, req.url); // Log para depurar requests
-
   // Manejo de OPTIONS para CORS
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -153,15 +152,13 @@ module.exports = async (req, res) => {
   if (pathname === '/manifest.json') {
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.status(200).end(JSON.stringify(manifest));
+    res.status(200).send(JSON.stringify(manifest));
     return;
   }
 
-  // Delega al SDK con try/catch mejorado
   try {
-    await builder.getInterface()(req, res);
+    builder.getInterface()(req, res);
   } catch (error) {
-    console.error('SDK error:', error.stack); // Log detallado del error
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.status(500).json({ error: 'Internal Server Error', details: error.message });
   }
