@@ -91,7 +91,7 @@ module.exports = async (req, res) => {
       if (ch) {
         res.status(200).json({
           streams: [{
-            url: ch.aceUrl,
+            externalUrl: ch.aceUrl, // Cambiado de "url" a "externalUrl"
             title: ch.name,
             behaviorHints: { notWebReady: true, External: true }
           }]
