@@ -4,7 +4,7 @@ module.exports = (req, res) => {
     version: "0.0.5",
     name: "Shickat Acestream Channels",
     description: "Addon para cargar canales Acestream desde una lista M3U específica.",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/3/35/Ace_Stream_logo.png",
+    logo: "https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960",
     resources: ["catalog", "meta", "stream"],
     types: ["channel"],
     catalogs: [
