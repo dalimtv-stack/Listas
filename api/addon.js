@@ -11,14 +11,14 @@ async function parseM3U(url) {
     for (let i = 0; i < lines.length - 1; i++) {
       if (lines[i].startsWith("#EXTINF")) {
         const nameMatch = lines[i].match(/,(.+)$/);
-        const name = nameMatch ? nameMatch[1].trim() : "Canal Desconocido";
+        const name = nameMatch ? nameMatch[1].replace(/\(FHD\)/i, "").trim() : "Canal Desconocido";
         const logoMatch = lines[i].match(/tvg-logo="([^"]+)"/);
         const logo = logoMatch ? logoMatch[1] : "https://upload.wikimedia.org/wikipedia/commons/3/35/Ace_Stream_logo.png";
         const aceUrl = lines[i + 1]?.trim();
         if (aceUrl && aceUrl.startsWith("acestream://")) {
-          const id = name.toLowerCase().replace(/[^a-z0-9]/g, "-"); // ID simple basado en nombre (ej. "dazn-1-fhd")
+          const id = name.toLowerCase().replace(/[^a-z0-9]/g, "-"); // Ej. "dazn-1"
           channels.push({ id, name, aceUrl, logo });
-          i++; // Saltar la URL procesada
+          i++; // Saltar la URL
         }
       }
     }
@@ -59,7 +59,7 @@ module.exports = async (req, res) => {
 
   try {
     const path = req.url.split("?")[0];
-    if (path.startsWith("/catalog")) {
+    if (path === "/catalog") {
       const metas = cachedChannels.map(c => ({
         id: `channel:${c.id}`,
         type: "channel",
@@ -67,37 +67,14 @@ module.exports = async (req, res) => {
         poster: c.logo
       }));
       res.status(200).json({ metas });
-    } else if (path.startsWith("/meta")) {
-      const id = path.split("/").pop().replace("channel:", ""); // Extraer ID sin prefijo
-      const ch = cachedChannels.find(c => c.id === id);
-      if (ch) {
-        res.status(200).json({
-          meta: {
-            id: `channel:${ch.id}`,
-            type: "channel",
-            name: ch.name,
-            poster: ch.logo,
-            description: "Canal Acestream desde lista Shickat."
-          }
-        });
-      } else {
-        res.status(200).json({ meta: {} });
-      }
-    } else if (path.startsWith("/stream")) {
-      const id = path.split("/").pop().replace("channel:", ""); // Extraer ID sin prefijo
-      const ch = cachedChannels.find(c => c.id === id);
-      if (ch) {
-        res.status(200).json({
-          streams: [{
-            externalUrl: ch.aceUrl,
-            title: ch.name,
-            behaviorHints: { notWebReady: true, isExternal: true },
-            protocol: "acestream"
-          }]
-        });
-      } else {
-        res.status(200).json({ streams: [] });
-      }
+    } else if (path === "/meta/channel:dazn-1") { // Ejemplo estático
+      const ch = cachedChannels.find(c => c.id === "dazn-1");
+      if (ch) res.status(200).json({ meta: { id: `channel:${ch.id}`, type: "channel", name: ch.name, poster: ch.logo, description: "Canal Acestream" } });
+      else res.status(200).json({ meta: {} });
+    } else if (path === "/stream/channel:dazn-1") { // Ejemplo estático
+      const ch = cachedChannels.find(c => c.id === "dazn-1");
+      if (ch) res.status(200).json({ streams: [{ externalUrl: ch.aceUrl, title: ch.name, behaviorHints: { notWebReady: true, isExternal: true }, protocol: "acestream" }] });
+      else res.status(200).json({ streams: [] });
     } else {
       res.status(404).send("Not found");
     }
