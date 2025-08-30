@@ -17,12 +17,13 @@ async function parseM3U(url) {
         const logo = logoMatch ? logoMatch[1] : "https://upload.wikimedia.org/wikipedia/commons/3/35/Ace_Stream_logo.png";
         const aceUrl = lines[i + 1]?.trim();
         if (aceUrl && aceUrl.startsWith("acestream://")) {
-          const id = `acestream:${crypto.createHash("md5").update(aceUrl).digest("hex")}`;
+          const id = `shickat:${crypto.createHash("md5").update(aceUrl).digest("hex")}`;
           channels.push({ id, name, aceUrl, logo });
           i++; // Saltar la URL procesada
         }
       }
     }
+    console.log(`Parsed ${channels.length} channels from M3U`);
     return channels;
   } catch (error) {
     console.error("Error parsing M3U:", error.message);
@@ -33,7 +34,8 @@ async function parseM3U(url) {
 function updateM3UConfig(config) {
   if (config && config.m3uUrl) {
     m3uUrl = config.m3uUrl;
-    cachedChannels = []; // Limpiar caché para forzar recarga
+    cachedChannels = []; // Limpiar caché
+    console.log(`M3U URL updated to: ${m3uUrl}`);
   }
 }
 
@@ -46,10 +48,9 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // Actualizar configuración si viene en el cuerpo de la solicitud
+  // Actualizar configuración si viene en el cuerpo (Stremio envía POST para config)
   if (req.method === "POST" && req.body && req.body.config) {
     updateM3UConfig(req.body.config);
-    await parseM3U(m3uUrl); // Recargar canales con la nueva URL
     res.status(200).json({ message: "Configuración actualizada" });
     return;
   }
@@ -63,7 +64,7 @@ module.exports = async (req, res) => {
     if (path.startsWith("/catalog")) {
       const metas = cachedChannels.map(c => ({
         id: c.id,
-        type: "tv",
+        type: "channel",
         name: c.name,
         poster: c.logo
       }));
@@ -75,10 +76,10 @@ module.exports = async (req, res) => {
         res.status(200).json({
           meta: {
             id: ch.id,
-            type: "tv",
+            type: "channel",
             name: ch.name,
             poster: ch.logo,
-            links: [{ name: "AceStream", url: ch.aceUrl }]
+            description: "Canal Acestream desde lista Shickat."
           }
         });
       } else {
@@ -90,10 +91,9 @@ module.exports = async (req, res) => {
       if (ch) {
         res.status(200).json({
           streams: [{
-            name: "AceStream",
+            url: ch.aceUrl,
             title: ch.name,
-            externalUrl: ch.aceUrl,
-            behaviorHints: { notWebReady: true, external: true }
+            behaviorHints: { notWebReady: true, isExternal: true }
           }]
         });
       } else {
