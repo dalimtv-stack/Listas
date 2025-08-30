@@ -5,8 +5,8 @@
   ],
   "routes": [
     { "src": "/manifest.json", "dest": "/api/manifest.js" },
-    { "src": "/catalog/(.*)", "dest": "/api/addon.js" },
-    { "src": "/meta/(.*)", "dest": "/api/addon.js" },
-    { "src": "/stream/(.*)", "dest": "/api/addon.js" }
+    { "src": "/catalog(.*)", "dest": "/api/addon.js" },
+    { "src": "/meta(.*)", "dest": "/api/addon.js" },
+    { "src": "/stream(.*)", "dest": "/api/addon.js" }
   ]
 }
