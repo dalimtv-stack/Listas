@@ -1,73 +1,71 @@
 const { addonBuilder } = require("stremio-addon-sdk");
-const fs = require("fs");
-const path = require("path");
+const axios = require("axios");
 
+// Manifesto del addon
 const manifest = {
-  id: "org.stremio.acestream",
+  id: "org.dalimtv.acestream",
   version: "1.0.0",
   name: "AceStream M3U Addon",
-  description: "Addon para reproducir enlaces AceStream desde una lista M3U",
-  catalogs: [],
+  description: "Reproduce enlaces AceStream desde una lista M3U configurada",
   resources: ["stream"],
-  types: ["tv"],
-  idPrefixes: ["acestream:"]
+  types: ["tv"], // podemos ampliar luego
+  catalogs: [],
+  idPrefixes: ["acestream"],
+  configurable: {
+    m3uUrl: {
+      type: "text",
+      title: "URL de la lista M3U",
+      default: "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/shickat_list.m3u"
+    }
+  }
 };
 
 const builder = new addonBuilder(manifest);
 
-// Cargar lista M3U
-function loadPlaylist() {
-  const m3uPath = path.join(__dirname, "shickat_list.m3u");
-  const content = fs.readFileSync(m3uPath, "utf8");
+// Guardamos la configuración
+let m3uUrl = manifest.configurable.m3uUrl.default;
 
-  const regex = /#EXTINF:-1.*,(.*?)\n(acestream:\/\/[a-zA-Z0-9]+)/g;
-  let match;
-  const channels = {};
-
-  while ((match = regex.exec(content)) !== null) {
-    const name = match[1].trim();
-    const url = match[2].trim();
-    channels[name.toLowerCase()] = { name, url };
+// Cuando el usuario instala/configura el addon
+builder.defineConfigHandler((config) => {
+  if (config.m3uUrl) {
+    m3uUrl = config.m3uUrl;
+    console.log("Nueva URL M3U configurada:", m3uUrl);
   }
-
-  return channels;
-}
-
-const channels = loadPlaylist();
-
-// Definir recurso "stream"
-builder.defineStreamHandler(({ id }) => {
-  const channel = channels[id.toLowerCase()];
-  if (channel) {
-    return Promise.resolve({
-      streams: [
-        {
-          title: channel.name,
-          externalUrl: channel.url,
-          behaviorHints: { notWebReady: true }
-        }
-      ]
-    });
-  } else {
-    return Promise.resolve({ streams: [] });
-  }
+  return {};
 });
 
-// Exportar servidor Express para Vercel
-const express = require("express");
-const app = express();
-
-app.get("/", (_, res) => {
-  res.json(manifest);
-});
-
-app.get("/:resource/:type/:id.json", async (req, res) => {
+// Definimos cómo responder a peticiones de streams
+builder.defineStreamHandler(async ({ type, id }) => {
   try {
-    const resp = await builder.getInterface().get(req.params);
-    res.json(resp);
-  } catch (e) {
-    res.status(500).json({ error: e.toString() });
+    if (!m3uUrl) {
+      throw new Error("No se ha configurado la URL M3U");
+    }
+
+    const { data } = await axios.get(m3uUrl);
+    const lines = data.split("\n");
+    let streams = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].startsWith("#EXTINF")) {
+        const name = lines[i].split(",")[1]?.trim() || "Canal sin nombre";
+        const url = lines[i + 1]?.trim();
+
+        if (url && url.startsWith("acestream://")) {
+          streams.push({
+            name: name,
+            description: "Canal desde lista M3U",
+            url: url
+          });
+        }
+      }
+    }
+
+    return { streams };
+  } catch (err) {
+    console.error("Error al procesar la M3U:", err.message);
+    return { streams: [] };
   }
 });
 
-module.exports = app;
+// Exportar addon
+module.exports = builder.getInterface();
