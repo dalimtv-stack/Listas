@@ -1,11 +1,12 @@
 const { addonBuilder } = require('stremio-addon-sdk');
 const axios = require('axios');
 const crypto = require('crypto');
+const { parse } = require('url');  // Para parsear req.url
 
 // URL de la lista M3U
 const M3U_URL = 'https://raw.githubusercontent.com/dalimtv-stack/Listas/main/shickat_list.m3u';
 
-// Parsear M3U
+// Parsear M3U (sin cambios)
 async function getChannels() {
   try {
     const response = await axios.get(M3U_URL);
@@ -44,7 +45,7 @@ async function refreshChannels() {
   return cachedChannels;
 }
 
-// Manifest
+// Manifest (sin cambios)
 const manifest = {
   id: 'org.stremio.shickatacestream',
   version: '1.0.0',
@@ -63,10 +64,9 @@ const manifest = {
   idPrefixes: ['shickat:']
 };
 
-// Builder
+// Builder y handlers (sin cambios)
 const builder = new addonBuilder(manifest);
 
-// Catálogo
 builder.defineCatalogHandler(async function(args) {
   if (cachedChannels.length === 0) {
     await refreshChannels();
@@ -86,7 +86,6 @@ builder.defineCatalogHandler(async function(args) {
   return { metas };
 });
 
-// Meta
 builder.defineMetaHandler(async function(args) {
   if (cachedChannels.length === 0) {
     await refreshChannels();
@@ -107,7 +106,6 @@ builder.defineMetaHandler(async function(args) {
   return {};
 });
 
-// Stream
 builder.defineStreamHandler(async function(args) {
   if (cachedChannels.length === 0) {
     await refreshChannels();
@@ -131,5 +129,34 @@ builder.defineStreamHandler(async function(args) {
   return { streams: [] };
 });
 
-// Handler para Vercel (serverless)
-module.exports = builder.getInterface();
+// Obtener la interfaz del SDK
+const addonInterface = builder.getInterface();
+
+// Handler para Vercel Serverless: Parsea req y delega al SDK
+module.exports = async (req, res) => {
+  const parsedUrl = parse(req.url, true);
+  const pathname = parsedUrl.pathname;
+
+  // Manejar /manifest.json explícitamente
+  if (pathname === '/manifest.json') {
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).end(JSON.stringify(manifest));
+    return;
+  }
+
+  // Para otras rutas, usa el SDK (catálogo, meta, stream, etc.)
+  // El SDK espera un req/res compatibles, así que delega
+  try {
+    const response = await addonInterface(req, res);
+    if (response) {
+      // Si el SDK ya envió la respuesta, no hagas nada más
+      return;
+    }
+  } catch (error) {
+    console.error('Error en handler:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+
+  // Fallback si no se maneja
+  res.status(404).json({ error: 'Not Found' });
+};
