@@ -1,0 +1,17 @@
+{
+  "name": "stremio-shickat-addon",
+  "version": "1.0.0",
+  "description": "Stremio addon para cargar lista M3U con enlaces Acestream",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "stremio-addon-sdk": "^1.6.8",
+    "axios": "^1.7.7",
+    "crypto": "^1.0.1"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}
