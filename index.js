@@ -1,13 +1,14 @@
 const { addonBuilder } = require('stremio-addon-sdk');
 const axios = require('axios');
 const crypto = require('crypto');
-const urlModule = require('url');  // Built-in de Node.js, sin dependencia externa
+const urlModule = require('url');
 
 // URL de la lista M3U
 const M3U_URL = 'https://raw.githubusercontent.com/dalimtv-stack/Listas/main/shickat_list.m3u';
 
 // Parsear M3U
 async function getChannels() {
+  console.log('Fetching M3U from:', M3U_URL); // Log para depurar
   try {
     const response = await axios.get(M3U_URL);
     const content = response.data;
@@ -31,9 +32,10 @@ async function getChannels() {
         current = null;
       }
     }
+    console.log('Channels parsed:', channels.length); // Log para depurar
     return channels;
   } catch (error) {
-    console.error('Error fetching M3U:', error);
+    console.error('Error fetching M3U:', error.message);
     return [];
   }
 }
@@ -68,6 +70,7 @@ const manifest = {
 const builder = new addonBuilder(manifest);
 
 builder.defineCatalogHandler(async function(args) {
+  console.log('Catalog handler called with args:', args); // Log para depurar
   if (cachedChannels.length === 0) {
     await refreshChannels();
   }
@@ -87,6 +90,7 @@ builder.defineCatalogHandler(async function(args) {
 });
 
 builder.defineMetaHandler(async function(args) {
+  console.log('Meta handler called with args:', args); // Log para depurar
   if (cachedChannels.length === 0) {
     await refreshChannels();
   }
@@ -107,6 +111,7 @@ builder.defineMetaHandler(async function(args) {
 });
 
 builder.defineStreamHandler(async function(args) {
+  console.log('Stream handler called with args:', args); // Log para depurar
   if (cachedChannels.length === 0) {
     await refreshChannels();
   }
@@ -131,7 +136,9 @@ builder.defineStreamHandler(async function(args) {
 
 // Handler para Vercel Serverless
 module.exports = async (req, res) => {
-  // Manejo de OPTIONS para CORS preflight
+  console.log('Request received:', req.method, req.url); // Log para depurar requests
+
+  // Manejo de OPTIONS para CORS
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -150,17 +157,12 @@ module.exports = async (req, res) => {
     return;
   }
 
+  // Delega al SDK con try/catch mejorado
   try {
-    const response = await builder.getInterface()(req, res);
-    if (response) {
-      return;
-    }
+    await builder.getInterface()(req, res);
   } catch (error) {
-    console.error('Error en handler:', error);
+    console.error('SDK error:', error.stack); // Log detallado del error
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Internal Server Error', details: error.message });
   }
-
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.status(404).json({ error: 'Not Found' });
 };
