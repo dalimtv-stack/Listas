@@ -1,7 +1,7 @@
 module.exports = (req, res) => {
   const manifest = {
     id: "org.stremio.shickatacestream",
-    version: "0.0.4",
+    version: "0.0.5",
     name: "Shickat Acestream Channels",
     description: "Addon para cargar canales Acestream desde una lista M3U específica.",
     logo: "https://upload.wikimedia.org/wikipedia/commons/3/35/Ace_Stream_logo.png",
@@ -11,11 +11,11 @@ module.exports = (req, res) => {
       {
         type: "channel",
         id: "shickat-channels",
-        name: "Shickat Channels",
-        extra: [{ name: "search", isRequired: false }]
+        name: "Shickat Live Channels",
+        extra: [{ name: "search", isRequired: false }, { name: "category", value: "Live TV" }]
       }
     ],
-    idPrefixes: ["shickat:"],
+    idPrefixes: ["channel:shickat:"],
     configurable: {
       m3uUrl: {
         type: "text",
