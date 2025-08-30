@@ -18,13 +18,12 @@ async function parseM3U(url) {
         const aceUrl = lines[i + 1]?.trim();
         
         if (aceUrl && aceUrl.startsWith("acestream://")) {
-          // Crear ID único basado en el nombre
           const id = "channel:" + name.toLowerCase()
             .replace(/[^a-z0-9]+/g, "-")
             .replace(/(^-|-$)/g, "");
           
           channels.push({ id, name, aceUrl, logo });
-          i++; // Saltar la URL
+          i++;
         }
       }
     }
@@ -40,7 +39,7 @@ async function parseM3U(url) {
 function updateM3UConfig(config) {
   if (config && config.m3uUrl) {
     m3uUrl = config.m3uUrl;
-    cachedChannels = []; // Limpiar caché
+    cachedChannels = [];
     console.log(`M3U URL updated to: ${m3uUrl}`);
   }
 }
@@ -66,10 +65,9 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const path = req.url.split("?")[0];
+    const path = req.url;
     
-    if (path === "/catalog/series/shickat-channels.json") {
-      // Devolver todos los canales como catálogo
+    if (path === "/catalog/channel/shickat-channels.json") {
       const metas = cachedChannels.map(c => ({
         id: c.id,
         type: "channel",
@@ -80,7 +78,6 @@ module.exports = async (req, res) => {
       res.status(200).json({ metas });
     } 
     else if (path.startsWith("/meta/")) {
-      // Manejar solicitudes de metadatos para cualquier canal
       const id = path.replace("/meta/", "").replace(".json", "");
       const channel = cachedChannels.find(c => c.id === id);
       
@@ -99,7 +96,6 @@ module.exports = async (req, res) => {
       }
     } 
     else if (path.startsWith("/stream/")) {
-      // Manejar solicitudes de stream para cualquier canal
       const id = path.replace("/stream/", "").replace(".json", "");
       const channel = cachedChannels.find(c => c.id === id);
       
@@ -119,10 +115,6 @@ module.exports = async (req, res) => {
         res.status(200).json({ streams: [] });
       }
     } 
-    else if (path === "/manifest.json") {
-      // Redirigir al manfiesto real
-      res.redirect(301, '/api/manifest.js');
-    }
     else {
       res.status(404).send("Not found");
     }
