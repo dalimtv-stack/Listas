@@ -17,7 +17,7 @@ const builder = new addonBuilder(manifest);
 
 // Cargar lista M3U
 function loadPlaylist() {
-  const m3uPath = path.join(__dirname, "playlist.m3u");
+  const m3uPath = path.join(__dirname, "shickat_list.m3u");
   const content = fs.readFileSync(m3uPath, "utf8");
 
   const regex = /#EXTINF:-1.*,(.*?)\n(acestream:\/\/[a-zA-Z0-9]+)/g;
