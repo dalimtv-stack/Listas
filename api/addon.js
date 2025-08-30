@@ -17,7 +17,8 @@ async function parseM3U(url) {
         const logo = logoMatch ? logoMatch[1] : "https://upload.wikimedia.org/wikipedia/commons/3/35/Ace_Stream_logo.png";
         const aceUrl = lines[i + 1]?.trim();
         if (aceUrl && aceUrl.startsWith("acestream://")) {
-          const id = `shickat:${crypto.createHash("md5").update(aceUrl).digest("hex")}`;
+          const idHash = crypto.createHash("md5").update(aceUrl).digest("hex");
+          const id = `channel:shickat:${idHash}`; // Alinear con idPrefixes
           channels.push({ id, name, aceUrl, logo });
           i++; // Saltar la URL procesada
         }
@@ -48,7 +49,6 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // Actualizar configuración si viene en el cuerpo (Stremio envía POST para config)
   if (req.method === "POST" && req.body && req.body.config) {
     updateM3UConfig(req.body.config);
     res.status(200).json({ message: "Configuración actualizada" });
@@ -91,9 +91,10 @@ module.exports = async (req, res) => {
       if (ch) {
         res.status(200).json({
           streams: [{
-            externalUrl: ch.aceUrl, // Cambiado de "url" a "externalUrl"
-            title: "Acestream",
-            behaviorHints: { notWebReady: true, isExternal: true }
+            externalUrl: ch.aceUrl,
+            title: ch.name, // Corregido a ch.name
+            behaviorHints: { notWebReady: true, isExternal: true },
+            protocol: "acestream"
           }]
         });
       } else {
