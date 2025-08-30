@@ -93,7 +93,7 @@ module.exports = async (req, res) => {
           streams: [{
             externalUrl: ch.aceUrl,
             title: ch.name,
-            behaviorHints: { notWebReady: true, isExternal: true },
+            behaviorHints: { notWebReady: true, External: true },
             protocol: "acestream"
           }]
         });
