@@ -19,8 +19,8 @@
   ],
   "functions": {
     "index.js": {
-      "memory": 1024,  // Aumenta la memoria para evitar fallos
-      "maxDuration": 60  // Aumenta el tiempo de espera
+      "memory": 1024,  
+      "maxDuration": 60
     }
   }
 }
