@@ -67,6 +67,7 @@ module.exports = async (req, res) => {
   try {
     const path = req.url;
     
+    // Manejar la ruta del catálogo que Stremio espera
     if (path === "/catalog/channel/shickat-channels.json") {
       const metas = cachedChannels.map(c => ({
         id: c.id,
@@ -78,6 +79,7 @@ module.exports = async (req, res) => {
       res.status(200).json({ metas });
     } 
     else if (path.startsWith("/meta/")) {
+      // Extraer el ID de la ruta: /meta/channel:nombre-canal.json
       const id = path.replace("/meta/", "").replace(".json", "");
       const channel = cachedChannels.find(c => c.id === id);
       
@@ -96,6 +98,7 @@ module.exports = async (req, res) => {
       }
     } 
     else if (path.startsWith("/stream/")) {
+      // Extraer el ID de la ruta: /stream/channel:nombre-canal.json
       const id = path.replace("/stream/", "").replace(".json", "");
       const channel = cachedChannels.find(c => c.id === id);
       
