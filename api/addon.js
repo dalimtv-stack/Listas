@@ -18,8 +18,8 @@ async function parseM3U(url) {
         const aceUrl = lines[i + 1]?.trim();
         if (aceUrl && aceUrl.startsWith("acestream://")) {
           const idHash = crypto.createHash("md5").update(aceUrl).digest("hex");
-          const id = `channel:shickat:${idHash}`; // Alinear con idPrefixes
-          channels.push({ id, name, aceUrl, logo });
+          const id = `channel:shickat:${idHash}`; // ID con prefijo
+          channels.push({ id, name, aceUrl, logo, idHash }); // Guardar idHash por si Stremio lo usa sin prefijo
           i++; // Saltar la URL procesada
         }
       }
@@ -71,7 +71,7 @@ module.exports = async (req, res) => {
       res.status(200).json({ metas });
     } else if (path.startsWith("/meta")) {
       const id = path.split("/").pop();
-      const ch = cachedChannels.find(c => c.id === id);
+      const ch = cachedChannels.find(c => c.id === id || c.idHash === id.split(':').pop()); // Buscar por id completo o solo hash
       if (ch) {
         res.status(200).json({
           meta: {
@@ -87,13 +87,13 @@ module.exports = async (req, res) => {
       }
     } else if (path.startsWith("/stream")) {
       const id = path.split("/").pop();
-      const ch = cachedChannels.find(c => c.id === id);
+      const ch = cachedChannels.find(c => c.id === id || c.idHash === id.split(':').pop()); // Buscar por id completo o solo hash
       if (ch) {
         res.status(200).json({
           streams: [{
             externalUrl: ch.aceUrl,
-            title: ch.name, // Corregido a ch.name
-            behaviorHints: { notWebReady: true, External: true },
+            title: ch.name,
+            behaviorHints: { notWebReady: true, isExternal: true },
             protocol: "acestream"
           }]
         });
