@@ -1,0 +1,124 @@
+const { addonBuilder, serveHTTP } = require('stremio-addon-sdk');
+const axios = require('axios');
+const crypto = require('crypto');
+
+// URL de la lista M3U
+const M3U_URL = 'https://raw.githubusercontent.com/dalimtv-stack/Listas/main/shickat_list.m3u';
+
+// Parsear M3U
+async function getChannels() {
+  try {
+    const response = await axios.get(M3U_URL);
+    const content = response.data;
+    const lines = content.split('\n');
+    const channels = [];
+    let current = null;
+    for (let line of lines) {
+      line = line.trim();
+      if (line.startsWith('#EXTINF:')) {
+        const nameMatch = line.match(/,(.+)$/);
+        const name = nameMatch ? nameMatch[1].trim() : 'Unknown Channel';
+        const tvgLogo = line.match(/tvg-logo="([^"]+)"/);
+        const logo = tvgLogo ? tvgLogo[1] : null;
+        current = { name, logo };
+      } else if (line && !line.startsWith('#') && current) {
+        if (line.startsWith('acestream://')) {
+          current.url = line;
+          current.id = crypto.createHash('md5').update(line).digest('hex');
+          channels.push(current);
+        }
+        current = null;
+      }
+    }
+    return channels;
+  } catch (error) {
+    console.error('Error fetching M3U:', error);
+    return [];
+  }
+}
+
+// Cache de canales
+let cachedChannels = [];
+async function refreshChannels() {
+  cachedChannels = await getChannels();
+  return cachedChannels;
+}
+
+// Manifest
+const manifest = {
+  id: 'org.stremio.shickatacestream',
+  version: '1.0.0',
+  name: 'Shickat Acestream Channels',
+  description: 'Addon para cargar canales Acestream desde una lista M3U específica.',
+  resources: ['catalog', 'meta', 'stream'],
+  types: ['channel'],
+  catalogs: [
+    {
+      type: 'channel',
+      id: 'shickat-channels',
+      name: 'Shickat Channels',
+      extra: [{ name: 'search', isRequired: false }]
+    }
+  ],
+  idPrefixes: ['shickat:']
+};
+
+// Builder
+const builder = new addonBuilder(manifest);
+
+// Catálogo
+builder.defineCatalogHandler(async function(args) {
+  if (cachedChannels.length === 0) {
+    await refreshChannels();
+  }
+  let metas = cachedChannels.map(channel => ({
+    id: 'shickat:' + channel.id,
+    type: 'channel',
+    name: channel.name,
+    poster: channel.logo || 'https://via.placeholder.com/300x450?text=' + encodeURIComponent(channel.name)
+  }));
+
+  if (args.extra && args.extra.search) {
+    const searchTerm = args.extra.search.toLowerCase();
+    metas = metas.filter(meta => meta.name.toLowerCase().includes(searchTerm));
+  }
+
+  return { metas };
+});
+
+// Meta
+builder.defineMetaHandler(async function(args) {
+  if (cachedChannels.length === 0) {
+    await refreshChannels();
+  }
+  const id = args.id.replace('shickat:', '');
+  const channel = cachedChannels.find(ch => ch.id === id);
+  if (channel) {
+    return {
+      id: args.id,
+      type: 'channel',
+      name: channel.name,
+      poster: channel.logo,
+      description: 'Canal Acestream desde lista Shickat.',
+      background: channel.logo,
+      logo: channel.logo
+    };
+  }
+  return {};
+});
+
+// Stream
+builder.defineStreamHandler(async function(args) {
+  if (cachedChannels.length === 0) {
+    await refreshChannels();
+  }
+  const id = args.id.replace('shickat:', '');
+  const channel = cachedChannels.find(ch => ch.id === id);
+  if (channel) {
+    return {
+      streams: [
+        {
+          url: channel.url,
+          title: channel.name,
+          behaviorHints: {
+            notWebReady: true,
