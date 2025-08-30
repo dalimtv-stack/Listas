@@ -1,165 +1,73 @@
-const { addonBuilder } = require('stremio-addon-sdk');
-const axios = require('axios');
-const crypto = require('crypto');
-const urlModule = require('url');
+const { addonBuilder } = require("stremio-addon-sdk");
+const fs = require("fs");
+const path = require("path");
 
-// URL de la lista M3U
-const M3U_URL = 'https://raw.githubusercontent.com/dalimtv-stack/Listas/main/shickat_list.m3u';
-
-// Parsear M3U
-async function getChannels() {
-  try {
-    const response = await axios.get(M3U_URL);
-    const content = response.data;
-    const lines = content.split('\n');
-    const channels = [];
-    let current = null;
-    for (let line of lines) {
-      line = line.trim();
-      if (line.startsWith('#EXTINF:')) {
-        const nameMatch = line.match(/,(.+)$/);
-        const name = nameMatch ? nameMatch[1].trim() : 'Unknown Channel';
-        const tvgLogo = line.match(/tvg-logo="([^"]+)"/);
-        const logo = tvgLogo ? tvgLogo[1] : null;
-        current = { name: name, logo: logo };
-      } else if (line && !line.startsWith('#') && current) {
-        if (line.startsWith('acestream://')) {
-          current.url = line;
-          current.id = crypto.createHash('md5').update(line).digest('hex');
-          channels.push(current);
-        }
-        current = null;
-      }
-    }
-    return channels;
-  } catch (error) {
-    console.error('Error fetching M3U:', error.message);
-    return [];
-  }
-}
-
-// Cache de canales
-let cachedChannels = [];
-async function refreshChannels() {
-  cachedChannels = await getChannels();
-  return cachedChannels;
-}
-
-// Manifest (verificado sin errores de sintaxis)
 const manifest = {
-  id: 'org.stremio.shickatacestream',
-  version: '1.0.0',
-  name: 'Shickat Acestream Channels',
-  description: 'Addon para cargar canales Acestream desde una lista M3U específica.',
-  resources: ['catalog', 'meta', 'stream'],
-  types: ['channel'],
-  catalogs: [
-    {
-      type: 'channel',
-      id: 'shickat-channels',
-      name: 'Shickat Channels',
-      extra: [
-        {
-          name: 'search',
-          isRequired: false
-        }
-      ]
-    }
-  ],
-  idPrefixes: ['shickat:']
+  id: "org.stremio.acestream",
+  version: "1.0.0",
+  name: "AceStream M3U Addon",
+  description: "Addon para reproducir enlaces AceStream desde una lista M3U",
+  catalogs: [],
+  resources: ["stream"],
+  types: ["tv"],
+  idPrefixes: ["acestream:"]
 };
 
-// Builder
 const builder = new addonBuilder(manifest);
 
-// Handlers (verificados)
-builder.defineCatalogHandler(async function(args) {
-  if (cachedChannels.length === 0) {
-    await refreshChannels();
-  }
-  let metas = cachedChannels.map(channel => ({
-    id: 'shickat:' + channel.id,
-    type: 'channel',
-    name: channel.name,
-    poster: channel.logo || 'https://via.placeholder.com/300x450?text=' + encodeURIComponent(channel.name)
-  }));
+// Cargar lista M3U
+function loadPlaylist() {
+  const m3uPath = path.join(__dirname, "playlist.m3u");
+  const content = fs.readFileSync(m3uPath, "utf8");
 
-  if (args.extra && args.extra.search) {
-    const searchTerm = args.extra.search.toLowerCase();
-    metas = metas.filter(meta => meta.name.toLowerCase().includes(searchTerm));
+  const regex = /#EXTINF:-1.*,(.*?)\n(acestream:\/\/[a-zA-Z0-9]+)/g;
+  let match;
+  const channels = {};
+
+  while ((match = regex.exec(content)) !== null) {
+    const name = match[1].trim();
+    const url = match[2].trim();
+    channels[name.toLowerCase()] = { name, url };
   }
 
-  return { metas: metas };
-});
+  return channels;
+}
 
-builder.defineMetaHandler(async function(args) {
-  if (cachedChannels.length === 0) {
-    await refreshChannels();
-  }
-  const id = args.id.replace('shickat:', '');
-  const channel = cachedChannels.find(ch => ch.id === id);
+const channels = loadPlaylist();
+
+// Definir recurso "stream"
+builder.defineStreamHandler(({ id }) => {
+  const channel = channels[id.toLowerCase()];
   if (channel) {
-    return {
-      id: args.id,
-      type: 'channel',
-      name: channel.name,
-      poster: channel.logo,
-      description: 'Canal Acestream desde lista Shickat.',
-      background: channel.logo,
-      logo: channel.logo
-    };
-  }
-  return {};
-});
-
-builder.defineStreamHandler(async function(args) {
-  if (cachedChannels.length === 0) {
-    await refreshChannels();
-  }
-  const id = args.id.replace('shickat:', '');
-  const channel = cachedChannels.find(ch => ch.id === id);
-  if (channel) {
-    return {
+    return Promise.resolve({
       streams: [
         {
-          url: channel.url,
           title: channel.name,
-          behaviorHints: {
-            notWebReady: true,
-            isExternal: true
-          }
+          externalUrl: channel.url,
+          behaviorHints: { notWebReady: true }
         }
       ]
-    };
+    });
+  } else {
+    return Promise.resolve({ streams: [] });
   }
-  return { streams: [] };
-};
+});
 
-// Handler para Vercel Serverless
-module.exports = async (req, res) => {
-  // Manejo de OPTIONS para CORS
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.status(200).end();
-    return;
-  }
+// Exportar servidor Express para Vercel
+const express = require("express");
+const app = express();
 
-  const parsedUrl = urlModule.parse(req.url, true);
-  const pathname = parsedUrl.pathname;
+app.get("/", (_, res) => {
+  res.json(manifest);
+});
 
-  if (pathname === '/manifest.json') {
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.status(200).send(JSON.stringify(manifest));
-    return;
-  }
-
+app.get("/:resource/:type/:id.json", async (req, res) => {
   try {
-    builder.getInterface()(req, res);
-  } catch (error) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    const resp = await builder.getInterface().get(req.params);
+    res.json(resp);
+  } catch (e) {
+    res.status(500).json({ error: e.toString() });
   }
-};
+});
+
+module.exports = app;
