@@ -20,7 +20,6 @@ async function loadM3U() {
     const channelMap = {};
 
     playlist.items.forEach((item, index) => {
-      // Generar tvg-id único, evitando sobrescritura
       const tvgId = item.tvg.id || item.name.toLowerCase().replace(/[^a-z0-9]+/g, '_') || `channel_${index}`;
       const isAce = item.url.startsWith("acestream://");
       const isM3u8 = item.url.endsWith(".m3u8");
@@ -28,9 +27,9 @@ async function loadM3U() {
       // Determinar tipo de stream
       const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Browser";
 
-      // Crear objeto de stream con título en formato de varias líneas
+      // Crear objeto de stream con título basado en item.name y tipo
       const stream = {
-        title: `${item.tvg.group || "Sin categoría"}\n${item.name}\n${streamType}`,
+        title: `${item.name} (${streamType})`, // Usar el nombre del stream con tipo
         url: isM3u8 ? item.url : null,
         acestream_id: isAce ? item.url.replace("acestream://", "") : null,
         stream_url: (!isAce && !isM3u8) ? item.url : null
@@ -40,18 +39,18 @@ async function loadM3U() {
         // Primer stream del canal: crear entrada principal
         channelMap[tvgId] = {
           id: tvgId,
-          name: item.name || `Canal ${index + 1}`,
+          name: item.name || `Canal ${index + 1}`, // Nombre del primer stream
           logo_url: item.tvg.logo || "",
-          group_title: item.tvg.group || "", // Añadir group-title
+          group_title: item.tvg.group || "", // Guardar group-title (opcional)
           acestream_id: stream.acestream_id,
           m3u8_url: stream.url,
           stream_url: stream.stream_url,
-          website_url: null, // No proporcionado por M3U
+          website_url: null,
           title: stream.title, // Título del stream principal
           additional_streams: []
         };
       } else {
-        // Streams adicionales: añadir con título basado en item.name
+        // Añadir como stream adicional si ya existe el canal
         channelMap[tvgId].additional_streams.push(stream);
       }
     });
@@ -59,6 +58,7 @@ async function loadM3U() {
     // Convertir el mapa a array
     cachedChannels = Object.values(channelMap);
     console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
+    console.log("Canales cargados:", cachedChannels); // Depuración
   } catch (err) {
     console.error("Error cargando M3U:", err);
     cachedChannels = [];
