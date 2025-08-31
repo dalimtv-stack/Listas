@@ -17,26 +17,40 @@ async function loadM3U() {
 
     const playlist = parse(content);
 
-    // Convertir cada entrada de la lista en un canal compatible con Stremio
-    cachedChannels = playlist.items.map((item, index) => {
+    // Agrupar canales por nombre para permitir múltiples streams
+    const channelMap = {};
+
+    playlist.items.forEach((item, index) => {
       const isAce = item.url.startsWith("acestream://");
       const isM3u8 = item.url.endsWith(".m3u8");
 
-      return {
-        id: `m3u_${index}`,
-        name: item.name || `Canal ${index + 1}`,
-        logo_url: item.tvg.logo || "",
-        // Si es acestream, guardamos en campo acestream_id
+      const streamEntry = {
         acestream_id: isAce ? item.url.replace("acestream://", "") : null,
-        // Si es m3u8, guardamos en m3u8_url
         m3u8_url: isM3u8 ? item.url : null,
-        // Si no es ninguno de los anteriores, lo tratamos como URL normal
-        stream_url: (!isAce && !isM3u8) ? item.url : null,
-        additional_streams: []
+        url: (!isAce && !isM3u8) ? item.url : null
       };
+
+      const nameKey = item.name || `Canal ${index + 1}`;
+
+      if (!channelMap[nameKey]) {
+        // Primer canal con ese nombre
+        channelMap[nameKey] = {
+          id: `m3u_${Object.keys(channelMap).length}`,
+          name: nameKey,
+          logo_url: item.tvg.logo || "",
+          acestream_id: streamEntry.acestream_id,
+          m3u8_url: streamEntry.m3u8_url,
+          stream_url: streamEntry.url,
+          additional_streams: []
+        };
+      } else {
+        // Ya existe un canal con este nombre: añadir stream adicional
+        channelMap[nameKey].additional_streams.push(streamEntry);
+      }
     });
 
-    console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
+    cachedChannels = Object.values(channelMap);
+    console.log(`Cargados ${cachedChannels.length} canales (con streams múltiples) desde la lista`);
   } catch (err) {
     console.error("Error cargando M3U:", err);
     cachedChannels = [];
