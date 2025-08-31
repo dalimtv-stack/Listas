@@ -93,16 +93,16 @@ acestream://6341392460596e63edf38b013bd137c015e44007
 #EXTINF:-1 tvg-id="Movistar.Documentales.es" tvg-logo="https://www.tvlogo.org/spain/documentales-por-movistar-plus-es.png" group-title="Cine/Series", Movistar Documentales (FHD)
 acestream://6cda7d2622bcafd6aef486016238936855927d7d
 #EXTGRP: Cine/Series
-#EXTINF:-1 tvg-id="Movistar.Series.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Movistar_Series.svg/512px-Movistar_Series.svg.png" group-title="Cine/Series", Movistar Originales (FHD)
+#EXTINF:-1 tvg-id="Movistar.Series.es" tvg-logo="https://www.movistarplus.es/comunicacion/wp-content/uploads/2023/07/Originales-por-M_Color-Negativo_RGB_RGB.jpg" group-title="Cine/Series", Movistar Originales (FHD)
 acestream://1f092144252939810fd302cbd00d46de760b5dd7
 #EXTGRP: Cine/Series
 #EXTINF:-1 tvg-id="Movistar.Cine.Espanol.es" tvg-logo="https://www.tvlogo.org/spain/cine-espanol-por-movistar-plus-es.png" group-title="Cine/Series", Movistar Cine Español (FHD)
 acestream://e47cdeba9d919d6a9b4fa3c72c8094178985f668
 #EXTGRP: Cine/Series
-#EXTINF:-1 tvg-id="Movistar.Vacaciones.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Movistar_Plus%2B_2022_logo.svg/512px-Movistar_Plus%2B_2022_logo.svg.png" group-title="Cine/Series", Movistar Vacaciones (FHD)
+#EXTINF:-1 tvg-id="Movistar.Vacaciones.es" tvg-logo="https://comunicacion.movistarplus.es/wp-content/uploads/2024/06/CC_H_VACACIONES_PELOTAS-scaled.jpg" group-title="Cine/Series", Movistar Vacaciones (FHD)
 acestream://15123ab3458c59bf548fbf6e5503799e81da4de6
 #EXTGRP: Cine/Series
-#EXTINF:-1 tvg-id="Movistar.Western.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Movistar_Plus%2B_2022_logo.svg/512px-Movistar_Plus%2B_2022_logo.svg.png" group-title="Cine/Series", Movistar Western (FHD)
+#EXTINF:-1 tvg-id="Movistar.Western.es" tvg-logo="https://comunicacion.movistarplus.es/wp-content/uploads/2024/06/WESTERN_CC_V-scaled.jpg" group-title="Cine/Series", Movistar Western (FHD)
 acestream://e740a34497c3ba5943613a06999e805e6bbfa159
 #EXTGRP: Cine/Series
 #EXTINF:-1 tvg-id="Movistar.Indie.es" tvg-logo="https://www.tvlogo.org/spain/indie-por-movistar-plus-es.png" group-title="Cine/Series", Movistar Indie (FHD)
@@ -117,7 +117,7 @@ acestream://90a3ad526f67f987f662eaf7d52e88004c796914
 #EXTINF:-1 tvg-id="Movistar.Drama.es" tvg-logo="https://www.tvlogo.org/spain/drama-por-movistar-plus-es.png" group-title="Cine/Series", Movistar Drama (FHD)
 acestream://edee311dc307e1638eeac880b11bb6f4759b0d83
 #EXTGRP: Cine/Series
-#EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Movistar_Plus%2B_2022_logo.svg/512px-Movistar_Plus%2B_2022_logo.svg.png" group-title="Cine/Series", Movistar Hits (FHD)
+#EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://www.movistarplus.es/recorte/m-DP/modmarcas/MHITSH" group-title="Cine/Series", Movistar Hits (FHD)
 acestream://2b8e5c7438d56541df3467cc5986cf1e66014101
 #EXTGRP: Cine/Series
 #EXTINF:-1 tvg-id="Movistar.Clasicos.es" tvg-logo="https://www.tvlogo.org/spain/clasicos-por-movistar-plus-es.png" group-title="Cine/Series", Movistar Clásicos (FHD)
@@ -126,8 +126,8 @@ acestream://f9d431a6839e7f9964a0884dc1f18d298d990f39
 #EXTM3U
 # Entretenimiento General
 #EXTGRP: Entretenimiento General
-#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Movistar_Plus%2B_2022_logo.svg/512px-Movistar_Plus%2B_2022_logo.svg.png" group-title="Entretenimiento General", Movistar Plus (FHD)
+#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://play-lh.googleusercontent.com/1FOULln_iZWLP_M-WY4NiolZ4EXr5_aE3ywIIgrT6o717Azi763_92z-Rim-BsQA54k" group-title="Entretenimiento General", Movistar Plus (FHD)
 acestream://5d9a26e0a5f3e5f2ae027bd05635ab9a4fd4b51a
 #EXTGRP: Entretenimiento General
-#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Movistar_Plus%2B_2022_logo.svg/512px-Movistar_Plus%2B_2022_logo.svg.png" group-title="Entretenimiento General", Movistar Plus (Opcion 2) (FHD)
+#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://www.movistarplus.es/recorte/m-DP/modmarcas/MPLUHD" group-title="Entretenimiento General", Movistar Plus (Opcion 2) (FHD)
 acestream://5e24a1b9187fccb91553f7c7da4b36341386f74a
