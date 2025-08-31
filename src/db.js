@@ -8,26 +8,28 @@ const M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/hea
 // Cache simple en memoria
 let cachedChannels = [];
 
+// Función para cargar y parsear la lista M3U
 async function loadM3U() {
   try {
     console.log("Cargando lista M3U desde:", M3U_URL);
     const res = await fetch(M3U_URL);
     const content = await res.text();
+
     const playlist = parse(content);
 
-    const channelsMap = {}; // Map para agrupar por tvg-id
+    const channelsMap = {};
 
-    playlist.items.forEach((item) => {
-      const id = item.tvgId || item.name; // Agrupar por tvg-id si existe
+    playlist.items.forEach((item, index) => {
+      const tvgId = item.tvgId || item.name || `m3u_${index}`;
       const isAce = item.url.startsWith("acestream://");
       const isM3u8 = item.url.endsWith(".m3u8");
       const logo = item.tvgLogo || "";
 
-      if (!channelsMap[id]) {
+      if (!channelsMap[tvgId]) {
         // Primer stream de este canal
-        channelsMap[id] = {
-          id: id,
-          name: item.name || id,
+        channelsMap[tvgId] = {
+          id: `m3u_${index}`,
+          name: item.name || `Canal ${index + 1}`,
           logo_url: logo,
           acestream_id: isAce ? item.url.replace("acestream://", "") : null,
           m3u8_url: isM3u8 ? item.url : null,
@@ -35,23 +37,23 @@ async function loadM3U() {
           additional_streams: []
         };
       } else {
-        // Si el logo principal estaba vacío, usar este
-        if (!channelsMap[id].logo_url && logo) {
-          channelsMap[id].logo_url = logo;
-        }
-
-        // Agregar streams adicionales
-        channelsMap[id].additional_streams.push({
+        // Si el canal ya existe, agregamos a additional_streams
+        channelsMap[tvgId].additional_streams.push({
           acestream_id: isAce ? item.url.replace("acestream://", "") : null,
           m3u8_url: isM3u8 ? item.url : null,
           url: (!isAce && !isM3u8) ? item.url : null,
-          logo_url: logo // opcional, útil si quieres mostrar logos alternativos
+          logo_url: logo // opcional, para referencias internas
         });
+
+        // Si el logo principal estaba vacío, usar el nuevo
+        if (!channelsMap[tvgId].logo_url && logo) {
+          channelsMap[tvgId].logo_url = logo;
+        }
       }
     });
 
     cachedChannels = Object.values(channelsMap);
-    console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
+    console.log(`Cargados ${cachedChannels.length} canales agrupados desde la lista`);
   } catch (err) {
     console.error("Error cargando M3U:", err);
     cachedChannels = [];
