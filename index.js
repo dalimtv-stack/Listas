@@ -8,7 +8,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.1.8',
+  version: '1.1.9',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
   types: ['tv'],
@@ -17,7 +17,7 @@ const manifest = {
     {
       type: 'tv',
       id: 'Heimdallr',
-      name: 'Heimdallr Live Channels',
+      name: 'Heimdallr Live Channels', // Mantengo esto como identificador general
       extra: [{ name: 'search' }]
     }
   ],
@@ -35,7 +35,10 @@ builder.defineCatalogHandler(async ({ type, id }) => {
     const cacheKey = 'Heimdallr_channels';
     const cached = cache.get(cacheKey);
 
-    if (cached) return cached;
+    if (cached) {
+      console.log("Using cached catalog");
+      return cached;
+    }
 
     try {
       const channels = await getChannels();
@@ -44,7 +47,7 @@ builder.defineCatalogHandler(async ({ type, id }) => {
       const metas = channels.map(channel => ({
         id: `${STREAM_PREFIX}${channel.id}`,
         type: 'tv',
-        name: channel.name,
+        name: channel.group_title || 'Sin grupo', // Usar group-title como nombre del catálogo
         poster: channel.logo_url
       }));
 
@@ -101,7 +104,10 @@ builder.defineStreamHandler(async ({ type, id }) => {
     const cacheKey = `stream_${channelId}`;
     const cached = cache.get(cacheKey);
 
-    if (cached) return cached;
+    if (cached) {
+      console.log("Using cached streams");
+      return cached;
+    }
 
     try {
       const channel = await getChannel(channelId);
