@@ -1,4 +1,3 @@
-// src/db.js
 const fetch = require("node-fetch");
 const { parse } = require("iptv-playlist-parser");
 
@@ -17,43 +16,46 @@ async function loadM3U() {
 
     const playlist = parse(content);
 
-    const channelsMap = {};
+    // Agrupar entradas por tvg-id o nombre
+    const channelMap = {};
 
     playlist.items.forEach((item, index) => {
-      const tvgId = item.tvgId || item.name || `m3u_${index}`;
+      const tvgId = item.tvg.id || item.name.toLowerCase().replace(/[^a-z0-9]+/g, '_') || `channel_${index}`;
       const isAce = item.url.startsWith("acestream://");
       const isM3u8 = item.url.endsWith(".m3u8");
-      const logo = item.tvgLogo || "";
 
-      if (!channelsMap[tvgId]) {
-        // Primer stream de este canal
-        channelsMap[tvgId] = {
-          id: `m3u_${index}`,
+      // Crear objeto de stream
+      const stream = {
+        url: isM3u8 ? item.url : null,
+        acestream_id: isAce ? item.url.replace("acestream://", "") : null,
+        stream_url: (!isAce && !isM3u8) ? item.url : null
+      };
+
+      if (!channelMap[tvgId]) {
+        // Primer stream del canal: crear entrada principal
+        channelMap[tvgId] = {
+          id: tvgId,
           name: item.name || `Canal ${index + 1}`,
-          logo_url: logo,
-          acestream_id: isAce ? item.url.replace("acestream://", "") : null,
-          m3u8_url: isM3u8 ? item.url : null,
-          stream_url: (!isAce && !isM3u8) ? item.url : null,
+          logo_url: item.tvg.logo || "",
+          acestream_id: stream.acestream_id,
+          m3u8_url: stream.url,
+          stream_url: stream.stream_url,
+          website_url: null, // No proporcionado por M3U
           additional_streams: []
         };
       } else {
-        // Si el canal ya existe, agregamos a additional_streams
-        channelsMap[tvgId].additional_streams.push({
-          acestream_id: isAce ? item.url.replace("acestream://", "") : null,
-          m3u8_url: isM3u8 ? item.url : null,
-          url: (!isAce && !isM3u8) ? item.url : null,
-          logo_url: logo // opcional, para referencias internas
+        // Streams adicionales: añadir a additional_streams
+        channelMap[tvgId].additional_streams.push({
+          url: stream.url,
+          acestream_id: stream.acestream_id,
+          stream_url: stream.stream_url
         });
-
-        // Si el logo principal estaba vacío, usar el nuevo
-        if (!channelsMap[tvgId].logo_url && logo) {
-          channelsMap[tvgId].logo_url = logo;
-        }
       }
     });
 
-    cachedChannels = Object.values(channelsMap);
-    console.log(`Cargados ${cachedChannels.length} canales agrupados desde la lista`);
+    // Convertir el mapa a array
+    cachedChannels = Object.values(channelMap);
+    console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
   } catch (err) {
     console.error("Error cargando M3U:", err);
     cachedChannels = [];
@@ -73,7 +75,11 @@ async function getChannel(id) {
   if (cachedChannels.length === 0) {
     await loadM3U();
   }
-  return cachedChannels.find((c) => c.id === id);
+  const channel = cachedChannels.find((c) => c.id === id);
+  if (!channel) {
+    throw new Error(`Channel with id ${id} not found`);
+  }
+  return channel;
 }
 
 module.exports = {
