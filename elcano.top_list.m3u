@@ -13,17 +13,17 @@ acestream://ed6188dcbb491efeb2092c1a6199226c27f61727
 acestream://00c9bc9c5d7d87680a5a6bed349edfa775a89947
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" group-title="Deportes",Movistar LaLiga (1080 MultiAudio)
 acestream://c9321006921967d6258df6945f1d598a5c0cbf1e
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" group-title="Deportes",Movistar LaLiga (1080 MultiAudio)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" group-title="Elcano.top",Movistar LaLiga (Opcion 2) (1080 MultiAudio)
 acestream://4b528d10eaad747ddf52251206177573ee3e9f74
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" group-title="Deportes",Movistar LaLiga (720)
 acestream://14b6cd8769cd485f2cffdca64be9698d9bfeac58
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" group-title="Deportes",Movistar LaLiga 2 (1080)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.2.es" group-title="Deportes",Movistar LaLiga 2 (1080)
 acestream://51b363b1c4d42724e05240ad068ad219df8042ec
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" group-title="Deportes",Movistar LaLiga 2 (720)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.2.es" group-title="Deportes",Movistar LaLiga 2 (720)
 acestream://ad42faa399df66dcd62a1cbc9d1c99ed4512d3b8
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" group-title="Deportes",Movistar LaLiga 3 (1080)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.3.es" group-title="Deportes",Movistar LaLiga 3 (1080)
 acestream://7ad14386deef2f45ffe17d30a631dbf79b6a1a87
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" group-title="Deportes",Movistar LaLiga 3 (720)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.3.es" group-title="Deportes",Movistar LaLiga 3 (720)
 acestream://382b14499e3d76e557d449d2e5bbc4e4bd63bd39
 
 #EXTINF:-1 tvg-id="DAZN.LALIGA.es" group-title="Deportes",DAZN LaLiga (1080 MultiAudio)
