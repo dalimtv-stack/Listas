@@ -1,6 +1,5 @@
 #EXTM3U tvg-url="https://epgshare01.online/epgshare01/epg_ripper_ES1.xml.gz"
 
-#EXTM3U
 # Deportes
 #EXTGRP: Deportes
 #EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="Deportes", DAZN 1 (FHD)
@@ -84,7 +83,6 @@ acestream://704e51760a644bc90aa22269bf841399a0414a
 #EXTINF:-1 tvg-id="Eurosport.2.es" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLDpV4QUeZOXm02CMRuM0U6fGDh1MbO5XObQ&s" group-title="Deportes", Eurosport 2 (FHD)
 acestream://f8e861155c2a1959f8313b19f49d52e414313203
 
-#EXTM3U
 # Cine/Series
 #EXTGRP: Cine/Series
 #EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Estrenos_por_Movistar_Plus%2B_2025_Logo.svg/640px-Estrenos_por_Movistar_Plus%2B_2025_Logo.svg.png" group-title="Cine/Series", Movistar Estrenos (FHD)
@@ -123,7 +121,6 @@ acestream://2b8e5c7438d56541df3467cc5986cf1e66014101
 #EXTINF:-1 tvg-id="Movistar.Clasicos.es" tvg-logo="https://www.tvlogo.org/spain/clasicos-por-movistar-plus-es.png" group-title="Cine/Series", Movistar Clásicos (FHD)
 acestream://f9d431a6839e7f9964a0884dc1f18d298d990f39
 
-#EXTM3U
 # Entretenimiento General
 #EXTGRP: Entretenimiento General
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://play-lh.googleusercontent.com/1FOULln_iZWLP_M-WY4NiolZ4EXr5_aE3ywIIgrT6o717Azi763_92z-Rim-BsQA54k" group-title="Entretenimiento General", Movistar Plus (FHD)
