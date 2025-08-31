@@ -1,4 +1,3 @@
-// index.js
 const { addonBuilder, getRouter } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
 const { getChannels, getChannel } = require('./src/db');
@@ -9,7 +8,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.1.71',
+  version: '1.1.8',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
   types: ['tv'],
@@ -111,7 +110,7 @@ builder.defineStreamHandler(async ({ type, id }) => {
       // 1. Stream principal (si está disponible)
       if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
         streams.push({
-          title: channel.title, // Usar el título definido en db.js
+          title: channel.title,
           url: channel.m3u8_url,
           externalUrl: channel.acestream_id ? `acestream://${channel.acestream_id}` : channel.stream_url,
           behaviorHints: {
@@ -125,7 +124,7 @@ builder.defineStreamHandler(async ({ type, id }) => {
       if (channel.additional_streams && channel.additional_streams.length > 0) {
         channel.additional_streams.forEach((stream, index) => {
           streams.push({
-            title: stream.title, // Usar el título definido en db.js
+            title: stream.title,
             url: stream.url,
             externalUrl: stream.acestream_id ? `acestream://${stream.acestream_id}` : stream.stream_url,
             behaviorHints: {
@@ -148,6 +147,7 @@ builder.defineStreamHandler(async ({ type, id }) => {
         });
       }
 
+      console.log("Streams generated:", streams); // Depuración
       const response = { streams };
       cache.set(cacheKey, response);
       return response;
