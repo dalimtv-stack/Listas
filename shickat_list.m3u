@@ -3,7 +3,7 @@
 #EXTM3U
 # Deportes
 #EXTGRP: Deportes
-#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.tvlogo.org/spain/dazn-1-es.png" group-title="Deportes", DAZN 1 (FHD)
+#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="Deportes", DAZN 1 (FHD)
 acestream://ee4dc45720d3ec283f61189fbfc120c91d5141bf
 #EXTGRP: Deportes
 #EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="Deportes", DAZN 2 (FHD)
@@ -12,19 +12,19 @@ acestream://9adf7ac6531788ec022dbc14b77e1367f6c5bdc5
 #EXTINF:-1 tvg-id="DAZN.3.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2359028V4081907" group-title="Deportes", DAZN 3 (FHD)
 acestream://6fb944e8985881ae6db89667aca6362e746255b6
 #EXTGRP: Deportes
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://www.tvlogo.org/spain/dazn-f1-es.png" group-title="Deportes", DAZN F1 (FHD)
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://m.media-amazon.com/images/M/MV5BODU5ZTc3MjctNDE1My00OTkyLTkxYjMtNWU4NGJhNTcyZjc4XkEyXkFqcGc@._V1_QL75_UX190_CR0,2,190,281_.jpg" group-title="Deportes", DAZN F1 (FHD)
 acestream://8c1155cdfae76eb582290c04904c98da066657c9
 #EXTGRP: Deportes
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://www.tvlogo.org/spain/dazn-f1-es.png" group-title="Deportes", DAZN F1 (Opcion 2) (FHD)
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://m.media-amazon.com/images/M/MV5BODU5ZTc3MjctNDE1My00OTkyLTkxYjMtNWU4NGJhNTcyZjc4XkEyXkFqcGc@._V1_QL75_UX190_CR0,2,190,281_.jpg" group-title="Deportes", DAZN F1 (Opcion 2) (FHD)
 acestream://ba6e1bdc8e03da60ff572557645eb04370af0cd0
 #EXTGRP: Deportes
-#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://www.tvlogo.org/spain/dazn-laliga-es.png" group-title="Deportes", DAZN LaLiga (FHD)
+#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://dazngroup.com/wp-content/uploads/2025/08/DAZN-x-LALIGA.webp" group-title="Deportes", DAZN LaLiga (FHD)
 acestream://f8d5e39a49b9da0215bbd3d9efb8fb3d06b76892
 #EXTGRP: Deportes
-#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://www.tvlogo.org/spain/dazn-laliga-es.png" group-title="Deportes", DAZN LaLiga (Opcion 2) (FHD)
+#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://dazngroup.com/wp-content/uploads/2025/08/DAZN-x-LALIGA.webp" group-title="Deportes", DAZN LaLiga (Opcion 2) (FHD)
 acestream://520950d296c952e1864a08e15af9f89f1ab514ec
 #EXTGRP: Deportes
-#EXTINF:-1 tvg-id="DAZN.LALIGA.2.es" tvg-logo="https://www.tvlogo.org/spain/dazn-laliga-2-es.png" group-title="Deportes", DAZN LaLiga 2 (FHD)
+#EXTINF:-1 tvg-id="DAZN.LALIGA.2.es" tvg-logo="https://www.neeo.es/wp-content/uploads/2023/09/DAZN-LaLiga-2-HD.png" group-title="Deportes", DAZN LaLiga 2 (FHD)
 acestream://ae16a8f004b1287ee1f53263ab265f72bba0daf5
 #EXTGRP: Deportes
 #EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://cdn.sincroguia.tv/uploads/series/laliga-hypermotion-poster-1272157_V.jpg" group-title="Deportes", LaLiga Hypermotion (FHD)
@@ -87,7 +87,7 @@ acestream://f8e861155c2a1959f8313b19f49d52e414313203
 #EXTM3U
 # Cine/Series
 #EXTGRP: Cine/Series
-#EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://www.tvlogo.org/spain/estrenos-por-movistar-plus-es.png" group-title="Cine/Series", Movistar Estrenos (FHD)
+#EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Estrenos_por_Movistar_Plus%2B_2025_Logo.svg/640px-Estrenos_por_Movistar_Plus%2B_2025_Logo.svg.png" group-title="Cine/Series", Movistar Estrenos (FHD)
 acestream://6341392460596e63edf38b013bd137c015e44007
 #EXTGRP: Cine/Series
 #EXTINF:-1 tvg-id="Movistar.Documentales.es" tvg-logo="https://www.tvlogo.org/spain/documentales-por-movistar-plus-es.png" group-title="Cine/Series", Movistar Documentales (FHD)
