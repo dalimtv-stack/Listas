@@ -9,7 +9,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.1.3',
+  version: '1.1.4',
   name: 'Heimdallr Acestream/M3u8 Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
   types: ['tv'],
@@ -32,8 +32,8 @@ const builder = new addonBuilder(manifest);
 builder.defineCatalogHandler(async ({ type, id }) => {
   console.log('Catalog requested:', type, id);
 
-  if (type === 'tv' && id === 'shickat') {
-    const cacheKey = 'shickat_channels';
+  if (type === 'tv' && id === 'Heimdallr') {
+    const cacheKey = 'heimdallr_channels';
     const cached = cache.get(cacheKey);
 
     if (cached) return cached;
