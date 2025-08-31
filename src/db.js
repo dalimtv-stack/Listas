@@ -14,27 +14,40 @@ async function loadM3U() {
     console.log("Cargando lista M3U desde:", M3U_URL);
     const res = await fetch(M3U_URL);
     const content = await res.text();
-
     const playlist = parse(content);
 
-    // Convertir cada entrada de la lista en un canal compatible con Stremio
-    cachedChannels = playlist.items.map((item, index) => {
+    // Mapeo de canales por nombre para agrupar streams múltiples
+    const channelMap = {};
+
+    playlist.items.forEach((item, index) => {
       const isAce = item.url.startsWith("acestream://");
       const isM3u8 = item.url.endsWith(".m3u8");
+      const channelName = item.name || `Canal ${index + 1}`;
+      const group = item.group || "Otros";
 
-      return {
-        id: `m3u_${index}`,
-        name: item.name || `Canal ${index + 1}`,
-        logo_url: item.tvg.logo || "",
-        // Si es acestream, guardamos en campo acestream_id
-        acestream_id: isAce ? item.url.replace("acestream://", "") : null,
-        // Si es m3u8, guardamos en m3u8_url
-        m3u8_url: isM3u8 ? item.url : null,
-        // Si no es ninguno de los anteriores, lo tratamos como URL normal
-        stream_url: (!isAce && !isM3u8) ? item.url : null,
-        additional_streams: []
+      const streamEntry = {
+        title: isAce ? "AceStream" : "Stream",
+        url: item.url,
+        type: isAce ? "acestream" : isM3u8 ? "m3u8" : "url"
       };
+
+      // Si el canal ya existe, agregamos stream adicional
+      if (channelMap[channelName]) {
+        channelMap[channelName].streams.push(streamEntry);
+      } else {
+        // Si no existe, lo creamos
+        channelMap[channelName] = {
+          id: `m3u_${index}`,
+          name: channelName,
+          logo_url: item.tvg.logo || "",
+          group: group, // Temática para Discover
+          streams: [streamEntry]
+        };
+      }
     });
+
+    // Convertimos el map a array
+    cachedChannels = Object.values(channelMap);
 
     console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
   } catch (err) {
