@@ -9,11 +9,12 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.1.6',
+  version: '1.1.7',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
   types: ['tv'],
-  logo: "https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960",
+  logo: "https://png.pngtree.com/png-vector/20230410/ourlarge/pngtree-icc-mens-cricket-world-cup-logo-vector-png-image_6698879.png",
+  background: "https://data1.ibtimes.co.in/en/full/717924/rohit-sharma.jpg",
   catalogs: [
     {
       type: 'tv',
@@ -33,7 +34,7 @@ builder.defineCatalogHandler(async ({ type, id }) => {
   console.log('Catalog requested:', type, id);
 
   if (type === 'tv' && id === 'Heimdallr') {
-    const cacheKey = 'heimdallr_channels';
+    const cacheKey = 'Heimdallr_channels';
     const cached = cache.get(cacheKey);
 
     if (cached) return cached;
@@ -73,8 +74,6 @@ builder.defineMetaHandler(async ({ type, id }) => {
 
     try {
       const channel = await getChannel(channelId);
-      // Determinar el tipo del stream principal
-      const streamType = channel.acestream_id ? 'Acestream' : channel.m3u8_url ? 'M3U8' : channel.stream_url ? 'Browser' : 'Desconocido';
       const response = {
         meta: {
           id: id,
@@ -82,7 +81,7 @@ builder.defineMetaHandler(async ({ type, id }) => {
           name: channel.name,
           poster: channel.logo_url,
           background: channel.logo_url,
-          description: `${channel.group_title || 'Sin categoría'}\nStream: ${channel.title || channel.name}\nTipo: ${streamType}`
+          description: channel.name // Solo el nombre del canal
         }
       };
       cache.set(cacheKey, response);
