@@ -9,8 +9,8 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.shickatacestream',
-  version: '1.1.1',
-  name: 'Shickat Acestream Channels',
+  version: '1.1.2',
+  name: 'Shickat Acestream Channels1',
   description: 'Addon para cargar canales Acestream desde Shickat.me.',
   types: ['tv'],
   logo: "https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960",
@@ -18,7 +18,7 @@ const manifest = {
     {
       type: 'tv',
       id: 'shickat',
-      name: 'Shickat Live Channels',
+      name: 'Shickat Live Channels2',
       extra: [{ name: 'search' }]
     }
   ],
