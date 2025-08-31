@@ -10,11 +10,11 @@ acestream://9adf7ac6531788ec022dbc14b77e1367f6c5bdc5
 acestream://6fb944e8985881ae6db89667aca6362e746255b6
 #EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://www.tvlogo.org/spain/dazn-f1-es.png", DAZN F1 (FHD)
 acestream://8c1155cdfae76eb582290c04904c98da066657c9
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://www.tvlogo.org/spain/dazn-f1-es.png", (DAZN F1 duplicate) (FHD)
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://www.tvlogo.org/spain/dazn-f1-es.png", DAZN F1 (Opcion 2) (FHD)
 acestream://ba6e1bdc8e03da60ff572557645eb04370af0cd0
 #EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://www.tvlogo.org/spain/dazn-laliga-es.png", DAZN LaLiga (FHD)
 acestream://f8d5e39a49b9da0215bbd3d9efb8fb3d06b76892
-#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://www.tvlogo.org/spain/dazn-laliga-es.png", (DAZN LaLiga duplicate) (FHD)
+#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://www.tvlogo.org/spain/dazn-laliga-es.png", DAZN LaLiga (Opcion 2) (FHD)
 acestream://520950d296c952e1864a08e15af9f89f1ab514ec
 #EXTINF:-1 tvg-id="DAZN.LALIGA.2.es" tvg-logo="https://www.tvlogo.org/spain/dazn-laliga-2-es.png", DAZN LaLiga 2 (FHD)
 acestream://ae16a8f004b1287ee1f53263ab265f72bba0daf5
@@ -26,11 +26,11 @@ acestream://1422d506c9f14c84b1249bf8ac0b0698cee7a659
 acestream://d9297d3576c05551c08e0fe5bd85a793361a3cca
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Movistar_LaLiga.svg/512px-Movistar_LaLiga.svg.png", Movistar LaLiga (FHD)
 acestream://07f2b92762cfff99bba785c2f5260c7934ca6034
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Movistar_LaLiga.svg/512px-Movistar_LaLiga.svg.png", (Movistar LaLiga duplicate) (FHD)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Movistar_LaLiga.svg/512px-Movistar_LaLiga.svg.png", Movistar LaLiga (Opcion 2) (FHD)
 acestream://c32a2cf4631bad4bc40a15ee0f245ed30ad4d85c
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Movistar_Liga_de_Campeones.svg/512px-Movistar_Liga_de_Campeones.svg.png", Movistar Liga de Campeones (FHD)
 acestream://680187938f9305cce3ae240298f10e8695bf77c2
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Movistar_Liga_de_Campeones.svg/512px-Movistar_Liga_de_Campeones.svg.png", (Movistar Liga de Campeones duplicate) (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Movistar_Liga_de_Campeones.svg/512px-Movistar_Liga_de_Campeones.svg.png", Movistar Liga de Campeones (Opcion 2) (FHD)
 acestream://5c15c639207a080183b12fa63282b409c07401d6
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.2.es" tvg-logo="https://www.tvlogo.org/spain/liga-de-campeones-2-por-movistar-plus-es.png", Movistar Liga de Campeones 2 (FHD)
 acestream://33c009a025508cb2186b9ce36279640bb2507bdf
@@ -38,7 +38,7 @@ acestream://33c009a025508cb2186b9ce36279640bb2507bdf
 acestream://b96a9b23b5343ca748e126c9257f42e204d3f52c
 #EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://www.tvlogo.org/spain/deportes-por-movistar-plus-es.png", Movistar Deportes (FHD)
 acestream://751b9cb03d188ce70e6aac22c1bfb16a5d0b2237
-#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://www.tvlogo.org/spain/deportes-por-movistar-plus-es.png", (Movistar Deportes duplicate) (FHD)
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://www.tvlogo.org/spain/deportes-por-movistar-plus-es.png", Movistar Deportes (Opcion 2) (FHD)
 acestream://a139afc03d1623c321f6b084f79def682c492efa
 #EXTINF:-1 tvg-id="Movistar.Deportes.2.es" tvg-logo="https://www.tvlogo.org/spain/deportes-2-por-movistar-plus-es.png", Movistar Deportes 2 (FHD)
 acestream://438991226c3bc6a06e7bfda9bea9f769957dc366
@@ -88,5 +88,5 @@ acestream://f9d431a6839e7f9964a0884dc1f18d298d990f39
 # Entretenimiento General
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Movistar_Plus%2B_2022_logo.svg/512px-Movistar_Plus%2B_2022_logo.svg.png", Movistar Plus (FHD)
 acestream://5d9a26e0a5f3e5f2ae027bd05635ab9a4fd4b51a
-#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Movistar_Plus%2B_2022_logo.svg/512px-Movistar_Plus%2B_2022_logo.svg.png", (Movistar Plus duplicate) (FHD)
+#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Movistar_Plus%2B_2022_logo.svg/512px-Movistar_Plus%2B_2022_logo.svg.png", Movistar Plus (Opcion 2) (FHD)
 acestream://5e24a1b9187fccb91553f7c7da4b36341386f74a
