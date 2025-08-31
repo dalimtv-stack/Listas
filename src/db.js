@@ -61,3 +61,20 @@ async function loadM3U() {
 // Devuelve todos los canales
 async function getChannels() {
   if (cachedChannels.length === 0) {
+    await loadM3U();
+  }
+  return cachedChannels;
+}
+
+// Devuelve un canal por id
+async function getChannel(id) {
+  if (cachedChannels.length === 0) {
+    await loadM3U();
+  }
+  return cachedChannels.find((c) => c.id === id);
+}
+
+module.exports = {
+  getChannels,
+  getChannel,
+};
