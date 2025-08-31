@@ -1,65 +1,58 @@
 // src/db.js
 const fetch = require("node-fetch");
-const { parse } = require("iptv-playlist-parser");
 
-// URL de la lista M3U remota
-const M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/shickat_list.m3u";
+const M3U_URL = "https://tuservidor.com/tu-lista.m3u"; // pon aquí tu URL
 
-// Cache simple en memoria
-let cachedChannels = [];
+async function fetchM3U() {
+  const res = await fetch(M3U_URL);
+  const text = await res.text();
 
-// Función para cargar y parsear la lista M3U
-async function loadM3U() {
-  try {
-    console.log("Cargando lista M3U desde:", M3U_URL);
-    const res = await fetch(M3U_URL);
-    const content = await res.text();
+  const lines = text.split("\n");
+  let channels = [];
+  let currentChannel = {};
+  let currentGroup = "Otros"; // categoría por defecto
 
-    const playlist = parse(content);
+  for (let line of lines) {
+    line = line.trim();
 
-    // Convertir cada entrada de la lista en un canal compatible con Stremio
-    cachedChannels = playlist.items.map((item, index) => {
-      const isAce = item.url.startsWith("acestream://");
-      const isM3u8 = item.url.endsWith(".m3u8");
+    if (!line) continue;
 
-      return {
-        id: `m3u_${index}`,
-        name: item.name || `Canal ${index + 1}`,
-        logo_url: item.tvg.logo || "",
-        // Si es acestream, guardamos en campo acestream_id
-        acestream_id: isAce ? item.url.replace("acestream://", "") : null,
-        // Si es m3u8, guardamos en m3u8_url
-        m3u8_url: isM3u8 ? item.url : null,
-        // Si no es ninguno de los anteriores, lo tratamos como URL normal
-        stream_url: (!isAce && !isM3u8) ? item.url : null,
-        additional_streams: []
-      };
-    });
+    // Detectar comentarios que indican categoría
+    if (line.startsWith("#") && !line.startsWith("#EXTINF") && !line.startsWith("#EXTM3U")) {
+      currentGroup = line.replace(/^#\s*/, "").trim(); // ej: "# Deportes" → "Deportes"
+    }
 
-    console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
-  } catch (err) {
-    console.error("Error cargando M3U:", err);
-    cachedChannels = [];
+    // Procesar canal
+    if (line.startsWith("#EXTINF")) {
+      const nameMatch = line.match(/,(.*)$/);
+      const name = nameMatch ? nameMatch[1].trim() : "Canal Desconocido";
+
+      const logoMatch = line.match(/tvg-logo="(.*?)"/);
+      const logo = logoMatch ? logoMatch[1] : null;
+
+      currentChannel = { name, logo, group: currentGroup };
+    } else if (!line.startsWith("#")) {
+      // URL del canal
+      currentChannel.url = line.trim();
+      channels.push(currentChannel);
+      currentChannel = {};
+    }
   }
+
+  // Agrupar por categoría
+  const grouped = {};
+  for (let ch of channels) {
+    if (!grouped[ch.group]) grouped[ch.group] = [];
+    grouped[ch.group].push(ch);
+  }
+
+  return grouped;
 }
 
-// Devuelve todos los canales
 async function getChannels() {
-  if (cachedChannels.length === 0) {
-    await loadM3U();
-  }
-  return cachedChannels;
-}
-
-// Devuelve un canal por id
-async function getChannel(id) {
-  if (cachedChannels.length === 0) {
-    await loadM3U();
-  }
-  return cachedChannels.find((c) => c.id === id);
+  return await fetchM3U();
 }
 
 module.exports = {
   getChannels,
-  getChannel,
 };
