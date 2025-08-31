@@ -9,8 +9,8 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.1.4',
-  name: 'Heimdallr Acestream/M3u8 Channels',
+  version: '1.1.5',
+  name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
   types: ['tv'],
   logo: "https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960",
