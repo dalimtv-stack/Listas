@@ -1,6 +1,15 @@
+// index.js
+const { addonBuilder, getRouter } = require('stremio-addon-sdk');
+const NodeCache = require('node-cache');
+const { getChannels, getChannel } = require('./src/db');
+const { CACHE_TTL, DEFAULT_PORT, STREAM_PREFIX } = require('./src/config');
+require('dotenv').config();
+
+const cache = new NodeCache({ stdTTL: CACHE_TTL });
+
 const manifest = {
   id: 'org.stremio.shickatacestream',
-  version: '1.0.2',
+  version: '1.0.3',
   name: 'Shickat Acestream Channels',
   description: 'Addon para cargar canales Acestream desde Shickat.me.',
   types: ['tv'],
