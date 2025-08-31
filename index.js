@@ -1,65 +1,206 @@
-// src/db.js
-const fetch = require("node-fetch");
-const { parse } = require("iptv-playlist-parser");
+const manifest = {
+  id: 'org.stremio.shickatacestream',
+  version: '1.0.2',
+  name: 'Shickat Acestream Channels',
+  description: 'Addon para cargar canales Acestream desde Shickat.me.',
+  types: ['tv'],
+  logo: "https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960",
+  catalogs: [
+    {
+      type: 'tv',
+      id: 'shickat',
+      name: 'Shickat Live Channels',
+      extra: [{ name: 'search' }]
+    }
+  ],
+  resources: ['stream', 'meta', 'catalog'],
+  idPrefixes: [STREAM_PREFIX]
+};
 
-// URL de la lista M3U remota
-const M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/shickat_list.m3u";
+const builder = new addonBuilder(manifest);
 
-// Cache simple en memoria
-let cachedChannels = [];
+// Catalog handler
+builder.defineCatalogHandler(async ({ type, id }) => {
+  console.log('Catalog requested:', type, id);
 
-// Función para cargar y parsear la lista M3U
-async function loadM3U() {
-  try {
-    console.log("Cargando lista M3U desde:", M3U_URL);
-    const res = await fetch(M3U_URL);
-    const content = await res.text();
+  if (type === 'tv' && id === 'shickat') {
+    const cacheKey = 'shickat_channels';
+    const cached = cache.get(cacheKey);
 
-    const playlist = parse(content);
+    if (cached) return cached;
 
-    // Convertir cada entrada de la lista en un canal compatible con Stremio
-    cachedChannels = playlist.items.map((item, index) => {
-      const isAce = item.url.startsWith("acestream://");
-      const isM3u8 = item.url.endsWith(".m3u8");
+    try {
+      const channels = await getChannels();
+      console.log("Fetched channels:", channels);
 
-      return {
-        id: `m3u_${index}`,
-        name: item.name || `Canal ${index + 1}`,
-        logo_url: item.tvg.logo || "",
-        // Si es acestream, guardamos en campo acestream_id
-        acestream_id: isAce ? item.url.replace("acestream://", "") : null,
-        // Si es m3u8, guardamos en m3u8_url
-        m3u8_url: isM3u8 ? item.url : null,
-        // Si no es ninguno de los anteriores, lo tratamos como URL normal
-        stream_url: (!isAce && !isM3u8) ? item.url : null,
-        additional_streams: []
+      const metas = channels.map(channel => ({
+        id: `${STREAM_PREFIX}${channel.id}`,
+        type: 'tv',
+        name: channel.name,
+        poster: channel.logo_url
+      }));
+
+      const response = { metas };
+      cache.set(cacheKey, response);
+      return response;
+    } catch (error) {
+      console.error('Catalog error:', error);
+      return { metas: [] };
+    }
+  }
+  return { metas: [] };
+});
+
+// Meta handler
+builder.defineMetaHandler(async ({ type, id }) => {
+  console.log('Meta requested:', type, id);
+
+  if (type === 'tv' && id.startsWith(STREAM_PREFIX)) {
+    const channelId = id.replace(STREAM_PREFIX, '');
+    const cacheKey = `meta_${channelId}`;
+    const cached = cache.get(cacheKey);
+
+    if (cached) return cached;
+
+    try {
+      const channel = await getChannel(channelId);
+      const response = {
+        meta: {
+          id: id,
+          type: 'tv',
+          name: channel.name,
+          poster: channel.logo_url,
+          background: channel.logo_url
+        }
       };
-    });
-
-    console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
-  } catch (err) {
-    console.error("Error cargando M3U:", err);
-    cachedChannels = [];
+      cache.set(cacheKey, response);
+      return response;
+    } catch (error) {
+      console.error('Meta error:', error);
+      return { meta: null };
+    }
   }
+  return { meta: null };
+});
+
+// Stream handler with Acestream support
+builder.defineStreamHandler(async ({ type, id }) => {
+  console.log('Stream requested:', type, id);
+
+  if (type === 'tv' && id.startsWith(STREAM_PREFIX)) {
+    const channelId = id.replace(STREAM_PREFIX, '');
+    const cacheKey = `stream_${channelId}`;
+    const cached = cache.get(cacheKey);
+
+    if (cached) return cached;
+
+    try {
+      const channel = await getChannel(channelId);
+      const streams = [];
+
+      // 1. Acestream (if available)
+      if (channel.acestream_id) {
+        streams.push({
+          title: `Acestream`,
+          externalUrl: `acestream://${channel.acestream_id}`,
+          behaviorHints: {
+            notWebReady: true,
+            external: true
+          }
+        });
+      }
+
+      // 2. m3u8 stream for in-app playback (if available)
+      if (channel.m3u8_url) {
+        streams.push({
+          title: `Internal Player`,
+          url: channel.m3u8_url,
+          behaviorHints: {
+            notWebReady: false
+          }
+        });
+      }
+
+      // 3. Main website stream (opens in browser)
+      if (channel.stream_url) {
+        streams.push({
+          title: `Browser`,
+          externalUrl: channel.stream_url,
+          behaviorHints: {
+            notWebReady: true,
+            external: true
+          }
+        });
+      }
+
+      // 4. Additional streams (acestream, m3u8, or website)
+      if (channel.additional_streams && channel.additional_streams.length > 0) {
+        channel.additional_streams.forEach((stream, index) => {
+          if (stream.acestream_id) {
+            streams.push({
+              title: `Stream ${index + 2} (Acestream)`,
+              externalUrl: `acestream://${stream.acestream_id}`,
+              behaviorHints: {
+                notWebReady: true,
+                external: true
+              }
+            });
+          }
+          if (stream.m3u8_url) {
+            streams.push({
+              title: `Stream ${index + 2} Internal Player`,
+              url: stream.m3u8_url,
+              behaviorHints: {
+                notWebReady: false
+              }
+            });
+          } else if (stream.url) {
+            streams.push({
+              title: `Stream ${index + 2} (Browser)`,
+              externalUrl: stream.url,
+              behaviorHints: {
+                notWebReady: true,
+                external: true
+              }
+            });
+          }
+        });
+      }
+
+      // 5. Website URL (if provided as a separate field)
+      if (channel.website_url) {
+        streams.push({
+          title: `${channel.name} - Website`,
+          externalUrl: channel.website_url,
+          behaviorHints: {
+            notWebReady: true,
+            external: true
+          }
+        });
+      }
+
+      const response = { streams };
+      cache.set(cacheKey, response);
+      return response;
+    } catch (error) {
+      console.error('Stream error:', error);
+      return { streams: [] };
+    }
+  }
+  return { streams: [] };
+});
+
+// For development: serve the addon over HTTP
+if (process.env.NODE_ENV !== 'production') {
+  const { serveHTTP } = require('stremio-addon-sdk');
+  serveHTTP(builder.getInterface(), { port: process.env.PORT || DEFAULT_PORT });
 }
 
-// Devuelve todos los canales
-async function getChannels() {
-  if (cachedChannels.length === 0) {
-    await loadM3U();
-  }
-  return cachedChannels;
-}
-
-// Devuelve un canal por id
-async function getChannel(id) {
-  if (cachedChannels.length === 0) {
-    await loadM3U();
-  }
-  return cachedChannels.find((c) => c.id === id);
-}
-
-module.exports = {
-  getChannels,
-  getChannel,
+module.exports = (req, res) => {
+  const addonInterface = builder.getInterface();
+  const router = getRouter(addonInterface);
+  router(req, res, () => {
+    res.statusCode = 404;
+    res.end();
+  });
 };
