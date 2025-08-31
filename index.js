@@ -9,7 +9,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.1.5',
+  version: '1.1.6',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
   types: ['tv'],
@@ -73,13 +73,16 @@ builder.defineMetaHandler(async ({ type, id }) => {
 
     try {
       const channel = await getChannel(channelId);
+      // Determinar el tipo del stream principal
+      const streamType = channel.acestream_id ? 'Acestream' : channel.m3u8_url ? 'M3U8' : channel.stream_url ? 'Browser' : 'Desconocido';
       const response = {
         meta: {
           id: id,
           type: 'tv',
           name: channel.name,
           poster: channel.logo_url,
-          background: channel.logo_url
+          background: channel.logo_url,
+          description: `${channel.group_title || 'Sin categoría'}\nStream: ${channel.title || channel.name}\nTipo: ${streamType}`
         }
       };
       cache.set(cacheKey, response);
@@ -107,76 +110,35 @@ builder.defineStreamHandler(async ({ type, id }) => {
       const channel = await getChannel(channelId);
       const streams = [];
 
-      // 1. Acestream (if available)
-      if (channel.acestream_id) {
+      // 1. Stream principal (si está disponible)
+      if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
         streams.push({
-          title: `Acestream`,
-          externalUrl: `acestream://${channel.acestream_id}`,
-          behaviorHints: {
-            notWebReady: true,
-            external: true
-          }
-        });
-      }
-
-      // 2. m3u8 stream for in-app playback (if available)
-      if (channel.m3u8_url) {
-        streams.push({
-          title: `Internal Player`,
+          title: channel.title, // Usar el título definido en db.js
           url: channel.m3u8_url,
+          externalUrl: channel.acestream_id ? `acestream://${channel.acestream_id}` : channel.stream_url,
           behaviorHints: {
-            notWebReady: false
+            notWebReady: channel.acestream_id || channel.stream_url ? true : false,
+            external: channel.acestream_id || channel.stream_url ? true : false
           }
         });
       }
 
-      // 3. Main website stream (opens in browser)
-      if (channel.stream_url) {
-        streams.push({
-          title: `Browser`,
-          externalUrl: channel.stream_url,
-          behaviorHints: {
-            notWebReady: true,
-            external: true
-          }
-        });
-      }
-
-      // 4. Additional streams (acestream, m3u8, or website)
+      // 2. Streams adicionales
       if (channel.additional_streams && channel.additional_streams.length > 0) {
         channel.additional_streams.forEach((stream, index) => {
-          if (stream.acestream_id) {
-            streams.push({
-              title: `Stream ${index + 2} (Acestream)`,
-              externalUrl: `acestream://${stream.acestream_id}`,
-              behaviorHints: {
-                notWebReady: true,
-                external: true
-              }
-            });
-          }
-          if (stream.m3u8_url) {
-            streams.push({
-              title: `Stream ${index + 2} Internal Player`,
-              url: stream.m3u8_url,
-              behaviorHints: {
-                notWebReady: false
-              }
-            });
-          } else if (stream.url) {
-            streams.push({
-              title: `Stream ${index + 2} (Browser)`,
-              externalUrl: stream.url,
-              behaviorHints: {
-                notWebReady: true,
-                external: true
-              }
-            });
-          }
+          streams.push({
+            title: stream.title, // Usar el título definido en db.js
+            url: stream.url,
+            externalUrl: stream.acestream_id ? `acestream://${stream.acestream_id}` : stream.stream_url,
+            behaviorHints: {
+              notWebReady: stream.acestream_id || stream.stream_url ? true : false,
+              external: stream.acestream_id || stream.stream_url ? true : false
+            }
+          });
         });
       }
 
-      // 5. Website URL (if provided as a separate field)
+      // 3. Website URL (si está disponible)
       if (channel.website_url) {
         streams.push({
           title: `${channel.name} - Website`,
