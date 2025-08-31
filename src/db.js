@@ -41,7 +41,7 @@ async function loadM3U() {
           id: tvgId,
           name: item.name || `Canal ${index + 1}`, // Nombre del primer stream
           logo_url: item.tvg.logo || "",
-          group_title: item.tvg.group || "", // Guardar group-title (opcional)
+          group_title: item.tvg.group || "Sin grupo", // Guardar group-title
           acestream_id: stream.acestream_id,
           m3u8_url: stream.url,
           stream_url: stream.stream_url,
@@ -53,6 +53,7 @@ async function loadM3U() {
         // Añadir como stream adicional si ya existe el canal
         channelMap[tvgId].additional_streams.push(stream);
       }
+      console.log(`Procesando stream: tvg-id=${tvgId}, name=${item.name}, group=${item.tvg.group}, url=${item.url}`); // Depuración
     });
 
     // Convertir el mapa a array
