@@ -2,7 +2,7 @@ const fetch = require("node-fetch");
 const { parse } = require("iptv-playlist-parser");
 
 // URL de la lista M3U remota
-const M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u";
+const M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/shickat_list.m3u";
 
 // Cache simple en memoria
 let cachedChannels = [];
@@ -24,8 +24,13 @@ async function loadM3U() {
       const isAce = item.url.startsWith("acestream://");
       const isM3u8 = item.url.endsWith(".m3u8");
 
-      // Crear objeto de stream
+      // Crear objeto de stream con título basado en item.name
       const stream = {
+        title: isAce 
+          ? `${item.name} (Acestream)`
+          : isM3u8 
+            ? `${item.name} (Internal Player)`
+            : `${item.name} (Browser)`,
         url: isM3u8 ? item.url : null,
         acestream_id: isAce ? item.url.replace("acestream://", "") : null,
         stream_url: (!isAce && !isM3u8) ? item.url : null
@@ -37,19 +42,17 @@ async function loadM3U() {
           id: tvgId,
           name: item.name || `Canal ${index + 1}`,
           logo_url: item.tvg.logo || "",
+          group_title: item.tvg.group || "", // Añadir group-title
           acestream_id: stream.acestream_id,
           m3u8_url: stream.url,
           stream_url: stream.stream_url,
           website_url: null, // No proporcionado por M3U
+          title: stream.title, // Título del stream principal
           additional_streams: []
         };
       } else {
-        // Streams adicionales: añadir a additional_streams
-        channelMap[tvgId].additional_streams.push({
-          url: stream.url,
-          acestream_id: stream.acestream_id,
-          stream_url: stream.stream_url
-        });
+        // Streams adicionales: añadir con título basado en item.name
+        channelMap[tvgId].additional_streams.push(stream);
       }
     });
 
