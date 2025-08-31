@@ -8,17 +8,17 @@ require('dotenv').config();
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
-  id: 'org.stremio.shickatacestream',
-  version: '1.1.2',
-  name: 'Shickat Acestream Channels1',
-  description: 'Addon para cargar canales Acestream desde Shickat.me.',
+  id: 'org.stremio.Heimdallr',
+  version: '1.1.3',
+  name: 'Heimdallr Acestream/M3u8 Channels',
+  description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
   types: ['tv'],
   logo: "https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960",
   catalogs: [
     {
       type: 'tv',
-      id: 'shickat',
-      name: 'Shickat Live Channels2',
+      id: 'Heimdallr',
+      name: 'Heimdallr Live Channels',
       extra: [{ name: 'search' }]
     }
   ],
