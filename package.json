@@ -1,10 +1,19 @@
 {
   "name": "stremio-shickat-addon",
   "version": "1.0.0",
-  "dependencies": {
-    "axios": "^1.6.0"
+  "description": "Stremio addon for Acestream streaming",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
-  "engines": {
-    "node": ">=18.x"
+  "dependencies": {
+    "stremio-addon-sdk": "^1.6.10",
+    "@supabase/supabase-js": "^2.39.0",
+    "node-cache": "^5.1.2",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
   }
 }
