@@ -20,17 +20,17 @@ async function loadM3U() {
     const channelMap = {};
 
     playlist.items.forEach((item, index) => {
+      // Generar tvg-id único, evitando sobrescritura
       const tvgId = item.tvg.id || item.name.toLowerCase().replace(/[^a-z0-9]+/g, '_') || `channel_${index}`;
       const isAce = item.url.startsWith("acestream://");
       const isM3u8 = item.url.endsWith(".m3u8");
 
-      // Crear objeto de stream con título basado en item.name
+      // Determinar tipo de stream
+      const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Browser";
+
+      // Crear objeto de stream con título en formato de varias líneas
       const stream = {
-        title: isAce 
-          ? `${item.name} (Acestream)`
-          : isM3u8 
-            ? `${item.name} (Internal Player)`
-            : `${item.name} (Browser)`,
+        title: `${item.tvg.group || "Sin categoría"}\n${item.name}\n${streamType}`,
         url: isM3u8 ? item.url : null,
         acestream_id: isAce ? item.url.replace("acestream://", "") : null,
         stream_url: (!isAce && !isM3u8) ? item.url : null
