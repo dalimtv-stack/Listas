@@ -8,7 +8,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.0',
+  version: '1.2.1',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
   types: ['tv'],
@@ -47,7 +47,7 @@ builder.defineCatalogHandler(async ({ type, id }) => {
       const metas = channels.map(channel => ({
         id: `${STREAM_PREFIX}${channel.id}`,
         type: 'tv',
-        name: channel.group_title ? `${channel.group_title} - ${channel.name}` : channel.name, // Añadir group_title al name
+        name: channel.name, // Añadir group_title al name
         poster: channel.logo_url
       }));
 
