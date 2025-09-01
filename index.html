@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configurar Addon Heimdallr</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f7f7f7;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+  h1 {
+    margin-bottom: 20px;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 500px;
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  input[type="text"] {
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    width: 100%;
+  }
+  button {
+    padding: 12px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #0056b3;
+  }
+  p.status {
+    margin-top: 15px;
+    color: green;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<h1>Configurar Addon Heimdallr</h1>
+<form id="m3uForm">
+  <label for="m3uUrl">Introduce la URL de la lista M3U:</label>
+  <input type="text" id="m3uUrl" placeholder="https://ejemplo.com/mi_lista.m3u" />
+  <button type="submit">Guardar</button>
+  <p class="status" id="statusMsg"></p>
+</form>
+
+<script>
+  // Cargar valor previo si existe
+  const m3uInput = document.getElementById('m3uUrl');
+  const statusMsg = document.getElementById('statusMsg');
+  const storedUrl = localStorage.getItem('heimdallr_m3u');
+  if (storedUrl) {
+    m3uInput.value = storedUrl;
+  }
+
+  // Guardar la URL al enviar el formulario
+  document.getElementById('m3uForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const url = m3uInput.value.trim();
+    if (!url) {
+      statusMsg.textContent = 'Por favor, introduce una URL válida.';
+      statusMsg.style.color = 'red';
+      return;
+    }
+    localStorage.setItem('heimdallr_m3u', url);
+    statusMsg.textContent = 'URL guardada correctamente!';
+    statusMsg.style.color = 'green';
+  });
+</script>
+</body>
+</html>
