@@ -1,13 +1,11 @@
 const fetch = require("node-fetch");
 const { parse } = require("iptv-playlist-parser");
 
-// URL de la lista M3U remota
 const DEFAULT_M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u";
 
 // Cache simple en memoria
 let cachedChannels = [];
 
-// Función para cargar y parsear la lista M3U
 async function loadM3U(url = DEFAULT_M3U_URL) {
   try {
     console.log("Cargando lista M3U desde:", url);
@@ -16,7 +14,6 @@ async function loadM3U(url = DEFAULT_M3U_URL) {
 
     const playlist = parse(content);
 
-    // Agrupar entradas por tvg-id o nombre
     const channelMap = {};
 
     playlist.items.forEach((item, index) => {
@@ -24,38 +21,47 @@ async function loadM3U(url = DEFAULT_M3U_URL) {
       const isAce = item.url.startsWith("acestream://");
       const isM3u8 = item.url.endsWith(".m3u8");
 
-      // Determinar tipo de stream
       const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Browser";
 
-      // Crear objeto de stream con título basado en item.name y tipo
+      let name = item.name || "";
+      if (!name && item.raw) {
+        const match = item.raw.match(/,([^,]+)/);
+        name = match ? match[1].trim() : `Canal ${index + 1}`;
+      }
+
+      let groupTitle = item.tvg.group || "";
+      if (!groupTitle && item.raw) {
+        const groupMatch = item.raw.match(/group-title="([^"]+)"/);
+        groupTitle = groupMatch ? groupMatch[1] : "Sin grupo";
+      }
+      console.log(`Procesando: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}`); // Depuración
+
       const stream = {
-        title: `${item.name} (${streamType})`, // Usar el nombre del stream con tipo
+        title: `${name} (${streamType})`,
+        group_title: groupTitle,
         url: isM3u8 ? item.url : null,
         acestream_id: isAce ? item.url.replace("acestream://", "") : null,
         stream_url: (!isAce && !isM3u8) ? item.url : null
       };
 
       if (!channelMap[tvgId]) {
-        // Primer stream del canal: crear entrada principal
         channelMap[tvgId] = {
           id: tvgId,
-          name: item.name || `Canal ${index + 1}`,
+          name: name || `Canal ${index + 1}`,
           logo_url: item.tvg.logo || "",
-          group_title: item.tvg.group || "",
+          group_title: groupTitle,
           acestream_id: stream.acestream_id,
           m3u8_url: stream.url,
           stream_url: stream.stream_url,
           website_url: null,
           title: stream.title,
-          additional_streams: []
+          additional_streams: [stream]
         };
       } else {
-        // Streams adicionales: añadir con título basado en item.name
         channelMap[tvgId].additional_streams.push(stream);
       }
     });
 
-    // Convertir el mapa a array
     cachedChannels = Object.values(channelMap);
     console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
     return cachedChannels;
