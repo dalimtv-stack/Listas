@@ -8,7 +8,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.1.95',
+  version: '1.1.96',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
   types: ['tv'],
@@ -110,6 +110,7 @@ builder.defineStreamHandler(async ({ type, id }) => {
       // 1. Stream principal (si está disponible)
       if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
         streams.push({
+          name: channel.group_title,
           title: channel.title,
           url: channel.m3u8_url,
           externalUrl: channel.acestream_id ? `acestream://${channel.acestream_id}` : channel.stream_url,
@@ -124,6 +125,7 @@ builder.defineStreamHandler(async ({ type, id }) => {
       if (channel.additional_streams && channel.additional_streams.length > 0) {
         channel.additional_streams.forEach((stream, index) => {
           streams.push({
+            name: channel.group_title,
             title: stream.title,
             url: stream.url,
             externalUrl: stream.acestream_id ? `acestream://${stream.acestream_id}` : stream.stream_url,
