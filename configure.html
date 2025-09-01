@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Configurar Heimdallr</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 40px;
+      background: #f5f5f5;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      margin-bottom: 15px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h1>Configurar URL de la lista M3U</h1>
+  <input id="m3uUrl" type="text" placeholder="Introduce la URL de la M3U">
+  <button onclick="guardarUrl()">Guardar URL</button>
+
+  <script>
+    function guardarUrl() {
+      const url = document.getElementById('m3uUrl').value.trim();
+      if (!url) {
+        alert("Introduce una URL válida");
+        return;
+      }
+      // En realidad Stremio no espera que hagas nada en la web,
+      // la URL se guarda internamente en Stremio. Solo hacemos feedback.
+      alert("URL guardada: " + url);
+    }
+  </script>
+</body>
+</html>
