@@ -8,7 +8,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.6',
+  version: '1.2.6', // Incrementado para este cambio
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U configurable por el usuario.',
   types: ['tv'],
@@ -18,7 +18,10 @@ const manifest = {
       type: 'tv',
       id: 'Heimdallr',
       name: 'Heimdallr Live Channels',
-      extra: [{ name: 'search', isRequired: false }, { name: 'skip', isRequired: false }]
+      extra: [
+        { name: 'search', isRequired: false },
+        { name: 'skip', isRequired: false }
+      ]
     }
   ],
   resources: ['stream', 'meta', 'catalog'],
@@ -128,10 +131,11 @@ builder.defineStreamHandler(async ({ type, id, config }) => {
       const channel = await getChannel(channelId, m3uUrl);
       const streams = [];
 
+      // 1. Stream principal (si está disponible)
       if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
         streams.push({
-          name: channel.additional_streams.length > 0 ? channel.additional_streams[0].group_title : channel.group_title,
-          title: channel.title,
+          name: channel.group_title || 'Sin grupo', // Mostrar group-title siempre que esté disponible
+          title: `${channel.name} (${channel.title || 'Stream Principal'})`, // Restaurar nombre completo
           url: channel.m3u8_url,
           externalUrl: channel.acestream_id ? `acestream://${channel.acestream_id}` : channel.stream_url,
           behaviorHints: {
@@ -141,11 +145,12 @@ builder.defineStreamHandler(async ({ type, id, config }) => {
         });
       }
 
+      // 2. Streams adicionales
       if (channel.additional_streams && channel.additional_streams.length > 0) {
         channel.additional_streams.forEach((stream, index) => {
           streams.push({
-            name: stream.group_title,
-            title: stream.title,
+            name: channel.group_title || 'Sin grupo', // Usar el group-title del canal principal
+            title: `${channel.name} (Stream ${index + 1})`, // Identificar streams adicionales
             url: stream.url,
             externalUrl: stream.acestream_id ? `acestream://${stream.acestream_id}` : stream.stream_url,
             behaviorHints: {
@@ -156,6 +161,7 @@ builder.defineStreamHandler(async ({ type, id, config }) => {
         });
       }
 
+      // 3. Website URL (si está disponible)
       if (channel.website_url) {
         streams.push({
           title: `${channel.name} - Website`,
