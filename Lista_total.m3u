@@ -89,8 +89,8 @@ acestream://b125325f52e057b8e5ea17a8b60d512d13d44e53
  
 #EXTINF:-1 tvg-id="Movistar.Drama.es" tvg-logo="https://www.tvlogo.org/spain/drama-por-movistar-plus-es.png" group-title="Shickat.me", Movistar Drama (FHD)
 acestream://edee311dc307e1638eeac880b11bb6f4759b0d83
- 
-#EXTINF:-1 tvg-id="Movistar.Clasicos.es" tvg-logo="https://www.tvlogo.org/spain/clasicos-por-movistar-plus-es.png" group-title="Shickat.me", Movistar Clásicos (FHD)
+# https://www.tvlogo.org/spain/clasicos-por-movistar-plus-es.png
+#EXTINF:-1 tvg-id="Movistar.Clasicos.es" tvg-logo="https://i.ibb.co/JWpf4FcM/clasicos.png" group-title="Shickat.me", Movistar Clásicos (FHD)
 acestream://f9d431a6839e7f9964a0884dc1f18d298d990f39
 
 #EXTINF:-1 tvg-id="Movistar.Cine.Espanol.es" tvg-logo="https://www.tvlogo.org/spain/cine-espanol-por-movistar-plus-es.png" group-title="Shickat.me", Movistar Cine Español (FHD)
