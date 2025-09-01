@@ -34,10 +34,10 @@ async function loadM3U(url = DEFAULT_M3U_URL) {
         const groupMatch = item.raw.match(/group-title="([^"]+)"/i); // Insensible a mayúsculas
         groupTitle = groupMatch ? groupMatch[1] : "Default Group";
       }
-      console.log(`Procesando: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}`); // Depuración
+      console.log(`Procesando: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, title=${item.name} (${streamType}), url=${item.url}`); // Depuración mejorada
 
       const stream = {
-        title: `${name} (${streamType})`,
+        title: `${item.name || name} (${streamType})`, // Usar el nombre original con el tipo
         group_title: groupTitle,
         url: isM3u8 ? item.url : null,
         acestream_id: isAce ? item.url.replace("acestream://", "") : null,
