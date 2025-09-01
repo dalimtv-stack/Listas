@@ -8,7 +8,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.6', // Incrementado para este cambio
+  version: '1.2.7', // Incrementado para este cambio
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U configurable por el usuario.',
   types: ['tv'],
@@ -134,8 +134,8 @@ builder.defineStreamHandler(async ({ type, id, config }) => {
       // 1. Stream principal (si está disponible)
       if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
         streams.push({
-          name: channel.group_title || 'Sin grupo', // Mostrar group-title siempre que esté disponible
-          title: `${channel.name} (${channel.title || 'Stream Principal'})`, // Restaurar nombre completo
+          name: channel.additional_streams.length > 0 ? channel.additional_streams[0].group_title : channel.group_title || 'Sin grupo', // Restaurar lógica original
+          title: `${channel.name} (${channel.title || 'Stream Principal'})`,
           url: channel.m3u8_url,
           externalUrl: channel.acestream_id ? `acestream://${channel.acestream_id}` : channel.stream_url,
           behaviorHints: {
@@ -149,8 +149,8 @@ builder.defineStreamHandler(async ({ type, id, config }) => {
       if (channel.additional_streams && channel.additional_streams.length > 0) {
         channel.additional_streams.forEach((stream, index) => {
           streams.push({
-            name: channel.group_title || 'Sin grupo', // Usar el group-title del canal principal
-            title: `${channel.name} (Stream ${index + 1})`, // Identificar streams adicionales
+            name: stream.group_title || channel.group_title || 'Sin grupo', // Usar group_title del stream o del canal
+            title: `${channel.name} (Stream ${index + 1})`,
             url: stream.url,
             externalUrl: stream.acestream_id ? `acestream://${stream.acestream_id}` : stream.stream_url,
             behaviorHints: {
@@ -173,6 +173,7 @@ builder.defineStreamHandler(async ({ type, id, config }) => {
         });
       }
 
+      console.log("Streams generated:", streams);
       const response = { streams };
       cache.set(cacheKey, response);
       return response;
