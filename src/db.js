@@ -2,7 +2,7 @@ const fetch = require("node-fetch");
 const { parse } = require("iptv-playlist-parser");
 
 // URL de la lista M3U remota
-const M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/shickat_list.m3u";
+const M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u";
 
 // Cache simple en memoria
 let cachedChannels = [];
