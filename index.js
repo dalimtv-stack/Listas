@@ -8,7 +8,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.9', // Nueva versión con correcciones
+  version: '1.3.1', // Nueva versión con correcciones
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U configurable por el usuario.',
   types: ['tv'],
@@ -131,8 +131,8 @@ builder.defineStreamHandler(async ({ type, id, config }) => {
       // 1. Stream principal (si está disponible)
       if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
         streams.push({
-          name: channel.group_title || 'Default Group', // Usar group_title del canal con fallback
-          title: channel.title || `${channel.name} (Stream Principal)`,
+          name: channel.group_title || 'Default Group',
+          title: channel.title || `${channel.name} (Principal)`,
           url: channel.m3u8_url,
           externalUrl: channel.acestream_id ? `acestream://${channel.acestream_id}` : channel.stream_url,
           behaviorHints: {
@@ -146,8 +146,8 @@ builder.defineStreamHandler(async ({ type, id, config }) => {
       if (channel.additional_streams && channel.additional_streams.length > 0) {
         channel.additional_streams.forEach((stream, index) => {
           streams.push({
-            name: stream.group_title || channel.group_title || 'Default Group', // Usar group_title del stream o del canal
-            title: `${channel.name} (Stream ${index + 1})`,
+            name: stream.group_title || channel.group_title || 'Default Group',
+            title: stream.title || `${channel.name} (Stream ${index + 1})`, // Usar title original con tipo
             url: stream.url,
             externalUrl: stream.acestream_id ? `acestream://${stream.acestream_id}` : stream.stream_url,
             behaviorHints: {
