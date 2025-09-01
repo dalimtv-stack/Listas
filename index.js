@@ -8,7 +8,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.8', // Nueva versión con correcciones
+  version: '1.2.9', // Nueva versión con correcciones
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U configurable por el usuario.',
   types: ['tv'],
@@ -18,7 +18,7 @@ const manifest = {
       type: 'tv',
       id: 'Heimdallr',
       name: 'Heimdallr Live Channels',
-      extra: [{ name: 'search', isRequired: false }, { name: 'skip', isRequired: false }] // Añadido soporte para búsqueda y paginación
+      extra: [{ name: 'search', isRequired: false }, { name: 'skip', isRequired: false }]
     }
   ],
   resources: ['stream', 'meta', 'catalog'],
@@ -53,24 +53,9 @@ builder.defineCatalogHandler(async ({ type, id, config }) => {
 
     try {
       const channels = await getChannels(m3uUrl);
-      console.log("Fetched channels count:", channels.length);
+      console.log("Fetched channels:", channels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title })));
 
-      let filteredChannels = [...channels];
-
-      // Filtrado por búsqueda (opcional)
-      if (config && config.search) {
-        const searchTerm = config.search.toLowerCase();
-        filteredChannels = filteredChannels.filter(channel =>
-          channel.name.toLowerCase().includes(searchTerm)
-        );
-      }
-
-      // Paginación
-      const skip = config?.skip ? parseInt(config.skip) : 0;
-      const limit = 100;
-      filteredChannels = filteredChannels.slice(skip, skip + limit);
-
-      const metas = filteredChannels.map(channel => ({
+      const metas = channels.map(channel => ({
         id: `${STREAM_PREFIX}${channel.id}`,
         type: 'tv',
         name: channel.name,
@@ -146,7 +131,7 @@ builder.defineStreamHandler(async ({ type, id, config }) => {
       // 1. Stream principal (si está disponible)
       if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
         streams.push({
-          name: channel.additional_streams.length > 0 ? channel.additional_streams[0].group_title : channel.group_title || 'Default Group', // Restaurar lógica original con fallback
+          name: channel.group_title || 'Default Group', // Usar group_title del canal con fallback
           title: channel.title || `${channel.name} (Stream Principal)`,
           url: channel.m3u8_url,
           externalUrl: channel.acestream_id ? `acestream://${channel.acestream_id}` : channel.stream_url,
