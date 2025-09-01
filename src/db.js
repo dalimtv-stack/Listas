@@ -27,21 +27,37 @@ async function loadM3U() {
       // Determinar tipo de stream
       const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Browser";
 
+      // Corrección manual del name si el parser falla (sin espacio después de la coma)
+      let name = item.name || "";
+      if (!name && item.raw) {
+        const match = item.raw.match(/,([^,]+)/);
+        name = match ? match[1].trim() : `Canal ${index + 1}`;
+      }
+
+      // Corrección manual del group-title si no se extrae
+      let groupTitle = item.tvg.group || "";
+      if (!groupTitle && item.raw) {
+        const groupMatch = item.raw.match(/group-title="([^"]+)"/);
+        groupTitle = groupMatch ? groupMatch[1] : "Sin grupo";
+      }
+
       // Crear objeto de stream con título basado en item.name y tipo
       const stream = {
-        title: `${item.name} (${streamType})`, // Usar el nombre del stream con tipo
+        title: `${name} (${streamType})`,
         url: isM3u8 ? item.url : null,
         acestream_id: isAce ? item.url.replace("acestream://", "") : null,
         stream_url: (!isAce && !isM3u8) ? item.url : null
       };
 
+      console.log(`Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}`); // Depuración mejorada
+
       if (!channelMap[tvgId]) {
         // Primer stream del canal: crear entrada principal
         channelMap[tvgId] = {
           id: tvgId,
-          name: item.name || `Canal ${index + 1}`,
+          name: name || `Canal ${index + 1}`,
           logo_url: item.tvg.logo || "",
-          group_title: item.tvg.group || "",
+          group_title: groupTitle,
           acestream_id: stream.acestream_id,
           m3u8_url: stream.url,
           stream_url: stream.stream_url,
@@ -58,6 +74,7 @@ async function loadM3U() {
     // Convertir el mapa a array
     cachedChannels = Object.values(channelMap);
     console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
+    console.log("Canales cargados:", cachedChannels); // Depuración
   } catch (err) {
     console.error("Error cargando M3U:", err);
     cachedChannels = [];
