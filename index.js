@@ -8,7 +8,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.1.92',
+  version: '1.1.95',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
   types: ['tv'],
@@ -17,7 +17,7 @@ const manifest = {
     {
       type: 'tv',
       id: 'Heimdallr',
-      name: 'Heimdallr Live Channels', // Mantengo esto como identificador general
+      name: 'Heimdallr Live Channels',
       extra: [{ name: 'search' }]
     }
   ],
@@ -35,10 +35,7 @@ builder.defineCatalogHandler(async ({ type, id }) => {
     const cacheKey = 'Heimdallr_channels';
     const cached = cache.get(cacheKey);
 
-    if (cached) {
-      console.log("Using cached catalog");
-      return cached;
-    }
+    if (cached) return cached;
 
     try {
       const channels = await getChannels();
@@ -47,7 +44,7 @@ builder.defineCatalogHandler(async ({ type, id }) => {
       const metas = channels.map(channel => ({
         id: `${STREAM_PREFIX}${channel.id}`,
         type: 'tv',
-        name: channel.group_title || 'Sin grupo', // Usar group-title como nombre del catálogo
+        name: channel.name,
         poster: channel.logo_url
       }));
 
@@ -104,10 +101,7 @@ builder.defineStreamHandler(async ({ type, id }) => {
     const cacheKey = `stream_${channelId}`;
     const cached = cache.get(cacheKey);
 
-    if (cached) {
-      console.log("Using cached streams");
-      return cached;
-    }
+    if (cached) return cached;
 
     try {
       const channel = await getChannel(channelId);
@@ -116,7 +110,6 @@ builder.defineStreamHandler(async ({ type, id }) => {
       // 1. Stream principal (si está disponible)
       if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
         streams.push({
-          name: channel.group_title ,
           title: channel.title,
           url: channel.m3u8_url,
           externalUrl: channel.acestream_id ? `acestream://${channel.acestream_id}` : channel.stream_url,
@@ -131,7 +124,6 @@ builder.defineStreamHandler(async ({ type, id }) => {
       if (channel.additional_streams && channel.additional_streams.length > 0) {
         channel.additional_streams.forEach((stream, index) => {
           streams.push({
-            name: channel.group_title ,
             title: stream.title,
             url: stream.url,
             externalUrl: stream.acestream_id ? `acestream://${stream.acestream_id}` : stream.stream_url,
@@ -146,7 +138,6 @@ builder.defineStreamHandler(async ({ type, id }) => {
       // 3. Website URL (si está disponible)
       if (channel.website_url) {
         streams.push({
-          name: channel.group_title ,
           title: `${channel.name} - Website`,
           externalUrl: channel.website_url,
           behaviorHints: {
@@ -156,7 +147,6 @@ builder.defineStreamHandler(async ({ type, id }) => {
         });
       }
 
-      console.log("Streams generated:", streams); // Depuración
       const response = { streams };
       cache.set(cacheKey, response);
       return response;
