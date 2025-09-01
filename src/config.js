@@ -9,9 +9,6 @@ module.exports = {
   // Prefijo para los IDs de stream
   STREAM_PREFIX: 'heimdallr_',
 
-  // URL de tu lista M3U (pon aquí la que estés usando)
-  M3U_URL: "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/mi-lista.m3u",
-
   // Nombre del addon
   ADDON_NAME: "Heimdallr Channels",
 
