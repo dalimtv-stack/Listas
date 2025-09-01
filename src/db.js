@@ -2,16 +2,16 @@ const fetch = require("node-fetch");
 const { parse } = require("iptv-playlist-parser");
 
 // URL de la lista M3U remota
-const M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u";
+const DEFAULT_M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u";
 
 // Cache simple en memoria
 let cachedChannels = [];
 
 // Función para cargar y parsear la lista M3U
-async function loadM3U() {
+async function loadM3U(url = DEFAULT_M3U_URL) {
   try {
-    console.log("Cargando lista M3U desde:", M3U_URL);
-    const res = await fetch(M3U_URL);
+    console.log("Cargando lista M3U desde:", url);
+    const res = await fetch(url);
     const content = await res.text();
 
     const playlist = parse(content);
@@ -27,47 +27,30 @@ async function loadM3U() {
       // Determinar tipo de stream
       const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Browser";
 
-      // Corrección manual del name si el parser falla (sin espacio después de la coma)
-      let name = item.name || "";
-      if (!name && item.raw) {
-        const match = item.raw.match(/,([^,]+)/);
-        name = match ? match[1].trim() : `Canal ${index + 1}`;
-      }
-
-      // Corrección manual del group-title si no se extrae
-      let groupTitle = item.tvg.group || "";
-      if (!groupTitle && item.raw) {
-        const groupMatch = item.raw.match(/group-title="([^"]+)"/);
-        groupTitle = groupMatch ? groupMatch[1] : "Sin grupo";
-      }
-
-      // Crear objeto de stream con título basado en item.name, tipo y group-title
+      // Crear objeto de stream con título basado en item.name y tipo
       const stream = {
-        title: `${name} (${streamType})`,
-        group_title: groupTitle, // Añadir group_title al stream
+        title: `${item.name} (${streamType})`, // Usar el nombre del stream con tipo
         url: isM3u8 ? item.url : null,
         acestream_id: isAce ? item.url.replace("acestream://", "") : null,
         stream_url: (!isAce && !isM3u8) ? item.url : null
       };
 
-      console.log(`Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}`); // Depuración
-
       if (!channelMap[tvgId]) {
         // Primer stream del canal: crear entrada principal
         channelMap[tvgId] = {
           id: tvgId,
-          name: name || `Canal ${index + 1}`,
+          name: item.name || `Canal ${index + 1}`,
           logo_url: item.tvg.logo || "",
-          group_title: groupTitle, // Usar el group_title del primer stream
+          group_title: item.tvg.group || "",
           acestream_id: stream.acestream_id,
           m3u8_url: stream.url,
           stream_url: stream.stream_url,
           website_url: null,
           title: stream.title,
-          additional_streams: [stream] // Incluir el primer stream como adicional
+          additional_streams: []
         };
       } else {
-        // Streams adicionales: añadir con su propio group_title
+        // Streams adicionales: añadir con título basado en item.name
         channelMap[tvgId].additional_streams.push(stream);
       }
     });
@@ -75,25 +58,25 @@ async function loadM3U() {
     // Convertir el mapa a array
     cachedChannels = Object.values(channelMap);
     console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
-    console.log("Canales cargados:", cachedChannels); // Depuración
+    return cachedChannels;
   } catch (err) {
     console.error("Error cargando M3U:", err);
-    cachedChannels = [];
+    return [];
   }
 }
 
 // Devuelve todos los canales
-async function getChannels() {
+async function getChannels(url = DEFAULT_M3U_URL) {
   if (cachedChannels.length === 0) {
-    await loadM3U();
+    cachedChannels = await loadM3U(url);
   }
   return cachedChannels;
 }
 
 // Devuelve un canal por id
-async function getChannel(id) {
+async function getChannel(id, url = DEFAULT_M3U_URL) {
   if (cachedChannels.length === 0) {
-    await loadM3U();
+    cachedChannels = await loadM3U(url);
   }
   const channel = cachedChannels.find((c) => c.id === id);
   if (!channel) {
