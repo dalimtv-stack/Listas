@@ -13,14 +13,16 @@ async function loadM3U(url = DEFAULT_M3U_URL) {
     const content = await res.text();
 
     const playlist = parse(content);
-
     const channelMap = {};
 
     playlist.items.forEach((item, index) => {
-      const tvgId = item.tvg.id || item.name.toLowerCase().replace(/[^a-z0-9]+/g, '_') || `channel_${index}`;
+      const tvgId =
+        item.tvg.id ||
+        item.name.toLowerCase().replace(/[^a-z0-9]+/g, "_") ||
+        `channel_${index}`;
+
       const isAce = item.url.startsWith("acestream://");
       const isM3u8 = item.url.endsWith(".m3u8");
-
       const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Browser";
 
       let name = item.name || "";
@@ -31,17 +33,20 @@ async function loadM3U(url = DEFAULT_M3U_URL) {
 
       let groupTitle = item.tvg.group || "";
       if (!groupTitle && item.raw) {
-        const groupMatch = item.raw.match(/group-title="([^"]+)"/i); // Insensible a mayúsculas
+        const groupMatch = item.raw.match(/group-title="([^"]+)"/i);
         groupTitle = groupMatch ? groupMatch[1] : "Default Group";
       }
-      console.log(`Procesando: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, title=${item.name} (${streamType}), url=${item.url}`); // Depuración mejorada
+
+      console.log(
+        `Procesando: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, type=${streamType}, url=${item.url}`
+      );
 
       const stream = {
-        title: `${item.name || name} (${streamType})`, // Usar el nombre original con el tipo
+        title: `${item.name || name} (${streamType})`,
         group_title: groupTitle,
         url: isM3u8 ? item.url : null,
         acestream_id: isAce ? item.url.replace("acestream://", "") : null,
-        stream_url: (!isAce && !isM3u8) ? item.url : null
+        stream_url: !isAce && !isM3u8 ? item.url : null,
       };
 
       if (!channelMap[tvgId]) {
@@ -55,7 +60,7 @@ async function loadM3U(url = DEFAULT_M3U_URL) {
           stream_url: stream.stream_url,
           website_url: null,
           title: stream.title,
-          additional_streams: [stream]
+          additional_streams: [stream],
         };
       } else {
         channelMap[tvgId].additional_streams.push(stream);
