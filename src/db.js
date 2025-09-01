@@ -39,27 +39,25 @@ async function loadM3U() {
         // Primer stream del canal: crear entrada principal
         channelMap[tvgId] = {
           id: tvgId,
-          name: item.name || `Canal ${index + 1}`, // Nombre del primer stream
+          name: item.name || `Canal ${index + 1}`,
           logo_url: item.tvg.logo || "",
-          group_title: item.tvg.group || "Sin grupo", // Guardar group-title
+          group_title: item.tvg.group || "",
           acestream_id: stream.acestream_id,
           m3u8_url: stream.url,
           stream_url: stream.stream_url,
           website_url: null,
-          title: stream.title, // Título del stream principal
+          title: stream.title,
           additional_streams: []
         };
       } else {
-        // Añadir como stream adicional si ya existe el canal
+        // Streams adicionales: añadir con título basado en item.name
         channelMap[tvgId].additional_streams.push(stream);
       }
-      console.log(`Procesando stream: tvg-id=${tvgId}, name=${item.name}, group=${item.tvg.group}, url=${item.url}`); // Depuración
     });
 
     // Convertir el mapa a array
     cachedChannels = Object.values(channelMap);
     console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
-    console.log("Canales cargados:", cachedChannels); // Depuración
   } catch (err) {
     console.error("Error cargando M3U:", err);
     cachedChannels = [];
