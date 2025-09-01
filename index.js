@@ -9,7 +9,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 // Manifest con configuración
 const manifest = {
   id: "org.stremio.Heimdallr",
-  version: "1.3.3",
+  version: "1.3.4",
   name: "Heimdallr Channels",
   description:
     "Addon para cargar canales Acestream o M3U8 desde una lista M3U configurable por el usuario.",
@@ -28,7 +28,7 @@ const manifest = {
   ],
   resources: ["catalog", "meta", "stream"],
   idPrefixes: [STREAM_PREFIX],
-  config: [
+    configurable: [
     {
       key: "m3u_url",
       type: "text",
@@ -112,7 +112,7 @@ builder.defineStreamHandler(async ({ type, id, config }) => {
     const channelId = id.replace(STREAM_PREFIX, "");
     const cacheKey = `stream_${channelId}`;
     const cached = cache.get(cacheKey);
-    const m3uUrl = config?.m3u_url || manifest.config[0].default;
+    const m3uUrl = config?.m3u_url || manifest.configurable[0].default;
     console.log("Stream requested. Using M3U URL:", m3uUrl);
 
     if (cached) return cached;
