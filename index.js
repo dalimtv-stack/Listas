@@ -1,15 +1,15 @@
 const { addonBuilder, getRouter } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
 const { getChannels, getChannel } = require('./src/db');
-const { CACHE_TTL, DEFAULT_PORT, STREAM_PREFIX } = require('./src/config');
+const { CACHE_TTL, DEFAULT_PORT, STREAM_PREFIX, ADDON_NAME, ADDON_ID } = require('./src/config');
 require('dotenv').config();
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
-  id: 'org.stremio.Heimdallr',
-  version: '1.3.3', // Nueva versión con corrección de configurable
-  name: 'Heimdallr Channels',
+  id: ADDON_ID,
+  version: '1.3.4', // Nueva versión con corrección de configuración
+  name: ADDON_NAME,
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U configurable por el usuario.',
   types: ['tv'],
   logo: "https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960",
@@ -23,13 +23,13 @@ const manifest = {
   ],
   resources: ['stream', 'meta', 'catalog'],
   idPrefixes: [STREAM_PREFIX],
-  configurable: [ // Cambiado de 'config' a 'configurable'
+  configurable: [ // Usamos 'configurable' para que Stremio lo reconozca
     {
       key: 'm3u_url',
       type: 'text',
       title: 'M3U URL',
       description: 'Introduce la URL de tu lista M3U (obligatorio para cargar canales)',
-      default: '' // Sin URL predeterminada, el usuario debe ingresarla
+      default: '' // Sin URL predeterminada
     }
   ]
 };
