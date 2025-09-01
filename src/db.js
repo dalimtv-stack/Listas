@@ -1,90 +1,176 @@
-const fetch = require("node-fetch");
-const { parse } = require("iptv-playlist-parser");
+const { addonBuilder, getRouter } = require('stremio-addon-sdk');
+const NodeCache = require('node-cache');
+const { getChannels, getChannel } = require('./src/db');
+const { CACHE_TTL, DEFAULT_PORT, STREAM_PREFIX } = require('./src/config');
+require('dotenv').config();
 
-// URL de la lista M3U remota
-const M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u";
+const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
-// Cache simple en memoria
-let cachedChannels = [];
+const manifest = {
+  id: 'org.stremio.Heimdallr',
+  version: '1.1.97',
+  name: 'Heimdallr Channels',
+  description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
+  types: ['tv'],
+  logo: "https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960",
+  catalogs: [
+    {
+      type: 'tv',
+      id: 'Heimdallr',
+      name: 'Heimdallr Live Channels',
+      extra: [{ name: 'search' }]
+    }
+  ],
+  resources: ['stream', 'meta', 'catalog'],
+  idPrefixes: [STREAM_PREFIX]
+};
 
-// Función para cargar y parsear la lista M3U
-async function loadM3U() {
-  try {
-    console.log("Cargando lista M3U desde:", M3U_URL);
-    const res = await fetch(M3U_URL);
-    const content = await res.text();
+const builder = new addonBuilder(manifest);
 
-    const playlist = parse(content);
+// Catalog handler
+builder.defineCatalogHandler(async ({ type, id }) => {
+  console.log('Catalog requested:', type, id);
 
-    // Agrupar entradas por tvg-id o nombre
-    const channelMap = {};
+  if (type === 'tv' && id === 'Heimdallr') {
+    const cacheKey = 'Heimdallr_channels';
+    const cached = cache.get(cacheKey);
 
-    playlist.items.forEach((item, index) => {
-      const tvgId = item.tvg.id || item.name.toLowerCase().replace(/[^a-z0-9]+/g, '_') || `channel_${index}`;
-      const isAce = item.url.startsWith("acestream://");
-      const isM3u8 = item.url.endsWith(".m3u8");
+    if (cached) return cached;
 
-      // Determinar tipo de stream
-      const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Browser";
+    try {
+      const channels = await getChannels();
+      console.log("Fetched channels:", channels);
 
-      // Crear objeto de stream con título basado en item.name y tipo
-      const stream = {
-        title: `${item.name} (${streamType})`, // Usar el nombre del stream con tipo
-        url: isM3u8 ? item.url : null,
-        acestream_id: isAce ? item.url.replace("acestream://", "") : null,
-        stream_url: (!isAce && !isM3u8) ? item.url : null
+      const metas = channels.map(channel => ({
+        id: `${STREAM_PREFIX}${channel.id}`,
+        type: 'tv',
+        name: channel.group_title ? `${channel.group_title} - ${channel.name}` : channel.name, // Añadir group_title al name
+        poster: channel.logo_url
+      }));
+
+      const response = { metas };
+      cache.set(cacheKey, response);
+      return response;
+    } catch (error) {
+      console.error('Catalog error:', error);
+      return { metas: [] };
+    }
+  }
+  return { metas: [] };
+});
+
+// Meta handler
+builder.defineMetaHandler(async ({ type, id }) => {
+  console.log('Meta requested:', type, id);
+
+  if (type === 'tv' && id.startsWith(STREAM_PREFIX)) {
+    const channelId = id.replace(STREAM_PREFIX, '');
+    const cacheKey = `meta_${channelId}`;
+    const cached = cache.get(cacheKey);
+
+    if (cached) return cached;
+
+    try {
+      const channel = await getChannel(channelId);
+      const response = {
+        meta: {
+          id: id,
+          type: 'tv',
+          name: channel.name,
+          poster: channel.logo_url,
+          background: channel.logo_url,
+          description: channel.name // Solo el nombre del canal
+        }
       };
+      cache.set(cacheKey, response);
+      return response;
+    } catch (error) {
+      console.error('Meta error:', error);
+      return { meta: null };
+    }
+  }
+  return { meta: null };
+});
 
-      if (!channelMap[tvgId]) {
-        // Primer stream del canal: crear entrada principal
-        channelMap[tvgId] = {
-          id: tvgId,
-          name: item.name || `Canal ${index + 1}`,
-          logo_url: item.tvg.logo || "",
-          group_title: item.tvg.group || "",
-          acestream_id: stream.acestream_id,
-          m3u8_url: stream.url,
-          stream_url: stream.stream_url,
-          website_url: null,
-          title: stream.title,
-          additional_streams: []
-        };
-      } else {
-        // Streams adicionales: añadir con título basado en item.name
-        channelMap[tvgId].additional_streams.push(stream);
+// Stream handler with Acestream support
+builder.defineStreamHandler(async ({ type, id }) => {
+  console.log('Stream requested:', type, id);
+
+  if (type === 'tv' && id.startsWith(STREAM_PREFIX)) {
+    const channelId = id.replace(STREAM_PREFIX, '');
+    const cacheKey = `stream_${channelId}`;
+    const cached = cache.get(cacheKey);
+
+    if (cached) return cached;
+
+    try {
+      const channel = await getChannel(channelId);
+      const streams = [];
+
+      // 1. Stream principal (si está disponible)
+      if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
+        streams.push({
+          name: channel.group_title,
+          title: channel.title,
+          url: channel.m3u8_url,
+          externalUrl: channel.acestream_id ? `acestream://${channel.acestream_id}` : channel.stream_url,
+          behaviorHints: {
+            notWebReady: channel.acestream_id || channel.stream_url ? true : false,
+            external: channel.acestream_id || channel.stream_url ? true : false
+          }
+        });
       }
-    });
 
-    // Convertir el mapa a array
-    cachedChannels = Object.values(channelMap);
-    console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
-  } catch (err) {
-    console.error("Error cargando M3U:", err);
-    cachedChannels = [];
+      // 2. Streams adicionales
+      if (channel.additional_streams && channel.additional_streams.length > 0) {
+        channel.additional_streams.forEach((stream, index) => {
+          streams.push({
+            name: channel.group_title,
+            title: stream.title,
+            url: stream.url,
+            externalUrl: stream.acestream_id ? `acestream://${stream.acestream_id}` : stream.stream_url,
+            behaviorHints: {
+              notWebReady: stream.acestream_id || stream.stream_url ? true : false,
+              external: stream.acestream_id || stream.stream_url ? true : false
+            }
+          });
+        });
+      }
+
+      // 3. Website URL (si está disponible)
+      if (channel.website_url) {
+        streams.push({
+          title: `${channel.name} - Website`,
+          externalUrl: channel.website_url,
+          behaviorHints: {
+            notWebReady: true,
+            external: true
+          }
+        });
+      }
+
+      const response = { streams };
+      cache.set(cacheKey, response);
+      return response;
+    } catch (error) {
+      console.error('Stream error:', error);
+      return { streams: [] };
+    }
   }
+  return { streams: [] };
+});
+
+// For development: serve the addon over HTTP
+if (process.env.NODE_ENV !== 'production') {
+  const { serveHTTP } = require('stremio-addon-sdk');
+  serveHTTP(builder.getInterface(), { port: process.env.PORT || DEFAULT_PORT });
 }
 
-// Devuelve todos los canales
-async function getChannels() {
-  if (cachedChannels.length === 0) {
-    await loadM3U();
-  }
-  return cachedChannels;
-}
-
-// Devuelve un canal por id
-async function getChannel(id) {
-  if (cachedChannels.length === 0) {
-    await loadM3U();
-  }
-  const channel = cachedChannels.find((c) => c.id === id);
-  if (!channel) {
-    throw new Error(`Channel with id ${id} not found`);
-  }
-  return channel;
-}
-
-module.exports = {
-  getChannels,
-  getChannel,
+module.exports = (req, res) => {
+  const addonInterface = builder.getInterface();
+  const router = getRouter(addonInterface);
+  router(req, res, () => {
+    res.statusCode = 404;
+    res.end();
+  });
 };
