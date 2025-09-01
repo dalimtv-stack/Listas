@@ -9,7 +9,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 // Manifest con configuración y botón "Configurar"
 const manifest = {
   id: "org.stremio.Heimdallr",
-  version: "1.4.1",
+  version: "1.4.2",
   name: "Heimdallr Channels",
   description:
     "Addon para cargar canales Acestream o M3U8 desde una lista M3U configurable por el usuario.",
@@ -65,6 +65,7 @@ builder.defineConfigureHandler((req, res) => {
           <input type="text" id="m3u_url" name="m3u_url" value="${req.query.m3u_url || manifest.config[0].default}" />
           <button type="submit">Guardar</button>
         </form>
+        <p>Nota: Guarda la URL y recarga el addon en Stremio para aplicar los cambios.</p>
       </body>
     </html>
   `;
@@ -152,7 +153,7 @@ builder.defineStreamHandler(async ({ type, id, config }) => {
       if (s.acestream_id) {
         streams.push({
           name: s.group_title || channel.group_title || 'Default Group',
-          title: s.title || `${channel.name} (Acestream)`, // Restaurar formato original
+          title: s.title || `${channel.name} (Acestream)`, // Usar title de db.js o fallback
           externalUrl: `acestream://${s.acestream_id}`,
           behaviorHints: { notWebReady: true, external: true }
         });
@@ -161,7 +162,7 @@ builder.defineStreamHandler(async ({ type, id, config }) => {
       if (s.url) {
         streams.push({
           name: s.group_title || channel.group_title || 'Default Group',
-          title: s.title || `${channel.name} (M3U8)`, // Restaurar formato original
+          title: s.title || `${channel.name} (M3U8)`, // Usar title de db.js o fallback
           url: s.url,
           behaviorHints: { notWebReady: false }
         });
@@ -170,7 +171,7 @@ builder.defineStreamHandler(async ({ type, id, config }) => {
       if (!s.acestream_id && !s.url && s.stream_url) {
         streams.push({
           name: s.group_title || channel.group_title || 'Default Group',
-          title: s.title || `${channel.name} (Browser)`, // Restaurar formato original
+          title: s.title || `${channel.name} (Browser)`, // Usar title de db.js o fallback
           externalUrl: s.stream_url,
           behaviorHints: { notWebReady: true, external: true }
         });
