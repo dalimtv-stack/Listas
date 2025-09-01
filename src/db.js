@@ -31,8 +31,8 @@ async function loadM3U(url = DEFAULT_M3U_URL) {
 
       let groupTitle = item.tvg.group || "";
       if (!groupTitle && item.raw) {
-        const groupMatch = item.raw.match(/group-title="([^"]+)"/);
-        groupTitle = groupMatch ? groupMatch[1] : "Sin grupo";
+        const groupMatch = item.raw.match(/group-title="([^"]+)"/i); // Insensible a mayúsculas
+        groupTitle = groupMatch ? groupMatch[1] : "Default Group";
       }
       console.log(`Procesando: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}`); // Depuración
 
