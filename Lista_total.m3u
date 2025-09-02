@@ -2,6 +2,11 @@
 #EXTM3U url-tvg="https://raw.githubusercontent.com/davidmuma/EPG_dobleM/refs/heads/master/guiatv.xml, https://epgshare01.online/epgshare01/epg_ripper_NL1.xml.gz"
 #EXTVLCOPT:network-caching=1000
 
+#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Hulu.to", Hollywood (HD)
+https://www.huhu.to/play/4079560337/index.m3u8
+#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Hulu.to", Hollywood (HD) (Opcion 2)
+http://www.huhu.to/play/3288402534/index.m3u8
+
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://i.ibb.co/VcRYc75W/M-plus.png" group-title="Shickat.me", Movistar Plus (FHD)
 acestream://5d9a26e0a5f3e5f2ae027bd05635ab9a4fd4b51a
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://www.movistarplus.es/recorte/m-DP/modmarcas/MPLUHD" group-title="Shickat.me", Movistar Plus (FHD) (Opcion 2)
