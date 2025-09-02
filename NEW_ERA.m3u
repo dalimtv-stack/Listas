@@ -1,18 +1,18 @@
 #EXTM3U url-tvg="https://raw.githubusercontent.com/davidmuma/EPG_dobleM/refs/heads/master/guiatv.xml, https://epgshare01.online/epgshare01/epg_ripper_NL1.xml.gz"
 #EXTVLCOPT:network-caching=1000
 
-#EXTINF:-1 tvg-id="FR | beIN SPORTS 1" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/beIN%20SPORTS%201.png" group-title="NEW ERA", BEIN SPORTS 1 (FHD)
+#EXTINF:-1 tvg-id="beIN.SPORTS.1.fr" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/beIN%20SPORTS%201.png" group-title="NEW ERA", BEIN SPORTS 1 [FR] (FHD)
 acestream://eb882a774ddf9f4cf83f3d50fc9a8d3c629f6659
-#EXTINF:-1 tvg-id="FR | beIN SPORTS 2" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/beIN%20SPORTS%202.png" group-title="NEW ERA", BEIN SPORTS 2 (FHD)
+#EXTINF:-1 tvg-id="beIN.SPORTS.2.fr" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/beIN%20SPORTS%202.png" group-title="NEW ERA", BEIN SPORTS 2 [FR] (FHD)
 acestream://c1fb3fd5e4a6b6c6d4a463834841f1d66518d061
-#EXTINF:-1 tvg-id="FR | beIN SPORTS 3" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/beIN%20SPORTS%203.png" group-title="NEW ERA", BEIN SPORTS 3 (FHD)
+#EXTINF:-1 tvg-id="beIN.SPORTS.3.fr" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/beIN%20SPORTS%203.png" group-title="NEW ERA", BEIN SPORTS 3 [FR] (FHD)
 acestream://ea6dd2fbd792fe4fb5d372f5d8b84d03792e6e7a
 
-#EXTINF:-1 tvg-id="M+ Copa del Rey" tvg-logo="https://i.ibb.co/m54QH9Gt/copa.png" group-title="NEW ERA", M+ Copa del Rey (FHD)
+#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://i.ibb.co/m54QH9Gt/copa.png" group-title="NEW ERA", M+ Copa del Rey (FHD)
 acestream://28205d7c9776b96a1f479c9082e80bd1e18f5afd
-#EXTINF:-1 tvg-id="M+ Copa del Rey" tvg-logo="https://i.ibb.co/m54QH9Gt/copa.png" group-title="NEW ERA", M+ Copa del Rey
+#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://i.ibb.co/m54QH9Gt/copa.png" group-title="NEW ERA", M+ Copa del Rey
 acestream://4b9f813f30b4345fe555f9e218d828d76cd6ee88
-#EXTINF:-1 tvg-id="M+ Copa del Rey" tvg-logo="https://i.ibb.co/m54QH9Gt/copa.png" group-title="NEW ERA", M+ Copa del Rey
+#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://i.ibb.co/m54QH9Gt/copa.png" group-title="NEW ERA", M+ Copa del Rey
 acestream://63ad519ec9602ea12f7867cf15914b2537bbf04a
 
 #EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://i.ibb.co/FVzKq1y/dazn1.png" group-title="NEW ERA", DAZN 1 (FHD)
@@ -247,7 +247,7 @@ acestream://ab0d8baaf889017c5e87b2e484203a359585c9dc
 #EXTINF:-1 tvg-id="Movistar.Vamos.es" tvg-logo="https://i.ibb.co/gWMRpFB/vamos.png" group-title="NEW ERA II", Movistar Vamos (FHD)
 acestream://1205151f6fa5d95c0eeb543cbce43ccfa6a1b216
 
-#EXTINF:-1 tvg-id="M+ Copa del Rey" tvg-logo="https://i.ibb.co/m54QH9Gt/copa.png" group-title="ELCANO", M+ Copa del Rey
+#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://i.ibb.co/m54QH9Gt/copa.png" group-title="ELCANO", M+ Copa del Rey
 acestream://b51f2d9a15b6956a44385b6be531bcabeb099d9d
 
 #EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://i.ibb.co/FVzKq1y/dazn1.png" group-title="ELCANO", DAZN 1
