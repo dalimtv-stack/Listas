@@ -46,7 +46,7 @@ async function fetchText(url) {
 
     const manifest = {
       id: ADDON_ID || 'org.stremio.Heimdallr',
-      version: '1.2.123',
+      version: '1.3.000',
       name: ADDON_NAME || 'Heimdallr Channels',
       description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
       types: ['tv'],
