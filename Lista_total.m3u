@@ -6,6 +6,8 @@
 https://www.huhu.to/play/4079560337/index.m3u8
 #EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Hulu.to", Hollywood (HD) (Opcion 2)
 http://www.huhu.to/play/3288402534/index.m3u8
+#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Hulu.to", Hollywood (HD) (Opcion 3)
+http://www.huhu.to/play/4205258144/index.m3u8
 
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://i.ibb.co/VcRYc75W/M-plus.png" group-title="Shickat.me", Movistar Plus (FHD)
 acestream://5d9a26e0a5f3e5f2ae027bd05635ab9a4fd4b51a
@@ -77,9 +79,13 @@ acestream://6fb944e8985881ae6db89667aca6362e746255b6
 #EXTINF:-1 tvg-id="Movistar.Vamos.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F3829337" group-title="Shickat.me", Movistar Vamos (FHD)
 acestream://1444a976d2cf6e7fdcee833ed36ee5e55632253f
  
+#EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratula5/M386373V4072004" group-title="Shickat.me", Eurosport (HD)
+http://185.189.225.157/EuroSport1/index.m3u8
 #EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratula5/M386373V4072004" group-title="Shickat.me", Eurosport (FHD)
 acestream://704e51760a644bc90aa22269bf841399a0414a
  
+#EXTINF:-1 tvg-id="Eurosport.2.es" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLDpV4QUeZOXm02CMRuM0U6fGDh1MbO5XObQ&s" group-title="Telegram", Eurosport 2 (HD)
+http://185.189.225.157/EuroSport2/index.m3u8
 #EXTINF:-1 tvg-id="Eurosport.2.es" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLDpV4QUeZOXm02CMRuM0U6fGDh1MbO5XObQ&s" group-title="Shickat.me", Eurosport 2 (FHD)
 acestream://f8e861155c2a1959f8313b19f49d52e414313203
 
@@ -113,7 +119,7 @@ acestream://e740a34497c3ba5943613a06999e805e6bbfa159
  
 #EXTINF:-1 tvg-id="Movistar.Indie.es" tvg-logo="https://i.ibb.co/WWq3fbcj/M-indie.png" group-title="Shickat.me", Movistar Indie (FHD)
 acestream://508ffdbab097339adb4f3d922070b5df2c114d01
- 
+
 #EXTINF:-1 tvg-id="Movistar.Documentales.es" tvg-logo="https://i.ibb.co/S7GD8x7R/M-documentales.png" group-title="Shickat.me", Movistar Documentales (FHD)
 acestream://6cda7d2622bcafd6aef486016238936855927d7d
  
