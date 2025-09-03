@@ -3,13 +3,19 @@
   "builds": [
     {
       "src": "index.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["manifest.json"]
+      }
     }
   ],
   "routes": [
-    { "src": "/manifest.json", "dest": "/index.js" }
+    { "src": "/(.*)", "dest": "index.js" }
   ],
-  "hooks": {
-    "build": "npm run build"
+  "build": {
+    "env": {
+      "CACHE_TTL": "1800",
+      "STREAM_PREFIX": "heimdallr_"
+    }
   }
 }
