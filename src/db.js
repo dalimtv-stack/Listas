@@ -8,11 +8,14 @@ const M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/hea
 // Cache simple en memoria
 let cachedChannels = [];
 
-// Función para cargar y parsear la lista M3U
+// Función para cargar y parsear la lista M3U (ahora se llama una sola vez)
 async function loadM3U() {
   try {
     console.log("Cargando lista M3U desde:", M3U_URL);
     const res = await fetch(M3U_URL);
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
     const content = await res.text();
 
     const playlist = parse(content);
@@ -76,22 +79,21 @@ async function loadM3U() {
     // Convertir el mapa a array
     cachedChannels = Object.values(channelMap);
     console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
-    console.log("Canales cargados:", cachedChannels); // Depuración
   } catch (err) {
     console.error("Error cargando M3U:", err);
-    cachedChannels = [];
+    cachedChannels = []; // En caso de error, array vacío para evitar crashes
   }
 }
 
-// Devuelve todos los canales
+// Devuelve todos los canales (sin recargar si ya está en caché)
 async function getChannels() {
   if (cachedChannels.length === 0) {
-    await loadM3U();
+    await loadM3U(); // Solo carga si no está cargado
   }
   return cachedChannels;
 }
 
-// Devuelve un canal por id
+// Devuelve un canal por id (mismo ajuste)
 async function getChannel(id) {
   if (cachedChannels.length === 0) {
     await loadM3U();
@@ -106,4 +108,5 @@ async function getChannel(id) {
 module.exports = {
   getChannels,
   getChannel,
+  loadM3U // Exportar para llamarla globalmente en index.js
 };
