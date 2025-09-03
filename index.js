@@ -7,24 +7,7 @@ require('dotenv').config();
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
-const manifest = {
-  id: 'org.stremio.Heimdallr',
-  version: '1.2.123',
-  name: 'Heimdallr Channels',
-  description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
-  types: ['tv'],
-  logo: "https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960",
-  catalogs: [
-    {
-      type: 'tv',
-      id: 'Heimdallr',
-      name: 'Heimdallr Live Channels',
-      extra: [{ name: 'search' }]
-    }
-  ],
-  resources: ['stream', 'meta', 'catalog'],
-  idPrefixes: [STREAM_PREFIX]
-};
+const manifest = require("./manifest.json");
 
 const builder = new addonBuilder(manifest);
 
