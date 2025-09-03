@@ -16,7 +16,7 @@ try {
   console.warn('manifest.json not found — usando fallback sin géneros.');
   manifest = {
     id: 'org.stremio.Heimdallr',
-    version: '1.2.124',
+    version: '1.3.000',
     name: 'Heimdallr Channels',
     description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
     types: ['tv'],
