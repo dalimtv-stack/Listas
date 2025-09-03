@@ -1,15 +1,22 @@
 // index.js
 const { addonBuilder, getRouter } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
-const { getChannels, getChannel } = require('./src/db');
+const { getChannels, getChannel, loadM3U } = require('./src/db');
 const { CACHE_TTL, DEFAULT_PORT, STREAM_PREFIX } = require('./src/config');
-require('dotenv').config();
+// require('dotenv').config(); // Removido: innecesario en Vercel
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
+// Cargar M3U globalmente al inicio para evitar recargas por request
+loadM3U().then(() => {
+  console.log('M3U cargado globalmente al inicio');
+}).catch(err => {
+  console.error('Error cargando M3U al inicio:', err);
+});
+
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.125',
+  version: '1.2.126',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
   types: ['tv'],
@@ -31,7 +38,7 @@ const manifest = {
 
 const builder = new addonBuilder(manifest);
 
-// Catalog handler
+// Catalog handler (con filtro seguro para género)
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
   console.log('Catalog requested:', type, id, extra);
 
@@ -45,18 +52,18 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
     }
 
     try {
-      const channels = await getChannels();
+      const channels = await getChannels(); // Ahora usa el caché global
       console.log("Fetched channels with group_titles:", channels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title })));
 
       let filteredChannels = channels;
 
-      // Filtro por búsqueda (implementado ahora para que funcione)
+      // Filtro por búsqueda
       if (extra?.search) {
         const query = extra.search.toLowerCase();
         filteredChannels = filteredChannels.filter(channel => channel.name.toLowerCase().includes(query));
       }
 
-      // Filtro por género (corregido para incluir streams adicionales, con verificación segura)
+      // Filtro por género (seguro: verifica additional_streams antes de .some)
       if (extra?.genre) {
         filteredChannels = filteredChannels.filter(channel => {
           if (channel.group_title === extra.genre) return true;
@@ -70,7 +77,7 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
       const metas = filteredChannels.map(channel => ({
         id: `${STREAM_PREFIX}${channel.id}`,
         type: 'tv',
-        name: channel.name, // Añadir group_title al name
+        name: channel.name,
         poster: channel.logo_url
       }));
 
@@ -85,7 +92,7 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
   return { metas: [] };
 });
 
-// Meta handler
+// Meta handler (idéntico a tu funcional)
 builder.defineMetaHandler(async ({ type, id }) => {
   console.log('Meta requested:', type, id);
 
@@ -118,7 +125,7 @@ builder.defineMetaHandler(async ({ type, id }) => {
   return { meta: null };
 });
 
-// Stream handler with Acestream support
+// Stream handler (idéntico a tu funcional, con streams no-m3u8 externos por ahora)
 builder.defineStreamHandler(async ({ type, id }) => {
   console.log('Stream requested:', type, id);
 
