@@ -48,7 +48,7 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
 
     try {
       const channels = await getChannels();
-      console.log("Fetched channels with group_titles:", channels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title })));
+      console.log("Fetched channels with group_titles:", channels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title }));
 
       let filteredChannels = channels;
 
@@ -60,7 +60,7 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
 
       // Filtro por género
       if (extra?.genre) {
-        filteredChannels = filteredChannels.filter(channel => channel.group_title === extra.genre);
+        filteredChannels = filteredChannels.filter(channel => channel.group_title === extra.genre || channel.additional_streams.some(stream => stream.group_title === extra.genre));
       }
 
       const metas = filteredChannels.map(channel => ({
