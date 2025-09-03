@@ -6,10 +6,15 @@ const { CACHE_TTL, DEFAULT_PORT, STREAM_PREFIX } = require('./src/config');
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
-// Generar manifest dinámico
-async function createManifest() {
+let builder;        // instancia del addon
+let manifestCache;  // manifest cacheado
+
+// Inicializar addon y cache de manifest
+async function initAddon() {
+  if (builder && manifestCache) return builder;
+
   const genres = await getGenres();
-  return {
+  manifestCache = {
     id: 'org.stremio.Heimdallr',
     version: '1.3.001',
     name: 'Heimdallr Channels',
@@ -30,9 +35,10 @@ async function createManifest() {
     resources: ['stream', 'meta', 'catalog'],
     idPrefixes: [STREAM_PREFIX]
   };
-}
 
-let builderPromise = createManifest().then(manifest => new addonBuilder(manifest));
+  builder = new addonBuilder(manifestCache);
+  return builder;
+}
 
 // Catalog handler
 async function catalogHandler({ type, id }) {
@@ -48,6 +54,7 @@ async function catalogHandler({ type, id }) {
       name: channel.name,
       poster: channel.logo_url
     }));
+
     const response = { metas };
     cache.set(cacheKey, response);
     return response;
@@ -132,14 +139,15 @@ async function streamHandler({ type, id }) {
   return { streams: [] };
 }
 
-// Export para Vercel
+// Vercel handler
 module.exports = async (req, res) => {
-  const builder = await builderPromise;
+  const builder = await initAddon();
   const addonInterface = builder.getInterface();
 
+  // Servir manifest directamente
   if (req.url === '/manifest.json') {
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(addonInterface.manifest));
+    res.end(JSON.stringify(manifestCache));
     return;
   }
 
