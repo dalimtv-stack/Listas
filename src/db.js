@@ -1,3 +1,4 @@
+//src/db.js
 const fetch = require("node-fetch");
 const { parse } = require("iptv-playlist-parser");
 
@@ -22,10 +23,9 @@ async function loadM3U() {
     playlist.items.forEach((item, index) => {
       const tvgId = item.tvg.id || item.name.toLowerCase().replace(/[^a-z0-9]+/g, '_') || `channel_${index}`;
       const isAce = item.url.startsWith("acestream://");
-      const isM3u8 = item.url.endsWith(".m3u8");
 
       // Determinar tipo de stream
-      const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Browser";
+      const streamType = isAce ? "Acestream" : "HTTP Stream";
 
       // Corrección manual del name si el parser falla (sin espacio después de la coma)
       let name = item.name || "";
@@ -45,9 +45,8 @@ async function loadM3U() {
       const stream = {
         title: `${name} (${streamType})`,
         group_title: groupTitle, // Añadir group_title al stream
-        url: isM3u8 ? item.url : null,
-        acestream_id: isAce ? item.url.replace("acestream://", "") : null,
-        stream_url: (!isAce && !isM3u8) ? item.url : null
+        url: isAce ? null : item.url, // Unificar todos los no-Ace en url
+        acestream_id: isAce ? item.url.replace("acestream://", "") : null
       };
 
       console.log(`Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}`); // Depuración
@@ -59,9 +58,8 @@ async function loadM3U() {
           name: name || `Canal ${index + 1}`,
           logo_url: item.tvg.logo || "",
           group_title: groupTitle, // Usar el group_title del primer stream
+          url: stream.url,
           acestream_id: stream.acestream_id,
-          m3u8_url: stream.url,
-          stream_url: stream.stream_url,
           website_url: null,
           title: stream.title,
           additional_streams: [stream] // Incluir el primer stream como adicional
