@@ -3,20 +3,19 @@ const { addonBuilder, getRouter } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
 const { getChannels, getChannel, loadM3U } = require('./src/db');
 const { CACHE_TTL, DEFAULT_PORT, STREAM_PREFIX } = require('./src/config');
-// require('dotenv').config(); // Removido: innecesario en Vercel
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
-// Cargar M3U globalmente al inicio para evitar recargas por request
+// Cargar M3U al inicio para tener datos iniciales
 loadM3U().then(() => {
   console.log('M3U cargado globalmente al inicio');
 }).catch(err => {
-  console.error('Error cargando M3U al inicio:', err);
+  console.error('Error cargando M3U al inicio:', err.message);
 });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.126',
+  version: '1.2.127',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
   types: ['tv'],
@@ -38,7 +37,7 @@ const manifest = {
 
 const builder = new addonBuilder(manifest);
 
-// Catalog handler (con filtro seguro para género)
+// Catalog handler (recarga M3U si el caché está vacío o expirado)
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
   console.log('Catalog requested:', type, id, extra);
 
@@ -52,10 +51,18 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
     }
 
     try {
-      const channels = await getChannels(); // Ahora usa el caché global
-      console.log("Fetched channels with group_titles:", channels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title })));
+      // Recargar M3U si el caché está vacío o expirado
+      const channels = await getChannels();
+      if (channels.length === 0 || !cache.get('m3u_loaded')) {
+        console.log('Recargando M3U por request');
+        await loadM3U();
+        cache.set('m3u_loaded', true, CACHE_TTL); // Marcar como cargado
+      }
 
-      let filteredChannels = channels;
+      const updatedChannels = await getChannels();
+      console.log("Fetched channels with group_titles:", updatedChannels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title })));
+
+      let filteredChannels = updatedChannels;
 
       // Filtro por búsqueda
       if (extra?.search) {
@@ -63,7 +70,7 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
         filteredChannels = filteredChannels.filter(channel => channel.name.toLowerCase().includes(query));
       }
 
-      // Filtro por género (seguro: verifica additional_streams antes de .some)
+      // Filtro por género (seguro: verifica additional_streams)
       if (extra?.genre) {
         filteredChannels = filteredChannels.filter(channel => {
           if (channel.group_title === extra.genre) return true;
@@ -85,14 +92,14 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
       cache.set(cacheKey, response);
       return response;
     } catch (error) {
-      console.error('Catalog error:', error);
+      console.error('Catalog error:', error.message);
       return { metas: [] };
     }
   }
   return { metas: [] };
 });
 
-// Meta handler (idéntico a tu funcional)
+// Meta handler (sin cambios)
 builder.defineMetaHandler(async ({ type, id }) => {
   console.log('Meta requested:', type, id);
 
@@ -118,14 +125,14 @@ builder.defineMetaHandler(async ({ type, id }) => {
       cache.set(cacheKey, response);
       return response;
     } catch (error) {
-      console.error('Meta error:', error);
+      console.error('Meta error:', error.message);
       return { meta: null };
     }
   }
   return { meta: null };
 });
 
-// Stream handler (idéntico a tu funcional, con streams no-m3u8 externos por ahora)
+// Stream handler (sin cambios, streams no-m3u8 externos)
 builder.defineStreamHandler(async ({ type, id }) => {
   console.log('Stream requested:', type, id);
 
@@ -143,10 +150,10 @@ builder.defineStreamHandler(async ({ type, id }) => {
       const channel = await getChannel(channelId);
       const streams = [];
 
-      // 1. Stream principal (si está disponible)
+      // 1. Stream principal
       if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
         streams.push({
-          name: channel.additional_streams.length > 0 ? channel.additional_streams[0].group_title : channel.group_title, // Usar group_title del primer stream
+          name: channel.additional_streams.length > 0 ? channel.additional_streams[0].group_title : channel.group_title,
           title: channel.title,
           url: channel.m3u8_url,
           externalUrl: channel.acestream_id ? `acestream://${channel.acestream_id}` : channel.stream_url,
@@ -161,7 +168,7 @@ builder.defineStreamHandler(async ({ type, id }) => {
       if (channel.additional_streams && channel.additional_streams.length > 0) {
         channel.additional_streams.forEach((stream, index) => {
           streams.push({
-            name: stream.group_title, // Usar el group_title del stream adicional
+            name: stream.group_title,
             title: stream.title,
             url: stream.url,
             externalUrl: stream.acestream_id ? `acestream://${stream.acestream_id}` : stream.stream_url,
@@ -173,7 +180,7 @@ builder.defineStreamHandler(async ({ type, id }) => {
         });
       }
 
-      // 3. Website URL (si está disponible)
+      // 3. Website URL
       if (channel.website_url) {
         streams.push({
           title: `${channel.name} - Website`,
@@ -190,7 +197,7 @@ builder.defineStreamHandler(async ({ type, id }) => {
       cache.set(cacheKey, response);
       return response;
     } catch (error) {
-      console.error('Stream error:', error);
+      console.error('Stream error:', error.message);
       return { streams: [] };
     }
   }
@@ -204,9 +211,11 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 module.exports = (req, res) => {
+  console.log('Request received:', req.url); // Log para depurar en Vercel
   const addonInterface = builder.getInterface();
   const router = getRouter(addonInterface);
   router(req, res, () => {
+    console.log('Route not found:', req.url);
     res.statusCode = 404;
     res.end();
   });
