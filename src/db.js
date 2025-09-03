@@ -8,11 +8,15 @@ const M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/hea
 // Cache simple en memoria
 let cachedChannels = [];
 
-// Función para cargar y parsear la lista M3U (ahora se llama una sola vez)
+// Función para cargar y parsear la lista M3U (con timeout)
 async function loadM3U() {
   try {
     console.log("Cargando lista M3U desde:", M3U_URL);
-    const res = await fetch(M3U_URL);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // Timeout de 5s
+    const res = await fetch(M3U_URL, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
@@ -31,7 +35,7 @@ async function loadM3U() {
       // Determinar tipo de stream
       const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Browser";
 
-      // Corrección manual del name si el parser falla (sin espacio después de la coma)
+      // Corrección manual del name si el parser falla
       let name = item.name || "";
       if (!name && item.raw) {
         const match = item.raw.match(/,([^,]+)/);
@@ -45,16 +49,16 @@ async function loadM3U() {
         groupTitle = groupMatch ? groupMatch[1] : "Sin grupo";
       }
 
-      // Crear objeto de stream con título basado en item.name, tipo y group-title
+      // Crear objeto de stream
       const stream = {
         title: `${name} (${streamType})`,
-        group_title: groupTitle, // Añadir group_title al stream
+        group_title: groupTitle,
         url: isM3u8 ? item.url : null,
         acestream_id: isAce ? item.url.replace("acestream://", "") : null,
         stream_url: (!isAce && !isM3u8) ? item.url : null
       };
 
-      console.log(`Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}`); // Depuración
+      console.log(`Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}`);
 
       if (!channelMap[tvgId]) {
         // Primer stream del canal: crear entrada principal
@@ -62,16 +66,16 @@ async function loadM3U() {
           id: tvgId,
           name: name || `Canal ${index + 1}`,
           logo_url: item.tvg.logo || "",
-          group_title: groupTitle, // Usar el group_title del primer stream
+          group_title: groupTitle,
           acestream_id: stream.acestream_id,
           m3u8_url: stream.url,
           stream_url: stream.stream_url,
           website_url: null,
           title: stream.title,
-          additional_streams: [stream] // Incluir el primer stream como adicional
+          additional_streams: [stream]
         };
       } else {
-        // Streams adicionales: añadir con su propio group_title
+        // Streams adicionales
         channelMap[tvgId].additional_streams.push(stream);
       }
     });
@@ -80,20 +84,17 @@ async function loadM3U() {
     cachedChannels = Object.values(channelMap);
     console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
   } catch (err) {
-    console.error("Error cargando M3U:", err);
-    cachedChannels = []; // En caso de error, array vacío para evitar crashes
+    console.error("Error cargando M3U:", err.message);
+    cachedChannels = []; // Array vacío para evitar crashes
   }
 }
 
-// Devuelve todos los canales (sin recargar si ya está en caché)
+// Devuelve todos los canales
 async function getChannels() {
-  if (cachedChannels.length === 0) {
-    await loadM3U(); // Solo carga si no está cargado
-  }
   return cachedChannels;
 }
 
-// Devuelve un canal por id (mismo ajuste)
+// Devuelve un canal por id
 async function getChannel(id) {
   if (cachedChannels.length === 0) {
     await loadM3U();
@@ -108,5 +109,5 @@ async function getChannel(id) {
 module.exports = {
   getChannels,
   getChannel,
-  loadM3U // Exportar para llamarla globalmente en index.js
+  loadM3U
 };
