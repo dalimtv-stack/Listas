@@ -7,7 +7,32 @@ require('dotenv').config();
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
-const manifest = require("./manifest.json");
+// Cargar manifest generado en build-time si existe, si no usar fallback
+let manifest;
+try {
+  manifest = require('./manifest.json');
+  console.log('Loaded manifest.json from disk');
+} catch (err) {
+  console.warn('manifest.json not found — usando manifest fallback (sin opciones de géneros).');
+  manifest = {
+    id: 'org.stremio.Heimdallr',
+    version: '1.2.124',
+    name: 'Heimdallr Channels',
+    description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
+    types: ['tv'],
+    logo: "https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960",
+    catalogs: [
+      {
+        type: 'tv',
+        id: 'Heimdallr',
+        name: 'Heimdallr Live Channels',
+        extra: [{ name: 'search' }, { name: 'genre', options: [], isRequired: false }]
+      }
+    ],
+    resources: ['stream', 'meta', 'catalog'],
+    idPrefixes: [STREAM_PREFIX]
+  };
+}
 
 const builder = new addonBuilder(manifest);
 
@@ -31,7 +56,7 @@ builder.defineCatalogHandler(async ({ type, id }) => {
       const metas = channels.map(channel => ({
         id: `${STREAM_PREFIX}${channel.id}`,
         type: 'tv',
-        name: channel.name, // Añadir group_title al name
+        name: channel.name,
         poster: channel.logo_url
       }));
 
@@ -79,7 +104,7 @@ builder.defineMetaHandler(async ({ type, id }) => {
   return { meta: null };
 });
 
-// Stream handler with Acestream support
+// Stream handler with Acestream support (mantengo tu lógica original)
 builder.defineStreamHandler(async ({ type, id }) => {
   console.log('Stream requested:', type, id);
 
@@ -100,7 +125,7 @@ builder.defineStreamHandler(async ({ type, id }) => {
       // 1. Stream principal (si está disponible)
       if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
         streams.push({
-          name: channel.additional_streams.length > 0 ? channel.additional_streams[0].group_title : channel.group_title, // Usar group_title del primer stream
+          name: channel.additional_streams.length > 0 ? channel.additional_streams[0].group_title : channel.group_title,
           title: channel.title,
           url: channel.m3u8_url,
           externalUrl: channel.acestream_id ? `acestream://${channel.acestream_id}` : channel.stream_url,
@@ -115,7 +140,7 @@ builder.defineStreamHandler(async ({ type, id }) => {
       if (channel.additional_streams && channel.additional_streams.length > 0) {
         channel.additional_streams.forEach((stream, index) => {
           streams.push({
-            name: stream.group_title, // Usar el group_title del stream adicional
+            name: stream.group_title,
             title: stream.title,
             url: stream.url,
             externalUrl: stream.acestream_id ? `acestream://${stream.acestream_id}` : stream.stream_url,
@@ -157,7 +182,15 @@ if (process.env.NODE_ENV !== 'production') {
   serveHTTP(builder.getInterface(), { port: process.env.PORT || DEFAULT_PORT });
 }
 
+// Export (Vercel)
 module.exports = (req, res) => {
+  // Si piden /manifest.json devolvemos el manifest (útil si Vercel no sirvió el archivo estático)
+  if (req.url === '/manifest.json') {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(manifest));
+    return;
+  }
+
   const addonInterface = builder.getInterface();
   const router = getRouter(addonInterface);
   router(req, res, () => {
