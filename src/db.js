@@ -2,13 +2,10 @@
 const fetch = require("node-fetch");
 const { parse } = require("iptv-playlist-parser");
 
-// URL de la lista M3U remota
 const M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u";
 
-// Cache simple en memoria
 let cachedChannels = [];
 
-// Función para cargar y parsear la lista M3U
 async function loadM3U() {
   try {
     console.log("Cargando lista M3U desde:", M3U_URL);
@@ -16,8 +13,6 @@ async function loadM3U() {
     const content = await res.text();
 
     const playlist = parse(content);
-
-    // Agrupar entradas por tvg-id o nombre
     const channelMap = {};
 
     playlist.items.forEach((item, index) => {
@@ -25,85 +20,74 @@ async function loadM3U() {
       const isAce = item.url.startsWith("acestream://");
       const isM3u8 = item.url.endsWith(".m3u8");
 
-      // Determinar tipo de stream
       const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Browser";
 
-      // Corrección manual del name si el parser falla (sin espacio después de la coma)
       let name = item.name || "";
       if (!name && item.raw) {
         const match = item.raw.match(/,([^,]+)/);
         name = match ? match[1].trim() : `Canal ${index + 1}`;
       }
 
-      // Corrección manual del group-title si no se extrae
       let groupTitle = item.tvg.group || "";
       if (!groupTitle && item.raw) {
         const groupMatch = item.raw.match(/group-title="([^"]+)"/);
         groupTitle = groupMatch ? groupMatch[1] : "Sin grupo";
       }
 
-      // Crear objeto de stream con título basado en item.name, tipo y group-title
       const stream = {
         title: `${name} (${streamType})`,
-        group_title: groupTitle, // Añadir group_title al stream
+        group_title: groupTitle,
         url: isM3u8 ? item.url : null,
         acestream_id: isAce ? item.url.replace("acestream://", "") : null,
         stream_url: (!isAce && !isM3u8) ? item.url : null
       };
 
-      console.log(`Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}`); // Depuración
-
       if (!channelMap[tvgId]) {
-        // Primer stream del canal: crear entrada principal
         channelMap[tvgId] = {
           id: tvgId,
-          name: name || `Canal ${index + 1}`,
+          name,
           logo_url: item.tvg.logo || "",
-          group_title: groupTitle, // Usar el group_title del primer stream
+          group_title,
           acestream_id: stream.acestream_id,
           m3u8_url: stream.url,
           stream_url: stream.stream_url,
           website_url: null,
           title: stream.title,
-          additional_streams: [stream] // Incluir el primer stream como adicional
+          additional_streams: [stream]
         };
       } else {
-        // Streams adicionales: añadir con su propio group_title
         channelMap[tvgId].additional_streams.push(stream);
       }
     });
 
-    // Convertir el mapa a array
     cachedChannels = Object.values(channelMap);
-    console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
-    console.log("Canales cargados:", cachedChannels); // Depuración
+    console.log(`Cargados ${cachedChannels.length} canales`);
   } catch (err) {
     console.error("Error cargando M3U:", err);
     cachedChannels = [];
   }
 }
 
-// Devuelve todos los canales
 async function getChannels() {
-  if (cachedChannels.length === 0) {
-    await loadM3U();
-  }
+  if (cachedChannels.length === 0) await loadM3U();
   return cachedChannels;
 }
 
-// Devuelve un canal por id
 async function getChannel(id) {
-  if (cachedChannels.length === 0) {
-    await loadM3U();
-  }
-  const channel = cachedChannels.find((c) => c.id === id);
-  if (!channel) {
-    throw new Error(`Channel with id ${id} not found`);
-  }
+  if (cachedChannels.length === 0) await loadM3U();
+  const channel = cachedChannels.find(c => c.id === id);
+  if (!channel) throw new Error(`Channel with id ${id} not found`);
   return channel;
 }
 
-module.exports = {
-  getChannels,
-  getChannel,
-};
+async function getGenres() {
+  if (cachedChannels.length === 0) await loadM3U();
+  const genresSet = new Set();
+  cachedChannels.forEach(c => {
+    if (c.group_title) genresSet.add(c.group_title);
+    if (c.additional_streams) c.additional_streams.forEach(s => s.group_title && genresSet.add(s.group_title));
+  });
+  return Array.from(genresSet).sort();
+}
+
+module.exports = { getChannels, getChannel, getGenres };
