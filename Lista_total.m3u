@@ -678,3 +678,20 @@ http://195.66.210.10:80/Rtr6yAJJqg/mEAp9xefv6/203795
 
 #EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://i.imgur.com/eurosport-logo.png" group-title="Telegram", Eurosport HD (Opcion 2)
 http://87.120.179.187:8000/play/a02c
+
+#EXTINF:-1 tvg-id="Golden.xxx" tvg-logo="" group-title="Adultos", Golden
+http://181.78.106.127:9000/play/ca076/index.m3u8
+#EXTINF:-1 tvg-id="Golden.2.xxx" tvg-logo="" group-title="Adultos", Golden 2
+http://181.78.106.127:9000/play/ca078/index.m3u8
+#EXTINF:-1 tvg-id="Golden.Edge.xxx" tvg-logo="" group-title="Adultos", Golden Edge
+http://181.78.106.127:9000/play/ca078/index.m3u8
+#EXTINF:-1 group-title="Golden.Premiere.xxx" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Canal_Golden_logo.svg/360px-Canal_Golden_logo.svg.png" group-title="Adultos", Golden Premiere
+http://45.184.87.142:8000/play/a03a
+#EXTINF:-1 group-title="Golden.Premiere.xxx" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Canal_Golden_logo.svg/360px-Canal_Golden_logo.svg.png" group-title="Adultos", Golden Premiere HD
+http://200.125.170.122:8000/play/a00l
+#EXTINF:-1 group-title="Golden.Premiere.xxx" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Canal_Golden_logo.svg/360px-Canal_Golden_logo.svg.png" group-title="Adultos", Golden Premiere HD (Opcion 2)
+http://190.61.117.35:8000/play/a036
+#EXTINF:-1 group-title="Golden.Premiere.2.xxx" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Canal_Golden_logo.svg/360px-Canal_Golden_logo.svg.png" group-title="Adultos", Golden Premiere 2 HD
+http://190.61.117.35:8000/play/a037
+#EXTINF:-1 group-title="Golden.Premiere.2.xxx" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Canal_Golden_logo.svg/360px-Canal_Golden_logo.svg.png" group-title="Adultos", Golden Premiere 2 HD
+http://200.125.170.121:8000/play/a00m
