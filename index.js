@@ -13,7 +13,7 @@ loadM3U().then(() => console.log("Lista M3U cargada al inicio")).catch(console.e
 // Generar manifest dinámicamente con géneros
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.125',
+  version: '1.2.126',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
   types: ['tv'],
