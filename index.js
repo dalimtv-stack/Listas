@@ -1,73 +1,40 @@
 // index.js
 const { addonBuilder, getRouter } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
-const { getChannels, getChannel, getGenres } = require('./src/db');
+const { getChannels, getChannel } = require('./src/db');
 const { CACHE_TTL, DEFAULT_PORT, STREAM_PREFIX } = require('./src/config');
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
-let builder;        // instancia del addon
-let manifestCache;  // manifest cacheado
+// Leer manifest ya generado
+let manifest = require('./manifest.json');
+const builder = new addonBuilder(manifest);
 
-// Inicializar addon y cache de manifest
-async function initAddon() {
-  if (builder && manifestCache) return builder;
-
-  const genres = await getGenres();
-  manifestCache = {
-    id: 'org.stremio.Heimdallr',
-    version: '1.3.001',
-    name: 'Heimdallr Channels',
-    description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
-    types: ['tv'],
-    logo: "https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960",
-    catalogs: [
-      {
-        type: 'tv',
-        id: 'Heimdallr',
-        name: 'Heimdallr Live Channels',
-        extra: [
-          { name: 'search' },
-          { name: 'genre', options: genres, isRequired: false }
-        ]
-      }
-    ],
-    resources: ['stream', 'meta', 'catalog'],
-    idPrefixes: [STREAM_PREFIX]
-  };
-
-  builder = new addonBuilder(manifestCache);
-  return builder;
-}
-
-// Catalog handler
-async function catalogHandler({ type, id }) {
+// Catalog / Meta / Stream handlers (igual que tu versión estable)
+builder.defineCatalogHandler(async ({ type, id }) => {
   if (type === 'tv' && id === 'Heimdallr') {
-    const cacheKey = 'Heimdallr_channels';
-    const cached = cache.get(cacheKey);
+    const cached = cache.get('Heimdallr_channels');
     if (cached) return cached;
 
     const channels = await getChannels();
-    const metas = channels.map(channel => ({
-      id: `${STREAM_PREFIX}${channel.id}`,
+    const metas = channels.map(c => ({
+      id: `${STREAM_PREFIX}${c.id}`,
       type: 'tv',
-      name: channel.name,
-      poster: channel.logo_url
+      name: c.name,
+      poster: c.logo_url
     }));
 
     const response = { metas };
-    cache.set(cacheKey, response);
+    cache.set('Heimdallr_channels', response);
     return response;
   }
   return { metas: [] };
-}
+});
 
-// Meta handler
-async function metaHandler({ type, id }) {
+builder.defineMetaHandler(async ({ type, id }) => {
   if (type === 'tv' && id.startsWith(STREAM_PREFIX)) {
     const channelId = id.replace(STREAM_PREFIX, '');
-    const cacheKey = `meta_${channelId}`;
-    const cached = cache.get(cacheKey);
+    const cached = cache.get(`meta_${channelId}`);
     if (cached) return cached;
 
     const channel = await getChannel(channelId);
@@ -81,18 +48,16 @@ async function metaHandler({ type, id }) {
         description: channel.name
       }
     };
-    cache.set(cacheKey, response);
+    cache.set(`meta_${channelId}`, response);
     return response;
   }
   return { meta: null };
-}
+});
 
-// Stream handler
-async function streamHandler({ type, id }) {
+builder.defineStreamHandler(async ({ type, id }) => {
   if (type === 'tv' && id.startsWith(STREAM_PREFIX)) {
     const channelId = id.replace(STREAM_PREFIX, '');
-    const cacheKey = `stream_${channelId}`;
-    const cached = cache.get(cacheKey);
+    const cached = cache.get(`stream_${channelId}`);
     if (cached) return cached;
 
     const channel = await getChannel(channelId);
@@ -105,8 +70,8 @@ async function streamHandler({ type, id }) {
         url: channel.m3u8_url,
         externalUrl: channel.acestream_id ? `acestream://${channel.acestream_id}` : channel.stream_url,
         behaviorHints: {
-          notWebReady: channel.acestream_id || channel.stream_url ? true : false,
-          external: channel.acestream_id || channel.stream_url ? true : false
+          notWebReady: !!(channel.acestream_id || channel.stream_url),
+          external: !!(channel.acestream_id || channel.stream_url)
         }
       });
     }
@@ -118,39 +83,27 @@ async function streamHandler({ type, id }) {
         url: stream.url,
         externalUrl: stream.acestream_id ? `acestream://${stream.acestream_id}` : stream.stream_url,
         behaviorHints: {
-          notWebReady: stream.acestream_id || stream.stream_url ? true : false,
-          external: stream.acestream_id || stream.stream_url ? true : false
+          notWebReady: !!(stream.acestream_id || stream.stream_url),
+          external: !!(stream.acestream_id || stream.stream_url)
         }
       });
     });
 
-    if (channel.website_url) {
-      streams.push({
-        title: `${channel.name} - Website`,
-        externalUrl: channel.website_url,
-        behaviorHints: { notWebReady: true, external: true }
-      });
-    }
-
     const response = { streams };
-    cache.set(cacheKey, response);
+    cache.set(`stream_${channelId}`, response);
     return response;
   }
   return { streams: [] };
-}
+});
 
 // Vercel handler
-module.exports = async (req, res) => {
-  const builder = await initAddon();
-  const addonInterface = builder.getInterface();
-
-  // Servir manifest directamente
+module.exports = (req, res) => {
   if (req.url === '/manifest.json') {
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(manifestCache));
+    res.end(JSON.stringify(manifest));
     return;
   }
-
+  const addonInterface = builder.getInterface();
   const router = getRouter(addonInterface);
   router(req, res, () => {
     res.statusCode = 404;
