@@ -674,7 +674,7 @@ http://179.51.136.19:8000/play/a0zj/index.m3u8
 http://179.51.136.19:8000/play/a0zj/index.m3u8
 
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://i.imgur.com/champions-league-logo.png" group-title="Telegram", Movistar Liga de Campeones
-http://195.66.210.10:80/Rtr6yAJJqg/mEAp9xefv6/203795/index.m3u8
+http://195.66.210.10:80/Rtr6yAJJqg/mEAp9xefv6/203795
 
 #EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://i.imgur.com/eurosport-logo.png" group-title="Telegram", Eurosport HD (Opcion 2)
-http://87.120.179.187:8000/play/a02c/index.m3u8
+http://87.120.179.187:8000/play/a02c
