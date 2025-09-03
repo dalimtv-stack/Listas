@@ -6,7 +6,6 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "build": "node build-genres.js"
   },
   "dependencies": {
     "stremio-addon-sdk": "^1.6.10",
