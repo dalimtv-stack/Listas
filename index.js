@@ -2,8 +2,8 @@
 const { addonBuilder, getRouter } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
 const { getChannels, getChannel } = require('./src/db');
-const { CACHE_TTL = 1800, STREAM_PREFIX = 'heimdallr_' } = process.env;
 
+const { CACHE_TTL = 1800, STREAM_PREFIX = 'heimdallr_' } = process.env;
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 let manifest;
@@ -11,7 +11,7 @@ try {
   manifest = require('./manifest.json');
   console.log('Loaded manifest.json from disk');
 } catch (err) {
-  console.error('manifest.json not found. Ejecuta node build-genres.js antes de subir a Vercel.');
+  console.error('manifest.json not found. Build failed.');
   process.exit(1);
 }
 
@@ -72,7 +72,6 @@ builder.defineStreamHandler(async ({ type, id }) => {
     const channel = await getChannel(channelId);
     const streams = [];
 
-    // Principal
     if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
       streams.push({
         name: channel.additional_streams[0]?.group_title || channel.group_title,
@@ -83,7 +82,6 @@ builder.defineStreamHandler(async ({ type, id }) => {
       });
     }
 
-    // Adicionales
     channel.additional_streams.forEach(s => {
       streams.push({
         name: s.group_title,
