@@ -662,3 +662,24 @@ acestream://868a6187d6aeec65ded84bd777814c9f7b7a9027
 
 #EXTINF:-1 tvg-id="Ziggo.Sport.6.nl" tvg-logo="https://tvgidsassets.nl/v354/img/channels/120x120/419.png" group-title="NEW LOOP", ZIGGO SPORT 6
 acestream://9231f38e71a85ad24b4c11a5e360992e30c916ed
+
+#EXTINF:-1 tvg-id="CNN.es" tvg-logo="https://i.imgur.com/cnn-esp-logo.png" group-title="Noticias", CNN ESPAÑOL
+http://45.176.193.222:2405/play/a019
+
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://i.imgur.com/movistar-deporte-logo.png" group-title="Telegram", Movistar Deportes
+http://195.66.210.10:80/Rtr6yAJJqg/mEAp9xefv6/203769
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://i.imgur.com/movistar-deporte-logo.png" group-title="Telegram", Movistar Deportes (Opcion 2)
+http://179.51.136.19:8000/play/a0zj/index.m3u8
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://i.imgur.com/movistar-deporte-logo.png" group-title="Telegram", Movistar Deportes (Opcion 3)
+http://179.51.136.19:8000/play/a0zj/index.m3u8
+
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://i.imgur.com/champions-league-logo.png" group-title="Telegram", Movistar Liga de Campeones
+http://195.66.210.10:80/Rtr6yAJJqg/mEAp9xefv6/203795
+
+#EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://i.imgur.com/eurosport-logo.png" group-title="Telegram", Eurosport HD (Opcion 2)
+http://87.120.179.187:8000/play/a02c
+
+#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://i.ibb.co/VcRYc75W/M-plus.png" group-title="Telegram", Movistar Plus
+http://179.51.136.19:8000/play/a0zm/index.m3u8
+#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://i.ibb.co/VcRYc75W/M-plus.png" group-title="Telegram", Movistar Plus (Opcion 2)
+http://179.51.136.19:8000/play/a1hu/index.m3u8
