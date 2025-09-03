@@ -1,4 +1,3 @@
-// build-genres.js
 const fs = require('fs');
 const { parse } = require('iptv-playlist-parser');
 const fetch = require('node-fetch');
@@ -19,7 +18,7 @@ async function buildManifest() {
 
     const manifest = {
       id: "org.stremio.Heimdallr",
-      version: "1.2.125",
+      version: "1.2.126",
       name: "Heimdallr Channels",
       description: "Addon para cargar canales Acestream o M3U8 desde una lista M3U.",
       types: ["tv"],
@@ -43,6 +42,7 @@ async function buildManifest() {
     console.log('manifest.json generado correctamente.');
   } catch (err) {
     console.error('Error generando manifest:', err);
+    process.exit(1);
   }
 }
 
