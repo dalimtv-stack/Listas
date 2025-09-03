@@ -1,21 +1,8 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "index.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["manifest.json"]
-      }
-    }
-  ],
-  "routes": [
-    { "src": "/(.*)", "dest": "index.js" }
-  ],
-  "build": {
-    "env": {
-      "CACHE_TTL": "1800",
-      "STREAM_PREFIX": "heimdallr_"
+  "functions": {
+    "index.js": {
+      "runtime": "nodejs18.x"
     }
   }
 }
