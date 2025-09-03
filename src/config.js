@@ -1,7 +1,7 @@
 // src/config.js
 module.exports = {
   // Tiempo de vida del caché (en segundos)
-  CACHE_TTL: 1800, // 30 minutos
+  CACHE_TTL: 300, // 30 minutos
 
   // Puerto en el que se levantará el servidor
   DEFAULT_PORT: 3000,
