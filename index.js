@@ -6,7 +6,7 @@ const { CACHE_TTL, DEFAULT_PORT, STREAM_PREFIX } = require('./src/config');
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
-// Cargar M3U al inicio para tener datos iniciales
+// Cargar M3U al inicio para datos iniciales
 loadM3U().then(() => {
   console.log('M3U cargado globalmente al inicio');
 }).catch(err => {
@@ -37,7 +37,7 @@ const manifest = {
 
 const builder = new addonBuilder(manifest);
 
-// Catalog handler (recarga M3U si el caché está vacío o expirado)
+// Catalog handler (sin cambios, recarga M3U por request)
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
   console.log('Catalog requested:', type, id, extra);
 
@@ -51,18 +51,15 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
     }
 
     try {
-      // Recargar M3U si el caché está vacío o expirado
+      // Forzar recarga del M3U en cada request (para pruebas)
+      console.log('Forzando recarga de M3U por request');
+      await loadM3U();
+      cache.set('m3u_loaded', true, CACHE_TTL);
+
       const channels = await getChannels();
-      if (channels.length === 0 || !cache.get('m3u_loaded')) {
-        console.log('Recargando M3U por request');
-        await loadM3U();
-        cache.set('m3u_loaded', true, CACHE_TTL); // Marcar como cargado
-      }
+      console.log("Fetched channels with group_titles:", channels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title })));
 
-      const updatedChannels = await getChannels();
-      console.log("Fetched channels with group_titles:", updatedChannels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title })));
-
-      let filteredChannels = updatedChannels;
+      let filteredChannels = channels;
 
       // Filtro por búsqueda
       if (extra?.search) {
@@ -70,7 +67,7 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
         filteredChannels = filteredChannels.filter(channel => channel.name.toLowerCase().includes(query));
       }
 
-      // Filtro por género (seguro: verifica additional_streams)
+      // Filtro por género
       if (extra?.genre) {
         filteredChannels = filteredChannels.filter(channel => {
           if (channel.group_title === extra.genre) return true;
@@ -132,7 +129,7 @@ builder.defineMetaHandler(async ({ type, id }) => {
   return { meta: null };
 });
 
-// Stream handler (sin cambios, streams no-m3u8 externos)
+// Stream handler (modificado para streams no-m3u8 internos)
 builder.defineStreamHandler(async ({ type, id }) => {
   console.log('Stream requested:', type, id);
 
@@ -152,31 +149,41 @@ builder.defineStreamHandler(async ({ type, id }) => {
 
       // 1. Stream principal
       if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
-        streams.push({
+        const streamObj = {
           name: channel.additional_streams.length > 0 ? channel.additional_streams[0].group_title : channel.group_title,
-          title: channel.title,
-          url: channel.m3u8_url,
-          externalUrl: channel.acestream_id ? `acestream://${channel.acestream_id}` : channel.stream_url,
-          behaviorHints: {
-            notWebReady: channel.acestream_id || channel.stream_url ? true : false,
-            external: channel.acestream_id || channel.stream_url ? true : false
-          }
-        });
+          title: channel.title
+        };
+        if (channel.acestream_id) {
+          streamObj.externalUrl = `acestream://${channel.acestream_id}`;
+          streamObj.behaviorHints = { notWebReady: true, external: true };
+        } else if (channel.m3u8_url) {
+          streamObj.url = channel.m3u8_url;
+          streamObj.behaviorHints = { notWebReady: false, external: false };
+        } else if (channel.stream_url) {
+          streamObj.url = channel.stream_url; // Usar url para reproductor interno
+          streamObj.behaviorHints = { notWebReady: false, external: false };
+        }
+        streams.push(streamObj);
       }
 
       // 2. Streams adicionales
       if (channel.additional_streams && channel.additional_streams.length > 0) {
-        channel.additional_streams.forEach((stream, index) => {
-          streams.push({
+        channel.additional_streams.forEach((stream) => {
+          const streamObj = {
             name: stream.group_title,
-            title: stream.title,
-            url: stream.url,
-            externalUrl: stream.acestream_id ? `acestream://${stream.acestream_id}` : stream.stream_url,
-            behaviorHints: {
-              notWebReady: stream.acestream_id || stream.stream_url ? true : false,
-              external: stream.acestream_id || stream.stream_url ? true : false
-            }
-          });
+            title: stream.title
+          };
+          if (stream.acestream_id) {
+            streamObj.externalUrl = `acestream://${stream.acestream_id}`;
+            streamObj.behaviorHints = { notWebReady: true, external: true };
+          } else if (stream.url) {
+            streamObj.url = stream.url;
+            streamObj.behaviorHints = { notWebReady: false, external: false }; // m3u8
+          } else if (stream.stream_url) {
+            streamObj.url = stream.stream_url; // Usar url para reproductor interno
+            streamObj.behaviorHints = { notWebReady: false, external: false };
+          }
+          streams.push(streamObj);
         });
       }
 
@@ -185,10 +192,7 @@ builder.defineStreamHandler(async ({ type, id }) => {
         streams.push({
           title: `${channel.name} - Website`,
           externalUrl: channel.website_url,
-          behaviorHints: {
-            notWebReady: true,
-            external: true
-          }
+          behaviorHints: { notWebReady: true, external: true }
         });
       }
 
@@ -211,7 +215,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 module.exports = (req, res) => {
-  console.log('Request received:', req.url); // Log para depurar en Vercel
+  console.log('Request received:', req.url);
   const addonInterface = builder.getInterface();
   const router = getRouter(addonInterface);
   router(req, res, () => {
