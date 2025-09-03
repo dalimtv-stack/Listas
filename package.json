@@ -1,11 +1,12 @@
 {
-  "name": "stremio-shickat-addon",
-  "version": "1.0.1",
-  "description": "Stremio addon for Acestream streaming",
+  "name": "Heimdallr Channels",
+  "version": "1.2.123",
+  "description": "Addon para cargar canales Acestream o M3U8 desde una lista M3U.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "build": "node build-genres.js"
   },
   "dependencies": {
     "stremio-addon-sdk": "^1.6.10",
