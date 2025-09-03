@@ -6,9 +6,15 @@ require('dotenv').config();
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
+async function getGenres() {
+  const channels = await getChannels();
+  const genres = [...new Set(channels.map(c => c.group_title).filter(Boolean))];
+  return genres;
+}
+
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.123',
+  version: '1.3.0',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
   types: ['tv'],
@@ -18,7 +24,10 @@ const manifest = {
       type: 'tv',
       id: 'Heimdallr',
       name: 'Heimdallr Live Channels',
-      extra: [{ name: 'search' }]
+      extra: [
+        { name: 'search' },
+        { name: 'genre', options: [], isRequired: false }
+      ]
     }
   ],
   resources: ['stream', 'meta', 'catalog'],
@@ -28,31 +37,48 @@ const manifest = {
 const builder = new addonBuilder(manifest);
 
 // Catalog handler
-builder.defineCatalogHandler(async ({ type, id }) => {
-  console.log('Catalog requested:', type, id);
+builder.defineCatalogHandler(async ({ type, id, extra }) => {
+  console.log('Catalog requested:', type, id, extra);
 
   if (type === 'tv' && id === 'Heimdallr') {
     const cacheKey = 'Heimdallr_channels';
     const cached = cache.get(cacheKey);
 
-    if (cached) {
+    if (cached && !extra.genre && !extra.search) {
       console.log("Using cached catalog");
       return cached;
     }
 
     try {
       const channels = await getChannels();
-      console.log("Fetched channels with group_titles:", channels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title })));
+      const genres = await getGenres();
 
-      const metas = channels.map(channel => ({
+      // actualizar opciones de géneros dinámicamente
+      builder.manifest.catalogs[0].extra.find(e => e.name === 'genre').options = genres;
+
+      let filtered = channels;
+
+      // Filtro por género
+      if (extra.genre) {
+        filtered = filtered.filter(c => c.group_title === extra.genre);
+      }
+
+      // Filtro por búsqueda
+      if (extra.search) {
+        const searchTerm = extra.search.toLowerCase();
+        filtered = filtered.filter(c => c.name.toLowerCase().includes(searchTerm));
+      }
+
+      const metas = filtered.map(channel => ({
         id: `${STREAM_PREFIX}${channel.id}`,
         type: 'tv',
-        name: channel.name, // Añadir group_title al name
-        poster: channel.logo_url
+        name: channel.name,
+        poster: channel.logo_url,
+        genre: [channel.group_title] // añadir género visible en ficha
       }));
 
       const response = { metas };
-      cache.set(cacheKey, response);
+      if (!extra.genre && !extra.search) cache.set(cacheKey, response);
       return response;
     } catch (error) {
       console.error('Catalog error:', error);
@@ -82,7 +108,8 @@ builder.defineMetaHandler(async ({ type, id }) => {
           name: channel.name,
           poster: channel.logo_url,
           background: channel.logo_url,
-          description: channel.name
+          description: channel.name,
+          genre: [channel.group_title]
         }
       };
       cache.set(cacheKey, response);
@@ -95,7 +122,7 @@ builder.defineMetaHandler(async ({ type, id }) => {
   return { meta: null };
 });
 
-// Stream handler with Acestream support
+// Stream handler
 builder.defineStreamHandler(async ({ type, id }) => {
   console.log('Stream requested:', type, id);
 
@@ -113,44 +140,56 @@ builder.defineStreamHandler(async ({ type, id }) => {
       const channel = await getChannel(channelId);
       const streams = [];
 
-      // 1. Stream principal (si está disponible)
-      if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
+      if (channel.acestream_id) {
+        // Acestream -> externo
         streams.push({
-          name: channel.additional_streams.length > 0 ? channel.additional_streams[0].group_title : channel.group_title, // Usar group_title del primer stream
+          name: channel.group_title,
           title: channel.title,
-          url: channel.m3u8_url,
-          externalUrl: channel.acestream_id ? `acestream://${channel.acestream_id}` : channel.stream_url,
-          behaviorHints: {
-            notWebReady: channel.acestream_id || channel.stream_url ? true : false,
-            external: channel.acestream_id || channel.stream_url ? true : false
-          }
+          externalUrl: `acestream://${channel.acestream_id}`,
+          behaviorHints: { notWebReady: true, external: true }
         });
       }
 
-      // 2. Streams adicionales
-      if (channel.additional_streams && channel.additional_streams.length > 0) {
-        channel.additional_streams.forEach((stream, index) => {
-          streams.push({
-            name: stream.group_title, // Usar el group_title del stream adicional
-            title: stream.title,
-            url: stream.url,
-            externalUrl: stream.acestream_id ? `acestream://${stream.acestream_id}` : stream.stream_url,
-            behaviorHints: {
-              notWebReady: stream.acestream_id || stream.stream_url ? true : false,
-              external: stream.acestream_id || stream.stream_url ? true : false
-            }
-          });
-        });
-      }
-
-      // 3. Website URL (si está disponible)
-      if (channel.website_url) {
+      if (channel.m3u8_url) {
+        // m3u8 -> interno
         streams.push({
-          title: `${channel.name} - Website`,
-          externalUrl: channel.website_url,
-          behaviorHints: {
-            notWebReady: true,
-            external: true
+          name: channel.group_title,
+          title: channel.title,
+          url: channel.m3u8_url
+        });
+      }
+
+      if (channel.stream_url) {
+        // otros streams -> también interno
+        streams.push({
+          name: channel.group_title,
+          title: channel.title,
+          url: channel.stream_url
+        });
+      }
+
+      // Streams adicionales
+      if (channel.additional_streams && channel.additional_streams.length > 0) {
+        channel.additional_streams.forEach(stream => {
+          if (stream.acestream_id) {
+            streams.push({
+              name: stream.group_title,
+              title: stream.title,
+              externalUrl: `acestream://${stream.acestream_id}`,
+              behaviorHints: { notWebReady: true, external: true }
+            });
+          } else if (stream.url) {
+            streams.push({
+              name: stream.group_title,
+              title: stream.title,
+              url: stream.url
+            });
+          } else if (stream.stream_url) {
+            streams.push({
+              name: stream.group_title,
+              title: stream.title,
+              url: stream.stream_url
+            });
           }
         });
       }
