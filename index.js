@@ -6,7 +6,7 @@ const { CACHE_TTL, DEFAULT_PORT, STREAM_PREFIX } = require('./src/config');
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
-// Cargar M3U al inicio para tener datos iniciales
+// Cargar M3U al inicio para datos iniciales
 loadM3U().then(() => {
   console.log('M3U cargado globalmente al inicio');
 }).catch(err => {
@@ -15,7 +15,7 @@ loadM3U().then(() => {
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.128',
+  version: '1.2.123',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
   types: ['tv'],
@@ -37,7 +37,7 @@ const manifest = {
 
 const builder = new addonBuilder(manifest);
 
-// Catalog handler (recarga M3U si el caché está vacío o expirado)
+// Catalog handler (forzar recarga en cada request para pruebas)
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
   console.log('Catalog requested:', type, id, extra);
 
@@ -51,18 +51,15 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
     }
 
     try {
-      // Recargar M3U si el caché está vacío o expirado
+      // Forzar recarga del M3U en cada request (para pruebas)
+      console.log('Forzando recarga de M3U por request');
+      await loadM3U();
+      cache.set('m3u_loaded', true, CACHE_TTL); // Actualizar marcador
+
       const channels = await getChannels();
-      if (channels.length === 0 || !cache.get('m3u_loaded')) {
-        console.log('Recargando M3U por request');
-        await loadM3U();
-        cache.set('m3u_loaded', true, CACHE_TTL); // Marcar como cargado
-      }
+      console.log("Fetched channels with group_titles:", channels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title })));
 
-      const updatedChannels = await getChannels();
-      console.log("Fetched channels with group_titles:", updatedChannels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title })));
-
-      let filteredChannels = updatedChannels;
+      let filteredChannels = channels;
 
       // Filtro por búsqueda
       if (extra?.search) {
@@ -70,7 +67,7 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
         filteredChannels = filteredChannels.filter(channel => channel.name.toLowerCase().includes(query));
       }
 
-      // Filtro por género (seguro: verifica additional_streams)
+      // Filtro por género
       if (extra?.genre) {
         filteredChannels = filteredChannels.filter(channel => {
           if (channel.group_title === extra.genre) return true;
@@ -211,7 +208,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 module.exports = (req, res) => {
-  console.log('Request received:', req.url); // Log para depurar en Vercel
+  console.log('Request received:', req.url);
   const addonInterface = builder.getInterface();
   const router = getRouter(addonInterface);
   router(req, res, () => {
