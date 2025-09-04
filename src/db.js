@@ -8,12 +8,27 @@ const M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/hea
 // Cache simple en memoria
 let cachedChannels = [];
 
-// Función para cargar y parsear la lista M3U (con timeout)
+// Función para determinar géneros adicionales
+function getExtraGenres(name) {
+  const lowerName = name.toLowerCase();
+  const extraGenres = [];
+  // Asignar "Deportes" si el nombre contiene palabras clave
+  if (lowerName.includes("deporte") || lowerName.includes("espn") || lowerName.includes("liga") || lowerName.includes("futbol") || lowerName.includes("football") || lowerName.includes("sport")) {
+    extraGenres.push("Deportes");
+  }
+  // Asignar "Movistar" si el nombre contiene "movistar"
+  if (lowerName.includes("movistar")) {
+    extraGenres.push("Movistar");
+  }
+  return extraGenres;
+}
+
+// Función para cargar y parsear la lista M3U
 async function loadM3U() {
   try {
     console.log("Cargando lista M3U desde:", M3U_URL);
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // Timeout de 5s
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
     const res = await fetch(M3U_URL, { signal: controller.signal });
     clearTimeout(timeoutId);
 
@@ -33,7 +48,7 @@ async function loadM3U() {
       const isM3u8 = item.url.endsWith(".m3u8");
 
       // Determinar tipo de stream
-      const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Stream";
+      const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Browser";
 
       // Corrección manual del name si el parser falla
       let name = item.name || "";
@@ -72,7 +87,8 @@ async function loadM3U() {
           stream_url: stream.stream_url,
           website_url: null,
           title: stream.title,
-          additional_streams: [stream]
+          additional_streams: [stream],
+          extra_genres: getExtraGenres(name) // Añadir géneros adicionales
         };
       } else {
         // Streams adicionales
@@ -85,7 +101,7 @@ async function loadM3U() {
     console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
   } catch (err) {
     console.error("Error cargando M3U:", err.message);
-    cachedChannels = []; // Array vacío para evitar crashes
+    cachedChannels = [];
   }
 }
 
