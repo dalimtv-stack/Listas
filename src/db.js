@@ -2,11 +2,11 @@
 const fetch = require("node-fetch");
 const { parse } = require("iptv-playlist-parser");
 
-// URL de la lista M3U remota
-const M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u";
-
 // Cache simple en memoria
 let cachedChannels = [];
+
+// URL por defecto (opcional, en caso de que el usuario no ingrese ninguna)
+const DEFAULT_M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u";
 
 // Función para determinar géneros adicionales
 function getExtraGenres(name) {
@@ -24,12 +24,14 @@ function getExtraGenres(name) {
 }
 
 // Función para cargar y parsear la lista M3U
-async function loadM3U() {
+async function loadM3U(args = {}) {
+  // Usar la URL del usuario desde args.config.m3uUrl, o la por defecto
+  const m3uUrl = args.config?.m3uUrl || DEFAULT_M3U_URL;
   try {
-    console.log("Cargando lista M3U desde:", M3U_URL);
+    console.log("Cargando lista M3U desde:", m3uUrl);
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(M3U_URL, { signal: controller.signal });
+    const res = await fetch(m3uUrl, { signal: controller.signal });
     clearTimeout(timeoutId);
 
     if (!res.ok) {
@@ -48,7 +50,7 @@ async function loadM3U() {
       const isM3u8 = item.url.endsWith(".m3u8");
 
       // Determinar tipo de stream
-      const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Stream";
+      const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Browser";
 
       // Corrección manual del name si el parser falla
       let name = item.name || "";
@@ -88,7 +90,7 @@ async function loadM3U() {
           website_url: null,
           title: stream.title,
           additional_streams: [stream],
-          extra_genres: getExtraGenres(name) // Añadir géneros adicionales
+          extra_genres: getExtraGenres(name)
         };
       } else {
         // Streams adicionales
