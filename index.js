@@ -16,7 +16,7 @@ loadM3U().then(() => {
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.145', // Incrementada por corrección de extractM3uUrlFromPath
+  version: '1.2.146', // Incrementada por corrección de routing para manifest
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -49,7 +49,7 @@ function extractM3uUrlFromPath(requestUrl) {
       const parsedUrl = new URL(requestUrl, 'http://localhost');
       const path = parsedUrl.pathname;
       console.log('Parsed path:', path);
-      // Capturar todo después del primer / hasta /manifest.json, /catalog, /meta, o /stream
+      // Capturar todo después del primer / hasta el recurso final
       const match = path.match(/^\/(.+?)(?:\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
       if (match && match[1]) {
         const decodedUrl = decodeURIComponent(match[1]);
@@ -338,6 +338,31 @@ router.post('/generate-url', (req, res) => {
         </body>
       </html>
     `);
+  }
+});
+
+// Manejador explícito para manifest.json
+router.get('/:m3uUrl/manifest.json', (req, res) => {
+  console.log('Manifest requested for m3uUrl:', req.params.m3uUrl);
+  try {
+    const m3uUrl = decodeURIComponent(req.params.m3uUrl);
+    console.log('Decoded m3uUrl:', m3uUrl);
+    // Verificar que sea una URL válida
+    new URL(m3uUrl);
+    // Cargar M3U para asegurar que los canales estén disponibles
+    loadM3U({ m3uUrl }).then(() => {
+      console.log('M3U loaded for manifest:', m3uUrl);
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(manifest));
+    }).catch(err => {
+      console.error('Error loading M3U for manifest:', err.message, err.stack);
+      res.statusCode = 500;
+      res.end(JSON.stringify({ error: 'Failed to load M3U for manifest' }));
+    });
+  } catch (err) {
+    console.error('Invalid m3uUrl in manifest request:', err.message, err.stack);
+    res.statusCode = 400;
+    res.end(JSON.stringify({ error: 'Invalid M3U URL' }));
   }
 });
 
