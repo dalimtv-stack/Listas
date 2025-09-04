@@ -3,10 +3,11 @@ const { addonBuilder, getRouter } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
 const { getChannels, getChannel, loadM3U } = require('./src/db');
 const { CACHE_TTL, DEFAULT_PORT, STREAM_PREFIX } = require('./src/config');
+const url = require('url'); // Para parsear la URL
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
-// Cargar M3U al inicio para datos iniciales (usará la URL del usuario o por defecto)
+// Cargar M3U al inicio con URL por defecto (para evitar errores iniciales)
 loadM3U().then(() => {
   console.log('M3U cargado globalmente al inicio');
 }).catch(err => {
@@ -15,7 +16,7 @@ loadM3U().then(() => {
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.132', // Incrementar versión por cambio en configuración
+  version: '1.2.133', // Incrementar versión por la corrección
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -31,28 +32,31 @@ const manifest = {
       ]
     }
   ],
-  resources: ['stream', 'meta', 'catalog', 'addon_catalog'], // Añadir addon_catalog para configuración
+  resources: ['stream', 'meta', 'catalog'], // Eliminar addon_catalog
   idPrefixes: [STREAM_PREFIX],
   behaviorHints: {
-    configurable: true, // Habilitar configuración
-    configurationRequired: true // Requerir configuración al instalar
-  },
-  config: [ // Definir campo de configuración
-    {
-      key: 'm3uUrl',
-      title: 'M3U Playlist URL',
-      description: 'Enter the URL of your M3U playlist',
-      type: 'text',
-      required: true
-    }
-  ]
+    configurable: true // Habilitar botón "Configure" en Stremio
+  }
 };
 
 const builder = new addonBuilder(manifest);
 
-// Catalog handler (sin cambios, ya filtra por extra_genres)
-builder.defineCatalogHandler(async ({ type, id, extra }) => {
-  console.log('Catalog requested:', type, id, extra);
+// Función auxiliar para extraer m3uUrl de la ruta (p.ej., /mi-url.m3u/manifest.json -> mi-url.m3u)
+function extractM3uUrlFromPath(requestUrl) {
+  if (requestUrl) {
+    const parsedUrl = url.parse(requestUrl);
+    const path = parsedUrl.pathname;
+    const match = path.match(/^\/(.+?)(\/manifest\.json|\/catalog\/.*|\/meta\/.*|\/stream\/.*)?$/);
+    if (match && match[1]) {
+      return decodeURIComponent(match[1]);
+    }
+  }
+  return null;
+}
+
+// Catalog handler
+builder.defineCatalogHandler(async ({ type, id, extra, url: requestUrl }) => {
+  console.log('Catalog requested:', type, id, extra, requestUrl);
 
   if (type === 'tv' && id === 'Heimdallr') {
     const cacheKey = `Heimdallr_channels_${extra?.genre || ''}_${extra?.search || ''}`;
@@ -64,9 +68,9 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
     }
 
     try {
-      // Forzar recarga del M3U en cada request
-      console.log('Forzando recarga de M3U por request');
-      await loadM3U(); // No pasar args.config aquí, se maneja en src/db.js
+      const m3uUrl = extractM3uUrlFromPath(requestUrl) || DEFAULT_M3U_URL;
+      console.log('Forzando recarga de M3U por request desde:', m3uUrl);
+      await loadM3U({ m3uUrl });
       cache.set('m3u_loaded', true, CACHE_TTL);
 
       const channels = await getChannels();
@@ -74,13 +78,11 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
 
       let filteredChannels = channels;
 
-      // Filtro por búsqueda
       if (extra?.search) {
         const query = extra.search.toLowerCase();
         filteredChannels = filteredChannels.filter(channel => channel.name.toLowerCase().includes(query));
       }
 
-      // Filtro por género (incluye group_title, additional_streams y extra_genres)
       if (extra?.genre) {
         filteredChannels = filteredChannels.filter(channel => {
           if (channel.group_title === extra.genre) return true;
@@ -112,9 +114,9 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
   return { metas: [] };
 });
 
-// Meta handler (sin cambios)
-builder.defineMetaHandler(async ({ type, id }) => {
-  console.log('Meta requested:', type, id);
+// Meta handler
+builder.defineMetaHandler(async ({ type, id, url: requestUrl }) => {
+  console.log('Meta requested:', type, id, requestUrl);
 
   if (type === 'tv' && id.startsWith(STREAM_PREFIX)) {
     const channelId = id.replace(STREAM_PREFIX, '');
@@ -124,6 +126,8 @@ builder.defineMetaHandler(async ({ type, id }) => {
     if (cached) return cached;
 
     try {
+      const m3uUrl = extractM3uUrlFromPath(requestUrl) || DEFAULT_M3U_URL;
+      await loadM3U({ m3uUrl });
       const channel = await getChannel(channelId);
       const response = {
         meta: {
@@ -145,9 +149,9 @@ builder.defineMetaHandler(async ({ type, id }) => {
   return { meta: null };
 });
 
-// Stream handler (sin cambios, streams no-m3u8 internos)
-builder.defineStreamHandler(async ({ type, id }) => {
-  console.log('Stream requested:', type, id);
+// Stream handler
+builder.defineStreamHandler(async ({ type, id, url: requestUrl }) => {
+  console.log('Stream requested:', type, id, requestUrl);
 
   if (type === 'tv' && id.startsWith(STREAM_PREFIX)) {
     const channelId = id.replace(STREAM_PREFIX, '');
@@ -160,10 +164,11 @@ builder.defineStreamHandler(async ({ type, id }) => {
     }
 
     try {
+      const m3uUrl = extractM3uUrlFromPath(requestUrl) || DEFAULT_M3U_URL;
+      await loadM3U({ m3uUrl });
       const channel = await getChannel(channelId);
       const streams = [];
 
-      // 1. Stream principal
       if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
         const streamObj = {
           name: channel.additional_streams.length > 0 ? channel.additional_streams[0].group_title : channel.group_title,
@@ -176,13 +181,12 @@ builder.defineStreamHandler(async ({ type, id }) => {
           streamObj.url = channel.m3u8_url;
           streamObj.behaviorHints = { notWebReady: false, external: false };
         } else if (channel.stream_url) {
-          streamObj.url = channel.stream_url; // Reproductor interno
+          streamObj.url = channel.stream_url;
           streamObj.behaviorHints = { notWebReady: false, external: false };
         }
         streams.push(streamObj);
       }
 
-      // 2. Streams adicionales
       if (channel.additional_streams && Array.isArray(channel.additional_streams)) {
         channel.additional_streams.forEach((stream) => {
           const streamObj = {
@@ -196,14 +200,13 @@ builder.defineStreamHandler(async ({ type, id }) => {
             streamObj.url = stream.url;
             streamObj.behaviorHints = { notWebReady: false, external: false };
           } else if (stream.stream_url) {
-            streamObj.url = stream.stream_url; // Reproductor interno
+            streamObj.url = stream.stream_url;
             streamObj.behaviorHints = { notWebReady: false, external: false };
           }
           streams.push(streamObj);
         });
       }
 
-      // 3. Website URL
       if (channel.website_url) {
         streams.push({
           title: `${channel.name} - Website`,
@@ -224,6 +227,66 @@ builder.defineStreamHandler(async ({ type, id }) => {
   return { streams: [] };
 });
 
+// Manejar /configure para mostrar formulario
+const addonInterface = builder.getInterface();
+const router = getRouter(addonInterface);
+
+router.get('/configure', (req, res) => {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Configure Heimdallr Channels</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
+          input { width: 100%; padding: 10px; margin: 10px 0; }
+          button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+          a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
+        </style>
+      </head>
+      <body>
+        <h1>Configure Heimdallr Channels</h1>
+        <p>Enter the URL of your M3U playlist:</p>
+        <form action="/generate-url" method="post">
+          <input type="text" name="m3uUrl" placeholder="https://example.com/list.m3u" required>
+          <button type="submit">Generate Install URL</button>
+        </form>
+      </body>
+    </html>
+  `;
+  res.setHeader('Content-Type', 'text/html');
+  res.end(html);
+});
+
+router.post('/generate-url', (req, res) => {
+  let body = '';
+  req.on('data', chunk => body += chunk);
+  req.on('end', () => {
+    const params = new url.URLSearchParams(body);
+    const m3uUrl = params.get('m3uUrl');
+    if (m3uUrl) {
+      const encodedUrl = encodeURIComponent(m3uUrl);
+      const baseUrl = `${req.protocol}://${req.get('host')}/${encodedUrl}/manifest.json`;
+      const installUrl = `stremio://${encodeURIComponent(baseUrl)}`;
+      res.setHeader('Content-Type', 'text/html');
+      res.end(`
+        <html>
+          <body>
+            <h1>Install URL Generated</h1>
+            <p>Click the link below to install the addon:</p>
+            <a href="${installUrl}" style="background: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px;">Install Addon</a>
+            <p>Or copy this URL:</p>
+            <pre>${baseUrl}</pre>
+          </body>
+        </html>
+      `);
+    } else {
+      res.statusCode = 400;
+      res.end('M3U URL is required');
+    }
+  });
+});
+
 // For development: serve the addon over HTTP
 if (process.env.NODE_ENV !== 'production') {
   const { serveHTTP } = require('stremio-addon-sdk');
@@ -232,8 +295,6 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = (req, res) => {
   console.log('Request received:', req.url);
-  const addonInterface = builder.getInterface();
-  const router = getRouter(addonInterface);
   router(req, res, () => {
     console.log('Route not found:', req.url);
     res.statusCode = 404;
