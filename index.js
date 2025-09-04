@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
-// Cargar M3U al inicio
+// Cargar M3U al inicio con URL por defecto
 loadM3U().then(() => {
   console.log('M3U cargado globalmente al inicio');
 }).catch(err => {
@@ -16,7 +16,7 @@ loadM3U().then(() => {
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.146', // Incrementada por corrección de routing para manifest
+  version: '1.2.146',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -41,41 +41,21 @@ const manifest = {
 
 const builder = new addonBuilder(manifest);
 
-// Extraer m3uUrl de la ruta
-function extractM3uUrlFromPath(requestUrl) {
-  console.log('extractM3uUrlFromPath called with requestUrl:', requestUrl);
-  if (requestUrl) {
-    try {
-      const parsedUrl = new URL(requestUrl, 'http://localhost');
-      const path = parsedUrl.pathname;
-      console.log('Parsed path:', path);
-      // Capturar todo después del primer / hasta el recurso final
-      const match = path.match(/^\/(.+?)(?:\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
-      if (match && match[1]) {
-        const decodedUrl = decodeURIComponent(match[1]);
-        console.log('Decoded m3uUrl:', decodedUrl);
-        // Verificar que sea una URL válida
-        try {
-          new URL(decodedUrl);
-          return decodedUrl;
-        } catch (e) {
-          console.error('Invalid m3uUrl after decoding:', decodedUrl, e.message);
-          return null;
-        }
-      } else {
-        console.log('No match found in path:', path);
-      }
-    } catch (err) {
-      console.error('Error parsing URL in extractM3uUrlFromPath:', err.message, err.stack);
-    }
+// Middleware para strip prefix
+router.use((req, res, next) => {
+  const match = req.url.match(/^\/(.+?)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
+  if (match && match[1]) {
+    req.m3uUrl = decodeURIComponent(match[1]);
+    req.url = match[2] || '/manifest.json';
   }
-  console.log('Returning null for m3uUrl');
-  return null;
-}
+  next();
+});
+
+// Extraer m3uUrl de req.m3uUrl en los handlers
 
 // Catalog handler
-builder.defineCatalogHandler(async ({ type, id, extra, url: requestUrl }) => {
-  console.log('Catalog requested:', type, id, extra, requestUrl);
+builder.defineCatalogHandler(async ({ type, id, extra }) => {
+  console.log('Catalog requested:', type, id, extra, req.url);
   if (type === 'tv' && id === 'Heimdallr') {
     const cacheKey = `Heimdallr_channels_${extra?.genre || ''}_${extra?.search || ''}`;
     const cached = cache.get(cacheKey);
@@ -84,7 +64,7 @@ builder.defineCatalogHandler(async ({ type, id, extra, url: requestUrl }) => {
       return cached;
     }
     try {
-      const m3uUrl = extractM3uUrlFromPath(requestUrl);
+      const m3uUrl = req.m3uUrl;
       console.log('Forzando recarga de M3U por request desde:', m3uUrl || 'default');
       await loadM3U({ m3uUrl });
       cache.set('m3u_loaded', true, CACHE_TTL);
@@ -101,7 +81,7 @@ builder.defineCatalogHandler(async ({ type, id, extra, url: requestUrl }) => {
           if (channel.additional_streams && Array.isArray(channel.additional_streams)) {
             if (channel.additional_streams.some(stream => stream.group_title === extra.genre)) return true;
           }
-          if (channel.extra_genres && Array.isArray(channel.extra_genres)) {
+          if (channel.extra_genres && Array.isArray(channel.additional_streams)) {
             if (channel.extra_genres.includes(extra.genre)) return true;
           }
           return false;
@@ -115,7 +95,6 @@ builder.defineCatalogHandler(async ({ type, id, extra, url: requestUrl }) => {
       }));
       const response = { metas };
       cache.set(cacheKey, response);
-      console.log('Catalog response:', response);
       return response;
     } catch (error) {
       console.error('Catalog error:', error.message, error.stack);
@@ -126,15 +105,15 @@ builder.defineCatalogHandler(async ({ type, id, extra, url: requestUrl }) => {
 });
 
 // Meta handler
-builder.defineMetaHandler(async ({ type, id, url: requestUrl }) => {
-  console.log('Meta requested:', type, id, requestUrl);
+builder.defineMetaHandler(async ({ type, id }) => {
+  console.log('Meta requested:', type, id, req.url);
   if (type === 'tv' && id.startsWith(STREAM_PREFIX)) {
     const channelId = id.replace(STREAM_PREFIX, '');
     const cacheKey = `meta_${channelId}`;
     const cached = cache.get(cacheKey);
     if (cached) return cached;
     try {
-      const m3uUrl = extractM3uUrlFromPath(requestUrl);
+      const m3uUrl = req.m3uUrl;
       await loadM3U({ m3uUrl });
       const channel = await getChannel(channelId);
       const response = {
@@ -158,8 +137,8 @@ builder.defineMetaHandler(async ({ type, id, url: requestUrl }) => {
 });
 
 // Stream handler
-builder.defineStreamHandler(async ({ type, id, url: requestUrl }) => {
-  console.log('Stream requested:', type, id, requestUrl);
+builder.defineStreamHandler(async ({ type, id }) => {
+  console.log('Stream requested:', type, id, req.url);
   if (type === 'tv' && id.startsWith(STREAM_PREFIX)) {
     const channelId = id.replace(STREAM_PREFIX, '');
     const cacheKey = `stream_${channelId}`;
@@ -169,7 +148,7 @@ builder.defineStreamHandler(async ({ type, id, url: requestUrl }) => {
       return cached;
     }
     try {
-      const m3uUrl = extractM3uUrlFromPath(requestUrl);
+      const m3uUrl = req.m3uUrl;
       await loadM3U({ m3uUrl });
       const channel = await getChannel(channelId);
       const streams = [];
@@ -338,31 +317,6 @@ router.post('/generate-url', (req, res) => {
         </body>
       </html>
     `);
-  }
-});
-
-// Manejador explícito para manifest.json
-router.get('/:m3uUrl/manifest.json', (req, res) => {
-  console.log('Manifest requested for m3uUrl:', req.params.m3uUrl);
-  try {
-    const m3uUrl = decodeURIComponent(req.params.m3uUrl);
-    console.log('Decoded m3uUrl:', m3uUrl);
-    // Verificar que sea una URL válida
-    new URL(m3uUrl);
-    // Cargar M3U para asegurar que los canales estén disponibles
-    loadM3U({ m3uUrl }).then(() => {
-      console.log('M3U loaded for manifest:', m3uUrl);
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(manifest));
-    }).catch(err => {
-      console.error('Error loading M3U for manifest:', err.message, err.stack);
-      res.statusCode = 500;
-      res.end(JSON.stringify({ error: 'Failed to load M3U for manifest' }));
-    });
-  } catch (err) {
-    console.error('Invalid m3uUrl in manifest request:', err.message, err.stack);
-    res.statusCode = 400;
-    res.end(JSON.stringify({ error: 'Invalid M3U URL' }));
   }
 });
 
