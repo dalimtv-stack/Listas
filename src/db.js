@@ -48,7 +48,7 @@ async function loadM3U() {
       const isM3u8 = item.url.endsWith(".m3u8");
 
       // Determinar tipo de stream
-      const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Browser";
+      const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Stream";
 
       // Corrección manual del name si el parser falla
       let name = item.name || "";
