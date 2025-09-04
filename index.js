@@ -15,21 +15,28 @@ loadM3U().then(() => {
 });
 
 const manifest = {
-  id: 'org.stremio.shickatacestream',
-  version: '1.0.1', // Incrementada por correcciones
-  name: 'Shickat Acestream Channels',
-  description: 'Addon para cargar canales Acestream desde una lista M3U específica.',
-  resources: ['catalog', 'meta', 'stream'],
-  types: ['channel'],
+  id: 'org.stremio.Heimdallr',
+  version: '1.2.147', // Incrementada por correcciones
+  name: 'Heimdallr Channels',
+  description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
+  types: ['tv'],
+  logo: 'https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960',
   catalogs: [
     {
-      type: 'channel',
-      id: 'shickat-channels',
-      name: 'Shickat Channels',
-      extra: [{ name: 'search', isRequired: false }]
+      type: 'tv',
+      id: 'Heimdallr',
+      name: 'Heimdallr Live Channels',
+      extra: [
+        { name: 'search', isRequired: false },
+        { name: 'genre', isRequired: false, options: ['Adultos', 'Elcano.top', 'Hulu.to', 'NEW LOOP', 'Noticias', 'Shickat.me', 'Telegram', 'Deportes', 'Movistar'] }
+      ]
     }
   ],
-  idPrefixes: ['shickat:']
+  resources: ['stream', 'meta', 'catalog'],
+  idPrefixes: ['heimdallr_'],
+  behaviorHints: {
+    configurable: true
+  }
 };
 
 const builder = new addonBuilder(manifest);
@@ -82,8 +89,8 @@ router.get('/:m3uUrl/manifest.json', (req, res) => {
 // Catalog handler
 builder.defineCatalogHandler(async ({ type, id, extra }, { req }) => {
   console.log('Catalog requested:', type, id, extra, req.url);
-  if (type === 'channel' && id === 'shickat-channels') {
-    const cacheKey = `shickat_channels_${extra?.search || ''}`;
+  if (type === 'tv' && id === 'Heimdallr') {
+    const cacheKey = `Heimdallr_channels_${extra?.genre || ''}_${extra?.search || ''}`;
     const cached = cache.get(cacheKey);
     if (cached) {
       console.log('Using cached catalog');
@@ -101,9 +108,21 @@ builder.defineCatalogHandler(async ({ type, id, extra }, { req }) => {
         const query = extra.search.toLowerCase();
         filteredChannels = filteredChannels.filter(channel => channel.name.toLowerCase().includes(query));
       }
+      if (extra?.genre) {
+        filteredChannels = filteredChannels.filter(channel => {
+          if (channel.group_title === extra.genre) return true;
+          if (channel.additional_streams && Array.isArray(channel.additional_streams)) {
+            if (channel.additional_streams.some(stream => stream.group_title === extra.genre)) return true;
+          }
+          if (channel.extra_genres && Array.isArray(channel.extra_genres)) {
+            if (channel.extra_genres.includes(extra.genre)) return true;
+          }
+          return false;
+        });
+      }
       const metas = filteredChannels.map(channel => ({
-        id: `shickat:${channel.id}`,
-        type: 'channel',
+        id: `heimdallr_${channel.id}`,
+        type: 'tv',
         name: channel.name,
         poster: channel.logo_url
       }));
@@ -122,8 +141,8 @@ builder.defineCatalogHandler(async ({ type, id, extra }, { req }) => {
 // Meta handler
 builder.defineMetaHandler(async ({ type, id }, { req }) => {
   console.log('Meta requested:', type, id, req.url);
-  if (type === 'channel' && id.startsWith('shickat:')) {
-    const channelId = id.replace('shickat:', '');
+  if (type === 'tv' && id.startsWith('heimdallr_')) {
+    const channelId = id.replace('heimdallr_', '');
     const cacheKey = `meta_${channelId}`;
     const cached = cache.get(cacheKey);
     if (cached) return cached;
@@ -134,7 +153,7 @@ builder.defineMetaHandler(async ({ type, id }, { req }) => {
       const response = {
         meta: {
           id: id,
-          type: 'channel',
+          type: 'tv',
           name: channel.name,
           poster: channel.logo_url,
           background: channel.logo_url,
@@ -154,8 +173,8 @@ builder.defineMetaHandler(async ({ type, id }, { req }) => {
 // Stream handler
 builder.defineStreamHandler(async ({ type, id }, { req }) => {
   console.log('Stream requested:', type, id, req.url);
-  if (type === 'channel' && id.startsWith('shickat:')) {
-    const channelId = id.replace('shickat:', '');
+  if (type === 'tv' && id.startsWith('heimdallr_')) {
+    const channelId = id.replace('heimdallr_', '');
     const cacheKey = `stream_${channelId}`;
     const cached = cache.get(cacheKey);
     if (cached) {
@@ -229,7 +248,7 @@ router.get('/configure', (req, res) => {
     <!DOCTYPE html>
     <html>
       <head>
-        <title>Configure Shickat Acestream Channels</title>
+        <title>Configure Heimdallr Channels</title>
         <style>
           body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
           input { width: 100%; padding: 10px; margin: 10px 0; }
@@ -239,7 +258,7 @@ router.get('/configure', (req, res) => {
         </style>
       </head>
       <body>
-        <h1>Configure Shickat Acestream Channels</h1>
+        <h1>Configure Heimdallr Channels</h1>
         <p>Enter the URL of your M3U playlist:</p>
         <form action="/generate-url" method="post">
           <input type="text" name="m3uUrl" placeholder="https://example.com/list.m3u" required>
@@ -284,7 +303,7 @@ router.post('/generate-url', (req, res) => {
     res.end(`
       <html>
         <head>
-          <title>Install Shickat Acestream Channels</title>
+          <title>Install Heimdallr Channels</title>
           <style>
             body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
             button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
