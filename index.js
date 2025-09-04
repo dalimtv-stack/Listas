@@ -7,7 +7,7 @@ const url = require('url');
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
-// Cargar M3U al inicio con URL por defecto (para evitar errores iniciales)
+// Cargar M3U al inicio con URL por defecto
 loadM3U().then(() => {
   console.log('M3U cargado globalmente al inicio');
 }).catch(err => {
@@ -16,7 +16,7 @@ loadM3U().then(() => {
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.134', // Incrementada por corrección
+  version: '1.2.135', // Incrementada por el botón de copiar JSON
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -32,16 +32,16 @@ const manifest = {
       ]
     }
   ],
-  resources: ['stream', 'meta', 'catalog'], // Sin addon_catalog
+  resources: ['stream', 'meta', 'catalog'],
   idPrefixes: [STREAM_PREFIX],
   behaviorHints: {
-    configurable: true // Habilita botón "Configure" en Stremio
+    configurable: true
   }
 };
 
 const builder = new addonBuilder(manifest);
 
-// Extraer m3uUrl de la ruta (p.ej., /https%3A%2F%2Fexample.com%2Flist.m3u/manifest.json)
+// Extraer m3uUrl de la ruta
 function extractM3uUrlFromPath(requestUrl) {
   if (requestUrl) {
     const parsedUrl = url.parse(requestUrl);
@@ -240,7 +240,7 @@ router.get('/configure', (req, res) => {
         <style>
           body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
           input { width: 100%; padding: 10px; margin: 10px 0; }
-          button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+          button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
           a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
           pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
         </style>
@@ -269,15 +269,38 @@ router.post('/generate-url', (req, res) => {
       const encodedUrl = encodeURIComponent(m3uUrl);
       const baseUrl = `${req.protocol}://${req.get('host')}/${encodedUrl}/manifest.json`;
       const installUrl = `stremio://${encodeURIComponent(baseUrl)}`;
+      const manifestJson = JSON.stringify(manifest, null, 2); // Generar JSON del manifest
       res.setHeader('Content-Type', 'text/html');
       res.end(`
         <html>
+          <head>
+            <title>Install Heimdallr Channels</title>
+            <style>
+              body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
+              button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
+              a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
+              pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
+            </style>
+            <script>
+              function copyManifest() {
+                const manifestText = ${JSON.stringify(manifestJson)};
+                navigator.clipboard.writeText(manifestText).then(() => {
+                  alert('Manifest JSON copied to clipboard!');
+                }).catch(err => {
+                  alert('Failed to copy: ' + err);
+                });
+              }
+            </script>
+          </head>
           <body>
             <h1>Install URL Generated</h1>
-            <p>Click the link below to install the addon:</p>
+            <p>Click the buttons below to install the addon or copy the manifest JSON:</p>
             <a href="${installUrl}" style="background: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px;">Install Addon</a>
+            <button onclick="copyManifest()">Copy Manifest JSON</button>
             <p>Or copy this URL:</p>
             <pre>${baseUrl}</pre>
+            <p>Manifest JSON:</p>
+            <pre>${manifestJson}</pre>
           </body>
         </html>
       `);
