@@ -179,7 +179,7 @@ builder.defineStreamHandler(async ({ type, id, url: requestUrl }) => {
         };
         if (channel.acestream_id) {
           streamObj.externalUrl = `acestream://${channel.acestream_id}`;
-          streamObj.behaviorHints = { notWebReady: true, external: true };
+          streamObj.behaviorHints : { notWebReady: true, external: true };
         } else if (channel.m3u8_url) {
           streamObj.url = channel.m3u8_url;
           streamObj.behaviorHints = { notWebReady: false, external: false };
