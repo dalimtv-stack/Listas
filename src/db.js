@@ -20,19 +20,21 @@ function getExtraGenres(name) {
 
 async function loadM3U(args = {}) {
   const m3uUrl = args.m3uUrl || DEFAULT_M3U_URL;
+  console.log('Cargando lista M3U desde:', m3uUrl);
   try {
-    console.log('Cargando lista M3U desde:', m3uUrl);
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // Aumentado a 10s
     const res = await fetch(m3uUrl, { signal: controller.signal });
     clearTimeout(timeoutId);
 
     if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
+      throw new Error(`HTTP error! status: ${res.status}, statusText: ${res.statusText}`);
     }
     const content = await res.text();
+    console.log('Contenido M3U descargado, longitud:', content.length);
 
     const playlist = parse(content);
+    console.log('M3U parseado, items:', playlist.items.length);
 
     const channelMap = {};
 
@@ -86,18 +88,26 @@ async function loadM3U(args = {}) {
 
     cachedChannels = Object.values(channelMap);
     console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
+    return cachedChannels; // Retornar para depuración
   } catch (err) {
-    console.error('Error cargando M3U:', err.message);
+    console.error('Error cargando M3U:', err.message, err.stack);
     cachedChannels = [];
+    throw err; // Re-lanzar para que los handlers lo manejen
   }
 }
 
 async function getChannels() {
+  if (cachedChannels.length === 0) {
+    console.log('No hay canales en caché, intentando cargar M3U');
+    await loadM3U();
+  }
+  console.log('Retornando canales:', cachedChannels.length);
   return cachedChannels;
 }
 
 async function getChannel(id) {
   if (cachedChannels.length === 0) {
+    console.log('No hay canales en caché, intentando cargar M3U');
     await loadM3U();
   }
   const channel = cachedChannels.find((c) => c.id === id);
