@@ -38,7 +38,10 @@ acestream://520950d296c952e1864a08e15af9f89f1ab514ec
 #https://i.ibb.co/tw7G81gf/dazn-laliga-2-es.png
 #EXTINF:-1 tvg-id="DAZN.LALIGA.2.es" tvg-logo="https://i.ibb.co/XxMT4qnN/DAZN-x-LALIGA-2.webp" group-title="Shickat.me", DAZN LaLiga 2 (FHD)
 acestream://ae16a8f004b1287ee1f53263ab265f72bba0daf5
- 
+
+# https://i.imgur.com/champions-league-logo.png
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/MREALMP3352101" group-title="Telegram", Movistar Liga de Campeones
+http://195.66.210.10:80/Rtr6yAJJqg/mEAp9xefv6/203795
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/MREALMP3352101" group-title="Shickat.me", Movistar Liga de Campeones (FHD)
 acestream://680187938f9305cce3ae240298f10e8695bf77c2
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://comparaiso.es/sites/comparaiso.es/files/styles/_default/public/images/movistar-liga-campeones-200x300.png" group-title="Shickat.me", Movistar Liga de Campeones (FHD) (Opcion 2)
@@ -49,7 +52,13 @@ acestream://33c009a025508cb2186b9ce36279640bb2507bdf
  
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.3.es" tvg-logo="https://comparaiso.es/sites/comparaiso.es/files/styles/_default/public/images/movistar-liga-campeones-200x300.png" group-title="Shickat.me", Movistar Liga de Campeones 3 (FHD)
 acestream://b96a9b23b5343ca748e126c9257f42e204d3f52c
- 
+
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4265923" group-title="Telegram", Movistar Deportes
+http://195.66.210.10:80/Rtr6yAJJqg/mEAp9xefv6/203769
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://i.imgur.com/movistar-deporte-logo.png" group-title="Telegram", Movistar Deportes (Opcion 2)
+http://179.51.136.19:8000/play/a0zj/index.m3u8
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://i.imgur.com/movistar-deporte-logo.png" group-title="Telegram", Movistar Deportes (Opcion 3)
+http://179.51.136.19:8000/play/a0zj/index.m3u8
 #EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4265923" group-title="Shickat.me", Movistar Deportes (FHD)
 acestream://751b9cb03d188ce70e6aac22c1bfb16a5d0b2237
 #EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4265923" group-title="Shickat.me", Movistar Deportes (FHD) (Opcion 2)
@@ -81,6 +90,8 @@ acestream://1444a976d2cf6e7fdcee833ed36ee5e55632253f
  
 #EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratula5/M386373V4072004" group-title="Telegram", Eurosport (HD)
 http://185.189.225.157/EuroSport1/index.m3u8
+#EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://i.imgur.com/eurosport-logo.png" group-title="Telegram", Eurosport HD (Opcion 2)
+http://87.120.179.187:8000/play/a02c
 #EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratula5/M386373V4072004" group-title="Shickat.me", Eurosport (FHD)
 acestream://704e51760a644bc90aa22269bf841399a0414a
  
@@ -665,19 +676,6 @@ acestream://9231f38e71a85ad24b4c11a5e360992e30c916ed
 
 #EXTINF:-1 tvg-id="CNN.es" tvg-logo="https://i.imgur.com/cnn-esp-logo.png" group-title="Noticias", CNN ESPAÑOL
 http://45.176.193.222:2405/play/a019
-
-#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://i.imgur.com/movistar-deporte-logo.png" group-title="Telegram", Movistar Deportes
-http://195.66.210.10:80/Rtr6yAJJqg/mEAp9xefv6/203769
-#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://i.imgur.com/movistar-deporte-logo.png" group-title="Telegram", Movistar Deportes (Opcion 2)
-http://179.51.136.19:8000/play/a0zj/index.m3u8
-#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://i.imgur.com/movistar-deporte-logo.png" group-title="Telegram", Movistar Deportes (Opcion 3)
-http://179.51.136.19:8000/play/a0zj/index.m3u8
-
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://i.imgur.com/champions-league-logo.png" group-title="Telegram", Movistar Liga de Campeones
-http://195.66.210.10:80/Rtr6yAJJqg/mEAp9xefv6/203795
-
-#EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://i.imgur.com/eurosport-logo.png" group-title="Telegram", Eurosport HD (Opcion 2)
-http://87.120.179.187:8000/play/a02c
 
 #EXTINF:-1 tvg-id="Golden.xxx" tvg-logo="" group-title="Adultos", Golden
 http://181.78.106.127:9000/play/ca076/index.m3u8
