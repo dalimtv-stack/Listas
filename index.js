@@ -3,7 +3,7 @@ const { addonBuilder, getRouter } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
 const { getChannels, getChannel, loadM3U } = require('./src/db');
 const { CACHE_TTL, DEFAULT_PORT, STREAM_PREFIX } = require('./src/config');
-const url = require('url'); // Para parsear la URL
+const url = require('url');
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
@@ -16,11 +16,11 @@ loadM3U().then(() => {
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.133', // Incrementar versión por la corrección
+  version: '1.2.134', // Incrementada por corrección
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
-  logo: "https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960",
+  logo: 'https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960',
   catalogs: [
     {
       type: 'tv',
@@ -32,16 +32,16 @@ const manifest = {
       ]
     }
   ],
-  resources: ['stream', 'meta', 'catalog'], // Eliminar addon_catalog
+  resources: ['stream', 'meta', 'catalog'], // Sin addon_catalog
   idPrefixes: [STREAM_PREFIX],
   behaviorHints: {
-    configurable: true // Habilitar botón "Configure" en Stremio
+    configurable: true // Habilita botón "Configure" en Stremio
   }
 };
 
 const builder = new addonBuilder(manifest);
 
-// Función auxiliar para extraer m3uUrl de la ruta (p.ej., /mi-url.m3u/manifest.json -> mi-url.m3u)
+// Extraer m3uUrl de la ruta (p.ej., /https%3A%2F%2Fexample.com%2Flist.m3u/manifest.json)
 function extractM3uUrlFromPath(requestUrl) {
   if (requestUrl) {
     const parsedUrl = url.parse(requestUrl);
@@ -63,18 +63,18 @@ builder.defineCatalogHandler(async ({ type, id, extra, url: requestUrl }) => {
     const cached = cache.get(cacheKey);
 
     if (cached) {
-      console.log("Using cached catalog");
+      console.log('Using cached catalog');
       return cached;
     }
 
     try {
-      const m3uUrl = extractM3uUrlFromPath(requestUrl) || DEFAULT_M3U_URL;
-      console.log('Forzando recarga de M3U por request desde:', m3uUrl);
+      const m3uUrl = extractM3uUrlFromPath(requestUrl);
+      console.log('Forzando recarga de M3U por request desde:', m3uUrl || 'default');
       await loadM3U({ m3uUrl });
       cache.set('m3u_loaded', true, CACHE_TTL);
 
       const channels = await getChannels();
-      console.log("Fetched channels with group_titles:", channels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title, extra_genres: c.extra_genres })));
+      console.log('Fetched channels with group_titles:', channels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title, extra_genres: c.extra_genres })));
 
       let filteredChannels = channels;
 
@@ -126,7 +126,7 @@ builder.defineMetaHandler(async ({ type, id, url: requestUrl }) => {
     if (cached) return cached;
 
     try {
-      const m3uUrl = extractM3uUrlFromPath(requestUrl) || DEFAULT_M3U_URL;
+      const m3uUrl = extractM3uUrlFromPath(requestUrl);
       await loadM3U({ m3uUrl });
       const channel = await getChannel(channelId);
       const response = {
@@ -159,12 +159,12 @@ builder.defineStreamHandler(async ({ type, id, url: requestUrl }) => {
     const cached = cache.get(cacheKey);
 
     if (cached) {
-      console.log("Using cached streams");
+      console.log('Using cached streams');
       return cached;
     }
 
     try {
-      const m3uUrl = extractM3uUrlFromPath(requestUrl) || DEFAULT_M3U_URL;
+      const m3uUrl = extractM3uUrlFromPath(requestUrl);
       await loadM3U({ m3uUrl });
       const channel = await getChannel(channelId);
       const streams = [];
@@ -215,7 +215,7 @@ builder.defineStreamHandler(async ({ type, id, url: requestUrl }) => {
         });
       }
 
-      console.log("Streams generated:", streams);
+      console.log('Streams generated:', streams);
       const response = { streams };
       cache.set(cacheKey, response);
       return response;
@@ -227,7 +227,7 @@ builder.defineStreamHandler(async ({ type, id, url: requestUrl }) => {
   return { streams: [] };
 });
 
-// Manejar /configure para mostrar formulario
+// Manejar /configure y /generate-url
 const addonInterface = builder.getInterface();
 const router = getRouter(addonInterface);
 
@@ -242,6 +242,7 @@ router.get('/configure', (req, res) => {
           input { width: 100%; padding: 10px; margin: 10px 0; }
           button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
           a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
+          pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
         </style>
       </head>
       <body>
@@ -287,7 +288,6 @@ router.post('/generate-url', (req, res) => {
   });
 });
 
-// For development: serve the addon over HTTP
 if (process.env.NODE_ENV !== 'production') {
   const { serveHTTP } = require('stremio-addon-sdk');
   serveHTTP(builder.getInterface(), { port: process.env.PORT || DEFAULT_PORT });
