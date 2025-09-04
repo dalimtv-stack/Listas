@@ -5,18 +5,16 @@ const { parse } = require("iptv-playlist-parser");
 // Cache simple en memoria
 let cachedChannels = [];
 
-// URL por defecto (opcional, en caso de que el usuario no ingrese ninguna)
+// URL por defecto
 const DEFAULT_M3U_URL = "https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u";
 
 // Función para determinar géneros adicionales
 function getExtraGenres(name) {
   const lowerName = name.toLowerCase();
   const extraGenres = [];
-  // Asignar "Deportes" si el nombre contiene palabras clave
   if (lowerName.includes("deporte") || lowerName.includes("espn") || lowerName.includes("liga") || lowerName.includes("futbol") || lowerName.includes("football") || lowerName.includes("sport")) {
     extraGenres.push("Deportes");
   }
-  // Asignar "Movistar" si el nombre contiene "movistar"
   if (lowerName.includes("movistar")) {
     extraGenres.push("Movistar");
   }
@@ -25,8 +23,7 @@ function getExtraGenres(name) {
 
 // Función para cargar y parsear la lista M3U
 async function loadM3U(args = {}) {
-  // Usar la URL del usuario desde args.config.m3uUrl, o la por defecto
-  const m3uUrl = args.config?.m3uUrl || DEFAULT_M3U_URL;
+  const m3uUrl = args.m3uUrl || DEFAULT_M3U_URL;
   try {
     console.log("Cargando lista M3U desde:", m3uUrl);
     const controller = new AbortController();
@@ -41,7 +38,6 @@ async function loadM3U(args = {}) {
 
     const playlist = parse(content);
 
-    // Agrupar entradas por tvg-id o nombre
     const channelMap = {};
 
     playlist.items.forEach((item, index) => {
@@ -49,24 +45,20 @@ async function loadM3U(args = {}) {
       const isAce = item.url.startsWith("acestream://");
       const isM3u8 = item.url.endsWith(".m3u8");
 
-      // Determinar tipo de stream
       const streamType = isAce ? "Acestream" : isM3u8 ? "M3U8" : "Browser";
 
-      // Corrección manual del name si el parser falla
       let name = item.name || "";
       if (!name && item.raw) {
         const match = item.raw.match(/,([^,]+)/);
         name = match ? match[1].trim() : `Canal ${index + 1}`;
       }
 
-      // Corrección manual del group-title si no se extrae
       let groupTitle = item.tvg.group || "";
       if (!groupTitle && item.raw) {
         const groupMatch = item.raw.match(/group-title="([^"]+)"/);
         groupTitle = groupMatch ? groupMatch[1] : "Sin grupo";
       }
 
-      // Crear objeto de stream
       const stream = {
         title: `${name} (${streamType})`,
         group_title: groupTitle,
@@ -78,7 +70,6 @@ async function loadM3U(args = {}) {
       console.log(`Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}`);
 
       if (!channelMap[tvgId]) {
-        // Primer stream del canal: crear entrada principal
         channelMap[tvgId] = {
           id: tvgId,
           name: name || `Canal ${index + 1}`,
@@ -93,12 +84,10 @@ async function loadM3U(args = {}) {
           extra_genres: getExtraGenres(name)
         };
       } else {
-        // Streams adicionales
         channelMap[tvgId].additional_streams.push(stream);
       }
     });
 
-    // Convertir el mapa a array
     cachedChannels = Object.values(channelMap);
     console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
   } catch (err) {
@@ -107,12 +96,10 @@ async function loadM3U(args = {}) {
   }
 }
 
-// Devuelve todos los canales
 async function getChannels() {
   return cachedChannels;
 }
 
-// Devuelve un canal por id
 async function getChannel(id) {
   if (cachedChannels.length === 0) {
     await loadM3U();
