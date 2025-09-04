@@ -15,7 +15,7 @@ loadM3U().then(() => {
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.131', //Se incrementa con cada cambio
+  version: '1.2.131',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
   types: ['tv'],
@@ -27,7 +27,7 @@ const manifest = {
       name: 'Heimdallr Live Channels',
       extra: [
         { name: 'search', isRequired: false },
-        { name: 'genre', isRequired: false, options: ['Adultos', 'Elcano.top', 'Hulu.to', 'NEW LOOP', 'Noticias', 'Shickat.me', 'Telegram'] }
+        { name: 'genre', isRequired: false, options: ['Deportes', 'Movistar', 'Elcano.top', 'Hulu.to', 'NEW LOOP', 'Noticias', 'Shickat.me', 'Telegram', 'Adultos'] } // Añadir Movistar
       ]
     }
   ],
@@ -37,7 +37,7 @@ const manifest = {
 
 const builder = new addonBuilder(manifest);
 
-// Catalog handler (sin cambios, recarga M3U por request)
+// Catalog handler (sin cambios, ya filtra por extra_genres)
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
   console.log('Catalog requested:', type, id, extra);
 
@@ -51,13 +51,13 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
     }
 
     try {
-      // Forzar recarga del M3U en cada request (para pruebas)
+      // Forzar recarga del M3U en cada request
       console.log('Forzando recarga de M3U por request');
       await loadM3U();
       cache.set('m3u_loaded', true, CACHE_TTL);
 
       const channels = await getChannels();
-      console.log("Fetched channels with group_titles:", channels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title })));
+      console.log("Fetched channels with group_titles:", channels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title, extra_genres: c.extra_genres })));
 
       let filteredChannels = channels;
 
@@ -67,12 +67,15 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
         filteredChannels = filteredChannels.filter(channel => channel.name.toLowerCase().includes(query));
       }
 
-      // Filtro por género
+      // Filtro por género (incluye group_title, additional_streams y extra_genres)
       if (extra?.genre) {
         filteredChannels = filteredChannels.filter(channel => {
           if (channel.group_title === extra.genre) return true;
           if (channel.additional_streams && Array.isArray(channel.additional_streams)) {
-            return channel.additional_streams.some(stream => stream.group_title === extra.genre);
+            if (channel.additional_streams.some(stream => stream.group_title === extra.genre)) return true;
+          }
+          if (channel.extra_genres && Array.isArray(channel.extra_genres)) {
+            if (channel.extra_genres.includes(extra.genre)) return true;
           }
           return false;
         });
@@ -129,7 +132,7 @@ builder.defineMetaHandler(async ({ type, id }) => {
   return { meta: null };
 });
 
-// Stream handler (modificado para streams no-m3u8 internos)
+// Stream handler (sin cambios, streams no-m3u8 internos)
 builder.defineStreamHandler(async ({ type, id }) => {
   console.log('Stream requested:', type, id);
 
@@ -160,7 +163,7 @@ builder.defineStreamHandler(async ({ type, id }) => {
           streamObj.url = channel.m3u8_url;
           streamObj.behaviorHints = { notWebReady: false, external: false };
         } else if (channel.stream_url) {
-          streamObj.url = channel.stream_url; // Usar url para reproductor interno
+          streamObj.url = channel.stream_url; // Reproductor interno
           streamObj.behaviorHints = { notWebReady: false, external: false };
         }
         streams.push(streamObj);
@@ -178,9 +181,9 @@ builder.defineStreamHandler(async ({ type, id }) => {
             streamObj.behaviorHints = { notWebReady: true, external: true };
           } else if (stream.url) {
             streamObj.url = stream.url;
-            streamObj.behaviorHints = { notWebReady: false, external: false }; // m3u8
+            streamObj.behaviorHints = { notWebReady: false, external: false };
           } else if (stream.stream_url) {
-            streamObj.url = stream.stream_url; // Usar url para reproductor interno
+            streamObj.url = stream.stream_url; // Reproductor interno
             streamObj.behaviorHints = { notWebReady: false, external: false };
           }
           streams.push(streamObj);
