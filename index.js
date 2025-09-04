@@ -16,7 +16,7 @@ loadM3U().then(() => {
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.148', // Incrementada por correcciones
+  version: '1.2.149', // Incrementada por correcciones
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -67,7 +67,7 @@ function extractM3uUrlFromPath(requestUrl) {
       console.error('Error parsing URL in extractM3uUrlFromPath:', err.message, err.stack);
     }
   }
-  console.log('Returning null for m3uUrl');
+  console.log('Returning default m3uUrl');
   return null;
 }
 
@@ -233,15 +233,26 @@ const router = getRouter(addonInterface);
 // Middleware para parsear form-urlencoded
 router.use(bodyParser.urlencoded({ extended: false }));
 
+// Middleware para strip prefix
+router.use((req, res, next) => {
+  console.log('Request received:', req.url);
+  const match = req.url.match(/^\/(.+?)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
+  if (match && match[1]) {
+    req.m3uUrl = decodeURIComponent(match[1]);
+    req.url = match[2] || '/manifest.json';
+    console.log('Decoded m3uUrl:', req.m3uUrl);
+    console.log('Modified req.url:', req.url);
+  }
+  next();
+});
+
 // Manejador explícito para manifest.json
 router.get('/:m3uUrl/manifest.json', (req, res) => {
   console.log('Manifest requested for m3uUrl:', req.params.m3uUrl);
   try {
     const m3uUrl = decodeURIComponent(req.params.m3uUrl);
     console.log('Decoded m3uUrl:', m3uUrl);
-    // Verificar que sea una URL válida
     new URL(m3uUrl);
-    // Cargar M3U para asegurar que los canales estén disponibles
     loadM3U({ m3uUrl }).then(() => {
       console.log('M3U loaded for manifest:', m3uUrl);
       res.setHeader('Content-Type', 'application/json');
