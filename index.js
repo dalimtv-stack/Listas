@@ -16,7 +16,7 @@ loadM3U().then(() => {
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.140', // Incrementada por corrección del SyntaxError en behaviorHints
+  version: '1.2.141', // Incrementada por corrección del SyntaxError: Unexpected end of input
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -179,13 +179,13 @@ builder.defineStreamHandler(async ({ type, id, url: requestUrl }) => {
         };
         if (channel.acestream_id) {
           streamObj.externalUrl = `acestream://${channel.acestream_id}`;
-          streamObj.behaviorHints = { notWebReady: true, external: true }; // Corregido: usa =
+          streamObj.behaviorHints = { notWebReady: true, external: true };
         } else if (channel.m3u8_url) {
           streamObj.url = channel.m3u8_url;
-          streamObj.behaviorHints = { notWebReady: false, external: false }; // Corregido: usa =
+          streamObj.behaviorHints = { notWebReady: false, external: false };
         } else if (channel.stream_url) {
           streamObj.url = channel.stream_url;
-          streamObj.behaviorHints = { notWebReady: false, external: false }; // Corregido: usa =
+          streamObj.behaviorHints = { notWebReady: false, external: false };
         }
         streams.push(streamObj);
       }
@@ -198,13 +198,13 @@ builder.defineStreamHandler(async ({ type, id, url: requestUrl }) => {
           };
           if (stream.acestream_id) {
             streamObj.externalUrl = `acestream://${stream.acestream_id}`;
-            streamObj.behaviorHints = { notWebReady: true, external: true }; // Corregido: usa =
+            streamObj.behaviorHints = { notWebReady: true, external: true };
           } else if (stream.url) {
             streamObj.url = stream.url;
-            streamObj.behaviorHints = { notWebReady: false, external: false }; // Corregido: usa =
+            streamObj.behaviorHints = { notWebReady: false, external: false };
           } else if (stream.stream_url) {
             streamObj.url = stream.stream_url;
-            streamObj.behaviorHints = { notWebReady: false, external: false }; // Corregido: usa =
+            streamObj.behaviorHints = { notWebReady: false, external: false };
           }
           streams.push(streamObj);
         });
@@ -214,7 +214,7 @@ builder.defineStreamHandler(async ({ type, id, url: requestUrl }) => {
         streams.push({
           title: `${channel.name} - Website`,
           externalUrl: channel.website_url,
-          behaviorHints: { notWebReady: true, external: true } // Correcto: usa : en objeto literal
+          behaviorHints: { notWebReady: true, external: true }
         });
       }
 
@@ -276,3 +276,79 @@ router.post('/generate-url', (req, res) => {
       const installUrl = `stremio://${encodeURIComponent(baseUrl)}`;
       const manifestJson = JSON.stringify(manifest, null, 2);
       console.log('Generated baseUrl:', baseUrl);
+      console.log('Generated installUrl:', installUrl);
+      res.setHeader('Content-Type', 'text/html');
+      res.end(`
+        <html>
+          <head>
+            <title>Install Heimdallr Channels</title>
+            <style>
+              body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
+              button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
+              a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
+              pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
+            </style>
+            <script>
+              function copyManifest() {
+                const manifestText = ${JSON.stringify(manifestJson)};
+                navigator.clipboard.writeText(manifestText).then(() => {
+                  alert('Manifest JSON copied to clipboard!');
+                }).catch(err => {
+                  alert('Failed to copy: ' + err);
+                });
+              }
+            </script>
+          </head>
+          <body>
+            <h1>Install URL Generated</h1>
+            <p>Click the buttons below to install the addon or copy the manifest JSON:</p>
+            <a href="${installUrl}" style="background: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px;">Install Addon</a>
+            <button onclick="copyManifest()">Copy Manifest JSON</button>
+            <p>Or copy this URL:</p>
+            <pre>${baseUrl}</pre>
+            <p>Manifest JSON:</p>
+            <pre>${manifestJson}</pre>
+          </body>
+        </html>
+      `);
+    } else {
+      console.error('No m3uUrl provided in POST body');
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'text/html');
+      res.end(`
+        <html>
+          <body>
+            <h1>Error</h1>
+            <p>M3U URL is required. <a href="/configure">Go back</a></p>
+          </body>
+        </html>
+      `);
+    }
+  } catch (err) {
+    console.error('Error in /generate-url:', err.message);
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'text/html');
+    res.end(`
+      <html>
+        <body>
+          <h1>Server Error</h1>
+          <p>An error occurred while processing the request. <a href="/configure">Go back</a></p>
+        </body>
+      </html>
+    `);
+  }
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  const { serveHTTP } = require('stremio-addon-sdk');
+  serveHTTP(builder.getInterface(), { port: process.env.PORT || DEFAULT_PORT });
+}
+
+module.exports = (req, res) => {
+  console.log('Request received:', req.url);
+  router(req, res, () => {
+    console.log('Route not found:', req.url);
+    res.statusCode = 404;
+    res.end();
+  });
+};
