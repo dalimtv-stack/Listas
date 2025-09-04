@@ -6,7 +6,7 @@ const { CACHE_TTL, DEFAULT_PORT, STREAM_PREFIX } = require('./src/config');
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
-// Cargar M3U al inicio para datos iniciales
+// Cargar M3U al inicio para datos iniciales (usará la URL del usuario o por defecto)
 loadM3U().then(() => {
   console.log('M3U cargado globalmente al inicio');
 }).catch(err => {
@@ -15,9 +15,9 @@ loadM3U().then(() => {
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.131',
+  version: '1.2.124', // Incrementar versión por cambio en configuración
   name: 'Heimdallr Channels',
-  description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U.',
+  description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
   logo: "https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960",
   catalogs: [
@@ -27,12 +27,25 @@ const manifest = {
       name: 'Heimdallr Live Channels',
       extra: [
         { name: 'search', isRequired: false },
-        { name: 'genre', isRequired: false, options: ['Deportes', 'Movistar', 'Elcano.top', 'Hulu.to', 'NEW LOOP', 'Noticias', 'Shickat.me', 'Telegram', 'Adultos'] } // Añadir Movistar
+        { name: 'genre', isRequired: false, options: ['Adultos', 'Elcano.top', 'Hulu.to', 'NEW LOOP', 'Noticias', 'Shickat.me', 'Telegram', 'Deportes', 'Movistar'] }
       ]
     }
   ],
-  resources: ['stream', 'meta', 'catalog'],
-  idPrefixes: [STREAM_PREFIX]
+  resources: ['stream', 'meta', 'catalog', 'addon_catalog'], // Añadir addon_catalog para configuración
+  idPrefixes: [STREAM_PREFIX],
+  behaviorHints: {
+    configurable: true, // Habilitar configuración
+    configurationRequired: true // Requerir configuración al instalar
+  },
+  config: [ // Definir campo de configuración
+    {
+      key: 'm3uUrl',
+      title: 'M3U Playlist URL',
+      description: 'Enter the URL of your M3U playlist',
+      type: 'text',
+      required: true
+    }
+  ]
 };
 
 const builder = new addonBuilder(manifest);
@@ -53,7 +66,7 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
     try {
       // Forzar recarga del M3U en cada request
       console.log('Forzando recarga de M3U por request');
-      await loadM3U();
+      await loadM3U(); // No pasar args.config aquí, se maneja en src/db.js
       cache.set('m3u_loaded', true, CACHE_TTL);
 
       const channels = await getChannels();
@@ -170,7 +183,7 @@ builder.defineStreamHandler(async ({ type, id }) => {
       }
 
       // 2. Streams adicionales
-      if (channel.additional_streams && channel.additional_streams.length > 0) {
+      if (channel.additional_streams && Array.isArray(channel.additional_streams)) {
         channel.additional_streams.forEach((stream) => {
           const streamObj = {
             name: stream.group_title,
