@@ -16,7 +16,7 @@ loadM3U().then(() => {
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.141', // Incrementada por corrección del SyntaxError: Unexpected end of input
+  version: '1.2.142', // Incrementada por depuración de /generate-url
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -267,51 +267,17 @@ router.get('/configure', (req, res) => {
 });
 
 router.post('/generate-url', (req, res) => {
-  console.log('POST /generate-url received:', req.body);
+  console.log('POST /generate-url received with headers:', req.headers);
+  console.log('POST /generate-url body:', req.body);
   try {
+    // Verificar que req.body existe y tiene m3uUrl
+    if (!req.body) {
+      throw new Error('Request body is undefined or empty');
+    }
     const m3uUrl = req.body.m3uUrl;
-    if (m3uUrl) {
-      const encodedUrl = encodeURIComponent(m3uUrl);
-      const baseUrl = `${req.protocol}://${req.get('host')}/${encodedUrl}/manifest.json`;
-      const installUrl = `stremio://${encodeURIComponent(baseUrl)}`;
-      const manifestJson = JSON.stringify(manifest, null, 2);
-      console.log('Generated baseUrl:', baseUrl);
-      console.log('Generated installUrl:', installUrl);
-      res.setHeader('Content-Type', 'text/html');
-      res.end(`
-        <html>
-          <head>
-            <title>Install Heimdallr Channels</title>
-            <style>
-              body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
-              button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
-              a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
-              pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
-            </style>
-            <script>
-              function copyManifest() {
-                const manifestText = ${JSON.stringify(manifestJson)};
-                navigator.clipboard.writeText(manifestText).then(() => {
-                  alert('Manifest JSON copied to clipboard!');
-                }).catch(err => {
-                  alert('Failed to copy: ' + err);
-                });
-              }
-            </script>
-          </head>
-          <body>
-            <h1>Install URL Generated</h1>
-            <p>Click the buttons below to install the addon or copy the manifest JSON:</p>
-            <a href="${installUrl}" style="background: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px;">Install Addon</a>
-            <button onclick="copyManifest()">Copy Manifest JSON</button>
-            <p>Or copy this URL:</p>
-            <pre>${baseUrl}</pre>
-            <p>Manifest JSON:</p>
-            <pre>${manifestJson}</pre>
-          </body>
-        </html>
-      `);
-    } else {
+    console.log('m3uUrl received:', m3uUrl);
+
+    if (!m3uUrl) {
       console.error('No m3uUrl provided in POST body');
       res.statusCode = 400;
       res.setHeader('Content-Type', 'text/html');
@@ -323,16 +289,62 @@ router.post('/generate-url', (req, res) => {
           </body>
         </html>
       `);
+      return;
     }
+
+    // Construir baseUrl de forma robusta
+    const host = req.get('host') || 'listas-sand.vercel.app';
+    const protocol = req.protocol || 'https';
+    const encodedUrl = encodeURIComponent(m3uUrl);
+    const baseUrl = `${protocol}://${host}/${encodedUrl}/manifest.json`;
+    const installUrl = `stremio://${encodeURIComponent(baseUrl)}`;
+    const manifestJson = JSON.stringify(manifest, null, 2);
+    console.log('Generated baseUrl:', baseUrl);
+    console.log('Generated installUrl:', installUrl);
+
+    res.setHeader('Content-Type', 'text/html');
+    res.end(`
+      <html>
+        <head>
+          <title>Install Heimdallr Channels</title>
+          <style>
+            body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
+            button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
+            a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
+            pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
+          </style>
+          <script>
+            function copyManifest() {
+              const manifestText = ${JSON.stringify(manifestJson)};
+              navigator.clipboard.writeText(manifestText).then(() => {
+                alert('Manifest JSON copied to clipboard!');
+              }).catch(err => {
+                alert('Failed to copy: ' + err);
+              });
+            }
+          </script>
+        </head>
+        <body>
+          <h1>Install URL Generated</h1>
+          <p>Click the buttons below to install the addon or copy the manifest JSON:</p>
+          <a href="${installUrl}" style="background: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px;">Install Addon</a>
+          <button onclick="copyManifest()">Copy Manifest JSON</button>
+          <p>Or copy this URL:</p>
+          <pre>${baseUrl}</pre>
+          <p>Manifest JSON:</p>
+          <pre>${manifestJson}</pre>
+        </body>
+      </html>
+    `);
   } catch (err) {
-    console.error('Error in /generate-url:', err.message);
+    console.error('Error in /generate-url:', err.message, err.stack);
     res.statusCode = 500;
     res.setHeader('Content-Type', 'text/html');
     res.end(`
       <html>
         <body>
           <h1>Server Error</h1>
-          <p>An error occurred while processing the request. <a href="/configure">Go back</a></p>
+          <p>An error occurred while processing the request: ${err.message}. <a href="/configure">Go back</a></p>
         </body>
       </html>
     `);
