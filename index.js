@@ -16,7 +16,7 @@ loadM3U().then(() => {
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.144', // Incrementada por corrección de copyManifest y depuración de M3U
+  version: '1.2.145', // Incrementada por corrección de extractM3uUrlFromPath
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -46,13 +46,22 @@ function extractM3uUrlFromPath(requestUrl) {
   console.log('extractM3uUrlFromPath called with requestUrl:', requestUrl);
   if (requestUrl) {
     try {
-      const path = new URL(requestUrl, 'http://localhost').pathname;
+      const parsedUrl = new URL(requestUrl, 'http://localhost');
+      const path = parsedUrl.pathname;
       console.log('Parsed path:', path);
-      const match = path.match(/^\/(.+?)(\/manifest\.json|\/catalog\/.*|\/meta\/.*|\/stream\/.*)?$/);
+      // Capturar todo después del primer / hasta /manifest.json, /catalog, /meta, o /stream
+      const match = path.match(/^\/(.+?)(?:\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
       if (match && match[1]) {
         const decodedUrl = decodeURIComponent(match[1]);
         console.log('Decoded m3uUrl:', decodedUrl);
-        return decodedUrl;
+        // Verificar que sea una URL válida
+        try {
+          new URL(decodedUrl);
+          return decodedUrl;
+        } catch (e) {
+          console.error('Invalid m3uUrl after decoding:', decodedUrl, e.message);
+          return null;
+        }
       } else {
         console.log('No match found in path:', path);
       }
