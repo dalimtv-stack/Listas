@@ -28,13 +28,14 @@ async function loadM3U(args = {}) {
     const res = await fetch(m3uUrl, { signal: controller.signal });
     clearTimeout(timeoutId);
 
-    console.log(`[loadM3U] Respuesta HTTP recibida, status: ${res.status}, statusText: ${res.statusText}`);
+    console.log(`[loadM3U] Respuesta HTTP: status=${res.status}, statusText=${res.statusText}`);
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}, statusText: ${res.statusText}`);
     }
 
     const content = await res.text();
-    console.log(`[loadM3U] Contenido M3U descargado, longitud: ${content.length}`);
+    console.log(`[loadM3U] Contenido M3U descargado, longitud: ${content.length}, primeros 100 caracteres: ${content.slice(0, 100)}`);
+
     if (!content || content.trim() === '') {
       throw new Error('Contenido M3U vacío');
     }
@@ -42,7 +43,7 @@ async function loadM3U(args = {}) {
     const playlist = parse(content);
     console.log(`[loadM3U] M3U parseado, items: ${playlist.items.length}`);
     if (playlist.items.length === 0) {
-      throw new Error('La lista M3U no contiene elementos');
+      throw new Error('La lista M3U no contiene elementos válidos');
     }
 
     const channelMap = {};
