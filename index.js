@@ -14,7 +14,7 @@ const configCache = new NodeCache({ stdTTL: CONFIG_CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.156',
+  version: '1.2.157',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -250,17 +250,34 @@ async function validateM3uUrl(m3uUrl) {
   }
 }
 
-// Manifest handler
+// Manifest handler para rutas estáticas
 router.get('/manifest.json', (req, res) => {
-  console.log('Manifest requested, configId:', req.configId || 'none', 'URL:', req.url);
+  console.log('Static manifest requested, configId:', req.configId || 'none', 'URL:', req.url);
   try {
     const configId = req.configId || 'none';
     const m3uUrl = getM3uUrlFromConfigId(configId);
-    console.log('Serving manifest with configId:', configId, 'm3uUrl:', m3uUrl || 'none');
+    console.log('Serving static manifest with configId:', configId, 'm3uUrl:', m3uUrl || 'none');
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(manifest));
   } catch (err) {
-    console.error('Error serving manifest:', err.message);
+    console.error('Error serving static manifest:', err.message);
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ error: 'Failed to generate manifest', details: err.message }));
+  }
+});
+
+// Manifest handler para rutas dinámicas
+router.get('/:configId/manifest.json', (req, res) => {
+  console.log('Dynamic manifest requested, configId:', req.params.configId, 'URL:', req.url);
+  try {
+    const configId = req.params.configId || 'none';
+    const m3uUrl = getM3uUrlFromConfigId(configId);
+    console.log('Serving dynamic manifest with configId:', configId, 'm3uUrl:', m3uUrl || 'none');
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(manifest));
+  } catch (err) {
+    console.error('Error serving dynamic manifest:', err.message);
     res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ error: 'Failed to generate manifest', details: err.message }));
@@ -396,15 +413,15 @@ router.post('/generate-url', async (req, res) => {
 
 // Middleware para extraer configId
 router.use((req, res, next) => {
-  console.log('Middleware processing request:', req.url);
+  console.log('Middleware processing request, original URL:', req.url);
   const match = req.url.match(/^\/([^/]+)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
   if (match && match[1]) {
     req.configId = match[1];
     req.url = match[2] || '/manifest.json';
-    console.log('Extracted configId:', req.configId, 'Modified req.url:', req.url);
+    console.log('Middleware success, extracted configId:', req.configId, 'rewritten URL:', req.url);
   } else {
     req.configId = null;
-    console.log('No configId matched, using original URL:', req.url);
+    console.log('Middleware no match, using original URL:', req.url);
   }
   next();
 });
@@ -415,7 +432,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 module.exports = (req, res) => {
-  console.log('Request received:', req.url);
+  console.log('Main handler received request, URL:', req.url, 'configId:', req.configId || 'none');
   router(req, res, () => {
     console.log('Route not found:', req.url);
     res.statusCode = 404;
