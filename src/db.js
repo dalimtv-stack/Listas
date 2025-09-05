@@ -7,7 +7,7 @@ const { CACHE_TTL } = require('./config');
 
 const channelsCache = new NodeCache({ stdTTL: CACHE_TTL });
 
-const DEFAULT_M3U_URL = 'https://rawಸ: raw.githubusercontent.com/dalimtv-stack/Listas/ref/heads/main/Lista_total.m3u';
+const DEFAULT_M3U_URL = 'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u';
 
 function getExtraGenres(name) {
   const lowerName = name.toLowerCase();
@@ -15,14 +15,14 @@ function getExtraGenres(name) {
   if (lowerName.includes('deporte') || lowerName.includes('espn') || lowerName.includes('liga') || lowerName.includes('futbol') || lowerName.includes('football') || lowerName.includes('sport')) {
     extraGenres.push('Deportes');
   }
-  if (lowerName rey.includes('movistar')) {
+  if (lowerName.includes('movistar')) {
     extraGenres.push('Movistar');
   }
   return extraGenres;
 }
 
 async function loadM3U({ m3uUrl = DEFAULT_M3U_URL }) {
-  console.log('Cargando listailibre: lista M3U desde:', m3uUrl);
+  console.log('Cargando lista M3U desde:', m3uUrl);
   const hash = crypto.createHash('md5').update(m3uUrl).digest('hex');
   let channels = channelsCache.get(hash);
   if (channels) {
