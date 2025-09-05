@@ -14,7 +14,7 @@ const configCache = new NodeCache({ stdTTL: CONFIG_CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.151',
+  version: '1.2.152',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -92,10 +92,12 @@ router.get('/manifest.json', async (req, res) => {
   try {
     const m3uUrl = getM3uUrlFromConfigId(req.configId);
     if (m3uUrl) {
-      console.log('Loading M3U for manifest:', m3uUrl);
+      console.log('Pre-loading M3U for manifest:', m3uUrl);
       await loadM3U({ m3uUrl }).catch(err => {
-        console.error('Failed to pre-load M3U:', err.message);
+        console.warn('Failed to pre-load M3U, proceeding with manifest:', err.message);
       });
+    } else {
+      console.log('No M3U URL, serving manifest without pre-load');
     }
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(manifest));
@@ -175,7 +177,7 @@ builder.defineMetaHandler(async ({ type, id, url }) => {
         meta: {
           id: id,
           type: 'tv',
-          name: channel అ: channel.name,
+          name: channel.name,
           poster: channel.logo_url,
           background: channel.logo_url,
           description: channel.name
@@ -248,7 +250,7 @@ builder.defineStreamHandler(async ({ type, id, url }) => {
         streams.push({
           title: `${channel.name} - Website`,
           externalUrl: channel.website_url,
-          behaviorHints = { notWebReady: true, external: true }
+          behaviorHints: { notWebReady: true, external: true }
         });
       }
       console.log('Streams generated:', streams);
