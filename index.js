@@ -1,4 +1,5 @@
 // index.js
+// index.js
 const { addonBuilder, getRouter } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
 const { getChannels, getChannel, loadM3U } = require('./src/db');
@@ -16,7 +17,7 @@ loadM3U().then(() => {
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.1513',
+  version: '1.2.150',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -41,218 +42,112 @@ const manifest = {
 
 const builder = new addonBuilder(manifest);
 
-// Extraer m3uUrl de la ruta
 function extractM3uUrlFromPath(requestUrl) {
-  console.log('extractM3uUrlFromPath called with requestUrl:', requestUrl);
-  if (requestUrl) {
-    try {
-      const parsedUrl = new URL(requestUrl, 'http://localhost');
-      const path = parsedUrl.pathname;
-      console.log('Parsed path:', path);
-      const match = path.match(/^\/(.+?)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
-      if (match && match[1]) {
-        const decodedUrl = decodeURIComponent(match[1]);
-        console.log('Decoded m3uUrl:', decodedUrl);
-        try {
-          new URL(decodedUrl);
-          return decodedUrl;
-        } catch (e) {
-          console.error('Invalid m3uUrl after decoding:', decodedUrl, e.message);
-          return null;
-        }
-      } else {
-        console.log('No match found in path:', path);
-      }
-    } catch (err) {
-      console.error('Error parsing URL in extractM3uUrlFromPath:', err.message, err.stack);
+  if (!requestUrl) return null;
+  try {
+    const parsedUrl = new URL(requestUrl, 'http://localhost');
+    const path = parsedUrl.pathname;
+    const match = path.match(/^\/(.+?)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
+    if (match && match[1]) {
+      const decodedUrl = decodeURIComponent(match[1]);
+      try { new URL(decodedUrl); return decodedUrl; } catch (e) { return null; }
     }
+  } catch (err) {
+    console.error('Error parsing URL:', err.message);
   }
-  console.log('Returning default m3uUrl');
   return null;
 }
 
-// Catalog handler
+// ---------------- Catalog Handler ----------------
 builder.defineCatalogHandler(async ({ type, id, extra, url }) => {
-  console.log('Catalog requested:', type, id, extra, url);
-  if (type === 'tv' && id === 'Heimdallr') {
-    const cacheKey = `Heimdallr_channels_${extra?.genre || ''}_${extra?.search || ''}`;
-    const cached = cache.get(cacheKey);
-    if (cached) {
-      console.log('Using cached catalog');
-      return cached;
-    }
-    try {
-      const m3uUrl = extractM3uUrlFromPath(url);
-      console.log('Forzando recarga de M3U por request desde:', m3uUrl || 'default');
-      await loadM3U({ m3uUrl });
-      cache.set('m3u_loaded', true, CACHE_TTL);
-      const channels = await getChannels();
-      console.log('Fetched channels:', channels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title, extra_genres: c.extra_genres })));
-      let filteredChannels = channels;
-      if (extra?.search) {
-        const query = extra.search.toLowerCase();
-        filteredChannels = filteredChannels.filter(channel => channel.name.toLowerCase().includes(query));
-      }
-      if (extra?.genre) {
-        filteredChannels = filteredChannels.filter(channel => {
-          if (channel.group_title === extra.genre) return true;
-          if (channel.additional_streams && Array.isArray(channel.additional_streams)) {
-            if (channel.additional_streams.some(stream => stream.group_title === extra.genre)) return true;
-          }
-          if (channel.extra_genres && Array.isArray(channel.extra_genres)) {
-            if (channel.extra_genres.includes(extra.genre)) return true;
-          }
-          return false;
-        });
-      }
-      const metas = filteredChannels.map(channel => ({
-        id: `heimdallr_${channel.id}`,
-        type: 'tv',
-        name: channel.name,
-        poster: channel.logo_url
-      }));
-      const response = { metas };
-      cache.set(cacheKey, response);
-      console.log('Catalog response:', response);
-      return response;
-    } catch (error) {
-      console.error('Catalog error:', error.message, error.stack);
-      return { metas: [] };
-    }
+  if (type !== 'tv' || id !== 'Heimdallr') return { metas: [] };
+  const cacheKey = `Heimdallr_channels_${extra?.genre || ''}_${extra?.search || ''}`;
+  const cached = cache.get(cacheKey);
+  if (cached) return cached;
+  try {
+    const m3uUrl = extractM3uUrlFromPath(url);
+    await loadM3U({ m3uUrl });
+    const channels = await getChannels();
+    let filtered = channels;
+    if (extra?.search) filtered = filtered.filter(c => c.name.toLowerCase().includes(extra.search.toLowerCase()));
+    if (extra?.genre) filtered = filtered.filter(c => (c.group_title === extra.genre || (c.additional_streams?.some(s => s.group_title === extra.genre)) || (c.extra_genres?.includes(extra.genre))));
+    const metas = filtered.map(c => ({ id: `heimdallr_${c.id}`, type: 'tv', name: c.name, poster: c.logo_url }));
+    const response = { metas };
+    cache.set(cacheKey, response);
+    return response;
+  } catch (err) {
+    console.error('Catalog error:', err.message);
+    return { metas: [] };
   }
-  return { metas: [] };
 });
 
-// Meta handler
+// ---------------- Meta Handler ----------------
 builder.defineMetaHandler(async ({ type, id, url }) => {
-  console.log('Meta requested:', type, id, url);
-  if (type === 'tv' && id.startsWith('heimdallr_')) {
-    const channelId = id.replace('heimdallr_', '');
-    const cacheKey = `meta_${channelId}`;
-    const cached = cache.get(cacheKey);
-    if (cached) return cached;
-    try {
-      const m3uUrl = extractM3uUrlFromPath(url);
-      await loadM3U({ m3uUrl });
-      const channel = await getChannel(channelId);
-      const response = {
-        meta: {
-          id: id,
-          type: 'tv',
-          name: channel.name,
-          poster: channel.logo_url,
-          background: channel.logo_url,
-          description: channel.name
-        }
-      };
-      cache.set(cacheKey, response);
-      return response;
-    } catch (error) {
-      console.error('Meta error:', error.message, error.stack);
-      return { meta: null };
-    }
+  if (type !== 'tv' || !id.startsWith('heimdallr_')) return { meta: null };
+  const channelId = id.replace('heimdallr_', '');
+  const cacheKey = `meta_${channelId}`;
+  const cached = cache.get(cacheKey);
+  if (cached) return cached;
+  try {
+    const m3uUrl = extractM3uUrlFromPath(url);
+    await loadM3U({ m3uUrl });
+    const channel = await getChannel(channelId);
+    const response = { meta: { id, type: 'tv', name: channel.name, poster: channel.logo_url, background: channel.logo_url, description: channel.name } };
+    cache.set(cacheKey, response);
+    return response;
+  } catch (err) {
+    console.error('Meta error:', err.message);
+    return { meta: null };
   }
-  return { meta: null };
 });
 
-// Stream handler
+// ---------------- Stream Handler ----------------
 builder.defineStreamHandler(async ({ type, id, url }) => {
-  console.log('Stream requested:', type, id, url);
-  if (type === 'tv' && id.startsWith('heimdallr_')) {
-    const channelId = id.replace('heimdallr_', '');
-    const cacheKey = `stream_${channelId}`;
-    const cached = cache.get(cacheKey);
-    if (cached) {
-      console.log('Using cached streams');
-      return cached;
-    }
-    try {
-      const m3uUrl = extractM3uUrlFromPath(url);
-      await loadM3U({ m3uUrl });
-      const channel = await getChannel(channelId);
-      const streams = [];
-      if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
-        const streamObj = {
-          name: channel.additional_streams.length > 0 ? channel.additional_streams[0].group_title : channel.group_title,
-          title: channel.title
-        };
-        if (channel.acestream_id) {
-          streamObj.externalUrl = `acestream://${channel.acestream_id}`;
-          streamObj.behaviorHints = { notWebReady: true, external: true };
-        } else if (channel.m3u8_url) {
-          streamObj.url = channel.m3u8_url;
-          streamObj.behaviorHints = { notWebReady: false, external: false };
-        } else if (channel.stream_url) {
-          streamObj.url = channel.stream_url;
-          streamObj.behaviorHints = { notWebReady: false, external: false };
-        }
-        streams.push(streamObj);
-      }
-      if (channel.additional_streams && Array.isArray(channel.additional_streams)) {
-        channel.additional_streams.forEach((stream) => {
-          const streamObj = {
-            name: stream.group_title,
-            title: stream.title
-          };
-          if (stream.acestream_id) {
-            streamObj.externalUrl = `acestream://${stream.acestream_id}`;
-            streamObj.behaviorHints = { notWebReady: true, external: true };
-          } else if (stream.url) {
-            streamObj.url = stream.url;
-            streamObj.behaviorHints = { notWebReady: false, external: false };
-          } else if (stream.stream_url) {
-            streamObj.url = stream.stream_url;
-            streamObj.behaviorHints = { notWebReady: false, external: false };
-          }
-          streams.push(streamObj);
-        });
-      }
-      if (channel.website_url) {
-        streams.push({
-          title: `${channel.name} - Website`,
-          externalUrl: channel.website_url,
-          behaviorHints: { notWebReady: true, external: true }
-        });
-      }
-      console.log('Streams generated:', streams);
-      const response = { streams };
-      cache.set(cacheKey, response);
-      return response;
-    } catch (error) {
-      console.error('Stream error:', error.message, error.stack);
-      return { streams: [] };
-    }
+  if (type !== 'tv' || !id.startsWith('heimdallr_')) return { streams: [] };
+  const channelId = id.replace('heimdallr_', '');
+  const cacheKey = `stream_${channelId}`;
+  const cached = cache.get(cacheKey);
+  if (cached) return cached;
+  try {
+    const m3uUrl = extractM3uUrlFromPath(url);
+    await loadM3U({ m3uUrl });
+    const channel = await getChannel(channelId);
+    const streams = [];
+    const pushStream = (stream) => {
+      const obj = { name: stream.group_title || channel.group_title, title: stream.title || channel.title };
+      if (stream.acestream_id) { obj.externalUrl = `acestream://${stream.acestream_id}`; obj.behaviorHints = { notWebReady: true, external: true }; }
+      else if (stream.url || stream.m3u8_url || stream.stream_url) { obj.url = stream.url || stream.m3u8_url || stream.stream_url; obj.behaviorHints = { notWebReady: false, external: false }; }
+      streams.push(obj);
+    };
+    if (channel.acestream_id || channel.m3u8_url || channel.stream_url) pushStream(channel);
+    channel.additional_streams?.forEach(pushStream);
+    if (channel.website_url) streams.push({ title: `${channel.name} - Website`, externalUrl: channel.website_url, behaviorHints: { notWebReady: true, external: true } });
+    const response = { streams };
+    cache.set(cacheKey, response);
+    return response;
+  } catch (err) {
+    console.error('Stream error:', err.message);
+    return { streams: [] };
   }
-  return { streams: [] };
 });
 
-// Manejar /configure y /generate-url
+// ---------------- Router ----------------
 const addonInterface = builder.getInterface();
 const router = getRouter(addonInterface);
-
-// Middleware para parsear form-urlencoded
 router.use(bodyParser.urlencoded({ extended: false }));
 
-// Rutas estáticas primero
+// /configure page
 router.get('/configure', (req, res) => {
-  console.log('Serving /configure');
   res.setHeader('Content-Type', 'text/html');
   res.end(`
     <!DOCTYPE html>
     <html>
       <head>
         <title>Configure Heimdallr Channels</title>
-        <style>
-          body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
-          input { width: 100%; padding: 10px; margin: 10px 0; }
-          button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
-          a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
-          pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
-        </style>
+        <style>body { font-family: Arial; max-width: 600px; margin:20px auto; } input, button { width:100%; padding:10px; margin:10px 0; } button { background:#4CAF50; color:white; border:none; border-radius:5px; cursor:pointer; }</style>
       </head>
       <body>
         <h1>Configure Heimdallr Channels</h1>
-        <p>Enter the URL of your M3U playlist:</p>
         <form action="/generate-url" method="post">
           <input type="text" name="m3uUrl" placeholder="https://example.com/list.m3u" required>
           <button type="submit">Generate Install URL</button>
@@ -262,86 +157,39 @@ router.get('/configure', (req, res) => {
   `);
 });
 
-// --- CORRECCIÓN aquí ---
+// /generate-url handler
 router.post('/generate-url', (req, res) => {
-  console.log('POST /generate-url received');
-  
-  let body = '';
-  req.on('data', chunk => { body += chunk.toString(); });
-  req.on('end', () => {
-    if (!req.body || Object.keys(req.body).length === 0) {
-      // fallback: parse manually
-      req.body = Object.fromEntries(new URLSearchParams(body));
-    }
-    
-    console.log('Parsed body:', req.body);
-    
-    try {
-      if (!req.body || !req.body.m3uUrl) {
-        console.error('No m3uUrl provided');
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'text/html');
-        res.end(`<html><body><h1>Error</h1><p>M3U URL is required. <a href="/configure">Go back</a></p></body></html>`);
-        return;
-      }
-  
-      const m3uUrl = req.body.m3uUrl;
-      console.log('m3uUrl:', m3uUrl);
-  
-      const baseUrl = `https://listas-sand.vercel.app/${encodeURIComponent(m3uUrl)}/manifest.json`;
-      const installUrl = `stremio://${encodeURIComponent(baseUrl)}`;
-      const manifestJson = JSON.stringify(manifest, null, 2);
-  
-      res.setHeader('Content-Type', 'text/html');
-      res.end(`
-        <html>
-          <head><title>Install Heimdallr Channels</title></head>
-          <body>
-            <h1>Install URL Generated</h1>
-            <a href="${installUrl}">Install Addon</a>
-            <pre>${baseUrl}</pre>
-            <pre>${manifestJson}</pre>
-          </body>
-        </html>
-      `);
-    } catch (err) {
-      console.error('Error in /generate-url:', err.message, err.stack);
-      res.statusCode = 500;
-      res.end(`<html><body><h1>Server Error</h1><p>${err.message}</p></body></html>`);
-    }
-  });
+  const m3uUrl = req.body?.m3uUrl;
+  if (!m3uUrl) { res.status(400).end('M3U URL required'); return; }
+  const baseUrl = `https://listas-sand.vercel.app/${encodeURIComponent(m3uUrl)}/manifest.json`;
+  const installUrl = `stremio://${encodeURIComponent(baseUrl)}`;
+  res.setHeader('Content-Type', 'text/html');
+  res.end(`
+    <html><body>
+      <p>Install URL:</p>
+      <a href="${installUrl}">Install Addon</a>
+      <p>Manifest URL:</p>
+      <pre>${baseUrl}</pre>
+    </body></html>
+  `);
 });
-// --- FIN CORRECCIÓN ---
 
-// Middleware para strip prefix
+// Middleware para manejar el prefijo m3uUrl
 router.use((req, res, next) => {
-  console.log('Middleware processing request:', req.url);
   const match = req.url.match(/^\/([^/]+)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
-  if (match && match[1]) {
-    req.m3uUrl = decodeURIComponent(match[1]);
-    req.url = match[2] || '/manifest.json';
-    console.log('Decoded m3uUrl:', req.m3uUrl);
-    console.log('Modified req.url:', req.url);
-  }
+  if (match && match[1]) { req.m3uUrl = decodeURIComponent(match[1]); req.url = match[2] || '/manifest.json'; }
   next();
 });
 
-// Manejador explícito para manifest.json
+// /manifest.json handler
 router.get('/:m3uUrl/manifest.json', (req, res) => {
-  console.log('Manifest requested for m3uUrl:', req.params.m3uUrl);
+  const m3uUrl = decodeURIComponent(req.params.m3uUrl);
   try {
-    const m3uUrl = decodeURIComponent(req.params.m3uUrl);
     new URL(m3uUrl);
-    loadM3U({ m3uUrl }).then(() => {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(manifest));
-    }).catch(err => {
-      res.statusCode = 500;
-      res.end(JSON.stringify({ error: 'Failed to load M3U for manifest' }));
-    });
-  } catch (err) {
-    res.statusCode = 400;
-    res.end(JSON.stringify({ error: 'Invalid M3U URL' }));
+    loadM3U({ m3uUrl }).then(() => { res.setHeader('Content-Type','application/json'); res.end(JSON.stringify(manifest)); })
+      .catch(err => { res.status(500).end(JSON.stringify({error:'Failed to load M3U'})); });
+  } catch {
+    res.status(400).end(JSON.stringify({error:'Invalid M3U URL'}));
   }
 });
 
@@ -351,8 +199,5 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 module.exports = (req, res) => {
-  router(req, res, () => {
-    res.statusCode = 404;
-    res.end();
-  });
+  router(req, res, () => { res.statusCode = 404; res.end(); });
 };
