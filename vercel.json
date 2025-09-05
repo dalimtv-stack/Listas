@@ -12,15 +12,15 @@
       "dest": "/index.js"
     },
     {
-      "src": "/:configId/catalog/(.*)",
+      "src": "/:configId/catalog/:type/:id(.*)",
       "dest": "/index.js"
     },
     {
-      "src": "/:configId/meta/(.*)",
+      "src": "/:configId/meta/:type/:id(.*)",
       "dest": "/index.js"
     },
     {
-      "src": "/:configId/stream/(.*)",
+      "src": "/:configId/stream/:type/:id(.*)",
       "dest": "/index.js"
     },
     {
