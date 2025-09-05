@@ -14,7 +14,7 @@ const configCache = new NodeCache({ stdTTL: CONFIG_CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.157',
+  version: '1.2.158',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -42,10 +42,12 @@ const builder = new addonBuilder(manifest);
 // Definir manejadores antes de getInterface
 console.log('Defining catalog handler');
 builder.defineCatalogHandler(async ({ type, id, extra, url }) => {
-  console.log('Catalog requested:', type, id, extra, url);
+  console.log('Catalog requested:', { type, id, extra, url });
+  const configId = extractConfigIdFromPath(url);
+  console.log('Catalog configId:', configId);
+  const m3uUrl = getM3uUrlFromConfigId(configId);
+  console.log('Catalog m3uUrl:', m3uUrl || 'none');
   if (type === 'tv' && id === 'Heimdallr') {
-    const configId = extractConfigIdFromPath(url);
-    const m3uUrl = getM3uUrlFromConfigId(configId);
     const m3uHash = m3uUrl ? crypto.createHash('md5').update(m3uUrl).digest('hex') : 'default';
     const cacheKey = `Heimdallr_channels_${m3uHash}_${extra?.genre || ''}_${extra?.search || ''}`;
     const cached = cache.get(cacheKey);
@@ -93,11 +95,13 @@ builder.defineCatalogHandler(async ({ type, id, extra, url }) => {
 
 console.log('Defining meta handler');
 builder.defineMetaHandler(async ({ type, id, url }) => {
-  console.log('Meta requested:', type, id, url);
+  console.log('Meta requested:', { type, id, url });
+  const configId = extractConfigIdFromPath(url);
+  console.log('Meta configId:', configId);
+  const m3uUrl = getM3uUrlFromConfigId(configId);
+  console.log('Meta m3uUrl:', m3uUrl || 'none');
   if (type === 'tv' && id.startsWith('heimdallr_')) {
     const channelId = id.replace('heimdallr_', '');
-    const configId = extractConfigIdFromPath(url);
-    const m3uUrl = getM3uUrlFromConfigId(configId);
     const m3uHash = m3uUrl ? crypto.createHash('md5').update(m3uUrl).digest('hex') : 'default';
     const cacheKey = `meta_${m3uHash}_${channelId}`;
     const cached = cache.get(cacheKey);
@@ -126,11 +130,13 @@ builder.defineMetaHandler(async ({ type, id, url }) => {
 
 console.log('Defining stream handler');
 builder.defineStreamHandler(async ({ type, id, url }) => {
-  console.log('Stream requested:', type, id, url);
+  console.log('Stream requested:', { type, id, url });
+  const configId = extractConfigIdFromPath(url);
+  console.log('Stream configId:', configId);
+  const m3uUrl = getM3uUrlFromConfigId(configId);
+  console.log('Stream m3uUrl:', m3uUrl || 'none');
   if (type === 'tv' && id.startsWith('heimdallr_')) {
     const channelId = id.replace('heimdallr_', '');
-    const configId = extractConfigIdFromPath(url);
-    const m3uUrl = getM3uUrlFromConfigId(configId);
     const m3uHash = m3uUrl ? crypto.createHash('md5').update(m3uUrl).digest('hex') : 'default';
     const cacheKey = `stream_${m3uHash}_${channelId}`;
     const cached = cache.get(cacheKey);
@@ -143,7 +149,7 @@ builder.defineStreamHandler(async ({ type, id, url }) => {
       const streams = [];
       if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
         const streamObj = {
-          name: channel.additional_streams.length > 0 ? channel.additional_streams[0].group_title : channel.group_title,
+          name: channel.additional_streams && channel.additional_streams.length > 0 ? channel.additional_streams[0].group_title : channel.group_title,
           title: channel.title
         };
         if (channel.acestream_id) {
@@ -252,9 +258,9 @@ async function validateM3uUrl(m3uUrl) {
 
 // Manifest handler para rutas estáticas
 router.get('/manifest.json', (req, res) => {
-  console.log('Static manifest requested, configId:', req.configId || 'none', 'URL:', req.url);
+  console.log('Static manifest requested, configId:', req.params.configId || req.configId || 'none', 'URL:', req.url);
   try {
-    const configId = req.configId || 'none';
+    const configId = req.params.configId || req.configId || 'none';
     const m3uUrl = getM3uUrlFromConfigId(configId);
     console.log('Serving static manifest with configId:', configId, 'm3uUrl:', m3uUrl || 'none');
     res.setHeader('Content-Type', 'application/json');
@@ -413,16 +419,21 @@ router.post('/generate-url', async (req, res) => {
 
 // Middleware para extraer configId
 router.use((req, res, next) => {
-  console.log('Middleware processing request, original URL:', req.url);
-  const match = req.url.match(/^\/([^/]+)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
-  if (match && match[1]) {
-    req.configId = match[1];
-    req.url = match[2] || '/manifest.json';
-    console.log('Middleware success, extracted configId:', req.configId, 'rewritten URL:', req.url);
+  console.log('Middleware processing request, original URL:', req.url, 'params:', req.params);
+  if (req.params.configId) {
+    req.configId = req.params.configId;
+    console.log('Middleware extracted configId from params:', req.configId);
   } else {
-    req.configId = null;
-    console.log('Middleware no match, using original URL:', req.url);
+    const match = req.url.match(/^\/([^/]+)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
+    if (match && match[1]) {
+      req.configId = match[1];
+      console.log('Middleware extracted configId from URL:', req.configId);
+    } else {
+      req.configId = null;
+      console.log('Middleware no configId found');
+    }
   }
+  console.log('Middleware proceeding with configId:', req.configId || 'none', 'URL:', req.url);
   next();
 });
 
@@ -432,7 +443,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 module.exports = (req, res) => {
-  console.log('Main handler received request, URL:', req.url, 'configId:', req.configId || 'none');
+  console.log('Main handler received request, URL:', req.url, 'configId:', req.configId || 'none', 'params:', req.params);
   router(req, res, () => {
     console.log('Route not found:', req.url);
     res.statusCode = 404;
