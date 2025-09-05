@@ -404,4 +404,16 @@ router.use((req, res, next) => {
   next();
 });
 
-if (process
+if (process.env.NODE_ENV !== 'production') {
+  const { serveHTTP } = require('stremio-addon-sdk');
+  serveHTTP(builder.getInterface(), { port: process.env.PORT || DEFAULT_PORT });
+}
+
+module.exports = (req, res) => {
+  console.log('Request received:', req.url);
+  router(req, res, () => {
+    console.log('Route not found:', req.url);
+    res.statusCode = 404;
+    res.end();
+  });
+};
