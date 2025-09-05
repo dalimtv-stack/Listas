@@ -16,11 +16,23 @@
       "dest": "/index.js"
     },
     {
+      "src": "/:configId/catalog/:type/:id.json",
+      "dest": "/index.js"
+    },
+    {
       "src": "/:configId/meta/:type/:id(.*)",
       "dest": "/index.js"
     },
     {
+      "src": "/:configId/meta/:type/:id.json",
+      "dest": "/index.js"
+    },
+    {
       "src": "/:configId/stream/:type/:id(.*)",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/:configId/stream/:type/:id.json",
       "dest": "/index.js"
     },
     {
