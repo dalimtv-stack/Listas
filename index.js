@@ -14,7 +14,7 @@ const configCache = new NodeCache({ stdTTL: CONFIG_CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.161',
+  version: '1.2.162',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -85,10 +85,11 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
       console.log('Catalog response:', response);
       return response;
     } catch (error) {
-      console.error('Catalog error:', error.message);
+      console.error('Catalog error:', error.message, error.stack);
       return { metas: [] };
     }
   }
+  console.log('Catalog not matched, returning empty metas');
   return { metas: [] };
 });
 
@@ -119,7 +120,7 @@ builder.defineMetaHandler(async ({ type, id, extra }) => {
       cache.set(cacheKey, response);
       return response;
     } catch (error) {
-      console.error('Meta error:', error.message);
+      console.error('Meta error:', error.message, error.stack);
       return { meta: null };
     }
   }
@@ -192,7 +193,7 @@ builder.defineStreamHandler(async ({ type, id, extra }) => {
       cache.set(cacheKey, response);
       return response;
     } catch (error) {
-      console.error('Stream error:', error.message);
+      console.error('Stream error:', error.message, error.stack);
       return { streams: [] };
     }
   }
@@ -268,43 +269,49 @@ router.get('/:configId/manifest.json', (req, res) => {
 router.get('/:configId/catalog/:type/:id', (req, res) => {
   console.log('Catalog route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
+  const cleanId = req.params.id.replace(/\.json$/, ''); // Eliminar .json del id
   const extra = { configId: req.params.configId, ...req.query };
-  addonInterface.catalog({ ...req, extra }, res);
+  addonInterface.catalog({ ...req, type: req.params.type, id: cleanId, extra }, res);
 });
 
 router.get('/:configId/catalog/:type/:id.json', (req, res) => {
   console.log('Catalog route (JSON) requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
+  const cleanId = req.params.id.replace(/\.json$/, ''); // Eliminar .json del id
   const extra = { configId: req.params.configId, ...req.query };
-  addonInterface.catalog({ ...req, extra }, res);
+  addonInterface.catalog({ ...req, type: req.params.type, id: cleanId, extra }, res);
 });
 
 router.get('/:configId/meta/:type/:id', (req, res) => {
   console.log('Meta route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
+  const cleanId = req.params.id.replace(/\.json$/, ''); // Eliminar .json del id
   const extra = { configId: req.params.configId, ...req.query };
-  addonInterface.meta({ ...req, extra }, res);
+  addonInterface.meta({ ...req, type: req.params.type, id: cleanId, extra }, res);
 });
 
 router.get('/:configId/meta/:type/:id.json', (req, res) => {
   console.log('Meta route (JSON) requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
+  const cleanId = req.params.id.replace(/\.json$/, ''); // Eliminar .json del id
   const extra = { configId: req.params.configId, ...req.query };
-  addonInterface.meta({ ...req, extra }, res);
+  addonInterface.meta({ ...req, type: req.params.type, id: cleanId, extra }, res);
 });
 
 router.get('/:configId/stream/:type/:id', (req, res) => {
   console.log('Stream route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
+  const cleanId = req.params.id.replace(/\.json$/, ''); // Eliminar .json del id
   const extra = { configId: req.params.configId, ...req.query };
-  addonInterface.stream({ ...req, extra }, res);
+  addonInterface.stream({ ...req, type: req.params.type, id: cleanId, extra }, res);
 });
 
 router.get('/:configId/stream/:type/:id.json', (req, res) => {
   console.log('Stream route (JSON) requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
+  const cleanId = req.params.id.replace(/\.json$/, ''); // Eliminar .json del id
   const extra = { configId: req.params.configId, ...req.query };
-  addonInterface.stream({ ...req, extra }, res);
+  addonInterface.stream({ ...req, type: req.params.type, id: cleanId, extra }, res);
 });
 
 // Configurar rutas adicionales
@@ -452,6 +459,9 @@ router.use((req, res, next) => {
     }
   }
   console.log('Middleware proceeding with configId:', req.configId || 'none', 'URL:', req.url);
+  // Asegurar que req.extra contenga configId
+  req.extra = req.extra || {};
+  req.extra.configId = req.configId;
   next();
 });
 
@@ -461,7 +471,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 module.exports = (req, res) => {
-  console.log('Main handler received request, URL:', req.url, 'configId:', req.configId || 'none', 'params:', req.params, 'query:', req.query);
+  console.log('Main handler received request, URL:', req.url, 'configId:', req.configId || 'none', 'params:', req.params, 'query:', req.query, 'extra:', req.extra);
   router(req, res, () => {
     console.log('Route not found:', req.url);
     res.statusCode = 404;
