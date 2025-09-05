@@ -14,7 +14,7 @@ const configCache = new NodeCache({ stdTTL: CONFIG_CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.154',
+  version: '1.2.155',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -30,7 +30,7 @@ const manifest = {
       ]
     }
   ],
-  resources: ['stream', 'meta', 'catalog'],
+  resources: ['catalog', 'meta', 'stream'],
   idPrefixes: ['heimdallr_'],
   behaviorHints: {
     configurable: true
@@ -39,72 +39,8 @@ const manifest = {
 
 const builder = new addonBuilder(manifest);
 
-// Inicializar addonInterface y router antes de los manejadores
-const addonInterface = builder.getInterface();
-const router = getRouter(addonInterface);
-
-// Extraer configId de la ruta
-function extractConfigIdFromPath(requestUrl) {
-  console.log('extractConfigIdFromPath called with requestUrl:', requestUrl);
-  if (requestUrl) {
-    try {
-      const parsedUrl = new URL(requestUrl, 'http://localhost');
-      const path = parsedUrl.pathname;
-      console.log('Parsed path:', path);
-      const match = path.match(/^\/(.+?)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
-      if (match && match[1]) {
-        const configId = match[1];
-        console.log('Extracted configId:', configId);
-        return configId;
-      }
-      console.log('No configId found in path:', path);
-    } catch (err) {
-      console.error('Error parsing URL in extractConfigIdFromPath:', err.message);
-    }
-  }
-  return null;
-}
-
-// Obtener m3uUrl desde configCache
-function getM3uUrlFromConfigId(configId) {
-  if (!configId) {
-    console.log('No configId provided, using default M3U URL');
-    return null;
-  }
-  const m3uUrl = configCache.get(configId);
-  console.log('Retrieved m3uUrl for configId:', configId, m3uUrl || 'not found');
-  return m3uUrl || null;
-}
-
-// Validar URL del M3U
-async function validateM3uUrl(m3uUrl) {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(m3uUrl, { signal: controller.signal });
-    clearTimeout(timeoutId);
-    return res.ok;
-  } catch (err) {
-    console.error('Invalid M3U URL:', err.message);
-    return false;
-  }
-}
-
-// Manifest handler
-router.get('/manifest.json', (req, res) => {
-  console.log('Manifest requested, configId:', req.configId || 'none', 'URL:', req.url);
-  try {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(manifest));
-  } catch (err) {
-    console.error('Error serving manifest:', err.message);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Failed to generate manifest', details: err.message }));
-  }
-});
-
-// Catalog handler
+// Definir manejadores antes de getInterface
+console.log('Defining catalog handler');
 builder.defineCatalogHandler(async ({ type, id, extra, url }) => {
   console.log('Catalog requested:', type, id, extra, url);
   if (type === 'tv' && id === 'Heimdallr') {
@@ -155,7 +91,7 @@ builder.defineCatalogHandler(async ({ type, id, extra, url }) => {
   return { metas: [] };
 });
 
-// Meta handler
+console.log('Defining meta handler');
 builder.defineMetaHandler(async ({ type, id, url }) => {
   console.log('Meta requested:', type, id, url);
   if (type === 'tv' && id.startsWith('heimdallr_')) {
@@ -188,7 +124,7 @@ builder.defineMetaHandler(async ({ type, id, url }) => {
   return { meta: null };
 });
 
-// Stream handler
+console.log('Defining stream handler');
 builder.defineStreamHandler(async ({ type, id, url }) => {
   console.log('Stream requested:', type, id, url);
   if (type === 'tv' && id.startsWith('heimdallr_')) {
@@ -258,6 +194,72 @@ builder.defineStreamHandler(async ({ type, id, url }) => {
     }
   }
   return { streams: [] };
+});
+
+// Inicializar addonInterface y router después de los manejadores
+console.log('Creating addon interface and router');
+const addonInterface = builder.getInterface();
+const router = getRouter(addonInterface);
+
+// Extraer configId de la ruta
+function extractConfigIdFromPath(requestUrl) {
+  console.log('extractConfigIdFromPath called with requestUrl:', requestUrl);
+  if (requestUrl) {
+    try {
+      const parsedUrl = new URL(requestUrl, 'http://localhost');
+      const path = parsedUrl.pathname;
+      console.log('Parsed path:', path);
+      const match = path.match(/^\/(.+?)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
+      if (match && match[1]) {
+        const configId = match[1];
+        console.log('Extracted configId:', configId);
+        return configId;
+      }
+      console.log('No configId found in path:', path);
+    } catch (err) {
+      console.error('Error parsing URL in extractConfigIdFromPath:', err.message);
+    }
+  }
+  return null;
+}
+
+// Obtener m3uUrl desde configCache
+function getM3uUrlFromConfigId(configId) {
+  if (!configId) {
+    console.log('No configId provided, using default M3U URL');
+    return null;
+  }
+  const m3uUrl = configCache.get(configId);
+  console.log('Retrieved m3uUrl for configId:', configId, m3uUrl || 'not found');
+  return m3uUrl || null;
+}
+
+// Validar URL del M3U
+async function validateM3uUrl(m3uUrl) {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(m3uUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    return res.ok;
+  } catch (err) {
+    console.error('Invalid M3U URL:', err.message);
+    return false;
+  }
+}
+
+// Manifest handler
+router.get('/manifest.json', (req, res) => {
+  console.log('Manifest requested, configId:', req.configId || 'none', 'URL:', req.url);
+  try {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(manifest));
+  } catch (err) {
+    console.error('Error serving manifest:', err.message);
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ error: 'Failed to generate manifest', details: err.message }));
+  }
 });
 
 // Configurar rutas adicionales
