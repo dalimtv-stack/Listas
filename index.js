@@ -233,7 +233,7 @@ builder.defineStreamHandler(async ({ type, id, url }) => {
             streamObj.behaviorHints = { notWebReady: true, external: true };
           } else if (stream.url) {
             streamObj.url = stream.url;
-            streamObj.behaviorHints = { notWebReady: false, external: alot false };
+            streamObj.behaviorHints = { notWebReady: false, external: false };
           } else if (stream.stream_url) {
             streamObj.url = stream.stream_url;
             streamObj.behaviorHints = { notWebReady: false, external: false };
