@@ -14,7 +14,7 @@ const configCache = new NodeCache({ stdTTL: CONFIG_CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.158',
+  version: '1.2.159',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -41,12 +41,11 @@ const builder = new addonBuilder(manifest);
 
 // Definir manejadores antes de getInterface
 console.log('Defining catalog handler');
-builder.defineCatalogHandler(async ({ type, id, extra, url }) => {
-  console.log('Catalog requested:', { type, id, extra, url });
-  const configId = extractConfigIdFromPath(url);
-  console.log('Catalog configId:', configId);
+builder.defineCatalogHandler(async ({ type, id, extra }) => {
+  console.log('Catalog requested:', { type, id, extra });
+  const configId = extra.configId || 'none';
   const m3uUrl = getM3uUrlFromConfigId(configId);
-  console.log('Catalog m3uUrl:', m3uUrl || 'none');
+  console.log('Catalog configId:', configId, 'm3uUrl:', m3uUrl || 'none');
   if (type === 'tv' && id === 'Heimdallr') {
     const m3uHash = m3uUrl ? crypto.createHash('md5').update(m3uUrl).digest('hex') : 'default';
     const cacheKey = `Heimdallr_channels_${m3uHash}_${extra?.genre || ''}_${extra?.search || ''}`;
@@ -94,12 +93,11 @@ builder.defineCatalogHandler(async ({ type, id, extra, url }) => {
 });
 
 console.log('Defining meta handler');
-builder.defineMetaHandler(async ({ type, id, url }) => {
-  console.log('Meta requested:', { type, id, url });
-  const configId = extractConfigIdFromPath(url);
-  console.log('Meta configId:', configId);
+builder.defineMetaHandler(async ({ type, id, extra }) => {
+  console.log('Meta requested:', { type, id, extra });
+  const configId = extra.configId || 'none';
   const m3uUrl = getM3uUrlFromConfigId(configId);
-  console.log('Meta m3uUrl:', m3uUrl || 'none');
+  console.log('Meta configId:', configId, 'm3uUrl:', m3uUrl || 'none');
   if (type === 'tv' && id.startsWith('heimdallr_')) {
     const channelId = id.replace('heimdallr_', '');
     const m3uHash = m3uUrl ? crypto.createHash('md5').update(m3uUrl).digest('hex') : 'default';
@@ -129,12 +127,11 @@ builder.defineMetaHandler(async ({ type, id, url }) => {
 });
 
 console.log('Defining stream handler');
-builder.defineStreamHandler(async ({ type, id, url }) => {
-  console.log('Stream requested:', { type, id, url });
-  const configId = extractConfigIdFromPath(url);
-  console.log('Stream configId:', configId);
+builder.defineStreamHandler(async ({ type, id, extra }) => {
+  console.log('Stream requested:', { type, id, extra });
+  const configId = extra.configId || 'none';
   const m3uUrl = getM3uUrlFromConfigId(configId);
-  console.log('Stream m3uUrl:', m3uUrl || 'none');
+  console.log('Stream configId:', configId, 'm3uUrl:', m3uUrl || 'none');
   if (type === 'tv' && id.startsWith('heimdallr_')) {
     const channelId = id.replace('heimdallr_', '');
     const m3uHash = m3uUrl ? crypto.createHash('md5').update(m3uUrl).digest('hex') : 'default';
@@ -288,6 +285,25 @@ router.get('/:configId/manifest.json', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ error: 'Failed to generate manifest', details: err.message }));
   }
+});
+
+// Manejadores explícitos para rutas dinámicas de catalog, meta y stream
+router.get('/:configId/catalog/:type/:id', (req, res) => {
+  console.log('Catalog route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url);
+  req.configId = req.params.configId;
+  addonInterface.catalog(req, res);
+});
+
+router.get('/:configId/meta/:type/:id', (req, res) => {
+  console.log('Meta route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url);
+  req.configId = req.params.configId;
+  addonInterface.meta(req, res);
+});
+
+router.get('/:configId/stream/:type/:id', (req, res) => {
+  console.log('Stream route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url);
+  req.configId = req.params.configId;
+  addonInterface.stream(req, res);
 });
 
 // Configurar rutas adicionales
