@@ -2,7 +2,7 @@
 const { addonBuilder, getRouter } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
 const { getChannels, getChannel, loadM3U } = require('./src/db');
-const { CACHE_TTL, DEFAULT_PORT, STREAM_PREFIX, CONFIG_CACHE_TTL } = require('./src/config');
+const { CACHE_TTL, DEFAULT_PORT, CONFIG_CACHE_TTL } = require('./src/config');
 const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
@@ -14,7 +14,7 @@ const configCache = new NodeCache({ stdTTL: CONFIG_CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.152',
+  version: '1.2.154',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -38,6 +38,10 @@ const manifest = {
 };
 
 const builder = new addonBuilder(manifest);
+
+// Inicializar addonInterface y router antes de los manejadores
+const addonInterface = builder.getInterface();
+const router = getRouter(addonInterface);
 
 // Extraer configId de la ruta
 function extractConfigIdFromPath(requestUrl) {
@@ -87,18 +91,9 @@ async function validateM3uUrl(m3uUrl) {
 }
 
 // Manifest handler
-router.get('/manifest.json', async (req, res) => {
+router.get('/manifest.json', (req, res) => {
   console.log('Manifest requested, configId:', req.configId || 'none', 'URL:', req.url);
   try {
-    const m3uUrl = getM3uUrlFromConfigId(req.configId);
-    if (m3uUrl) {
-      console.log('Pre-loading M3U for manifest:', m3uUrl);
-      await loadM3U({ m3uUrl }).catch(err => {
-        console.warn('Failed to pre-load M3U, proceeding with manifest:', err.message);
-      });
-    } else {
-      console.log('No M3U URL, serving manifest without pre-load');
-    }
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(manifest));
   } catch (err) {
@@ -265,10 +260,7 @@ builder.defineStreamHandler(async ({ type, id, url }) => {
   return { streams: [] };
 });
 
-// Manejar /configure y /generate-url
-const addonInterface = builder.getInterface();
-const router = getRouter(addonInterface);
-
+// Configurar rutas adicionales
 router.use(bodyParser.urlencoded({ extended: false }));
 
 router.get('/configure', (req, res) => {
