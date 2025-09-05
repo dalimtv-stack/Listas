@@ -14,7 +14,7 @@ const configCache = new NodeCache({ stdTTL: CONFIG_CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.155',
+  version: '1.2.156',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -209,7 +209,7 @@ function extractConfigIdFromPath(requestUrl) {
       const parsedUrl = new URL(requestUrl, 'http://localhost');
       const path = parsedUrl.pathname;
       console.log('Parsed path:', path);
-      const match = path.match(/^\/(.+?)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
+      const match = path.match(/^\/([^/]+)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
       if (match && match[1]) {
         const configId = match[1];
         console.log('Extracted configId:', configId);
@@ -220,6 +220,7 @@ function extractConfigIdFromPath(requestUrl) {
       console.error('Error parsing URL in extractConfigIdFromPath:', err.message);
     }
   }
+  console.log('No configId found, returning null');
   return null;
 }
 
@@ -241,6 +242,7 @@ async function validateM3uUrl(m3uUrl) {
     const timeoutId = setTimeout(() => controller.abort(), 5000);
     const res = await fetch(m3uUrl, { signal: controller.signal });
     clearTimeout(timeoutId);
+    console.log('Validated M3U URL:', m3uUrl, 'Status:', res.status);
     return res.ok;
   } catch (err) {
     console.error('Invalid M3U URL:', err.message);
@@ -252,6 +254,9 @@ async function validateM3uUrl(m3uUrl) {
 router.get('/manifest.json', (req, res) => {
   console.log('Manifest requested, configId:', req.configId || 'none', 'URL:', req.url);
   try {
+    const configId = req.configId || 'none';
+    const m3uUrl = getM3uUrlFromConfigId(configId);
+    console.log('Serving manifest with configId:', configId, 'm3uUrl:', m3uUrl || 'none');
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(manifest));
   } catch (err) {
