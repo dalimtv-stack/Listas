@@ -14,7 +14,7 @@ const configCache = new NodeCache({ stdTTL: CONFIG_CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.159',
+  version: '1.2.160',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -43,7 +43,7 @@ const builder = new addonBuilder(manifest);
 console.log('Defining catalog handler');
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
   console.log('Catalog requested:', { type, id, extra });
-  const configId = extra.configId || 'none';
+  const configId = extra?.configId || 'none';
   const m3uUrl = getM3uUrlFromConfigId(configId);
   console.log('Catalog configId:', configId, 'm3uUrl:', m3uUrl || 'none');
   if (type === 'tv' && id === 'Heimdallr') {
@@ -95,7 +95,7 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
 console.log('Defining meta handler');
 builder.defineMetaHandler(async ({ type, id, extra }) => {
   console.log('Meta requested:', { type, id, extra });
-  const configId = extra.configId || 'none';
+  const configId = extra?.configId || 'none';
   const m3uUrl = getM3uUrlFromConfigId(configId);
   console.log('Meta configId:', configId, 'm3uUrl:', m3uUrl || 'none');
   if (type === 'tv' && id.startsWith('heimdallr_')) {
@@ -129,7 +129,7 @@ builder.defineMetaHandler(async ({ type, id, extra }) => {
 console.log('Defining stream handler');
 builder.defineStreamHandler(async ({ type, id, extra }) => {
   console.log('Stream requested:', { type, id, extra });
-  const configId = extra.configId || 'none';
+  const configId = extra?.configId || 'none';
   const m3uUrl = getM3uUrlFromConfigId(configId);
   console.log('Stream configId:', configId, 'm3uUrl:', m3uUrl || 'none');
   if (type === 'tv' && id.startsWith('heimdallr_')) {
@@ -204,32 +204,9 @@ console.log('Creating addon interface and router');
 const addonInterface = builder.getInterface();
 const router = getRouter(addonInterface);
 
-// Extraer configId de la ruta
-function extractConfigIdFromPath(requestUrl) {
-  console.log('extractConfigIdFromPath called with requestUrl:', requestUrl);
-  if (requestUrl) {
-    try {
-      const parsedUrl = new URL(requestUrl, 'http://localhost');
-      const path = parsedUrl.pathname;
-      console.log('Parsed path:', path);
-      const match = path.match(/^\/([^/]+)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
-      if (match && match[1]) {
-        const configId = match[1];
-        console.log('Extracted configId:', configId);
-        return configId;
-      }
-      console.log('No configId found in path:', path);
-    } catch (err) {
-      console.error('Error parsing URL in extractConfigIdFromPath:', err.message);
-    }
-  }
-  console.log('No configId found, returning null');
-  return null;
-}
-
 // Obtener m3uUrl desde configCache
 function getM3uUrlFromConfigId(configId) {
-  if (!configId) {
+  if (!configId || configId === 'none') {
     console.log('No configId provided, using default M3U URL');
     return null;
   }
@@ -274,7 +251,7 @@ router.get('/manifest.json', (req, res) => {
 router.get('/:configId/manifest.json', (req, res) => {
   console.log('Dynamic manifest requested, configId:', req.params.configId, 'URL:', req.url);
   try {
-    const configId = req.params.configId || 'none';
+    const configId = req.params.configId;
     const m3uUrl = getM3uUrlFromConfigId(configId);
     console.log('Serving dynamic manifest with configId:', configId, 'm3uUrl:', m3uUrl || 'none');
     res.setHeader('Content-Type', 'application/json');
@@ -288,22 +265,25 @@ router.get('/:configId/manifest.json', (req, res) => {
 });
 
 // Manejadores explícitos para rutas dinámicas de catalog, meta y stream
-router.get('/:configId/catalog/:type/:id', (req, res) => {
-  console.log('Catalog route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url);
+router.get('/:configId/catalog/:type/:id(.*)', (req, res) => {
+  console.log('Catalog route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
-  addonInterface.catalog(req, res);
+  const extra = { configId: req.params.configId, ...req.query };
+  addonInterface.catalog({ ...req, extra }, res);
 });
 
-router.get('/:configId/meta/:type/:id', (req, res) => {
-  console.log('Meta route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url);
+router.get('/:configId/meta/:type/:id(.*)', (req, res) => {
+  console.log('Meta route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
-  addonInterface.meta(req, res);
+  const extra = { configId: req.params.configId, ...req.query };
+  addonInterface.meta({ ...req, extra }, res);
 });
 
-router.get('/:configId/stream/:type/:id', (req, res) => {
-  console.log('Stream route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url);
+router.get('/:configId/stream/:type/:id(.*)', (req, res) => {
+  console.log('Stream route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
-  addonInterface.stream(req, res);
+  const extra = { configId: req.params.configId, ...req.query };
+  addonInterface.stream({ ...req, extra }, res);
 });
 
 // Configurar rutas adicionales
@@ -435,19 +415,13 @@ router.post('/generate-url', async (req, res) => {
 
 // Middleware para extraer configId
 router.use((req, res, next) => {
-  console.log('Middleware processing request, original URL:', req.url, 'params:', req.params);
+  console.log('Middleware processing request, original URL:', req.url, 'params:', req.params, 'query:', req.query);
   if (req.params.configId) {
     req.configId = req.params.configId;
     console.log('Middleware extracted configId from params:', req.configId);
   } else {
-    const match = req.url.match(/^\/([^/]+)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
-    if (match && match[1]) {
-      req.configId = match[1];
-      console.log('Middleware extracted configId from URL:', req.configId);
-    } else {
-      req.configId = null;
-      console.log('Middleware no configId found');
-    }
+    req.configId = null;
+    console.log('Middleware no configId found');
   }
   console.log('Middleware proceeding with configId:', req.configId || 'none', 'URL:', req.url);
   next();
@@ -459,7 +433,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 module.exports = (req, res) => {
-  console.log('Main handler received request, URL:', req.url, 'configId:', req.configId || 'none', 'params:', req.params);
+  console.log('Main handler received request, URL:', req.url, 'configId:', req.configId || 'none', 'params:', req.params, 'query:', req.query);
   router(req, res, () => {
     console.log('Route not found:', req.url);
     res.statusCode = 404;
