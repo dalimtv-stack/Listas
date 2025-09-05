@@ -8,6 +8,22 @@
   ],
   "routes": [
     {
+      "src": "/:configId/manifest.json",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/:configId/catalog/(.*)",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/:configId/meta/(.*)",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/:configId/stream/(.*)",
+      "dest": "/index.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.js"
     }
