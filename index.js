@@ -14,7 +14,7 @@ const configCache = new NodeCache({ stdTTL: CONFIG_CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.3.000',
+  version: '1.2.151',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -53,19 +53,18 @@ function extractConfigIdFromPath(requestUrl) {
         console.log('Extracted configId:', configId);
         return configId;
       }
-      console.log('No match found in path:', path);
+      console.log('No configId found in path:', path);
     } catch (err) {
       console.error('Error parsing URL in extractConfigIdFromPath:', err.message);
     }
   }
-  console.log('Returning default configId');
   return null;
 }
 
 // Obtener m3uUrl desde configCache
 function getM3uUrlFromConfigId(configId) {
   if (!configId) {
-    console.log('No configId provided, using default');
+    console.log('No configId provided, using default M3U URL');
     return null;
   }
   const m3uUrl = configCache.get(configId);
@@ -89,18 +88,22 @@ async function validateM3uUrl(m3uUrl) {
 
 // Manifest handler
 router.get('/manifest.json', async (req, res) => {
-  console.log('Manifest requested for configId:', req.configId);
+  console.log('Manifest requested, configId:', req.configId || 'none', 'URL:', req.url);
   try {
     const m3uUrl = getM3uUrlFromConfigId(req.configId);
     if (m3uUrl) {
-      await loadM3U({ m3uUrl }); // Pre-cargar M3U para asegurar que esté listo
+      console.log('Loading M3U for manifest:', m3uUrl);
+      await loadM3U({ m3uUrl }).catch(err => {
+        console.error('Failed to pre-load M3U:', err.message);
+      });
     }
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(manifest));
   } catch (err) {
     console.error('Error serving manifest:', err.message);
     res.statusCode = 500;
-    res.end(JSON.stringify({ error: 'Failed to generate manifest' }));
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ error: 'Failed to generate manifest', details: err.message }));
   }
 });
 
@@ -172,7 +175,7 @@ builder.defineMetaHandler(async ({ type, id, url }) => {
         meta: {
           id: id,
           type: 'tv',
-          name: channel.name,
+          name: channel అ: channel.name,
           poster: channel.logo_url,
           background: channel.logo_url,
           description: channel.name
@@ -245,7 +248,7 @@ builder.defineStreamHandler(async ({ type, id, url }) => {
         streams.push({
           title: `${channel.name} - Website`,
           externalUrl: channel.website_url,
-          behaviorHints: { notWebReady: true, external: true }
+          behaviorHints = { notWebReady: true, external: true }
         });
       }
       console.log('Streams generated:', streams);
@@ -312,7 +315,7 @@ router.post('/generate-url', async (req, res) => {
       return;
     }
 
- vend const m3uUrl = req.body.m3uUrl;
+    const m3uUrl = req.body.m3uUrl;
     console.log('m3uUrl:', m3uUrl);
 
     // Validar URL
@@ -399,6 +402,7 @@ router.use((req, res, next) => {
     req.url = match[2] || '/manifest.json';
     console.log('Extracted configId:', req.configId, 'Modified req.url:', req.url);
   } else {
+    req.configId = null;
     console.log('No configId matched, using original URL:', req.url);
   }
   next();
@@ -414,6 +418,7 @@ module.exports = (req, res) => {
   router(req, res, () => {
     console.log('Route not found:', req.url);
     res.statusCode = 404;
-    res.end();
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ error: 'Route not found' }));
   });
 };
