@@ -494,20 +494,17 @@ router.post('/generate-url', async (req, res) => {
 // Middleware para extraer configId
 router.use((req, res, next) => {
   console.log('Middleware processing request, original URL:', req.url, 'params:', req.params, 'query:', req.query);
-  if (req.params.configId) {
-    req.configId = req.params.configId;
-    console.log('Middleware extracted configId from params:', req.configId);
-  } else {
-    const match = req.url.match(/^\/([^/]+)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
-    if (match && match[1]) {
-      req.configId = match[1];
-      console.log('Middleware extracted configId from URL:', req.configId);
-    } else {
-      req.configId = null;
-      console.log('Middleware no configId found');
-    }
+  
+  // Extraer configId de la URL
+  const urlParts = req.url.split('/');
+  let configId = null;
+  if (urlParts[1] && !['configure', 'generate-url'].includes(urlParts[1])) {
+    configId = urlParts[1]; // El primer segmento de la URL es el configId
   }
-  console.log('Middleware proceeding with configId:', req.configId || 'none', 'URL:', req.url);
+  
+  req.configId = configId;
+  console.log('Middleware extracted configId:', req.configId || 'none');
+  
   req.extra = req.extra || {};
   req.extra.configId = req.configId;
   next();
