@@ -13,7 +13,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.171',
+  version: '1.2.180',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -481,9 +481,9 @@ router.post('/generate-url', async (req, res) => {
 router.use((req, res, next) => {
   console.log('Middleware processing request, original URL:', req.url, 'params:', req.params, 'query:', req.query);
   const urlParts = req.url.split('/');
-  let configId = null;
-  if (urlParts[1] && !['configure', 'generate-url'].includes(urlParts[1])) {
-    configId = urlParts[1];
+  let configId = req.params.configId || urlParts[1];
+  if (['configure', 'generate-url'].includes(urlParts[1])) {
+    configId = null;
   }
   req.configId = configId;
   console.log('Middleware extracted configId:', req.configId || 'none');
