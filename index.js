@@ -478,26 +478,3 @@ module.exports = (req, res) => {
     res.end(JSON.stringify({ error: 'Route not found' }));
   });
 };
-</xaiArtifact>
-
----
-
-### Instrucciones para implementar
-
-1. **Actualizar los archivos**:
-   - Reemplaza cada archivo en tu repositorio con el código proporcionado arriba.
-   - Sube los cambios a tu repositorio (por ejemplo, `git add .`, `git commit -m "Integrate Cloudflare KV"`, `git push`).
-   - Vercel redeplegará automáticamente el proyecto, o puedes forzar un redeploy en **Deployments** > **Redeploy**.
-
-2. **Verificar las variables de entorno**:
-   - En Vercel, ve a **Settings** > **Environment Variables**.
-   - Confirma que están presentes:
-     - `CLOUDFLARE_KV_ACCOUNT_ID`: `8a9d6b2a90c19d87674bfc09d54c5181`
-     - `CLOUDFLARE_KV_NAMESPACE_ID`: <ID del namespace>
-     - `CLOUDFLARE_KV_API_TOKEN`: <tu API Token>
-
-3. **Probar**:
-   - Ve a `https://listas-sand.vercel.app/configure`, genera una URL personalizada y prueba en Stremio.
-   - Verifica los logs en Vercel para confirmar que no hay errores.
-
-Si tienes problemas con algún archivo o el despliegue, dímelo. ¡Vamos a hacer que funcione! 😊
