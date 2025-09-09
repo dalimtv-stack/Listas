@@ -110,19 +110,6 @@ async function validateM3uUrl(m3uUrl) {
   }
 }
 
-// Añadir CORS para permitir solicitudes desde Stremio
-router.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 200;
-    res.end();
-  } else {
-    next();
-  }
-});
-
 // Definir manejadores
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
   console.log('Catalog requested:', { type, id, extra });
@@ -267,7 +254,7 @@ builder.defineStreamHandler(async ({ type, id, extra }) => {
         streams.push({
           title: `${channel.name} - Website`,
           externalUrl: channel.website_url,
-          behaviorHints: { notWebReady: true, external: true } // Corrección del error de sintaxis
+          behaviorHints: { notWebReady: true, external: true }
         });
       }
       console.log('Streams generated:', streams);
