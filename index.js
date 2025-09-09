@@ -45,6 +45,7 @@ async function getM3uUrlFromConfigId(configId) {
     return null;
   }
   try {
+    console.log('Attempting to fetch from Cloudflare KV:', { configId });
     const response = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${process.env.CLOUDFLARE_KV_NAMESPACE_ID}/values/${configId}`,
       {
@@ -54,11 +55,12 @@ async function getM3uUrlFromConfigId(configId) {
         },
       }
     );
+    const responseBody = await response.text();
     if (!response.ok) {
-      console.error('Error fetching m3uUrl from Cloudflare KV:', response.status, response.statusText);
+      console.error('Error fetching m3uUrl from Cloudflare KV:', response.status, response.statusText, responseBody);
       return null;
     }
-    const m3uUrl = await response.text();
+    const m3uUrl = responseBody;
     console.log('Retrieved m3uUrl from Cloudflare KV for configId:', configId, m3uUrl);
     return m3uUrl;
   } catch (err) {
@@ -70,6 +72,7 @@ async function getM3uUrlFromConfigId(configId) {
 // Guardar m3uUrl en Cloudflare Workers KV
 async function setM3uUrlInConfigId(configId, m3uUrl) {
   try {
+    console.log('Attempting to store in Cloudflare KV:', { configId, m3uUrl });
     const response = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${process.env.CLOUDFLARE_KV_NAMESPACE_ID}/values/${configId}`,
       {
@@ -81,10 +84,11 @@ async function setM3uUrlInConfigId(configId, m3uUrl) {
         body: m3uUrl,
       }
     );
+    const responseBody = await response.text();
     if (!response.ok) {
-      throw new Error(`Failed to set m3uUrl in Cloudflare KV: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to set m3uUrl in Cloudflare KV: ${response.status} ${response.statusText} - ${responseBody}`);
     }
-    console.log('Stored configId:', configId, 'with m3uUrl:', m3uUrl);
+    console.log('Successfully stored configId:', configId, 'with m3uUrl:', m3uUrl);
   } catch (err) {
     console.error('Error in setM3uUrlInConfigId:', err.message);
     throw err;
@@ -106,8 +110,7 @@ async function validateM3uUrl(m3uUrl) {
   }
 }
 
-// Definir manejadores antes de getInterface
-console.log('Defining catalog handler');
+// Definir manejadores
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
   console.log('Catalog requested:', { type, id, extra });
   const configId = extra?.configId || 'none';
@@ -160,7 +163,6 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
   return { metas: [] };
 });
 
-console.log('Defining meta handler');
 builder.defineMetaHandler(async ({ type, id, extra }) => {
   console.log('Meta requested:', { type, id, extra });
   const configId = extra?.configId || 'none';
@@ -194,7 +196,6 @@ builder.defineMetaHandler(async ({ type, id, extra }) => {
   return { meta: null };
 });
 
-console.log('Defining stream handler');
 builder.defineStreamHandler(async ({ type, id, extra }) => {
   console.log('Stream requested:', { type, id, extra });
   const configId = extra?.configId || 'none';
@@ -267,12 +268,10 @@ builder.defineStreamHandler(async ({ type, id, extra }) => {
   return { streams: [] };
 });
 
-// Inicializar addonInterface y router después de los manejadores
-console.log('Creating addon interface and router');
 const addonInterface = builder.getInterface();
 const router = getRouter(addonInterface);
 
-// Manifest handler para rutas estáticas
+// Manifest handlers
 router.get('/manifest.json', async (req, res) => {
   console.log('Static manifest requested, configId:', req.params.configId || req.configId || 'none', 'URL:', req.url);
   try {
@@ -289,7 +288,6 @@ router.get('/manifest.json', async (req, res) => {
   }
 });
 
-// Manifest handler para rutas dinámicas
 router.get('/:configId/manifest.json', async (req, res) => {
   console.log('Dynamic manifest requested, configId:', req.params.configId, 'URL:', req.url);
   try {
@@ -306,7 +304,7 @@ router.get('/:configId/manifest.json', async (req, res) => {
   }
 });
 
-// Manejadores explícitos para rutas dinámicas de catalog, meta y stream (con y sin .json)
+// Catalog handlers
 router.get('/:configId/catalog/:type/:id', (req, res) => {
   console.log('Catalog route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
@@ -323,6 +321,15 @@ router.get('/:configId/catalog/:type/:id.json', (req, res) => {
   addonInterface.catalog({ ...req, type: req.params.type, id: cleanId, extra }, res);
 });
 
+// New handler for /<configId>/catalog.json
+router.get('/:configId/catalog.json', (req, res) => {
+  console.log('Catalog.json route requested, configId:', req.params.configId, 'URL:', req.url, 'query:', req.query);
+  req.configId = req.params.configId;
+  const extra = { configId: req.params.configId, ...req.query };
+  addonInterface.catalog({ ...req, type: 'tv', id: 'Heimdallr', extra }, res);
+});
+
+// Meta handlers
 router.get('/:configId/meta/:type/:id', (req, res) => {
   console.log('Meta route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
@@ -339,6 +346,7 @@ router.get('/:configId/meta/:type/:id.json', (req, res) => {
   addonInterface.meta({ ...req, type: req.params.type, id: cleanId, extra }, res);
 });
 
+// Stream handlers
 router.get('/:configId/stream/:type/:id', (req, res) => {
   console.log('Stream route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
@@ -355,7 +363,7 @@ router.get('/:configId/stream/:type/:id.json', (req, res) => {
   addonInterface.stream({ ...req, type: req.params.type, id: cleanId, extra }, res);
 });
 
-// Configurar rutas adicionales
+// Configure route
 router.use(bodyParser.urlencoded({ extended: false }));
 
 router.get('/configure', (req, res) => {
@@ -386,6 +394,7 @@ router.get('/configure', (req, res) => {
   `);
 });
 
+// Generate URL route
 router.post('/generate-url', async (req, res) => {
   console.log('POST /generate-url received, body:', req.body);
   try {
@@ -489,7 +498,6 @@ router.use((req, res, next) => {
     req.configId = req.params.configId;
     console.log('Middleware extracted configId from params:', req.configId);
   } else {
-    // Intentar extraer configId de la URL manualmente
     const match = req.url.match(/^\/([^/]+)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
     if (match && match[1]) {
       req.configId = match[1];
@@ -500,7 +508,6 @@ router.use((req, res, next) => {
     }
   }
   console.log('Middleware proceeding with configId:', req.configId || 'none', 'URL:', req.url);
-  // Asegurar que req.extra contenga configId
   req.extra = req.extra || {};
   req.extra.configId = req.configId;
   next();
