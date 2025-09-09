@@ -11,24 +11,13 @@ require('dotenv').config();
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
-const manifest = {
+const baseManifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.163',
+  version: '1.2.180',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
   logo: 'https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960',
-  catalogs: [
-    {
-      type: 'tv',
-      id: 'Heimdallr',
-      name: 'Heimdallr Live Channels',
-      extra: [
-        { name: 'search', isRequired: false },
-        { name: 'genre', isRequired: false, options: ['Adultos', 'Elcano.top', 'Hulu.to', 'NEW LOOP', 'Noticias', 'Shickat.me', 'Telegram', 'Deportes', 'Movistar'] }
-      ]
-    }
-  ],
   resources: ['catalog', 'meta', 'stream'],
   idPrefixes: ['heimdallr_'],
   behaviorHints: {
@@ -36,7 +25,7 @@ const manifest = {
   }
 };
 
-const builder = new addonBuilder(manifest);
+const builder = new addonBuilder(baseManifest);
 
 // Obtener m3uUrl desde Cloudflare Workers KV
 async function getM3uUrlFromConfigId(configId) {
@@ -292,6 +281,20 @@ router.get('/manifest.json', async (req, res) => {
     const configId = req.configId || 'none';
     const m3uUrl = await getM3uUrlFromConfigId(configId);
     console.log('Serving static manifest with configId:', configId, 'm3uUrl:', m3uUrl || 'none');
+    const manifest = {
+      ...baseManifest,
+      catalogs: [
+        {
+          type: 'tv',
+          id: 'Heimdallr',
+          name: 'Heimdallr Live Channels',
+          extra: [
+            { name: 'search', isRequired: false },
+            { name: 'genre', isRequired: false, options: ['Adultos', 'Elcano.top', 'Hulu.to', 'NEW LOOP', 'Noticias', 'Shickat.me', 'Telegram', 'Deportes', 'Movistar'] }
+          ]
+        }
+      ]
+    };
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(manifest));
   } catch (err) {
@@ -308,6 +311,21 @@ router.get('/:configId/manifest.json', async (req, res) => {
     const configId = req.params.configId;
     const m3uUrl = await getM3uUrlFromConfigId(configId);
     console.log('Serving dynamic manifest with configId:', configId, 'm3uUrl:', m3uUrl || 'none');
+    const manifest = {
+      ...baseManifest,
+      catalogs: [
+        {
+          type: 'tv',
+          id: 'Heimdallr',
+          name: 'Heimdallr Live Channels',
+          extra: [
+            { name: 'configId', isRequired: true, options: [configId] },
+            { name: 'search', isRequired: false },
+            { name: 'genre', isRequired: false, options: ['Adultos', 'Elcano.top', 'Hulu.to', 'NEW LOOP', 'Noticias', 'Shickat.me', 'Telegram', 'Deportes', 'Movistar'] }
+          ]
+        }
+      ]
+    };
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(manifest));
   } catch (err) {
@@ -439,7 +457,21 @@ router.post('/generate-url', async (req, res) => {
 
     const baseUrl = `https://${req.headers.host}/${configId}/manifest.json`;
     const installUrl = `stremio://${encodeURIComponent(baseUrl)}`;
-    const manifestJson = JSON.stringify(manifest, null, 2);
+    const manifestJson = JSON.stringify({
+      ...baseManifest,
+      catalogs: [
+        {
+          type: 'tv',
+          id: 'Heimdallr',
+          name: 'Heimdallr Live Channels',
+          extra: [
+            { name: 'configId', isRequired: true, options: [configId] },
+            { name: 'search', isRequired: false },
+            { name: 'genre', isRequired: false, options: ['Adultos', 'Elcano.top', 'Hulu.to', 'NEW LOOP', 'Noticias', 'Shickat.me', 'Telegram', 'Deportes', 'Movistar'] }
+          ]
+        }
+      ]
+    }, null, 2);
     console.log('baseUrl:', baseUrl);
     console.log('installUrl:', installUrl);
 
