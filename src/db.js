@@ -22,6 +22,9 @@ function getExtraGenres(name) {
 }
 
 async function loadM3U({ m3uUrl = DEFAULT_M3U_URL }) {
+  if (m3uUrl === null) {
+    m3uUrl = DEFAULT_M3U_URL; // Manejar explícitamente si m3uUrl es null
+  }
   console.log('Cargando lista M3U desde:', m3uUrl);
   const hash = crypto.createHash('md5').update(m3uUrl).digest('hex');
   let channels = channelsCache.get(hash);
