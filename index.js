@@ -1,7 +1,7 @@
 // index.js
-const { addonBuilder, getRouter } = require('stremio-addon-sdk');
+const { addonBuilder, getRouter, serveHTTP } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
-const { getChannels, getChannel } = require('./src/db');
+const { getChannels, getChannel, loadM3U } = require('./src/db');
 const { CACHE_TTL, DEFAULT_PORT } = require('./src/config');
 const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
@@ -11,10 +11,10 @@ require('dotenv').config();
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
-// Manifest del addon
+// ---------------- Manifest ----------------
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.166',
+  version: '1.2.170',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -26,146 +26,234 @@ const manifest = {
       name: 'Heimdallr Live Channels',
       extra: [
         { name: 'search', isRequired: false },
-        { name: 'genre', isRequired: false, options: ['Adultos','Elcano.top','Hulu.to','NEW LOOP','Noticias','Shickat.me','Telegram','Deportes','Movistar'] }
+        { name: 'genre', isRequired: false, options: ['Adultos', 'Elcano.top', 'Hulu.to', 'NEW LOOP', 'Noticias', 'Shickat.me', 'Telegram', 'Deportes', 'Movistar'] }
       ]
     }
   ],
-  resources: ['catalog','meta','stream'],
+  resources: ['catalog', 'meta', 'stream'],
   idPrefixes: ['heimdallr_'],
   behaviorHints: { configurable: true }
 };
 
 const builder = new addonBuilder(manifest);
 
-// Funciones de configuración KV
+// ---------------- Helpers ----------------
 async function getM3uUrlFromConfigId(configId) {
   if (!configId || configId === 'none') return null;
   try {
-    const res = await fetch(
+    const response = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${process.env.CLOUDFLARE_KV_NAMESPACE_ID}/values/${configId}`,
-      { headers: { Authorization: `Bearer ${process.env.CLOUDFLARE_KV_API_TOKEN}` } }
+      { method: 'GET', headers: { Authorization: `Bearer ${process.env.CLOUDFLARE_KV_API_TOKEN}` } }
     );
-    if (!res.ok) return null;
-    return await res.text();
+    if (!response.ok) return null;
+    return await response.text();
   } catch (err) {
-    console.error(err);
+    console.error('Error getM3uUrlFromConfigId:', err.message);
     return null;
   }
 }
 
 async function setM3uUrlInConfigId(configId, m3uUrl) {
   try {
-    await fetch(
+    const response = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${process.env.CLOUDFLARE_KV_NAMESPACE_ID}/values/${configId}`,
       {
         method: 'PUT',
-        headers: { Authorization: `Bearer ${process.env.CLOUDFLARE_KV_API_TOKEN}`, 'Content-Type': 'text/plain' },
+        headers: {
+          Authorization: `Bearer ${process.env.CLOUDFLARE_KV_API_TOKEN}`,
+          'Content-Type': 'text/plain',
+        },
         body: m3uUrl
       }
     );
-  } catch (err) { console.error(err); }
+    if (!response.ok) throw new Error(`Failed to store M3U in KV: ${response.status}`);
+  } catch (err) {
+    console.error('Error setM3uUrlInConfigId:', err.message);
+    throw err;
+  }
 }
 
 async function validateM3uUrl(m3uUrl) {
   try {
-    const res = await fetch(m3uUrl, { method: 'HEAD' });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(m3uUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
     return res.ok;
-  } catch (err) { return false; }
+  } catch (err) {
+    console.error('Invalid M3U URL:', err.message);
+    return false;
+  }
 }
 
-// Catalog handler
+// ---------------- Catalog Handler ----------------
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
   const configId = extra?.configId || 'none';
-  const m3uUrl = await getM3uUrlFromConfigId(configId) || null;
+  const m3uUrl = await getM3uUrlFromConfigId(configId);
   if (type !== 'tv' || id !== 'Heimdallr') return { metas: [] };
 
   const m3uHash = m3uUrl ? crypto.createHash('md5').update(m3uUrl).digest('hex') : 'default';
-  const cacheKey = `Heimdallr_channels_${m3uHash}_${extra?.genre||''}_${extra?.search||''}`;
+  const cacheKey = `catalog_${m3uHash}_${extra?.genre || ''}_${extra?.search || ''}`;
   const cached = cache.get(cacheKey);
   if (cached) return cached;
 
-  const channels = await getChannels({ m3uUrl });
-  let filtered = channels;
-
-  if (extra?.search) filtered = filtered.filter(c => c.name.toLowerCase().includes(extra.search.toLowerCase()));
-  if (extra?.genre) filtered = filtered.filter(c =>
-    c.group_title === extra.genre ||
-    c.extra_genres.includes(extra.genre) ||
-    c.additional_streams.some(s => s.group_title === extra.genre)
-  );
-
-  const metas = filtered.map(c => ({ id: `heimdallr_${c.id}`, type: 'tv', name: c.name, poster: c.logo_url }));
-  const response = { metas };
-  cache.set(cacheKey, response);
-  return response;
-});
-
-// Meta handler
-builder.defineMetaHandler(async ({ type, id, extra }) => {
-  if (type !== 'tv' || !id.startsWith('heimdallr_')) return { meta: null };
-  const channelId = id.replace('heimdallr_', '');
-  const m3uUrl = await getM3uUrlFromConfigId(extra?.configId) || null;
-
-  const channel = await getChannel(channelId, { m3uUrl });
-  return {
-    meta: {
-      id,
+  try {
+    const channels = await getChannels({ m3uUrl });
+    let filteredChannels = channels;
+    if (extra?.search) filteredChannels = filteredChannels.filter(c => c.name.toLowerCase().includes(extra.search.toLowerCase()));
+    if (extra?.genre) {
+      filteredChannels = filteredChannels.filter(c =>
+        c.group_title === extra.genre ||
+        (c.additional_streams?.some(s => s.group_title === extra.genre)) ||
+        (c.extra_genres?.includes(extra.genre))
+      );
+    }
+    const metas = filteredChannels.map(channel => ({
+      id: `heimdallr_${channel.id}`,
       type: 'tv',
       name: channel.name,
-      poster: channel.logo_url,
-      background: channel.logo_url,
-      description: channel.name
-    }
-  };
+      poster: channel.logo_url
+    }));
+    const response = { metas };
+    cache.set(cacheKey, response);
+    return response;
+  } catch (err) {
+    console.error('Catalog error:', err.message);
+    return { metas: [] };
+  }
 });
 
-// Stream handler
+// ---------------- Meta Handler ----------------
+builder.defineMetaHandler(async ({ type, id, extra }) => {
+  if (type !== 'tv' || !id.startsWith('heimdallr_')) return { meta: null };
+  const configId = extra?.configId || 'none';
+  const m3uUrl = await getM3uUrlFromConfigId(configId);
+  const channelId = id.replace('heimdallr_', '');
+  const m3uHash = m3uUrl ? crypto.createHash('md5').update(m3uUrl).digest('hex') : 'default';
+  const cacheKey = `meta_${m3uHash}_${channelId}`;
+  const cached = cache.get(cacheKey);
+  if (cached) return cached;
+  try {
+    const channel = await getChannel(channelId, { m3uUrl });
+    const response = {
+      meta: {
+        id,
+        type: 'tv',
+        name: channel.name,
+        poster: channel.logo_url,
+        background: channel.logo_url,
+        description: channel.name
+      }
+    };
+    cache.set(cacheKey, response);
+    return response;
+  } catch (err) {
+    console.error('Meta error:', err.message);
+    return { meta: null };
+  }
+});
+
+// ---------------- Stream Handler ----------------
 builder.defineStreamHandler(async ({ type, id, extra }) => {
   if (type !== 'tv' || !id.startsWith('heimdallr_')) return { streams: [] };
+  const configId = extra?.configId || 'none';
+  const m3uUrl = await getM3uUrlFromConfigId(configId);
   const channelId = id.replace('heimdallr_', '');
-  const m3uUrl = await getM3uUrlFromConfigId(extra?.configId) || null;
-  const channel = await getChannel(channelId, { m3uUrl });
+  const m3uHash = m3uUrl ? crypto.createHash('md5').update(m3uUrl).digest('hex') : 'default';
+  const cacheKey = `stream_${m3uHash}_${channelId}`;
+  const cached = cache.get(cacheKey);
+  if (cached) return cached;
 
-  const streams = channel.additional_streams.map(stream => {
-    const obj = { name: stream.group_title, title: stream.title };
-    if (stream.acestream_id) obj.externalUrl = `acestream://${stream.acestream_id}`;
-    else obj.url = stream.url || stream.stream_url;
-    obj.behaviorHints = { notWebReady: !!stream.acestream_id, external: !!stream.acestream_id };
-    return obj;
-  });
-  return { streams };
+  try {
+    const channel = await getChannel(channelId, { m3uUrl });
+    const streams = [];
+
+    function pushStream(s) {
+      const obj = { name: s.group_title || channel.group_title, title: s.title || channel.name };
+      if (s.acestream_id) obj.externalUrl = `acestream://${s.acestream_id}`, obj.behaviorHints = { notWebReady: true, external: true };
+      else if (s.m3u8_url) obj.url = s.m3u8_url, obj.behaviorHints = { notWebReady: false, external: false };
+      else if (s.stream_url) obj.url = s.stream_url, obj.behaviorHints = { notWebReady: false, external: false };
+      streams.push(obj);
+    }
+
+    if (channel.acestream_id || channel.m3u8_url || channel.stream_url) pushStream(channel);
+    if (Array.isArray(channel.additional_streams)) channel.additional_streams.forEach(pushStream);
+    if (channel.website_url) streams.push({ title: `${channel.name} - Website`, externalUrl: channel.website_url, behaviorHints: { notWebReady: true, external: true } });
+
+    const response = { streams };
+    cache.set(cacheKey, response);
+    return response;
+  } catch (err) {
+    console.error('Stream error:', err.message);
+    return { streams: [] };
+  }
 });
 
-// Router
-const router = getRouter(builder.getInterface());
+// ---------------- Router ----------------
+const addonInterface = builder.getInterface();
+const router = getRouter(addonInterface);
 
-// Página de configuración
+// Middleware para extraer configId
 router.use(bodyParser.urlencoded({ extended: false }));
-router.get('/configure', (req,res) => {
-  res.setHeader('Content-Type','text/html');
-  res.end(`<html><body><h1>Configure Heimdallr</h1>
-  <form action="/generate-url" method="post">
-  <input type="text" name="m3uUrl" placeholder="https://example.com/list.m3u" required>
-  <button type="submit">Generate Install URL</button></form></body></html>`);
+router.use((req, res, next) => {
+  const match = req.url.match(/^\/([^/]+)(\/.*)?$/);
+  req.configId = match ? match[1] : null;
+  req.extra = req.extra || {};
+  req.extra.configId = req.configId;
+  next();
 });
 
-router.post('/generate-url', async (req,res) => {
+// Manifest routes
+router.get(['/manifest.json', '/:configId/manifest.json'], async (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.end(JSON.stringify(manifest));
+});
+
+// Catalog / Meta / Stream dynamic routes
+router.get(['/:configId/catalog.json', '/:configId/catalog/:type/:id.json'], (req, res) => {
+  const extra = { configId: req.configId, ...req.query };
+  const cleanId = req.params.id?.replace(/\.json$/, '') || 'Heimdallr';
+  addonInterface.catalog({ ...req, type: 'tv', id: cleanId, extra }, res);
+});
+router.get(['/:configId/meta/:type/:id.json'], (req, res) => {
+  const extra = { configId: req.configId, ...req.query };
+  const cleanId = req.params.id.replace(/\.json$/, '');
+  addonInterface.meta({ ...req, type: req.params.type, id: cleanId, extra }, res);
+});
+router.get(['/:configId/stream/:type/:id.json'], (req, res) => {
+  const extra = { configId: req.configId, ...req.query };
+  const cleanId = req.params.id.replace(/\.json$/, '');
+  addonInterface.stream({ ...req, type: req.params.type, id: cleanId, extra }, res);
+});
+
+// Configure / Generate URL
+router.get('/configure', (req, res) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.end(`
+    <!DOCTYPE html><html><head><title>Configure Heimdallr Channels</title></head>
+    <body><form action="/generate-url" method="post">
+      <input type="text" name="m3uUrl" required>
+      <button type="submit">Generate Install URL</button>
+    </form></body></html>
+  `);
+});
+
+router.post('/generate-url', async (req, res) => {
   const m3uUrl = req.body?.m3uUrl;
-  if (!m3uUrl || !(await validateM3uUrl(m3uUrl))) return res.status(400).send('Invalid M3U URL');
+  if (!m3uUrl) return res.status(400).send('M3U URL required');
+
+  if (!(await validateM3uUrl(m3uUrl))) return res.status(400).send('Invalid M3U URL');
 
   const configId = uuidv4();
   await setM3uUrlInConfigId(configId, m3uUrl);
   const baseUrl = `https://${req.headers.host}/${configId}/manifest.json`;
-  const installUrl = `stremio://${encodeURIComponent(baseUrl)}`;
-
-  res.setHeader('Content-Type','text/html');
-  res.end(`<p>Install URL: <a href="${installUrl}">${installUrl}</a></p>`);
+  res.send(`Install URL: stremio://${encodeURIComponent(baseUrl)}`);
 });
 
-// Servidor local para desarrollo
-if (process.env.NODE_ENV !== 'production') {
-  const { serveHTTP } = require('stremio-addon-sdk');
-  serveHTTP(builder.getInterface(), { port: process.env.PORT || DEFAULT_PORT });
-}
+// ---------------- Server ----------------
+if (process.env.NODE_ENV !== 'production') serveHTTP(builder.getInterface(), { port: process.env.PORT || DEFAULT_PORT });
 
-module.exports = (req,res) => router(req,res,()=>{res.statusCode=404;res.end('Route not found')});
+// Export Lambda/Serverless handler
+module.exports = (req, res) => {
+  router(req, res, () => res.status(404).json({ error: 'Route not found' }));
+};
