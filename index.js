@@ -13,7 +13,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.180',
+  version: '1.2.162',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -128,22 +128,23 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
       const channels = await getChannels({ m3uUrl });
       console.log('Fetched channels:', channels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title, extra_genres: c.extra_genres })));
       let filteredChannels = channels;
-      if (extra?.search) {
-        const query = extra.search.toLowerCase();
-        filteredChannels = filteredChannels.filter(channel => channel.name.toLowerCase().includes(query));
-      }
-      if (extra?.genre) {
-        filteredChannels = filteredChannels.filter(channel => {
-          if (channel.group_title === extra.genre) return true;
-          if (channel.additional_streams && Array.isArray(channel.additional_streams)) {
-            if (channel.additional_streams.some(stream => stream.group_title === extra.genre)) return true;
-          }
-          if (channel.extra_genres && Array.isArray(channel.extra_genres)) {
-            if (channel.extra_genres.includes(extra.genre)) return true;
-          }
-          return false;
-        });
-      }
+      // Comentado temporalmente para probar si el filtrado está causando el catálogo vacío
+      // if (extra?.search) {
+      //   const query = extra.search.toLowerCase();
+      //   filteredChannels = filteredChannels.filter(channel => channel.name.toLowerCase().includes(query));
+      // }
+      // if (extra?.genre) {
+      //   filteredChannels = filteredChannels.filter(channel => {
+      //     if (channel.group_title === extra.genre) return true;
+      //     if (channel.additional_streams && Array.isArray(channel.additional_streams)) {
+      //       if (channel.additional_streams.some(stream => stream.group_title === extra.genre)) return true;
+      //     }
+      //     if (channel.extra_genres && Array.isArray(channel.extra_genres)) {
+      //       if (channel.extra_genres.includes(extra.genre)) return true;
+      //     }
+      //     return false;
+      //   });
+      // }
       const metas = filteredChannels.map(channel => ({
         id: `heimdallr_${channel.id}`,
         type: 'tv',
@@ -253,7 +254,7 @@ builder.defineStreamHandler(async ({ type, id, extra }) => {
         streams.push({
           title: `${channel.name} - Website`,
           externalUrl: channel.website_url,
-          behaviorHints: { notWebReady: true, external: true }
+          behaviorHints = { notWebReady: true, external: true }
         });
       }
       console.log('Streams generated:', streams);
@@ -270,6 +271,19 @@ builder.defineStreamHandler(async ({ type, id, extra }) => {
 
 const addonInterface = builder.getInterface();
 const router = getRouter(addonInterface);
+
+// Añadir CORS para permitir solicitudes desde Stremio
+router.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    res.statusCode = 200;
+    res.end();
+  } else {
+    next();
+  }
+});
 
 // Manifest handlers
 router.get('/manifest.json', async (req, res) => {
@@ -482,7 +496,7 @@ router.use((req, res, next) => {
   console.log('Middleware processing request, original URL:', req.url, 'params:', req.params, 'query:', req.query);
   const urlParts = req.url.split('/');
   let configId = req.params.configId || urlParts[1];
-  if (['configure', 'generate-url'].includes(urlParts[1])) {
+  if (['configure', 'generate-url'].includes(urlParts[1]) || urlParts[1] === '') {
     configId = null;
   }
   req.configId = configId;
