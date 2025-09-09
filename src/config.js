@@ -3,9 +3,6 @@ module.exports = {
   // Tiempo de vida del caché (en segundos)
   CACHE_TTL: 300, // 30 minutos
 
-  // Tiempo de vida del caché de configuraciones (UUID -> m3uUrl)
-  CONFIG_CACHE_TTL: 3600, // 1 hora
-
   // Puerto en el que se levantará el servidor
   DEFAULT_PORT: 3000,
 
