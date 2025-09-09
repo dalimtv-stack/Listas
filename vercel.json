@@ -6,38 +6,14 @@
       "use": "@vercel/node"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/:configId/manifest.json",
-      "dest": "/index.js"
+      "source": "/:configId/:path*",
+      "destination": "/index.js"
     },
     {
-      "src": "/:configId/catalog/:type/:id(.*)",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/:configId/catalog/:type/:id.json",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/:configId/meta/:type/:id(.*)",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/:configId/meta/:type/:id.json",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/:configId/stream/:type/:id(.*)",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/:configId/stream/:type/:id.json",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.js"
+      "source": "/(.*)",
+      "destination": "/index.js"
     }
   ]
 }
