@@ -2,7 +2,7 @@
 const { addonBuilder, getRouter } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
 const { getChannels, getChannel, loadM3U } = require('./src/db');
-const { CACHE_TTL, DEFAULT_PORT } = require('./src/config');
+const { CACHE_TTL, DEFAULT_PORT, CONFIG_CACHE_TTL } = require('./src/config');
 const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
@@ -10,10 +10,11 @@ const fetch = require('node-fetch');
 require('dotenv').config();
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
+const configCache = new NodeCache({ stdTTL: CONFIG_CACHE_TTL });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.164',
+  version: '1.2.162',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -38,83 +39,12 @@ const manifest = {
 
 const builder = new addonBuilder(manifest);
 
-// Obtener m3uUrl desde Cloudflare Workers KV
-async function getM3uUrlFromConfigId(configId) {
-  if (!configId || configId === 'none') {
-    console.log('No configId provided, using default M3U URL');
-    return null;
-  }
-  try {
-    console.log('Attempting to fetch from Cloudflare KV:', { configId });
-    const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${process.env.CLOUDFLARE_KV_NAMESPACE_ID}/values/${configId}`,
-      {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${process.env.CLOUDFLARE_KV_API_TOKEN}`,
-        },
-      }
-    );
-    const responseBody = await response.text();
-    if (!response.ok) {
-      console.error('Error fetching m3uUrl from Cloudflare KV:', response.status, response.statusText, responseBody);
-      return null;
-    }
-    const m3uUrl = responseBody;
-    console.log('Retrieved m3uUrl from Cloudflare KV for configId:', configId, m3uUrl);
-    return m3uUrl;
-  } catch (err) {
-    console.error('Error in getM3uUrlFromConfigId:', err.message);
-    return null;
-  }
-}
-
-// Guardar m3uUrl en Cloudflare Workers KV
-async function setM3uUrlInConfigId(configId, m3uUrl) {
-  try {
-    console.log('Attempting to store in Cloudflare KV:', { configId, m3uUrl });
-    const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${process.env.CLOUDFLARE_KV_NAMESPACE_ID}/values/${configId}`,
-      {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${process.env.CLOUDFLARE_KV_API_TOKEN}`,
-          'Content-Type': 'text/plain',
-        },
-        body: m3uUrl,
-      }
-    );
-    const responseBody = await response.text();
-    if (!response.ok) {
-      throw new Error(`Failed to set m3uUrl in Cloudflare KV: ${response.status} ${response.statusText} - ${responseBody}`);
-    }
-    console.log('Successfully stored configId:', configId, 'with m3uUrl:', m3uUrl);
-  } catch (err) {
-    console.error('Error in setM3uUrlInConfigId:', err.message);
-    throw err;
-  }
-}
-
-// Validar URL del M3U
-async function validateM3uUrl(m3uUrl) {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(m3uUrl, { signal: controller.signal });
-    clearTimeout(timeoutId);
-    console.log('Validated M3U URL:', m3uUrl, 'Status:', res.status);
-    return res.ok;
-  } catch (err) {
-    console.error('Invalid M3U URL:', err.message);
-    return false;
-  }
-}
-
-// Definir manejadores
+// Definir manejadores antes de getInterface
+console.log('Defining catalog handler');
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
   console.log('Catalog requested:', { type, id, extra });
   const configId = extra?.configId || 'none';
-  const m3uUrl = await getM3uUrlFromConfigId(configId);
+  const m3uUrl = getM3uUrlFromConfigId(configId);
   console.log('Catalog configId:', configId, 'm3uUrl:', m3uUrl || 'none');
   if (type === 'tv' && id === 'Heimdallr') {
     const m3uHash = m3uUrl ? crypto.createHash('md5').update(m3uUrl).digest('hex') : 'default';
@@ -163,10 +93,11 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
   return { metas: [] };
 });
 
+console.log('Defining meta handler');
 builder.defineMetaHandler(async ({ type, id, extra }) => {
   console.log('Meta requested:', { type, id, extra });
   const configId = extra?.configId || 'none';
-  const m3uUrl = await getM3uUrlFromConfigId(configId);
+  const m3uUrl = getM3uUrlFromConfigId(configId);
   console.log('Meta configId:', configId, 'm3uUrl:', m3uUrl || 'none');
   if (type === 'tv' && id.startsWith('heimdallr_')) {
     const channelId = id.replace('heimdallr_', '');
@@ -196,10 +127,11 @@ builder.defineMetaHandler(async ({ type, id, extra }) => {
   return { meta: null };
 });
 
+console.log('Defining stream handler');
 builder.defineStreamHandler(async ({ type, id, extra }) => {
   console.log('Stream requested:', { type, id, extra });
   const configId = extra?.configId || 'none';
-  const m3uUrl = await getM3uUrlFromConfigId(configId);
+  const m3uUrl = getM3uUrlFromConfigId(configId);
   console.log('Stream configId:', configId, 'm3uUrl:', m3uUrl || 'none');
   if (type === 'tv' && id.startsWith('heimdallr_')) {
     const channelId = id.replace('heimdallr_', '');
@@ -268,15 +200,43 @@ builder.defineStreamHandler(async ({ type, id, extra }) => {
   return { streams: [] };
 });
 
+// Inicializar addonInterface y router después de los manejadores
+console.log('Creating addon interface and router');
 const addonInterface = builder.getInterface();
 const router = getRouter(addonInterface);
 
-// Manifest handlers
-router.get('/manifest.json', async (req, res) => {
+// Obtener m3uUrl desde configCache
+function getM3uUrlFromConfigId(configId) {
+  if (!configId || configId === 'none') {
+    console.log('No configId provided, using default M3U URL');
+    return null;
+  }
+  const m3uUrl = configCache.get(configId);
+  console.log('Retrieved m3uUrl for configId:', configId, m3uUrl || 'not found');
+  return m3uUrl || null;
+}
+
+// Validar URL del M3U
+async function validateM3uUrl(m3uUrl) {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(m3uUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    console.log('Validated M3U URL:', m3uUrl, 'Status:', res.status);
+    return res.ok;
+  } catch (err) {
+    console.error('Invalid M3U URL:', err.message);
+    return false;
+  }
+}
+
+// Manifest handler para rutas estáticas
+router.get('/manifest.json', (req, res) => {
   console.log('Static manifest requested, configId:', req.params.configId || req.configId || 'none', 'URL:', req.url);
   try {
     const configId = req.params.configId || req.configId || 'none';
-    const m3uUrl = await getM3uUrlFromConfigId(configId);
+    const m3uUrl = getM3uUrlFromConfigId(configId);
     console.log('Serving static manifest with configId:', configId, 'm3uUrl:', m3uUrl || 'none');
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(manifest));
@@ -288,11 +248,12 @@ router.get('/manifest.json', async (req, res) => {
   }
 });
 
-router.get('/:configId/manifest.json', async (req, res) => {
+// Manifest handler para rutas dinámicas
+router.get('/:configId/manifest.json', (req, res) => {
   console.log('Dynamic manifest requested, configId:', req.params.configId, 'URL:', req.url);
   try {
     const configId = req.params.configId;
-    const m3uUrl = await getM3uUrlFromConfigId(configId);
+    const m3uUrl = getM3uUrlFromConfigId(configId);
     console.log('Serving dynamic manifest with configId:', configId, 'm3uUrl:', m3uUrl || 'none');
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(manifest));
@@ -304,11 +265,11 @@ router.get('/:configId/manifest.json', async (req, res) => {
   }
 });
 
-// Catalog handlers
+// Manejadores explícitos para rutas dinámicas de catalog, meta y stream (con y sin .json)
 router.get('/:configId/catalog/:type/:id', (req, res) => {
   console.log('Catalog route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
-  const cleanId = req.params.id.replace(/\.json$/, '');
+  const cleanId = req.params.id.replace(/\.json$/, ''); // Eliminar .json del id
   const extra = { configId: req.params.configId, ...req.query };
   addonInterface.catalog({ ...req, type: req.params.type, id: cleanId, extra }, res);
 });
@@ -316,24 +277,15 @@ router.get('/:configId/catalog/:type/:id', (req, res) => {
 router.get('/:configId/catalog/:type/:id.json', (req, res) => {
   console.log('Catalog route (JSON) requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
-  const cleanId = req.params.id.replace(/\.json$/, '');
+  const cleanId = req.params.id.replace(/\.json$/, ''); // Eliminar .json del id
   const extra = { configId: req.params.configId, ...req.query };
   addonInterface.catalog({ ...req, type: req.params.type, id: cleanId, extra }, res);
 });
 
-// New handler for /<configId>/catalog.json
-router.get('/:configId/catalog.json', (req, res) => {
-  console.log('Catalog.json route requested, configId:', req.params.configId, 'URL:', req.url, 'query:', req.query);
-  req.configId = req.params.configId;
-  const extra = { configId: req.params.configId, ...req.query };
-  addonInterface.catalog({ ...req, type: 'tv', id: 'Heimdallr', extra }, res);
-});
-
-// Meta handlers
 router.get('/:configId/meta/:type/:id', (req, res) => {
   console.log('Meta route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
-  const cleanId = req.params.id.replace(/\.json$/, '');
+  const cleanId = req.params.id.replace(/\.json$/, ''); // Eliminar .json del id
   const extra = { configId: req.params.configId, ...req.query };
   addonInterface.meta({ ...req, type: req.params.type, id: cleanId, extra }, res);
 });
@@ -341,16 +293,15 @@ router.get('/:configId/meta/:type/:id', (req, res) => {
 router.get('/:configId/meta/:type/:id.json', (req, res) => {
   console.log('Meta route (JSON) requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
-  const cleanId = req.params.id.replace(/\.json$/, '');
+  const cleanId = req.params.id.replace(/\.json$/, ''); // Eliminar .json del id
   const extra = { configId: req.params.configId, ...req.query };
   addonInterface.meta({ ...req, type: req.params.type, id: cleanId, extra }, res);
 });
 
-// Stream handlers
 router.get('/:configId/stream/:type/:id', (req, res) => {
   console.log('Stream route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
-  const cleanId = req.params.id.replace(/\.json$/, '');
+  const cleanId = req.params.id.replace(/\.json$/, ''); // Eliminar .json del id
   const extra = { configId: req.params.configId, ...req.query };
   addonInterface.stream({ ...req, type: req.params.type, id: cleanId, extra }, res);
 });
@@ -358,12 +309,12 @@ router.get('/:configId/stream/:type/:id', (req, res) => {
 router.get('/:configId/stream/:type/:id.json', (req, res) => {
   console.log('Stream route (JSON) requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   req.configId = req.params.configId;
-  const cleanId = req.params.id.replace(/\.json$/, '');
+  const cleanId = req.params.id.replace(/\.json$/, ''); // Eliminar .json del id
   const extra = { configId: req.params.configId, ...req.query };
   addonInterface.stream({ ...req, type: req.params.type, id: cleanId, extra }, res);
 });
 
-// Configure route
+// Configurar rutas adicionales
 router.use(bodyParser.urlencoded({ extended: false }));
 
 router.get('/configure', (req, res) => {
@@ -394,7 +345,6 @@ router.get('/configure', (req, res) => {
   `);
 });
 
-// Generate URL route
 router.post('/generate-url', async (req, res) => {
   console.log('POST /generate-url received, body:', req.body);
   try {
@@ -494,17 +444,22 @@ router.post('/generate-url', async (req, res) => {
 // Middleware para extraer configId
 router.use((req, res, next) => {
   console.log('Middleware processing request, original URL:', req.url, 'params:', req.params, 'query:', req.query);
-  
-  // Extraer configId de la URL
-  const urlParts = req.url.split('/');
-  let configId = null;
-  if (urlParts[1] && !['configure', 'generate-url'].includes(urlParts[1])) {
-    configId = urlParts[1]; // El primer segmento de la URL es el configId
+  if (req.params.configId) {
+    req.configId = req.params.configId;
+    console.log('Middleware extracted configId from params:', req.configId);
+  } else {
+    // Intentar extraer configId de la URL manualmente
+    const match = req.url.match(/^\/([^/]+)(\/(manifest\.json|catalog\/.*|meta\/.*|stream\/.*))?$/);
+    if (match && match[1]) {
+      req.configId = match[1];
+      console.log('Middleware extracted configId from URL:', req.configId);
+    } else {
+      req.configId = null;
+      console.log('Middleware no configId found');
+    }
   }
-  
-  req.configId = configId;
-  console.log('Middleware extracted configId:', req.configId || 'none');
-  
+  console.log('Middleware proceeding with configId:', req.configId || 'none', 'URL:', req.url);
+  // Asegurar que req.extra contenga configId
   req.extra = req.extra || {};
   req.extra.configId = req.configId;
   next();
@@ -520,7 +475,29 @@ module.exports = (req, res) => {
   router(req, res, () => {
     console.log('Route not found:', req.url);
     res.statusCode = 404;
-    res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ error: 'Route not found' }));
   });
 };
+</xaiArtifact>
+
+---
+
+### Instrucciones para implementar
+
+1. **Actualizar los archivos**:
+   - Reemplaza cada archivo en tu repositorio con el código proporcionado arriba.
+   - Sube los cambios a tu repositorio (por ejemplo, `git add .`, `git commit -m "Integrate Cloudflare KV"`, `git push`).
+   - Vercel redeplegará automáticamente el proyecto, o puedes forzar un redeploy en **Deployments** > **Redeploy**.
+
+2. **Verificar las variables de entorno**:
+   - En Vercel, ve a **Settings** > **Environment Variables**.
+   - Confirma que están presentes:
+     - `CLOUDFLARE_KV_ACCOUNT_ID`: `8a9d6b2a90c19d87674bfc09d54c5181`
+     - `CLOUDFLARE_KV_NAMESPACE_ID`: <ID del namespace>
+     - `CLOUDFLARE_KV_API_TOKEN`: <tu API Token>
+
+3. **Probar**:
+   - Ve a `https://listas-sand.vercel.app/configure`, genera una URL personalizada y prueba en Stremio.
+   - Verifica los logs en Vercel para confirmar que no hay errores.
+
+Si tienes problemas con algún archivo o el despliegue, dímelo. ¡Vamos a hacer que funcione! 😊
