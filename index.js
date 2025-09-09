@@ -1,7 +1,7 @@
-// index.js
+// index.js (parcheado) - versión completa
 const { addonBuilder, getRouter } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
-const { getChannels, getChannel, loadM3U } = require('./src/db');
+const { getChannels, getChannel } = require('./src/db');
 const { CACHE_TTL, DEFAULT_PORT } = require('./src/config');
 const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
@@ -9,11 +9,11 @@ const crypto = require('crypto');
 const fetch = require('node-fetch');
 require('dotenv').config();
 
-const cache = new NodeCache({ stdTTL: CACHE_TTL });
+const cache = new NodeCache({ stdTTL: CACHE_TTL || 300 });
 
 const manifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.162',
+  version: '1.2.180',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -37,114 +37,154 @@ const manifest = {
 };
 
 const builder = new addonBuilder(manifest);
+const addonInterface = builder.getInterface();
+const router = getRouter(addonInterface);
 
-// Obtener m3uUrl desde Cloudflare Workers KV
+// --- Utilities for Cloudflare KV storage (configId -> m3uUrl)
 async function getM3uUrlFromConfigId(configId) {
   if (!configId || configId === 'none') {
-    console.log('No configId provided, returning null');
+    console.log('getM3uUrlFromConfigId: no configId provided, returning null');
+    return null;
+  }
+  if (!process.env.CLOUDFLARE_KV_ACCOUNT_ID || !process.env.CLOUDFLARE_KV_NAMESPACE_ID || !process.env.CLOUDFLARE_KV_API_TOKEN) {
+    console.warn('Cloudflare KV env vars missing; cannot fetch m3uUrl from KV');
     return null;
   }
   try {
     console.log('Fetching m3uUrl from Cloudflare KV for configId:', configId);
-    const response = await fetch(
+    const resp = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${process.env.CLOUDFLARE_KV_NAMESPACE_ID}/values/${configId}`,
       {
         method: 'GET',
-        headers: {
-          Authorization: `Bearer ${process.env.CLOUDFLARE_KV_API_TOKEN}`,
-        },
+        headers: { Authorization: `Bearer ${process.env.CLOUDFLARE_KV_API_TOKEN}` }
       }
     );
-    const responseBody = await response.text();
-    if (!response.ok) {
-      console.error('Error fetching m3uUrl from Cloudflare KV:', response.status, response.statusText, responseBody);
+    const text = await resp.text();
+    if (!resp.ok) {
+      console.error('Cloudflare KV GET failed:', resp.status, resp.statusText, text);
       return null;
     }
-    const m3uUrl = responseBody;
-    console.log('Retrieved m3uUrl:', m3uUrl);
-    return m3uUrl;
+    console.log('Retrieved m3uUrl from KV:', text);
+    return text;
   } catch (err) {
     console.error('Error in getM3uUrlFromConfigId:', err.message);
     return null;
   }
 }
 
-// Guardar m3uUrl en Cloudflare Workers KV
 async function setM3uUrlInConfigId(configId, m3uUrl) {
+  if (!process.env.CLOUDFLARE_KV_ACCOUNT_ID || !process.env.CLOUDFLARE_KV_NAMESPACE_ID || !process.env.CLOUDFLARE_KV_API_TOKEN) {
+    throw new Error('Cloudflare KV env vars missing; cannot save config');
+  }
   try {
-    console.log('Storing in Cloudflare KV:', { configId, m3uUrl });
-    const response = await fetch(
+    console.log('Storing m3uUrl in Cloudflare KV:', { configId, m3uUrl });
+    const resp = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${process.env.CLOUDFLARE_KV_NAMESPACE_ID}/values/${configId}`,
       {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${process.env.CLOUDFLARE_KV_API_TOKEN}`,
-          'Content-Type': 'text/plain',
+          'Content-Type': 'text/plain'
         },
-        body: m3uUrl,
+        body: m3uUrl
       }
     );
-    const responseBody = await response.text();
-    if (!response.ok) {
-      throw new Error(`Failed to set m3uUrl in Cloudflare KV: ${response.status} ${response.statusText} - ${responseBody}`);
+    const text = await resp.text();
+    if (!resp.ok) {
+      throw new Error(`Cloudflare KV PUT failed: ${resp.status} ${resp.statusText} - ${text}`);
     }
-    console.log('Successfully stored configId:', configId, 'with m3uUrl:', m3uUrl);
+    console.log('Successfully stored m3uUrl in KV for configId:', configId);
   } catch (err) {
     console.error('Error in setM3uUrlInConfigId:', err.message);
     throw err;
   }
 }
 
-// Validar URL del M3U
 async function validateM3uUrl(m3uUrl) {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
     const res = await fetch(m3uUrl, { signal: controller.signal });
     clearTimeout(timeoutId);
     console.log('Validated M3U URL:', m3uUrl, 'Status:', res.status);
     return res.ok;
   } catch (err) {
-    console.error('Invalid M3U URL:', err.message);
+    console.error('validateM3uUrl error:', err.message);
     return false;
   }
 }
 
-// Definir manejadores
+// --- Middlewares ---
+// CORS + preflight
+router.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  if (req.method === 'OPTIONS') {
+    res.statusCode = 204;
+    return res.end();
+  }
+  next();
+});
+
+// body parser for form submissions
+router.use(bodyParser.urlencoded({ extended: false }));
+
+// Extract configId from path (first path segment) and attach to req.extra
+router.use((req, res, next) => {
+  try {
+    const path = (req.path || req.url || '').split('?')[0];
+    const parts = path.split('/').filter(Boolean);
+    let configId = null;
+    if (parts.length > 0 && !['configure', 'generate-url', 'manifest.json', 'favicon.ico'].includes(parts[0])) {
+      configId = parts[0];
+    }
+    req.configId = configId;
+    req.extra = req.extra || {};
+    req.extra.configId = configId;
+    // log minimal info for debugging
+    console.log('Middleware extracted configId:', req.configId || 'none', 'path:', path);
+  } catch (err) {
+    console.error('Error extracting configId:', err.message);
+  }
+  next();
+});
+
+// --- Handlers defined via addonBuilder ---
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
-  console.log('Catalog requested:', { type, id, extra });
+  console.log('Catalog requested by addon system:', { type, id, extra });
   const configId = extra?.configId || 'none';
   const m3uUrl = await getM3uUrlFromConfigId(configId);
-  console.log('Catalog configId:', configId, 'm3uUrl:', m3uUrl || 'none');
   if (type === 'tv' && id === 'Heimdallr') {
     const m3uHash = m3uUrl ? crypto.createHash('md5').update(m3uUrl).digest('hex') : 'default';
     const cacheKey = `Heimdallr_channels_${m3uHash}_${extra?.genre || ''}_${extra?.search || ''}`;
     const cached = cache.get(cacheKey);
     if (cached) {
-      console.log('Using cached catalog');
+      console.log('Returning cached catalog');
       return cached;
     }
     try {
       const channels = await getChannels({ m3uUrl });
-      console.log('Fetched channels:', channels.map(c => ({ id: c.id, name: c.name, group_title: c.group_title, extra_genres: c.extra_genres })));
+      console.log('Fetched channels count:', channels.length);
       let filteredChannels = channels;
-      // Comentado temporalmente para probar si el filtrado está causando el catálogo vacío
-      // if (extra?.search) {
-      //   const query = extra.search.toLowerCase();
-      //   filteredChannels = filteredChannels.filter(channel => channel.name.toLowerCase().includes(query));
-      // }
-      // if (extra?.genre) {
-      //   filteredChannels = filteredChannels.filter(channel => {
-      //     if (channel.group_title === extra.genre) return true;
-      //     if (channel.additional_streams && Array.isArray(channel.additional_streams)) {
-      //       if (channel.additional_streams.some(stream => stream.group_title === extra.genre)) return true;
-      //     }
-      //     if (channel.extra_genres && Array.isArray(channel.extra_genres)) {
-      //       if (channel.extra_genres.includes(extra.genre)) return true;
-      //     }
-      //     return false;
-      //   });
-      // }
+      if (extra?.search) {
+        const q = extra.search.toLowerCase();
+        filteredChannels = filteredChannels.filter(c => (c.name || '').toLowerCase().includes(q));
+      }
+      if (extra?.genre) {
+        const genreQ = extra.genre.toLowerCase();
+        filteredChannels = filteredChannels.filter(channel => {
+          if ((channel.group_title || '').toLowerCase() === genreQ) return true;
+          if (channel.additional_streams && Array.isArray(channel.additional_streams)) {
+            if (channel.additional_streams.some(s => (s.group_title || '').toLowerCase() === genreQ)) return true;
+          }
+          if (channel.extra_genres && Array.isArray(channel.extra_genres)) {
+            if (channel.extra_genres.map(g => g.toLowerCase()).includes(genreQ)) return true;
+          }
+          return false;
+        });
+      }
+
       const metas = filteredChannels.map(channel => ({
         id: `heimdallr_${channel.id}`,
         type: 'tv',
@@ -153,14 +193,13 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
       }));
       const response = { metas };
       cache.set(cacheKey, response);
-      console.log('Catalog response:', response);
+      console.log('Catalog response metas count:', metas.length);
       return response;
-    } catch (error) {
-      console.error('Catalog error:', error.message, error.stack);
+    } catch (err) {
+      console.error('Catalog handler error:', err.message);
       return { metas: [] };
     }
   }
-  console.log('Catalog not matched, returning empty metas');
   return { metas: [] };
 });
 
@@ -168,7 +207,6 @@ builder.defineMetaHandler(async ({ type, id, extra }) => {
   console.log('Meta requested:', { type, id, extra });
   const configId = extra?.configId || 'none';
   const m3uUrl = await getM3uUrlFromConfigId(configId);
-  console.log('Meta configId:', configId, 'm3uUrl:', m3uUrl || 'none');
   if (type === 'tv' && id.startsWith('heimdallr_')) {
     const channelId = id.replace('heimdallr_', '');
     const m3uHash = m3uUrl ? crypto.createHash('md5').update(m3uUrl).digest('hex') : 'default';
@@ -179,7 +217,7 @@ builder.defineMetaHandler(async ({ type, id, extra }) => {
       const channel = await getChannel(channelId, { m3uUrl });
       const response = {
         meta: {
-          id: id,
+          id,
           type: 'tv',
           name: channel.name,
           poster: channel.logo_url,
@@ -189,8 +227,8 @@ builder.defineMetaHandler(async ({ type, id, extra }) => {
       };
       cache.set(cacheKey, response);
       return response;
-    } catch (error) {
-      console.error('Meta error:', error.message, error.stack);
+    } catch (err) {
+      console.error('Meta handler error:', err.message);
       return { meta: null };
     }
   }
@@ -201,322 +239,222 @@ builder.defineStreamHandler(async ({ type, id, extra }) => {
   console.log('Stream requested:', { type, id, extra });
   const configId = extra?.configId || 'none';
   const m3uUrl = await getM3uUrlFromConfigId(configId);
-  console.log('Stream configId:', configId, 'm3uUrl:', m3uUrl || 'none');
   if (type === 'tv' && id.startsWith('heimdallr_')) {
     const channelId = id.replace('heimdallr_', '');
     const m3uHash = m3uUrl ? crypto.createHash('md5').update(m3uUrl).digest('hex') : 'default';
     const cacheKey = `stream_${m3uHash}_${channelId}`;
     const cached = cache.get(cacheKey);
-    if (cached) {
-      console.log('Using cached streams');
-      return cached;
-    }
+    if (cached) return cached;
     try {
       const channel = await getChannel(channelId, { m3uUrl });
       const streams = [];
+      // primary stream
       if (channel.acestream_id || channel.m3u8_url || channel.stream_url) {
-        const streamObj = {
+        const primary = {
           name: channel.additional_streams && channel.additional_streams.length > 0 ? channel.additional_streams[0].group_title : channel.group_title,
           title: channel.title
         };
         if (channel.acestream_id) {
-          streamObj.externalUrl = `acestream://${channel.acestream_id}`;
-          streamObj.behaviorHints = { notWebReady: true, external: true };
+          primary.externalUrl = `acestream://${channel.acestream_id}`;
+          primary.behaviorHints = { notWebReady: true, external: true };
         } else if (channel.m3u8_url) {
-          streamObj.url = channel.m3u8_url;
-          streamObj.behaviorHints = { notWebReady: false, external: false };
+          primary.url = channel.m3u8_url;
+          primary.behaviorHints = { notWebReady: false, external: false };
         } else if (channel.stream_url) {
-          streamObj.url = channel.stream_url;
-          streamObj.behaviorHints = { notWebReady: false, external: false };
+          primary.url = channel.stream_url;
+          primary.behaviorHints = { notWebReady: false, external: false };
         }
-        streams.push(streamObj);
+        streams.push(primary);
       }
+      // additional streams
       if (channel.additional_streams && Array.isArray(channel.additional_streams)) {
-        channel.additional_streams.forEach((stream) => {
-          const streamObj = {
-            name: stream.group_title,
-            title: stream.title
-          };
-          if (stream.acestream_id) {
-            streamObj.externalUrl = `acestream://${stream.acestream_id}`;
-            streamObj.behaviorHints = { notWebReady: true, external: true };
-          } else if (stream.url) {
-            streamObj.url = stream.url;
-            streamObj.behaviorHints = { notWebReady: false, external: false };
-          } else if (stream.stream_url) {
-            streamObj.url = stream.stream_url;
-            streamObj.behaviorHints = { notWebReady: false, external: false };
+        channel.additional_streams.forEach(s => {
+          const obj = { name: s.group_title, title: s.title };
+          if (s.acestream_id) {
+            obj.externalUrl = `acestream://${s.acestream_id}`;
+            obj.behaviorHints = { notWebReady: true, external: true };
+          } else if (s.url) {
+            obj.url = s.url;
+            obj.behaviorHints = { notWebReady: false, external: false };
+          } else if (s.stream_url) {
+            obj.url = s.stream_url;
+            obj.behaviorHints = { notWebReady: false, external: false };
           }
-          streams.push(streamObj);
+          streams.push(obj);
         });
       }
+      // website fallback
       if (channel.website_url) {
-        streams.push({
-          title: `${channel.name} - Website`,
-          externalUrl: channel.website_url,
-          behaviorHints = { notWebReady: true, external: true }
-        });
+        streams.push({ title: `${channel.name} - Website`, externalUrl: channel.website_url, behaviorHints: { notWebReady: true, external: true } });
       }
-      console.log('Streams generated:', streams);
       const response = { streams };
       cache.set(cacheKey, response);
+      console.log('Streams generated count:', streams.length);
       return response;
-    } catch (error) {
-      console.error('Stream error:', error.message, error.stack);
+    } catch (err) {
+      console.error('Stream handler error:', err.message);
       return { streams: [] };
     }
   }
   return { streams: [] };
 });
 
-const addonInterface = builder.getInterface();
-const router = getRouter(addonInterface);
-
-// Añadir CORS para permitir solicitudes desde Stremio
-router.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 200;
-    res.end();
-  } else {
-    next();
-  }
-});
-
-// Manifest handlers
+// --- HTTP routes ---
+// Manifest routes
 router.get('/manifest.json', async (req, res) => {
-  console.log('Static manifest requested, configId:', req.configId || 'none', 'URL:', req.url);
-  try {
-    const configId = req.configId || 'none';
-    const m3uUrl = await getM3uUrlFromConfigId(configId);
-    console.log('Serving static manifest with configId:', configId, 'm3uUrl:', m3uUrl || 'none');
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(manifest));
-  } catch (err) {
-    console.error('Error serving static manifest:', err.message);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Failed to generate manifest', details: err.message }));
-  }
+  console.log('Static manifest requested, path:', req.path);
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.end(JSON.stringify(manifest));
 });
 
 router.get('/:configId/manifest.json', async (req, res) => {
-  console.log('Dynamic manifest requested, configId:', req.params.configId, 'URL:', req.url);
-  try {
-    const configId = req.params.configId;
-    const m3uUrl = await getM3uUrlFromConfigId(configId);
-    console.log('Serving dynamic manifest with configId:', configId, 'm3uUrl:', m3uUrl || 'none');
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(manifest));
-  } catch (err) {
-    console.error('Error serving dynamic manifest:', err.message);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Failed to generate manifest', details: err.message }));
-  }
+  console.log('Dynamic manifest requested for configId:', req.params.configId);
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.end(JSON.stringify(manifest));
 });
 
-// Catalog handlers
+// Catalog routes (for Stremio to call)
 router.get('/:configId/catalog/:type/:id', (req, res) => {
-  console.log('Catalog route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
+  console.log('HTTP catalog route:', req.params.configId, req.params.type, req.params.id);
   const extra = { configId: req.params.configId, ...req.query };
   addonInterface.catalog({ type: req.params.type, id: req.params.id.replace(/\.json$/, ''), extra }, res);
 });
-
 router.get('/:configId/catalog/:type/:id.json', (req, res) => {
-  console.log('Catalog route (JSON) requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   const extra = { configId: req.params.configId, ...req.query };
   addonInterface.catalog({ type: req.params.type, id: req.params.id.replace(/\.json$/, ''), extra }, res);
 });
-
 router.get('/:configId/catalog.json', (req, res) => {
-  console.log('Catalog.json route requested, configId:', req.params.configId, 'URL:', req.url, 'query:', req.query);
   const extra = { configId: req.params.configId, ...req.query };
   addonInterface.catalog({ type: 'tv', id: 'Heimdallr', extra }, res);
 });
 
-// Meta handlers
+// Meta routes
 router.get('/:configId/meta/:type/:id', (req, res) => {
-  console.log('Meta route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   const extra = { configId: req.params.configId, ...req.query };
   addonInterface.meta({ type: req.params.type, id: req.params.id.replace(/\.json$/, ''), extra }, res);
 });
-
 router.get('/:configId/meta/:type/:id.json', (req, res) => {
-  console.log('Meta route (JSON) requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   const extra = { configId: req.params.configId, ...req.query };
   addonInterface.meta({ type: req.params.type, id: req.params.id.replace(/\.json$/, ''), extra }, res);
 });
 
-// Stream handlers
+// Stream routes
 router.get('/:configId/stream/:type/:id', (req, res) => {
-  console.log('Stream route requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   const extra = { configId: req.params.configId, ...req.query };
   addonInterface.stream({ type: req.params.type, id: req.params.id.replace(/\.json$/, ''), extra }, res);
 });
-
 router.get('/:configId/stream/:type/:id.json', (req, res) => {
-  console.log('Stream route (JSON) requested, configId:', req.params.configId, 'type:', req.params.type, 'id:', req.params.id, 'URL:', req.url, 'query:', req.query);
   const extra = { configId: req.params.configId, ...req.query };
   addonInterface.stream({ type: req.params.type, id: req.params.id.replace(/\.json$/, ''), extra }, res);
 });
 
-// Configure route
-router.use(bodyParser.urlencoded({ extended: false }));
-
+// Configure UI
 router.get('/configure', (req, res) => {
   console.log('Serving /configure');
   res.setHeader('Content-Type', 'text/html');
   res.end(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>Configure Heimdallr Channels</title>
-        <style>
-          body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
-          input { width: 100%; padding: 10px; margin: 10px 0; }
-          button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
-          a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
-          pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
-        </style>
-      </head>
-      <body>
-        <h1>Configure Heimdallr Channels</h1>
-        <p>Enter the URL of your M3U playlist:</p>
-        <form action="/generate-url" method="post">
-          <input type="text" name="m3uUrl" placeholder="https://example.com/list.m3u" required>
-          <button type="submit">Generate Install URL</button>
-        </form>
-      </body>
-    </html>
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Configure Heimdallr Channels</title>
+    <style>
+      body{font-family:Arial,Helvetica,sans-serif;max-width:760px;margin:20px auto;padding:10px}
+      input{width:100%;padding:10px;margin:10px 0}
+      button{background:#4CAF50;color:#fff;padding:10px 16px;border:0;border-radius:6px;cursor:pointer}
+      pre{background:#f4f4f4;padding:10px;border-radius:6px;overflow:auto}
+      .muted{color:#666;font-size:0.9rem}
+    </style>
+  </head>
+  <body>
+    <h1>Heimdallr - Configure</h1>
+    <p>Introduce la URL de tu lista M3U pública (HTTP/HTTPS):</p>
+    <form action="/generate-url" method="post">
+      <input type="url" name="m3uUrl" placeholder="https://example.com/list.m3u" required />
+      <button type="submit">Generar URL de instalación</button>
+    </form>
+    <p class="muted">La URL se almacenará en Cloudflare KV y se generará un <code>configId</code> que enlazará esa lista con el manifest.</p>
+  </body>
+</html>
   `);
 });
 
-// Generate URL route
+// Generate install URL
 router.post('/generate-url', async (req, res) => {
-  console.log('POST /generate-url received, body:', req.body);
+  console.log('POST /generate-url body:', req.body);
   try {
     if (!req.body || !req.body.m3uUrl) {
-      console.error('No m3uUrl provided');
       res.statusCode = 400;
       res.setHeader('Content-Type', 'text/html');
-      res.end(`
-        <html>
-          <body>
-            <h1>Error</h1>
-            <p>M3U URL is required. <a href="/configure">Go back</a></p>
-          </body>
-        </html>
-      `);
-      return;
+      return res.end('<html><body><h1>Error</h1><p>M3U URL required. <a href="/configure">Back</a></p></body></html>');
     }
-
-    const m3uUrl = req.body.m3uUrl;
-    console.log('m3uUrl:', m3uUrl);
-
-    // Validar URL
-    const isValid = await validateM3uUrl(m3uUrl);
-    if (!isValid) {
-      console.error('Invalid M3U URL:', m3uUrl);
+    const m3uUrl = req.body.m3uUrl.trim();
+    if (!m3uUrl) {
       res.statusCode = 400;
       res.setHeader('Content-Type', 'text/html');
-      res.end(`
-        <html>
-          <body>
-            <h1>Error</h1>
-            <p>Invalid M3U URL. <a href="/configure">Go back</a></p>
-          </body>
-        </html>
-      `);
-      return;
+      return res.end('<html><body><h1>Error</h1><p>M3U URL empty. <a href="/configure">Back</a></p></body></html>');
     }
-
+    const valid = await validateM3uUrl(m3uUrl);
+    if (!valid) {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'text/html');
+      return res.end(`<html><body><h1>Error</h1><p>Invalid or inaccessible M3U URL: ${m3uUrl}. <a href="/configure">Back</a></p></body></html>`);
+    }
     const configId = uuidv4();
     await setM3uUrlInConfigId(configId, m3uUrl);
-    console.log('Stored configId:', configId, 'with m3uUrl:', m3uUrl);
-
-    const baseUrl = `https://${req.headers.host}/${configId}/manifest.json`;
+    const host = req.headers.host || 'localhost';
+    const baseUrl = `https://${host}/${configId}/manifest.json`;
     const installUrl = `stremio://${encodeURIComponent(baseUrl)}`;
-    const manifestJson = JSON.stringify(manifest, null, 2);
-    console.log('baseUrl:', baseUrl);
-    console.log('installUrl:', installUrl);
 
     res.setHeader('Content-Type', 'text/html');
     res.end(`
-      <html>
-        <head>
-          <title>Install Heimdallr Channels</title>
-          <style>
-            body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
-            button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
-            a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
-            pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
-          </style>
-          <script>
-            function copyManifest() {
-              navigator.clipboard.writeText('${baseUrl}').then(() => {
-                alert('Manifest URL copied to clipboard!');
-              }).catch(err => {
-                alert('Failed to copy: ' + err);
-              });
-            }
-          </script>
-        </head>
-        <body>
-          <h1>Install URL Generated</h1>
-          <p>Click the buttons below to install the addon or copy the manifest URL:</p>
-          <a href="${installUrl}" style="background: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px;">Install Addon</a>
-          <button onclick="copyManifest()">Copy Manifest URL</button>
-          <p>Or copy this URL:</p>
-          <pre>${baseUrl}</pre>
-          <p>Manifest JSON:</p>
-          <pre>${manifestJson}</pre>
-        </body>
-      </html>
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Install Heimdallr</title>
+    <style>body{font-family:Arial,Helvetica,sans-serif;max-width:760px;margin:20px auto}button{background:#4CAF50;color:#fff;padding:8px 12px;border:0;border-radius:6px;cursor:pointer}pre{background:#f4f4f4;padding:10px;border-radius:6px}</style>
+    <script>
+      function copyText() { navigator.clipboard.writeText(document.getElementById('manifest').textContent).then(()=>alert('Copied'))}
+    </script>
+  </head>
+  <body>
+    <h1>Install URL Generated</h1>
+    <p>Instala el addon en Stremio usando el siguiente enlace (desde el dispositivo con Stremio):</p>
+    <p><a href="${installUrl}" style="display:inline-block;padding:8px 12px;background:#4CAF50;color:#fff;border-radius:6px;text-decoration:none">Instalar Addon</a></p>
+    <p>Manifest URL (usa esta si necesitas copiar la URL):</p>
+    <pre id="manifest">${baseUrl}</pre>
+    <p><button onclick="copyText()">Copiar Manifest URL</button></p>
+    <h3>Manifest (preview)</h3>
+    <pre>${JSON.stringify(manifest, null, 2)}</pre>
+  </body>
+</html>
     `);
   } catch (err) {
     console.error('Error in /generate-url:', err.message);
     res.statusCode = 500;
     res.setHeader('Content-Type', 'text/html');
-    res.end(`
-      <html>
-        <body>
-          <h1>Server Error</h1>
-          <p>Error: ${err.message}. <a href="/configure">Go back</a></p>
-        </body>
-      </html>
-    `);
+    res.end(`<html><body><h1>Server Error</h1><p>${err.message}</p><p><a href="/configure">Back</a></p></body></html>`);
   }
 });
 
-// Middleware para extraer configId
-router.use((req, res, next) => {
-  console.log('Middleware processing request, original URL:', req.url, 'params:', req.params, 'query:', req.query);
-  const urlParts = req.url.split('/');
-  let configId = req.params.configId || urlParts[1];
-  if (['configure', 'generate-url'].includes(urlParts[1]) || urlParts[1] === '') {
-    configId = null;
-  }
-  req.configId = configId;
-  console.log('Middleware extracted configId:', req.configId || 'none');
-  req.extra = req.extra || {};
-  req.extra.configId = req.configId;
-  next();
-});
-
-if (process.env.NODE_ENV !== 'production') {
-  const { serveHTTP } = require('stremio-addon-sdk');
-  serveHTTP(builder.getInterface(), { port: process.env.PORT || DEFAULT_PORT });
-}
-
+// Fallback handler for other routes
 module.exports = (req, res) => {
-  console.log('Main handler received request, URL:', req.url, 'configId:', req.configId || 'none', 'params:', req.params, 'query:', req.query, 'extra:', req.extra);
-  router(req, res, () => {
-    console.log('Route not found:', req.url);
-    res.statusCode = 404;
+  try {
+    console.log('Main handler - incoming request:', req.url, 'configId:', req.configId || 'none');
+    router(req, res, () => {
+      res.statusCode = 404;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'Route not found' }));
+    });
+  } catch (err) {
+    console.error('Main handler error:', err.message);
+    res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Route not found' }));
-  });
+    res.end(JSON.stringify({ error: 'Internal Server Error', details: err.message }));
+  }
 };
