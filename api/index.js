@@ -335,7 +335,34 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
   }
 }
 
-// -------------------- Meta y Stream con KV cache --------------------
+// -------------------- Meta y Stream con KV cache + TTL 1h --------------------
+const KV_TTL_MS = 60 * 60 * 1000; // 1 hora en milisegundos
+
+async function kvGetJsonTTL(key) {
+  const val = await kvGet(key);
+  if (!val) return null;
+  try {
+    const parsed = JSON.parse(val);
+    if (!parsed.timestamp || !parsed.data) return null;
+    const age = Date.now() - parsed.timestamp;
+    if (age > KV_TTL_MS) {
+      console.log(`[KV] Caducado (${Math.round(age / 60000)} min)`, key);
+      return null;
+    }
+    return parsed.data;
+  } catch {
+    return null;
+  }
+}
+
+async function kvSetJsonTTL(key, obj) {
+  const payload = {
+    timestamp: Date.now(),
+    data: obj
+  };
+  await kvSet(key, JSON.stringify(payload));
+}
+
 async function metaRoute(req, res) {
   try {
     const id = String(req.params.id).replace(/\.json$/, '');
@@ -345,14 +372,14 @@ async function metaRoute(req, res) {
 
     const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
     const kvKey = `meta:${m3uHash}:${id}`;
-    const kvCached = await kvGetJson(kvKey);
+    const kvCached = await kvGetJsonTTL(kvKey);
     if (kvCached) {
       console.log('[META] KV HIT', kvKey);
       return res.json(kvCached);
     }
 
     const result = await handleMeta({ id, m3uUrl });
-    await kvSetJson(kvKey, result);
+    await kvSetJsonTTL(kvKey, result);
     res.json(result);
   } catch (e) {
     console.error('[META] route error:', e.message);
@@ -369,14 +396,14 @@ async function streamRoute(req, res) {
 
     const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
     const kvKey = `stream:${m3uHash}:${id}`;
-    const kvCached = await kvGetJson(kvKey);
+    const kvCached = await kvGetJsonTTL(kvKey);
     if (kvCached) {
       console.log('[STREAM] KV HIT', kvKey);
       return res.json(kvCached);
     }
 
     const result = await handleStream({ id, m3uUrl });
-    await kvSetJson(kvKey, result);
+    await kvSetJsonTTL(kvKey, result);
     res.json(result);
   } catch (e) {
     console.error('[STREAM] route error:', e.message);
