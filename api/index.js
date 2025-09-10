@@ -285,13 +285,7 @@ router.use((req, res, next) => {
 
 // Manifest estático
 router.get('/manifest.json', async (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  res.end(JSON.stringify(baseManifest));
-});
-
-// Manifest dinámico con configId embebido en el ID del catálogo
-router.get('/:configId/manifest.json', async (req, res) => {
-  const configId = req.params.configId;
+  const configId = req.query.configId || 'none';
   const manifest = {
     ...baseManifest,
     catalogs: [
