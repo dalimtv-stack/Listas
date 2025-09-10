@@ -334,6 +334,21 @@ router.get('/catalog/:type/:id.json', (req, res) => {
   addonInterface.catalog({ type: req.params.type, id, extra }, res);
 });
 
+// Meta sin configId en el path
+router.get('/meta/:type/:id.json', (req, res) => {
+  const id = req.params.id.replace(/\.json$/, '');
+  const configId = id.startsWith('Heimdallr_') ? id.split('_')[1] : 'none';
+  const extra = { configId, ...req.query };
+  addonInterface.meta({ type: req.params.type, id, extra }, res);
+});
+
+// Stream sin configId en el path
+router.get('/stream/:type/:id.json', (req, res) => {
+  const id = req.params.id.replace(/\.json$/, '');
+  const configId = id.startsWith('Heimdallr_') ? id.split('_')[1] : 'none';
+  const extra = { configId, ...req.query };
+  addonInterface.stream({ type: req.params.type, id, extra }, res);
+});
 
 // Meta routes
 router.get('/:configId/meta/:type/:id', (req, res) => {
