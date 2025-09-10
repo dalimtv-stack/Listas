@@ -3,7 +3,6 @@ const fetch = require('node-fetch');
 const { parse } = require('iptv-playlist-parser');
 
 let cachedChannels = [];
-
 const DEFAULT_M3U_URL = 'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u';
 
 function getExtraGenres(name) {
@@ -20,19 +19,35 @@ function getExtraGenres(name) {
 
 async function loadM3U(args = {}) {
   const m3uUrl = args.m3uUrl || DEFAULT_M3U_URL;
-  console.log('Cargando lista M3U desde:', m3uUrl);
+  console.log(`[loadM3U] Cargando lista M3U desde: ${m3uUrl}`);
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    console.log(`[loadM3U] Enviando solicitud HTTP a: ${m3uUrl}`);
     const res = await fetch(m3uUrl, { signal: controller.signal });
     clearTimeout(timeoutId);
 
+    console.log(`[loadM3U] Respuesta HTTP: status=${res.status}, statusText=${res.statusText}`);
     if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
+      throw new Error(`HTTP error! status: ${res.status}, statusText: ${res.statusText}`);
     }
     const content = await res.text();
+    console.log(`[loadM3U] Contenido M3U descargado, longitud: ${content.length}, primeros 100 caracteres: ${content.slice(0, 100)}`);
 
-    const playlist = parse(content);
+    if (!content || content.trim() === '') {
+      throw new Error('Contenido M3U vacío');
+    }
+
+    let playlist;
+    try {
+      playlist = parse(content);
+    } catch (err) {
+      throw new Error(`Error parseando M3U: ${err.message}`);
+    }
+    console.log(`[loadM3U] M3U parseado, items: ${playlist.items.length}`);
+    if (playlist.items.length === 0) {
+      throw new Error('La lista M3U no contiene elementos válidos');
+    }
 
     const channelMap = {};
 
@@ -63,7 +78,7 @@ async function loadM3U(args = {}) {
         stream_url: (!isAce && !isM3u8) ? item.url : null
       };
 
-      console.log(`Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}`);
+      console.log(`[loadM3U] Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}`);
 
       if (!channelMap[tvgId]) {
         channelMap[tvgId] = {
@@ -85,10 +100,10 @@ async function loadM3U(args = {}) {
     });
 
     cachedChannels = Object.values(channelMap);
-    console.log(`Cargados ${cachedChannels.length} canales desde la lista`);
+    console.log(`[loadM3U] Cargados ${cachedChannels.length} canales desde la lista`);
     return cachedChannels;
   } catch (err) {
-    console.error('Error cargando M3U:', err.message);
+    console.error(`[loadM3U] Error cargando M3U desde ${m3uUrl}: ${err.message}`, err.stack);
     cachedChannels = [];
     throw err;
   }
@@ -96,19 +111,20 @@ async function loadM3U(args = {}) {
 
 async function getChannels(args = {}) {
   const m3uUrl = args.m3uUrl || DEFAULT_M3U_URL;
-  console.log('getChannels called with m3uUrl:', m3uUrl);
+  console.log(`[getChannels] Llamado con m3uUrl: ${m3uUrl}`);
   await loadM3U({ m3uUrl });
   return cachedChannels;
 }
 
 async function getChannel(id, args = {}) {
   const m3uUrl = args.m3uUrl || DEFAULT_M3U_URL;
-  console.log('getChannel called with m3uUrl:', m3uUrl);
+  console.log(`[getChannel] Llamado con m3uUrl: ${m3uUrl}, id: ${id}`);
   await loadM3U({ m3uUrl });
   const channel = cachedChannels.find((c) => c.id === id);
   if (!channel) {
     throw new Error(`Channel with id ${id} not found`);
   }
+  console.log(`[getChannel] Canal encontrado: ${channel.name}`);
   return channel;
 }
 
