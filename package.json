@@ -1,11 +1,11 @@
 {
   "name": "Heimdallr Channels",
-  "version": "1.2.180",
+  "version": "1.2.185",
   "description": "Addon para cargar canales Acestream o M3U8 desde una lista M3U.",
-  "main": "index.js",
+  "main": "api/index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node api/index.js",
+    "dev": "nodemon api/index.js"
   },
   "dependencies": {
     "stremio-addon-sdk": "^1.6.10",
@@ -13,7 +13,8 @@
     "node-fetch": "^2.6.7",
     "dotenv": "^16.3.1",
     "iptv-playlist-parser": "^0.11.0",
-    "body-parser": "^1.20.2"
+    "body-parser": "^1.20.2",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
