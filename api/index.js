@@ -13,7 +13,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const baseManifest = {
   id: ADDON_ID,
-  version: '1.2.187',
+  version: '1.2.188',
   name: ADDON_NAME,
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -468,144 +468,126 @@ router.get('/:configId/manifest.json', async (req, res) => {
 });
 
 // Catalog routes (with and without configId prefix)
-router.get('/catalog/:type/:id.json', async (req, res) => {
+router.get('/catalog/:type/:id.json', (req, res) => {
   console.log('[router] Catalog solicitado:', req.url, req.params);
   const id = req.params.id.replace(/\.json$/, '');
   const configId = id.startsWith('Heimdallr_') ? id.split('_')[1] : 'none';
   console.log('[router] Catalog processed:', { type: req.params.type, id, configId, extra: req.query });
   
-  try {
-    const response = await builder.getInterface().catalog({
-      type: req.params.type,
-      id,
-      extra: { configId, ...req.query }
-    });
+  addonInterface.catalog({ type: req.params.type, id, extra: { configId, ...req.query } }, (err, response) => {
+    if (err) {
+      console.error('[router] Catalog error:', err.message, err.stack);
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'Internal server error', details: err.message }));
+      return;
+    }
     console.log('[router] Catalog response:', response);
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(response));
-  } catch (error) {
-    console.error('[router] Catalog error:', error.message, error.stack);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Internal server error' }));
-  }
+    res.end(JSON.stringify(response || { metas: [] }));
+  });
 });
 
-router.get('/:configId/catalog/:type/:id.json', async (req, res) => {
+router.get('/:configId/catalog/:type/:id.json', (req, res) => {
   console.log('[router] Catalog con configId solicitado:', req.url, req.params);
   const id = req.params.id.replace(/\.json$/, '');
   const configId = req.params.configId || (id.startsWith('Heimdallr_') ? id.split('_')[1] : 'none');
   console.log('[router] Catalog con configId processed:', { type: req.params.type, id, configId, extra: req.query });
   
-  try {
-    const response = await builder.getInterface().catalog({
-      type: req.params.type,
-      id,
-      extra: { configId, ...req.query }
-    });
+  addonInterface.catalog({ type: req.params.type, id, extra: { configId, ...req.query } }, (err, response) => {
+    if (err) {
+      console.error('[router] Catalog con configId error:', err.message, err.stack);
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'Internal server error', details: err.message }));
+      return;
+    }
     console.log('[router] Catalog con configId response:', response);
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(response));
-  } catch (error) {
-    console.error('[router] Catalog con configId error:', error.message, error.stack);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Internal server error' }));
-  }
+    res.end(JSON.stringify(response || { metas: [] }));
+  });
 });
 
 // Meta routes (with and without configId prefix)
-router.get('/meta/:type/:id.json', async (req, res) => {
+router.get('/meta/:type/:id.json', (req, res) => {
   console.log('[router] Meta solicitado:', req.url, req.params);
   const id = req.params.id.replace(/\.json$/, '');
   const configId = id.split('_')[1] || 'none';
   console.log('[router] Meta processed:', { type: req.params.type, id, configId, extra: req.query });
   
-  try {
-    const response = await builder.getInterface().meta({
-      type: req.params.type,
-      id,
-      extra: { configId, ...req.query }
-    });
+  addonInterface.meta({ type: req.params.type, id, extra: { configId, ...req.query } }, (err, response) => {
+    if (err) {
+      console.error('[router] Meta error:', err.message, err.stack);
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'Internal server error', details: err.message }));
+      return;
+    }
     console.log('[router] Meta response:', response);
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(response));
-  } catch (error) {
-    console.error('[router] Meta error:', error.message, error.stack);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Internal server error' }));
-  }
+    res.end(JSON.stringify(response || { meta: null }));
+  });
 });
 
-router.get('/:configId/meta/:type/:id.json', async (req, res) => {
+router.get('/:configId/meta/:type/:id.json', (req, res) => {
   console.log('[router] Meta con configId solicitado:', req.url, req.params);
   const id = req.params.id.replace(/\.json$/, '');
   const configId = req.params.configId || (id.split('_')[1] || 'none');
   console.log('[router] Meta con configId processed:', { type: req.params.type, id, configId, extra: req.query });
   
-  try {
-    const response = await builder.getInterface().meta({
-      type: req.params.type,
-      id,
-      extra: { configId, ...req.query }
-    });
+  addonInterface.meta({ type: req.params.type, id, extra: { configId, ...req.query } }, (err, response) => {
+    if (err) {
+      console.error('[router] Meta con configId error:', err.message, err.stack);
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'Internal server error', details: err.message }));
+      return;
+    }
     console.log('[router] Meta con configId response:', response);
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(response));
-  } catch (error) {
-    console.error('[router] Meta con configId error:', error.message, error.stack);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Internal server error' }));
-  }
+    res.end(JSON.stringify(response || { meta: null }));
+  });
 });
 
 // Stream routes (with and without configId prefix)
-router.get('/stream/:type/:id.json', async (req, res) => {
+router.get('/stream/:type/:id.json', (req, res) => {
   console.log('[router] Stream solicitado:', req.url, req.params);
   const id = req.params.id.replace(/\.json$/, '');
   const configId = id.split('_')[1] || 'none';
   console.log('[router] Stream processed:', { type: req.params.type, id, configId, extra: req.query });
   
-  try {
-    const response = await builder.getInterface().stream({
-      type: req.params.type,
-      id,
-      extra: { configId, ...req.query }
-    });
+  addonInterface.stream({ type: req.params.type, id, extra: { configId, ...req.query } }, (err, response) => {
+    if (err) {
+      console.error('[router] Stream error:', err.message, err.stack);
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'Internal server error', details: err.message }));
+      return;
+    }
     console.log('[router] Stream response:', response);
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(response));
-  } catch (error) {
-    console.error('[router] Stream error:', error.message, error.stack);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Internal server error' }));
-  }
+    res.end(JSON.stringify(response || { streams: [] }));
+  });
 });
 
-router.get('/:configId/stream/:type/:id.json', async (req, res) => {
+router.get('/:configId/stream/:type/:id.json', (req, res) => {
   console.log('[router] Stream con configId solicitado:', req.url, req.params);
   const id = req.params.id.replace(/\.json$/, '');
   const configId = req.params.configId || (id.split('_')[1] || 'none');
   console.log('[router] Stream con configId processed:', { type: req.params.type, id, configId, extra: req.query });
   
-  try {
-    const response = await builder.getInterface().stream({
-      type: req.params.type,
-      id,
-      extra: { configId, ...req.query }
-    });
+  addonInterface.stream({ type: req.params.type, id, extra: { configId, ...req.query } }, (err, response) => {
+    if (err) {
+      console.error('[router] Stream con configId error:', err.message, err.stack);
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'Internal server error', details: err.message }));
+      return;
+    }
     console.log('[router] Stream con configId response:', response);
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(response));
-  } catch (error) {
-    console.error('[router] Stream con configId error:', error.message, error.stack);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Internal server error' }));
-  }
+    res.end(JSON.stringify(response || { streams: [] }));
+  });
 });
 
 // Debug route for Cloudflare KV
@@ -616,10 +598,21 @@ router.get('/debug-kv/:configId', async (req, res) => {
     const m3uUrl = await getM3uUrlFromConfigId(configId);
     let catalogResponse = null;
     try {
-      catalogResponse = await builder.getInterface().catalog({
-        type: 'tv',
-        id: `Heimdallr_${configId}`,
-        extra: { configId }
+      await new Promise((resolve, reject) => {
+        addonInterface.catalog({
+          type: 'tv',
+          id: `Heimdallr_${configId}`,
+          extra: { configId }
+        }, (err, response) => {
+          if (err) {
+            console.error('[router] Debug KV catalog error:', err.message, err.stack);
+            reject(err);
+            return;
+          }
+          catalogResponse = response;
+          console.log('[router] Debug KV catalog response:', response);
+          resolve();
+        });
       });
     } catch (catalogError) {
       console.error('[router] Debug KV catalog error:', catalogError.message, catalogError.stack);
