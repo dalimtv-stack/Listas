@@ -13,7 +13,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const baseManifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.186',
+  version: '1.2.187',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -286,6 +286,27 @@ router.use((req, res, next) => {
 // Manifest estático
 router.get('/manifest.json', async (req, res) => {
   const configId = req.query.configId || 'none';
+  const manifest = {
+    ...baseManifest,
+    catalogs: [
+      {
+        type: 'tv',
+        id: `Heimdallr_${configId}`,
+        name: 'Heimdallr Live Channels',
+        extra: [
+          { name: 'search', isRequired: false },
+          { name: 'genre', isRequired: false, options: ['Adultos', 'Elcano.top', 'Hulu.to', 'NEW LOOP', 'Noticias', 'Shickat.me', 'Telegram', 'Deportes', 'Movistar'] }
+        ]
+      }
+    ]
+  };
+  res.setHeader('Content-Type', 'application/json');
+  res.end(JSON.stringify(manifest));
+});
+
+// Manifest dinamico
+router.get('/:configId/manifest.json', async (req, res) => {
+  const configId = req.params.configId || 'none';
   const manifest = {
     ...baseManifest,
     catalogs: [
