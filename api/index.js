@@ -333,6 +333,13 @@ router.get('/catalog/:type/:id.json', (req, res) => {
   addonInterface.catalog({ type: req.params.type, id, extra }, res);
 });
 
+// Catalog con configId en el path
+router.get('/:configId/catalog/:type/:id.json', (req, res) => {
+  const extra = { configId: req.params.configId, ...req.query };
+  const id = req.params.id.replace(/\.json$/, '');
+  addonInterface.catalog({ type: req.params.type, id, extra }, res);
+});
+
 // Meta sin configId en el path
 router.get('/meta/:type/:id.json', (req, res) => {
   const id = req.params.id.replace(/\.json$/, '');
