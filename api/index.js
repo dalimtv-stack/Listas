@@ -2,7 +2,7 @@
 const { addonBuilder, getRouter } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
 const { getChannels, getChannel, loadM3U } = require('../src/db');
-const { CACHE_TTL, DEFAULT_PORT } = require('./src/config');
+const { CACHE_TTL, DEFAULT_PORT } = require('../src/config');
 const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
