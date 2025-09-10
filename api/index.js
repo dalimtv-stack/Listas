@@ -1,5 +1,5 @@
-const express = require('express');
-const { addonBuilder } = require('stremio-addon-sdk');
+// index.js
+const { addonBuilder, getRouter } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
 const { getChannels, getChannel } = require('../src/db');
 const { CACHE_TTL } = require('../src/config');
@@ -13,7 +13,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const baseManifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.191',
+  version: '1.2.186',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -78,7 +78,8 @@ async function validateM3uUrl(m3uUrl) {
     return false;
   }
 }
-// Catalog handler
+
+// Handlers
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
   const configId = id.startsWith('Heimdallr_') ? id.split('_')[1] : 'none';
   const m3uUrl = await getM3uUrlFromConfigId(configId);
@@ -122,7 +123,6 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
   }
 });
 
-// Meta handler
 builder.defineMetaHandler(async ({ type, id, extra }) => {
   const parts = id.split('_');
   const configId = parts[1];
@@ -155,7 +155,6 @@ builder.defineMetaHandler(async ({ type, id, extra }) => {
   }
 });
 
-// Stream handler
 builder.defineStreamHandler(async ({ type, id, extra }) => {
   const parts = id.split('_');
   const configId = parts[1];
@@ -209,87 +208,11 @@ builder.defineStreamHandler(async ({ type, id, extra }) => {
     return { streams: [] };
   }
 });
-const router = express.Router();
+
+// Interfaz y router del SDK
 const addonInterface = builder.getInterface();
+const router = getRouter(addonInterface);
 
-// CORS
-router.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 200;
-    res.end();
-  } else {
-    next();
-  }
-});
-
-// Manifest dinámico
-router.get('/:configId/manifest.json', async (req, res) => {
-  const configId = req.params.configId || 'none';
-  const manifest = {
-    ...baseManifest,
-    catalogs: [
-      {
-        type: 'tv',
-        id: `Heimdallr_${configId}`,
-        name: 'Heimdallr Live Channels',
-        extra: [
-          { name: 'search', isRequired: false },
-          { name: 'genre', isRequired: false, options: ['Adultos', 'Elcano.top', 'Hulu.to', 'NEW LOOP', 'Noticias', 'Shickat.me', 'Telegram', 'Deportes', 'Movistar'] }
-        ]
-      }
-    ]
-  };
-  res.setHeader('Content-Type', 'application/json');
-  res.end(JSON.stringify(manifest));
-});
-
-// Rutas para Stremio con configId en el path
-router.get('/:configId/catalog/:type/:id.json', async (req, res) => {
-  const id = req.params.id.replace(/\.json$/, '');
-  const configId = req.params.configId;
-  const extra = { configId, ...req.query };
-  try {
-    const result = await builder.getInterface().catalog({ type: req.params.type, id, extra });
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(result));
-  } catch (err) {
-    console.error('Catalog route error:', err.message);
-    res.statusCode = 500;
-    res.end(JSON.stringify({ metas: [] }));
-  }
-});
-router.get('/:configId/meta/:type/:id.json', async (req, res) => {
-  const id = req.params.id.replace(/\.json$/, '');
-  const configId = req.params.configId;
-  const extra = { configId, ...req.query };
-  try {
-    const result = await builder.getInterface().meta({ type: req.params.type, id, extra });
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(result));
-  } catch (err) {
-    console.error('Meta route error:', err.message);
-    res.statusCode = 500;
-    res.end(JSON.stringify({ meta: null }));
-  }
-});
-
-router.get('/:configId/stream/:type/:id.json', async (req, res) => {
-  const id = req.params.id.replace(/\.json$/, '');
-  const configId = req.params.configId;
-  const extra = { configId, ...req.query };
-  try {
-    const result = await builder.getInterface().stream({ type: req.params.type, id, extra });
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(result));
-  } catch (err) {
-    console.error('Stream route error:', err.message);
-    res.statusCode = 500;
-    res.end(JSON.stringify({ streams: [] }));
-  }
-});
 // Página de configuración
 router.get('/configure', (req, res) => {
   res.setHeader('Content-Type', 'text/html');
@@ -307,20 +230,8 @@ router.get('/configure', (req, res) => {
   `);
 });
 
-// Generar URL de instalación
-router.post('/generate-url', bodyParser.urlencoded({ extended: false }), async (req, res) => {
-  try {
-    const m3uUrl = req.body.m3uUrl;
-    const isValid = await validateM3uUrl(m3uUrl);
-    if (!isValid) throw new Error('Invalid M3U URL');
-
-    const configId = uuidv4();
-    await setM3uUrlInConfigId(configId, m3uUrl);
-    const baseUrl = `https://${req.headers.host}/${configId}/manifest.json`;
-    const installUrl = `stremio://${encodeURIComponent(baseUrl)}`;
-
-    res.setHeader('Content-Type', 'text/html');
-    res.end(`
+// Generar manifest dinámico
+router.post('/generate-url', bodyParser.urlencoded({ extended: false }), async (req,     res.end(`
       <html>
         <body>
           <h1>Addon generado</h1>
