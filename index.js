@@ -326,6 +326,14 @@ router.get('/:configId/catalog.json', (req, res) => {
   addonInterface.catalog({ type: 'tv', id: `Heimdallr_${req.params.configId}`, extra }, res);
 });
 
+// Ruta adicional para cuando Stremio llama directamente sin configId en el path
+router.get('/catalog/:type/:id.json', (req, res) => {
+  const id = req.params.id.replace(/\.json$/, '');
+  const configId = id.startsWith('Heimdallr_') ? id.split('_')[1] : 'none';
+  const extra = { configId, ...req.query };
+  addonInterface.catalog({ type: req.params.type, id, extra }, res);
+});
+
 // Meta routes
 router.get('/:configId/meta/:type/:id', (req, res) => {
   const extra = { configId: req.params.configId, ...req.query };
