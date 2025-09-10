@@ -424,7 +424,7 @@ router.post('/generate-url', async (req, res) => {
           </style>
           <script>
             function copyManifest() {
-              navigator.clipboard.writeText('${baseUrl}').then(() => {
+              navigator.clipboard.writeText('${manifestUrl}').then(() => {
                 alert('Manifest URL copied to clipboard!');
               }).catch(err => {
                 alert('Failed to copy: ' + err);
@@ -438,9 +438,7 @@ router.post('/generate-url', async (req, res) => {
           <a href="${installUrl}" style="background: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px;">Install Addon</a>
           <button onclick="copyManifest()">Copy Manifest URL</button>
           <p>Or copy this URL:</p>
-          <pre>${baseUrl}</pre>
-          <p>Manifest JSON:</p>
-          <pre>${manifestJson}</pre>
+          <pre>${manifestUrl}</pre>
         </body>
       </html>
     `);
