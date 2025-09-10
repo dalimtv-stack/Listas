@@ -22,7 +22,7 @@ const baseManifest = {
   idPrefixes: ['heimdallr_'],
   behaviorHints: {
     configurable: true
-  }
+  },
   catalogs: []
 };
 
