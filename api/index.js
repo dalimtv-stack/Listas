@@ -1,7 +1,7 @@
-// index.js
-const { addonBuilder, getRouter } = require('stremio-addon-sdk');
+const express = require('express');
+const { addonBuilder } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
-const { getChannels, getChannel, loadM3U } = require('../src/db');
+const { getChannels, getChannel } = require('../src/db');
 const { CACHE_TTL } = require('../src/config');
 const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
@@ -13,7 +13,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const baseManifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.190',
+  version: '1.2.191',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -78,7 +78,6 @@ async function validateM3uUrl(m3uUrl) {
     return false;
   }
 }
-
 // Catalog handler
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
   const configId = id.startsWith('Heimdallr_') ? id.split('_')[1] : 'none';
@@ -122,6 +121,7 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
     return { metas: [] };
   }
 });
+
 // Meta handler
 builder.defineMetaHandler(async ({ type, id, extra }) => {
   const parts = id.split('_');
@@ -209,9 +209,8 @@ builder.defineStreamHandler(async ({ type, id, extra }) => {
     return { streams: [] };
   }
 });
-
+const router = express.Router();
 const addonInterface = builder.getInterface();
-const router = getRouter(addonInterface);
 
 // CORS
 router.use((req, res, next) => {
@@ -226,7 +225,7 @@ router.use((req, res, next) => {
   }
 });
 
-// Rutas necesarias para Stremio con configId en el path
+// Manifest dinámico
 router.get('/:configId/manifest.json', async (req, res) => {
   const configId = req.params.configId || 'none';
   const manifest = {
@@ -247,54 +246,53 @@ router.get('/:configId/manifest.json', async (req, res) => {
   res.end(JSON.stringify(manifest));
 });
 
+// Rutas para Stremio con configId en el path
 router.get('/:configId/catalog/:type/:id.json', (req, res) => {
   const extra = { configId: req.params.configId, ...req.query };
   const id = req.params.id.replace(/\.json$/, '');
-  addonInterface.catalog({ type: req.params.type, id, extra }, res);
+  addonInterface.catalog({ type: req.params.type, id, extra }).then(resp => {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(resp));
+  });
 });
 
 router.get('/:configId/meta/:type/:id.json', (req, res) => {
   const extra = { configId: req.params.configId, ...req.query };
   const id = req.params.id.replace(/\.json$/, '');
-  addonInterface.meta({ type: req.params.type, id, extra }, res);
+  addonInterface.meta({ type: req.params.type, id, extra }).then(resp => {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(resp));
+  });
 });
 
 router.get('/:configId/stream/:type/:id.json', (req, res) => {
   const extra = { configId: req.params.configId, ...req.query };
   const id = req.params.id.replace(/\.json$/, '');
-  addonInterface.stream({ type: req.params.type, id, extra }, res);
+  addonInterface.stream({ type: req.params.type, id, extra }).then(resp => {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(resp));
+  });
 });
 
-// Configure route
+// Página de configuración
 router.get('/configure', (req, res) => {
   res.setHeader('Content-Type', 'text/html');
   res.end(`
-    <!DOCTYPE html>
     <html>
-      <head>
-        <title>Configure Heimdallr Channels</title>
-        <style>
-          body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
-          input { width: 100%; padding: 10px; margin: 10px 0; }
-          button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
-          a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
-          pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
-        </style>
-      </head>
+      <head><title>Configure Heimdallr</title></head>
       <body>
-        <h1>Configure Heimdallr Channels</h1>
-        <p>Enter the URL of your M3U playlist:</p>
+        <h1>Configura tu lista M3U</h1>
         <form action="/generate-url" method="post">
-          <input type="text" name="m3uUrl" placeholder="https://example.com/list.m3u" required>
-          <button type="submit">Generate Install URL</button>
+          <input type="text" name="m3uUrl" placeholder="https://example.com/list.m3u" required style="width:100%;padding:10px;">
+          <button type="submit" style="padding:10px 20px;">Generar URL</button>
         </form>
       </body>
     </html>
   `);
 });
 
-// Generate URL route
-router.post('/generate-url', async (req, res) => {
+// Generar URL de instalación
+router.post('/generate-url', bodyParser.urlencoded({ extended: false }), async (req, res) => {
   try {
     const m3uUrl = req.body.m3uUrl;
     const isValid = await validateM3uUrl(m3uUrl);
@@ -302,77 +300,26 @@ router.post('/generate-url', async (req, res) => {
 
     const configId = uuidv4();
     await setM3uUrlInConfigId(configId, m3uUrl);
-    const baseUrl = `https://${req.headers.host}/manifest.json?configId=${configId}`;
+    const baseUrl = `https://${req.headers.host}/${configId}/manifest.json`;
     const installUrl = `stremio://${encodeURIComponent(baseUrl)}`;
-    const manifestJson = JSON.stringify(baseManifest, null, 2);
 
     res.setHeader('Content-Type', 'text/html');
     res.end(`
       <html>
-        <head>
-          <title>Install Heimdallr Channels</title>
-          <style>
-            body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
-            button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
-            a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
-            pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
-          </style>
-          <script>
-            function copyManifest() {
-              navigator.clipboard.writeText('${baseUrl}').then(() => {
-                alert('Manifest URL copied to clipboard!');
-              }).catch(err => {
-                alert('Failed to copy: ' + err);
-              });
-            }
-          </script>
-        </head>
         <body>
-          <h1>Install URL Generated</h1>
-          <p>Click the buttons below to install the addon or copy the manifest URL:</p>
-          <a href="${installUrl}" style="background: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px;">Install Addon</a>
-          <button onclick="copyManifest()">Copy Manifest URL</button>
-          <p>Or copy this URL:</p>
+          <h1>Addon generado</h1>
+          <p>Instala el addon en Stremio:</p>
+          <a href="${installUrl}" style="padding:10px 20px;background:#4CAF50;color:white;border-radius:5px;">Instalar</a>
+          <p>O copia esta URL:</p>
           <pre>${baseUrl}</pre>
-          <p>Manifest JSON:</p>
-          <pre>${manifestJson}</pre>
         </body>
       </html>
     `);
   } catch (err) {
     res.statusCode = 500;
     res.setHeader('Content-Type', 'text/html');
-    res.end(`
-      <html>
-        <body>
-          <h1>Server Error</h1>
-          <p>Error: ${err.message}. <a href="/configure">Go back</a></p>
-        </body>
-      </html>
-    `);
+    res.end(`<html><body><h1>Error</h1><p>${err.message}</p></body></html>`);
   }
 });
 
-// Middleware para extraer configId
-router.use((req, res, next) => {
-  const urlParts = req.url.split('/');
-  let configId = req.params.configId || urlParts[1];
-  if (['configure', 'generate-url', ''].includes(urlParts[1])) configId = null;
-  req.configId = configId;
-  req.extra = req.extra || {};
-  req.extra.configId = req.configId;
-  next();
-});
-
-if (process.env.NODE_ENV !== 'production') {
-  const { serveHTTP } = require('stremio-addon-sdk');
-  serveHTTP(builder.getInterface(), { port: process.env.PORT || DEFAULT_PORT });
-}
-
-module.exports = (req, res) => {
-  router(req, res, () => {
-    res.statusCode = 404;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Route not found' }));
-  });
-};
+module.exports = router;
