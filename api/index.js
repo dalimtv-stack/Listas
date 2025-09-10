@@ -310,29 +310,30 @@ router.get('/:configId/manifest.json', async (req, res) => {
   res.end(JSON.stringify(manifest));
 });
 
-// Catalog routes
-router.get('/:configId/catalog/:type/:id', (req, res) => {
-  const extra = { configId: req.params.configId, ...req.query };
-  addonInterface.catalog({ type: req.params.type, id: req.params.id.replace(/\.json$/, ''), extra }, res);
-});
-
-router.get('/:configId/catalog/:type/:id.json', (req, res) => {
-  const extra = { configId: req.params.configId, ...req.query };
-  addonInterface.catalog({ type: req.params.type, id: req.params.id.replace(/\.json$/, ''), extra }, res);
-});
-
-router.get('/:configId/catalog.json', (req, res) => {
-  const extra = { configId: req.params.configId, ...req.query };
-  addonInterface.catalog({ type: 'tv', id: `Heimdallr_${req.params.configId}`, extra }, res);
-});
-
-// Ruta adicional para cuando Stremio llama sin configId en el path
+// Catalog sin configId en el path
 router.get('/catalog/:type/:id.json', (req, res) => {
   const id = req.params.id.replace(/\.json$/, '');
   const configId = id.startsWith('Heimdallr_') ? id.split('_')[1] : 'none';
   const extra = { configId, ...req.query };
   addonInterface.catalog({ type: req.params.type, id, extra }, res);
 });
+
+// Meta sin configId en el path
+router.get('/meta/:type/:id.json', (req, res) => {
+  const id = req.params.id.replace(/\.json$/, '');
+  const configId = id.startsWith('Heimdallr_') ? id.split('_')[1] : 'none';
+  const extra = { configId, ...req.query };
+  addonInterface.meta({ type: req.params.type, id, extra }, res);
+});
+
+// Stream sin configId en el path
+router.get('/stream/:type/:id.json', (req, res) => {
+  const id = req.params.id.replace(/\.json$/, '');
+  const configId = id.startsWith('Heimdallr_') ? id.split('_')[1] : 'none';
+  const extra = { configId, ...req.query };
+  addonInterface.stream({ type: req.params.type, id, extra }, res);
+});
+
 
 // Meta sin configId en el path
 router.get('/meta/:type/:id.json', (req, res) => {
