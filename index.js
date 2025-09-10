@@ -23,6 +23,7 @@ const baseManifest = {
   behaviorHints: {
     configurable: true
   }
+  catalogs: []
 };
 
 const builder = new addonBuilder(baseManifest);
