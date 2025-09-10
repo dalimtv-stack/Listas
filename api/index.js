@@ -248,30 +248,24 @@ router.get('/:configId/manifest.json', async (req, res) => {
 
 // Rutas para Stremio con configId en el path
 router.get('/:configId/catalog/:type/:id.json', (req, res) => {
-  const extra = { configId: req.params.configId, ...req.query };
   const id = req.params.id.replace(/\.json$/, '');
-  addonInterface.catalog({ type: req.params.type, id, extra }).then(resp => {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(resp));
-  });
+  const configId = req.params.configId;
+  const extra = { configId, ...req.query };
+  addonInterface.catalog({ type: req.params.type, id, extra }, res);
 });
 
 router.get('/:configId/meta/:type/:id.json', (req, res) => {
-  const extra = { configId: req.params.configId, ...req.query };
   const id = req.params.id.replace(/\.json$/, '');
-  addonInterface.meta({ type: req.params.type, id, extra }).then(resp => {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(resp));
-  });
+  const configId = req.params.configId;
+  const extra = { configId, ...req.query };
+  addonInterface.meta({ type: req.params.type, id, extra }, res);
 });
 
 router.get('/:configId/stream/:type/:id.json', (req, res) => {
-  const extra = { configId: req.params.configId, ...req.query };
   const id = req.params.id.replace(/\.json$/, '');
-  addonInterface.stream({ type: req.params.type, id, extra }).then(resp => {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(resp));
-  });
+  const configId = req.params.configId;
+  const extra = { configId, ...req.query };
+  addonInterface.stream({ type: req.params.type, id, extra }, res);
 });
 
 // Página de configuración
