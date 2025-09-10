@@ -247,27 +247,49 @@ router.get('/:configId/manifest.json', async (req, res) => {
 });
 
 // Rutas para Stremio con configId en el path
-router.get('/:configId/catalog/:type/:id.json', (req, res) => {
+router.get('/:configId/catalog/:type/:id.json', async (req, res) => {
   const id = req.params.id.replace(/\.json$/, '');
   const configId = req.params.configId;
   const extra = { configId, ...req.query };
-  addonInterface.catalog({ type: req.params.type, id, extra }, res);
+  try {
+    const result = await builder.getInterface().catalog({ type: req.params.type, id, extra });
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(result));
+  } catch (err) {
+    console.error('Catalog route error:', err.message);
+    res.statusCode = 500;
+    res.end(JSON.stringify({ metas: [] }));
+  }
 });
-
-router.get('/:configId/meta/:type/:id.json', (req, res) => {
+router.get('/:configId/meta/:type/:id.json', async (req, res) => {
   const id = req.params.id.replace(/\.json$/, '');
   const configId = req.params.configId;
   const extra = { configId, ...req.query };
-  addonInterface.meta({ type: req.params.type, id, extra }, res);
+  try {
+    const result = await builder.getInterface().meta({ type: req.params.type, id, extra });
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(result));
+  } catch (err) {
+    console.error('Meta route error:', err.message);
+    res.statusCode = 500;
+    res.end(JSON.stringify({ meta: null }));
+  }
 });
 
-router.get('/:configId/stream/:type/:id.json', (req, res) => {
+router.get('/:configId/stream/:type/:id.json', async (req, res) => {
   const id = req.params.id.replace(/\.json$/, '');
   const configId = req.params.configId;
   const extra = { configId, ...req.query };
-  addonInterface.stream({ type: req.params.type, id, extra }, res);
+  try {
+    const result = await builder.getInterface().stream({ type: req.params.type, id, extra });
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(result));
+  } catch (err) {
+    console.error('Stream route error:', err.message);
+    res.statusCode = 500;
+    res.end(JSON.stringify({ streams: [] }));
+  }
 });
-
 // Página de configuración
 router.get('/configure', (req, res) => {
   res.setHeader('Content-Type', 'text/html');
