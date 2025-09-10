@@ -9,10 +9,8 @@ const { v4: uuidv4 } = require('uuid');
 const fetch = require('node-fetch');
 require('dotenv').config();
 
-// Tu dominio
 const { getChannels, getChannel } = require('../src/db');
 
-// -------------------- App & config --------------------
 const app = express();
 const router = express.Router();
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -28,7 +26,7 @@ const CATALOG_PREFIX = 'Heimdallr';
 const DEFAULT_CONFIG_ID = 'default';
 const DEFAULT_M3U_URL = process.env.DEFAULT_M3U_URL || '';
 
-// -------------------- CORS básico --------------------
+// CORS
 router.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -37,7 +35,7 @@ router.use((req, res, next) => {
   next();
 });
 
-// -------------------- KV helpers --------------------
+// KV helpers
 async function kvGet(configId) {
   if (!configId) return null;
   try {
@@ -55,7 +53,7 @@ async function kvGet(configId) {
 async function kvSet(configId, value) {
   const { CLOUDFLARE_KV_ACCOUNT_ID, CLOUDFLARE_KV_NAMESPACE_ID, CLOUDFLARE_KV_API_TOKEN } = process.env;
   if (!CLOUDFLARE_KV_ACCOUNT_ID || !CLOUDFLARE_KV_NAMESPACE_ID || !CLOUDFLARE_KV_API_TOKEN) {
-    throw new Error('Cloudflare KV no configurado en variables de entorno');
+    throw new Error('Cloudflare KV no configurado');
   }
   const url = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/values/${configId}`;
   const r = await fetch(url, {
@@ -66,11 +64,11 @@ async function kvSet(configId, value) {
   if (!r.ok) throw new Error(`KV set failed: ${r.status}`);
 }
 
-// -------------------- Utilidades --------------------
+// Utils
 function buildManifest(configId) {
   return {
     id: BASE_ADDON_ID,
-    version: '1.3.1',
+    version: '1.3.2',
     name: ADDON_NAME,
     description: 'Carga canales Acestream o M3U8 desde lista M3U (KV o por defecto).',
     types: ['tv'],
@@ -100,13 +98,12 @@ async function resolveM3uUrl(configId) {
 }
 
 function extractConfigIdFromUrl(req) {
-  // Intenta param en URL: /^\/:configId\/(manifest|catalog|meta|stream)/
   const m = req.url.match(/^\/([^/]+)\/(manifest\.json|catalog|meta|stream)\b/);
   if (m && m[1]) return m[1];
   return DEFAULT_CONFIG_ID;
 }
 
-// -------------------- Core handlers (usan tu db.js) --------------------
+// Core handlers
 async function handleCatalog({ type, id, extra, m3uUrl }) {
   if (type !== 'tv' || !m3uUrl) return { metas: [] };
 
@@ -118,11 +115,11 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
   const channels = await getChannels({ m3uUrl });
   let filtered = channels;
 
-  if (extra?.search) {
+  if (extra.search) {
     const q = String(extra.search).toLowerCase();
     filtered = filtered.filter(c => c.name?.toLowerCase().includes(q));
   }
-  if (extra?.genre) {
+  if (extra.genre) {
     const g = String(extra.genre);
     filtered = filtered.filter(c =>
       c.group_title === g ||
@@ -210,7 +207,7 @@ async function handleStream({ id, m3uUrl }) {
   return resp;
 }
 
-// -------------------- Rutas manifest --------------------
+// Manifest
 router.get('/manifest.json', (req, res) => {
   res.json(buildManifest(DEFAULT_CONFIG_ID));
 });
@@ -220,14 +217,20 @@ router.get('/:configId/manifest.json', (req, res) => {
   res.json(buildManifest(configId));
 });
 
-// -------------------- Rutas catalog/meta/stream (con y sin configId) --------------------
+// Catalog/meta/stream con reconstrucción de extra
 async function catalogRoute(req, res) {
   try {
     const id = String(req.params.id).replace(/\.json$/, '');
     const type = String(req.params.type);
     const configId = req.params.configId || extractConfigIdFromUrl(req);
     const m3uUrl = await resolveM3uUrl(configId);
-    const extra = req.query || {};
+
+    // Reconstrucción robusta de extra desde query
+    const extra = {
+      search: req.query.search || (req.query.extra && req.query.extra.search) || '',
+      genre: req.query.genre || (req.query.extra && req.query.extra.genre) || ''
+    };
+
     const result = await handleCatalog({ type, id, extra, m3uUrl });
     res.json(result);
   } catch (e) {
@@ -269,7 +272,7 @@ router.get('/:configId/meta/:type/:id.json', metaRoute);
 router.get('/stream/:type/:id.json', streamRoute);
 router.get('/:configId/stream/:type/:id.json', streamRoute);
 
-// -------------------- Config web opcional --------------------
+// Config web opcional
 router.get('/configure', (req, res) => {
   res.setHeader('Content-Type', 'text/html');
   res.end(`
@@ -300,7 +303,6 @@ router.post('/generate-url', async (req, res) => {
       clearTimeout(t);
       if (!head.ok) throw new Error(`HEAD ${head.status}`);
     } catch {
-      // Si falla HEAD, probamos GET corto
       const r = await fetch(m3uUrl, { method: 'GET' });
       if (!r.ok) throw new Error('La URL M3U no es accesible');
     }
@@ -330,13 +332,11 @@ router.post('/generate-url', async (req, res) => {
   }
 });
 
-// -------------------- Mount & export --------------------
+// Mount & export
 app.use(router);
-
-// Para Vercel: exporta la app directamente
 module.exports = app;
 
-// Para ejecución local opcional: `node api/index.js`
+// Ejecución local opcional
 if (require.main === module) {
   const port = process.env.PORT || 3000;
   app.listen(port, () => console.log(`Heimdallr listening on http://localhost:${port}`));
