@@ -26,7 +26,7 @@ const CATALOG_PREFIX = 'Heimdallr';
 const DEFAULT_CONFIG_ID = 'default';
 const DEFAULT_M3U_URL = process.env.DEFAULT_M3U_URL || '';
 
-// CORS
+// -------------------- CORS --------------------
 router.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -35,7 +35,7 @@ router.use((req, res, next) => {
   next();
 });
 
-// KV helpers
+// -------------------- KV helpers --------------------
 async function kvGet(configId) {
   if (!configId) return null;
   try {
@@ -45,7 +45,7 @@ async function kvGet(configId) {
     const r = await fetch(url, { headers: { Authorization: `Bearer ${CLOUDFLARE_KV_API_TOKEN}` } });
     return r.ok ? await r.text() : null;
   } catch (e) {
-    console.error('KV get error:', e.message);
+    console.error('[KV] get error:', e.message);
     return null;
   }
 }
@@ -64,11 +64,11 @@ async function kvSet(configId, value) {
   if (!r.ok) throw new Error(`KV set failed: ${r.status}`);
 }
 
-// Utils
+// -------------------- Utils --------------------
 function buildManifest(configId) {
   return {
     id: BASE_ADDON_ID,
-    version: '1.3.2',
+    version: '1.3.3',
     name: ADDON_NAME,
     description: 'Carga canales Acestream o M3U8 desde lista M3U (KV o por defecto).',
     types: ['tv'],
@@ -103,22 +103,58 @@ function extractConfigIdFromUrl(req) {
   return DEFAULT_CONFIG_ID;
 }
 
-// Core handlers
+// Parseador de rutas de catálogo estilo Stremio:
+// - rest = "Heimdallr_<configId>"
+// - o "Heimdallr_<configId>/genre=Telegram"
+// - o "Heimdallr_<configId>/search=foo/genre=Bar"
+function parseCatalogRest(restRaw) {
+  const rest = decodeURIComponent(restRaw);
+  const segments = rest.split('/');
+  const id = segments.shift(); // "Heimdallr_<configId>"
+  const extra = {};
+  for (const seg of segments) {
+    const [k, v] = seg.split('=');
+    if (!k || v === undefined) continue;
+    const key = k.trim();
+    const val = decodeURIComponent(v.trim());
+    if (key === 'genre' || key === 'search') extra[key] = val;
+  }
+  return { id, extra };
+}
+
+// -------------------- Core handlers --------------------
 async function handleCatalog({ type, id, extra, m3uUrl }) {
-  if (type !== 'tv' || !m3uUrl) return { metas: [] };
+  const logPrefix = '[CATALOG]';
+  if (type !== 'tv') {
+    console.log(logPrefix, 'type no soportado:', type);
+    return { metas: [] };
+  }
+  if (!m3uUrl) {
+    console.log(logPrefix, 'm3uUrl no resuelta');
+    return { metas: [] };
+  }
 
   const m3uHash = crypto.createHash('md5').update(m3uUrl).digest('hex');
   const cacheKey = `catalog_${m3uHash}_${extra?.genre || ''}_${extra?.search || ''}`;
   const cached = cache.get(cacheKey);
-  if (cached) return cached;
+  if (cached) {
+    console.log(logPrefix, 'cache HIT', cacheKey);
+    return cached;
+  } else {
+    console.log(logPrefix, 'cache MISS', cacheKey);
+  }
 
   const channels = await getChannels({ m3uUrl });
+  console.log(logPrefix, `canales cargados: ${channels.length}`);
+
   let filtered = channels;
 
   if (extra.search) {
     const q = String(extra.search).toLowerCase();
     filtered = filtered.filter(c => c.name?.toLowerCase().includes(q));
+    console.log(logPrefix, `aplicado search="${q}", tras filtro: ${filtered.length}`);
   }
+
   if (extra.genre) {
     const g = String(extra.genre);
     filtered = filtered.filter(c =>
@@ -126,6 +162,7 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
       (Array.isArray(c.extra_genres) && c.extra_genres.includes(g)) ||
       (Array.isArray(c.additional_streams) && c.additional_streams.some(s => s.group_title === g))
     );
+    console.log(logPrefix, `aplicado genre="${g}", tras filtro: ${filtered.length}`);
   }
 
   const configId = (id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID) || DEFAULT_CONFIG_ID;
@@ -139,18 +176,28 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
 
   const resp = { metas };
   cache.set(cacheKey, resp);
+  console.log(logPrefix, `respuesta metas: ${metas.length}`);
   return resp;
 }
 
 async function handleMeta({ id, m3uUrl }) {
-  if (!m3uUrl) return { meta: null };
+  const logPrefix = '[META]';
+  if (!m3uUrl) {
+    console.log(logPrefix, 'm3uUrl no resuelta');
+    return { meta: null };
+  }
   const parts = id.split('_');
   const channelId = parts.slice(2).join('_');
 
   const m3uHash = crypto.createHash('md5').update(m3uUrl).digest('hex');
   const cacheKey = `meta_${m3uHash}_${channelId}`;
   const cached = cache.get(cacheKey);
-  if (cached) return cached;
+  if (cached) {
+    console.log(logPrefix, 'cache HIT', cacheKey);
+    return cached;
+  } else {
+    console.log(logPrefix, 'cache MISS', cacheKey);
+  }
 
   const ch = await getChannel(channelId, { m3uUrl });
   const resp = {
@@ -164,18 +211,28 @@ async function handleMeta({ id, m3uUrl }) {
     }
   };
   cache.set(cacheKey, resp);
+  console.log(logPrefix, `meta para ${channelId}: ${ch.name}`);
   return resp;
 }
 
 async function handleStream({ id, m3uUrl }) {
-  if (!m3uUrl) return { streams: [] };
+  const logPrefix = '[STREAM]';
+  if (!m3uUrl) {
+    console.log(logPrefix, 'm3uUrl no resuelta');
+    return { streams: [] };
+  }
   const parts = id.split('_');
   const channelId = parts.slice(2).join('_');
 
   const m3uHash = crypto.createHash('md5').update(m3uUrl).digest('hex');
   const cacheKey = `stream_${m3uHash}_${channelId}`;
   const cached = cache.get(cacheKey);
-  if (cached) return cached;
+  if (cached) {
+    console.log(logPrefix, 'cache HIT', cacheKey);
+    return cached;
+  } else {
+    console.log(logPrefix, 'cache MISS', cacheKey);
+  }
 
   const ch = await getChannel(channelId, { m3uUrl });
   const streams = [];
@@ -204,50 +261,79 @@ async function handleStream({ id, m3uUrl }) {
 
   const resp = { streams };
   cache.set(cacheKey, resp);
+  console.log(logPrefix, `streams para ${channelId}: ${streams.length}`);
   return resp;
 }
 
-// Manifest
+// -------------------- Manifest --------------------
 router.get('/manifest.json', (req, res) => {
+  console.log('[MANIFEST] default', req.originalUrl);
   res.json(buildManifest(DEFAULT_CONFIG_ID));
 });
 
 router.get('/:configId/manifest.json', (req, res) => {
   const configId = req.params.configId || DEFAULT_CONFIG_ID;
+  console.log('[MANIFEST]', configId, req.originalUrl);
   res.json(buildManifest(configId));
 });
 
-// Catalog/meta/stream con reconstrucción de extra
-async function catalogRoute(req, res) {
+// -------------------- Catalog con soporte de "rest" + logs --------------------
+// Captura:
+// - /catalog/:type/Heimdallr_<id>.json
+// - /catalog/:type/Heimdallr_<id>/genre=Foo.json
+// - /catalog/:type/Heimdallr_<id>/search=Bar/genre=Foo.json
+router.get('/catalog/:type/:rest(.+)\\.json', async (req, res) => {
+  console.log('[ROUTE] CATALOG (sin configId)', {
+    url: req.originalUrl,
+    params: req.params,
+    query: req.query
+  });
+  await catalogRouteParsed(req, res, null);
+});
+
+router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
+  console.log('[ROUTE] CATALOG (con configId)', {
+    url: req.originalUrl,
+    params: req.params,
+    query: req.query
+  });
+  await catalogRouteParsed(req, res, req.params.configId);
+});
+
+async function catalogRouteParsed(req, res, configIdFromPath) {
   try {
-    const id = String(req.params.id).replace(/\.json$/, '');
     const type = String(req.params.type);
-    const configId = req.params.configId || extractConfigIdFromUrl(req);
+    const { id, extra: extraFromRest } = parseCatalogRest(req.params.rest || '');
+    const configId = configIdFromPath || extractConfigIdFromUrl(req);
     const m3uUrl = await resolveM3uUrl(configId);
 
-    // Reconstrucción robusta de extra desde query
+    // Reconstrucción de extra: prioridad query > rest
     const extra = {
-      search: req.query.search || (req.query.extra && req.query.extra.search) || '',
-      genre: req.query.genre || (req.query.extra && req.query.extra.genre) || ''
+      search: req.query.search || (req.query.extra && req.query.extra.search) || extraFromRest.search || '',
+      genre: req.query.genre || (req.query.extra && req.query.extra.genre) || extraFromRest.genre || ''
     };
+
+    console.log('[CATALOG] parsed', { type, id, configId, extra, m3uUrl: m3uUrl ? '[ok]' : null });
 
     const result = await handleCatalog({ type, id, extra, m3uUrl });
     res.json(result);
   } catch (e) {
-    console.error('Catalog route error:', e.message);
+    console.error('[CATALOG] route error:', e.message);
     res.status(200).json({ metas: [] });
   }
 }
 
+// -------------------- Meta y Stream --------------------
 async function metaRoute(req, res) {
   try {
     const id = String(req.params.id).replace(/\.json$/, '');
     const configId = req.params.configId || extractConfigIdFromUrl(req);
     const m3uUrl = await resolveM3uUrl(configId);
+    console.log('[ROUTE] META', { url: req.originalUrl, id, configId, m3uUrl: m3uUrl ? '[ok]' : null });
     const result = await handleMeta({ id, m3uUrl });
     res.json(result);
   } catch (e) {
-    console.error('Meta route error:', e.message);
+    console.error('[META] route error:', e.message);
     res.status(200).json({ meta: null });
   }
 }
@@ -257,22 +343,21 @@ async function streamRoute(req, res) {
     const id = String(req.params.id).replace(/\.json$/, '');
     const configId = req.params.configId || extractConfigIdFromUrl(req);
     const m3uUrl = await resolveM3uUrl(configId);
+    console.log('[ROUTE] STREAM', { url: req.originalUrl, id, configId, m3uUrl: m3uUrl ? '[ok]' : null });
     const result = await handleStream({ id, m3uUrl });
     res.json(result);
   } catch (e) {
-    console.error('Stream route error:', e.message);
+    console.error('[STREAM] route error:', e.message);
     res.status(200).json({ streams: [] });
   }
 }
 
-router.get('/catalog/:type/:id.json', catalogRoute);
-router.get('/:configId/catalog/:type/:id.json', catalogRoute);
 router.get('/meta/:type/:id.json', metaRoute);
 router.get('/:configId/meta/:type/:id.json', metaRoute);
 router.get('/stream/:type/:id.json', streamRoute);
 router.get('/:configId/stream/:type/:id.json', streamRoute);
 
-// Config web opcional
+// -------------------- Config web opcional --------------------
 router.get('/configure', (req, res) => {
   res.setHeader('Content-Type', 'text/html');
   res.end(`
@@ -332,11 +417,11 @@ router.post('/generate-url', async (req, res) => {
   }
 });
 
-// Mount & export
+// -------------------- Mount & export --------------------
 app.use(router);
 module.exports = app;
 
-// Ejecución local opcional
+// Local
 if (require.main === module) {
   const port = process.env.PORT || 3000;
   app.listen(port, () => console.log(`Heimdallr listening on http://localhost:${port}`));
