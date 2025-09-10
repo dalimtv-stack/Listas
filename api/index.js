@@ -1,4 +1,4 @@
-// api/index.js  COPILOT
+// api/index.js COPILOT
 'use strict';
 
 const express = require('express');
@@ -277,11 +277,15 @@ router.get('/:configId/manifest.json', (req, res) => {
   res.json(buildManifest(configId));
 });
 
-// -------------------- Catalog con soporte de "rest" + logs --------------------
-// Captura:
-// - /catalog/:type/Heimdallr_<id>.json
-// - /catalog/:type/Heimdallr_<id>/genre=Foo.json
-// - /catalog/:type/Heimdallr_<id>/search=Bar/genre=Foo.json
+// -------------------- Catalog con soporte de "rest" + logs + KV cache --------------------
+async function kvGetJson(key) {
+  const val = await kvGet(key);
+  return val ? JSON.parse(val) : null;
+}
+async function kvSetJson(key, obj) {
+  await kvSet(key, JSON.stringify(obj));
+}
+
 router.get('/catalog/:type/:rest(.+)\\.json', async (req, res) => {
   console.log('[ROUTE] CATALOG (sin configId)', {
     url: req.originalUrl,
@@ -307,7 +311,6 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
     const configId = configIdFromPath || extractConfigIdFromUrl(req);
     const m3uUrl = await resolveM3uUrl(configId);
 
-    // Reconstrucción de extra: prioridad query > rest
     const extra = {
       search: req.query.search || (req.query.extra && req.query.extra.search) || extraFromRest.search || '',
       genre: req.query.genre || (req.query.extra && req.query.extra.genre) || extraFromRest.genre || ''
@@ -315,7 +318,16 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
 
     console.log('[CATALOG] parsed', { type, id, configId, extra, m3uUrl: m3uUrl ? '[ok]' : null });
 
+    const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
+    const kvKey = `catalog:${m3uHash}:${extra.genre || ''}:${extra.search || ''}`;
+    const kvCached = await kvGetJson(kvKey);
+    if (kvCached) {
+      console.log('[CATALOG] KV HIT', kvKey);
+      return res.json(kvCached);
+    }
+
     const result = await handleCatalog({ type, id, extra, m3uUrl });
+    await kvSetJson(kvKey, result);
     res.json(result);
   } catch (e) {
     console.error('[CATALOG] route error:', e.message);
@@ -323,14 +335,24 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
   }
 }
 
-// -------------------- Meta y Stream --------------------
+// -------------------- Meta y Stream con KV cache --------------------
 async function metaRoute(req, res) {
   try {
     const id = String(req.params.id).replace(/\.json$/, '');
     const configId = req.params.configId || extractConfigIdFromUrl(req);
     const m3uUrl = await resolveM3uUrl(configId);
     console.log('[ROUTE] META', { url: req.originalUrl, id, configId, m3uUrl: m3uUrl ? '[ok]' : null });
+
+    const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
+    const kvKey = `meta:${m3uHash}:${id}`;
+    const kvCached = await kvGetJson(kvKey);
+    if (kvCached) {
+      console.log('[META] KV HIT', kvKey);
+      return res.json(kvCached);
+    }
+
     const result = await handleMeta({ id, m3uUrl });
+    await kvSetJson(kvKey, result);
     res.json(result);
   } catch (e) {
     console.error('[META] route error:', e.message);
@@ -344,7 +366,17 @@ async function streamRoute(req, res) {
     const configId = req.params.configId || extractConfigIdFromUrl(req);
     const m3uUrl = await resolveM3uUrl(configId);
     console.log('[ROUTE] STREAM', { url: req.originalUrl, id, configId, m3uUrl: m3uUrl ? '[ok]' : null });
+
+    const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
+    const kvKey = `stream:${m3uHash}:${id}`;
+    const kvCached = await kvGetJson(kvKey);
+    if (kvCached) {
+      console.log('[STREAM] KV HIT', kvKey);
+      return res.json(kvCached);
+    }
+
     const result = await handleStream({ id, m3uUrl });
+    await kvSetJson(kvKey, result);
     res.json(result);
   } catch (e) {
     console.error('[STREAM] route error:', e.message);
@@ -356,6 +388,21 @@ router.get('/meta/:type/:id.json', metaRoute);
 router.get('/:configId/meta/:type/:id.json', metaRoute);
 router.get('/stream/:type/:id.json', streamRoute);
 router.get('/:configId/stream/:type/:id.json', streamRoute);
+
+// -------------------- Endpoint de salud --------------------
+router.get('/health', async (req, res) => {
+  try {
+    const defaultUrl = await resolveM3uUrl(DEFAULT_CONFIG_ID);
+    res.json({
+      status: 'ok',
+      defaultM3uConfigured: !!DEFAULT_M3U_URL,
+      kvReachable: !!(await kvGet(DEFAULT_CONFIG_ID)),
+      m3uUrl: defaultUrl || null
+    });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
 
 // -------------------- Config web opcional --------------------
 router.get('/configure', (req, res) => {
