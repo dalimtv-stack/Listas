@@ -2,42 +2,42 @@
   "version": 2,
   "builds": [
     {
-      "src": "index.js",
+      "src": "api/index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/:configId/manifest.json",
-      "dest": "/index.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/:configId/catalog/:type/:id(.*)",
-      "dest": "/index.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/:configId/catalog/:type/:id.json",
-      "dest": "/index.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/:configId/meta/:type/:id(.*)",
-      "dest": "/index.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/:configId/meta/:type/:id.json",
-      "dest": "/index.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/:configId/stream/:type/:id(.*)",
-      "dest": "/index.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/:configId/stream/:type/:id.json",
-      "dest": "/index.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/(.*)",
-      "dest": "/index.js"
+      "dest": "/api/index.js"
     }
   ]
 }
