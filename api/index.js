@@ -361,20 +361,31 @@ router.get('/:configId/stream/:type/:id.json', streamRoute);
 router.get('/configure', (req, res) => {
   res.setHeader('Content-Type', 'text/html');
   res.end(`
+    <!DOCTYPE html>
     <html>
-      <head><title>Configure Heimdallr</title></head>
-      <body style="font-family: system-ui; max-width: 720px; margin: 40px auto;">
-        <h1>Configura tu lista M3U</h1>
-        <p>Si no configuras nada, se usará DEFAULT_M3U_URL del entorno.</p>
-        <form action="/generate-url" method="post" style="display:flex;gap:8px;">
-          <input type="url" name="m3uUrl" placeholder="https://example.com/list.m3u" required style="flex:1;padding:10px;">
-          <button type="submit" style="padding:10px 20px;">Generar URL</button>
+      <head>
+        <title>Configure Heimdallr Channels</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
+          input { width: 100%; padding: 10px; margin: 10px 0; }
+          button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
+          a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
+          pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
+        </style>
+      </head>
+      <body>
+        <h1>Configure Heimdallr Channels</h1>
+        <p>Enter the URL of your M3U playlist:</p>
+        <form action="/generate-url" method="post">
+          <input type="text" name="m3uUrl" placeholder="https://example.com/list.m3u" required>
+          <button type="submit">Generate Install URL</button>
         </form>
       </body>
     </html>
   `);
 });
 
+// -------------------- Generate URL route --------------------
 router.post('/generate-url', async (req, res) => {
   try {
     const m3uUrl = String(req.body?.m3uUrl || '').trim();
@@ -402,18 +413,48 @@ router.post('/generate-url', async (req, res) => {
 
     res.setHeader('Content-Type', 'text/html');
     res.end(`
-      <html><body style="font-family:system-ui;max-width:720px;margin:40px auto;">
-        <h1>Addon generado</h1>
-        <p>Instálalo en Stremio:</p>
-        <p><a href="${installUrl}" style="padding:10px 16px;background:#4CAF50;color:white;border-radius:6px;text-decoration:none;">Instalar</a></p>
-        <p>O usa esta URL de manifest:</p>
-        <pre style="background:#f4f4f4;padding:12px;border-radius:6px;">${manifestUrl}</pre>
-      </body></html>
+      <html>
+        <head>
+          <title>Install Heimdallr Channels</title>
+          <style>
+            body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
+            button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
+            a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
+            pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
+          </style>
+          <script>
+            function copyManifest() {
+              navigator.clipboard.writeText('${baseUrl}').then(() => {
+                alert('Manifest URL copied to clipboard!');
+              }).catch(err => {
+                alert('Failed to copy: ' + err);
+              });
+            }
+          </script>
+        </head>
+        <body>
+          <h1>Install URL Generated</h1>
+          <p>Click the buttons below to install the addon or copy the manifest URL:</p>
+          <a href="${installUrl}" style="background: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px;">Install Addon</a>
+          <button onclick="copyManifest()">Copy Manifest URL</button>
+          <p>Or copy this URL:</p>
+          <pre>${baseUrl}</pre>
+          <p>Manifest JSON:</p>
+          <pre>${manifestJson}</pre>
+        </body>
+      </html>
     `);
-  } catch (e) {
+  } catch (err) {
     res.statusCode = 500;
     res.setHeader('Content-Type', 'text/html');
-    res.end(`<html><body><h1>Error</h1><p>${e.message}</p></body></html>`);
+    res.end(`
+      <html>
+        <body>
+          <h1>Server Error</h1>
+          <p>Error: ${err.message}. <a href="/configure">Go back</a></p>
+        </body>
+      </html>
+    `);
   }
 });
 
