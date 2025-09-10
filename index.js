@@ -13,7 +13,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const baseManifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.183',
+  version: '1.2.184',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -326,13 +326,14 @@ router.get('/:configId/catalog.json', (req, res) => {
   addonInterface.catalog({ type: 'tv', id: `Heimdallr_${req.params.configId}`, extra }, res);
 });
 
-// Ruta adicional para cuando Stremio llama directamente sin configId en el path
+// Ruta adicional para cuando Stremio llama sin configId en el path
 router.get('/catalog/:type/:id.json', (req, res) => {
   const id = req.params.id.replace(/\.json$/, '');
   const configId = id.startsWith('Heimdallr_') ? id.split('_')[1] : 'none';
   const extra = { configId, ...req.query };
   addonInterface.catalog({ type: req.params.type, id, extra }, res);
 });
+
 
 // Meta routes
 router.get('/:configId/meta/:type/:id', (req, res) => {
