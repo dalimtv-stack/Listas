@@ -1,7 +1,7 @@
 // index.js
 const { addonBuilder, getRouter } = require('stremio-addon-sdk');
 const NodeCache = require('node-cache');
-const { getChannels, getChannel, loadM3U } = require('./src/db');
+const { getChannels, getChannel, loadM3U } = require('../src/db');
 const { CACHE_TTL, DEFAULT_PORT } = require('./src/config');
 const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
@@ -13,7 +13,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const baseManifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.184',
+  version: '1.2.185',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
