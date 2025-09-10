@@ -12,6 +12,10 @@
       "dest": "/api/index.js"
     },
     {
+      "src": "/([0-9a-f-]+)/manifest.json",
+      "dest": "/api/index.js"
+    },
+    {
       "src": "/catalog/:type/:id.json",
       "dest": "/api/index.js"
     },
