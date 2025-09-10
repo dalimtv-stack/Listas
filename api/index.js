@@ -13,7 +13,7 @@ const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 const baseManifest = {
   id: 'org.stremio.Heimdallr',
-  version: '1.2.187',
+  version: '1.2.188',
   name: 'Heimdallr Channels',
   description: 'Addon para cargar canales Acestream o M3U8 desde una lista M3U proporcionada por el usuario.',
   types: ['tv'],
@@ -425,7 +425,7 @@ router.post('/generate-url', async (req, res) => {
 
     const configId = uuidv4();
     await setM3uUrlInConfigId(configId, m3uUrl);
-    const baseUrl = `https://${req.headers.host}/${configId}/manifest.json`;
+    const baseUrl = `https://${req.headers.host}/manifest.json?configId=${configId}`;
     const installUrl = `stremio://${encodeURIComponent(baseUrl)}`;
     const manifestJson = JSON.stringify(baseManifest, null, 2);
 
