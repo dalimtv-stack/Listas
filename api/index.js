@@ -65,10 +65,20 @@ async function kvSet(configId, value) {
 }
 
 // -------------------- Utils --------------------
-function buildManifest(configId) {
+async function buildManifest(configId) {
+  let genreOptions = ['General'];
+  try {
+    const genresKV = await kvGetJsonTTL(`genres:${configId}`);
+    if (Array.isArray(genresKV) && genresKV.length) {
+      genreOptions = genresKV;
+    }
+  } catch (e) {
+    console.error('[MANIFEST] error al cargar géneros dinámicos:', e.message);
+  }
+
   return {
     id: BASE_ADDON_ID,
-    version: '1.3.3',
+    version: '1.3.4',
     name: ADDON_NAME,
     description: 'Carga canales Acestream o M3U8 desde lista M3U (KV o por defecto).',
     types: ['tv'],
@@ -83,7 +93,7 @@ function buildManifest(configId) {
         name: 'Heimdallr Live Channels',
         extra: [
           { name: 'search', isRequired: false },
-          { name: 'genre', isRequired: false, options: ['Deportes', 'Movistar', 'Dazn', 'Noticias', 'Huhu.to', 'Telegram', 'Shickat.me', 'Elcano.top', 'NEW LOOP', 'Adultos'] }
+          { name: 'genre', isRequired: false, options: genreOptions }
         ]
       }
     ]
@@ -146,6 +156,26 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
 
   const channels = await getChannels({ m3uUrl });
   console.log(logPrefix, `canales cargados: ${channels.length}`);
+
+  // Extraer géneros únicos y guardar en KV
+  try {
+    const genreSet = new Set();
+    channels.forEach(c => {
+      if (c.group_title) genreSet.add(c.group_title);
+      if (Array.isArray(c.extra_genres)) c.extra_genres.forEach(g => genreSet.add(g));
+      if (Array.isArray(c.additional_streams)) {
+        c.additional_streams.forEach(s => {
+          if (s.group_title) genreSet.add(s.group_title);
+        });
+      }
+    });
+    const genreList = Array.from(genreSet).filter(Boolean).sort();
+    const configId = (id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID) || DEFAULT_CONFIG_ID;
+    await kvSetJsonTTL(`genres:${configId}`, genreList);
+    console.log(logPrefix, `géneros extraídos: ${genreList.length}`);
+  } catch (e) {
+    console.error(logPrefix, 'error al extraer géneros:', e.message);
+  }
 
   let filtered = channels;
 
