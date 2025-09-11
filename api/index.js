@@ -407,7 +407,7 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
     }).join('\n');
     const currentHash = crypto.createHash('md5').update(m3uText).digest('hex');
 
-    // 2) Leer último hash guardado en KV (sin TTL para que persista hasta cambio real)
+    // 2) Leer último hash guardado en KV (sin TTL)
     const lastHashKey = `genres_hash:${configId}`;
     const lastHash = await kvGet(lastHashKey);
 
@@ -480,10 +480,11 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
 
     const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
     const kvKey = `catalog:${m3uHash}:${extra.genre || ''}:${extra.search || ''}`;
+
+    // 1) Intentar servir desde KV
     const kvCached = await kvGetJsonTTL(kvKey);
     if (kvCached) {
       console.log('[CATALOG] KV HIT', kvKey);
-    
       // Recalcular géneros solo si la M3U cambió
       try {
         const channels = await getChannels({ m3uUrl });
@@ -491,10 +492,10 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
       } catch (e) {
         console.error('[CATALOG] error al actualizar géneros tras KV HIT:', e.message);
       }
-    
       return res.json(kvCached);
     }
-    
+
+    // 2) Generar catálogo fresco
     let result;
     try {
       result = await handleCatalog({ type, id, extra, m3uUrl });
@@ -503,41 +504,19 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
       console.error('[CATALOG] error en handleCatalog:', e.message);
       result = { metas: [] };
     }
-    
-    // Recalcular géneros solo si la M3U cambió
+
+    // 3) Recalcular géneros solo si la M3U cambió
     try {
       const channels = await getChannels({ m3uUrl });
       await extractAndStoreGenresIfChanged(channels, configId);
     } catch (e) {
       console.error('[CATALOG] error al actualizar géneros tras MISS:', e.message);
     }
-    
+
     return res.json(result);
-
-    }
-    
-    const result = await handleCatalog({ type, id, extra, m3uUrl });
-    await kvSetJsonTTL(kvKey, result);
-    
-    // Extraer géneros solo si la M3U ha cambiado
-    const channels = await getChannels({ m3uUrl });
-    await extractAndStoreGenresIfChanged(channels, configId, m3uUrl);
-    
-    res.json(result);
-
-    }
-
-    const result = await handleCatalog({ type, id, extra, m3uUrl });
-    await kvSetJsonTTL(kvKey, result);
-
-    // Extraer géneros desde canales frescos
-    const channels = await getChannels({ m3uUrl });
-    await extractAndStoreGenres(channels, configId);
-
-    res.json(result);
   } catch (e) {
     console.error('[CATALOG] route error:', e.message);
-    res.status(200).json({ metas: [] });
+    return res.status(200).json({ metas: [] });
   }
 }
 
