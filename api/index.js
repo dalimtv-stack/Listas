@@ -485,11 +485,17 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
       })
       .map(([genre]) => genre);
 
-    // 5) Guardar géneros (con TTL) y nuevo hash (sin TTL)
+    // 5) Guardar géneros (con TTL), hash (sin TTL) y timestamp de última actualización
     if (genreList.length) {
       await kvSetJsonTTL(`genres:${configId}`, genreList);
       await kvSet(lastHashKey, currentHash);
+
+      // NUEVO: guardar fecha/hora de última actualización
+      const nowStr = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
+      await kvSet(`last_update:${configId}`, nowStr);
+
       console.log(`[GENRES] extraídos y guardados: ${genreList.length} géneros (Otros=${orphanCount})`);
+      console.log(`[GENRES] última actualización registrada: ${nowStr}`);
     }
   } catch (e) {
     console.error('[GENRES] error al extraer:', e.message);
