@@ -1,6 +1,7 @@
 // api/index.js COPILOT
 'use strict';
 
+// -------------------- Constantes globales --------------------
 const express = require('express');
 const bodyParser = require('body-parser');
 const NodeCache = require('node-cache');
@@ -26,6 +27,10 @@ const ADDON_PREFIX = 'heimdallr';
 const CATALOG_PREFIX = 'Heimdallr';
 const DEFAULT_CONFIG_ID = 'default';
 const DEFAULT_M3U_URL = process.env.DEFAULT_M3U_URL || 'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u';
+
+// VERSION ahora se lee directamente de package.json
+const { version: VERSION } = require('./package.json');
+
 
 // -------------------- CORS --------------------
 router.use((req, res, next) => {
@@ -138,7 +143,7 @@ async function buildManifest(configId) {
 
   return {
     id: BASE_ADDON_ID,
-    version: '1.3.5',
+    version: VERSION, // leído de package.json
     name: ADDON_NAME,
     description: `Carga canales Acestream o M3U8 desde lista M3U (KV o por defecto).\nÚltima actualización de la lista M3U: ${lastUpdateStr}`,
     types: ['tv'],
