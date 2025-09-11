@@ -226,14 +226,23 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
   }
 
   if (extra.genre) {
-    const g = String(extra.genre);
+  const g = String(extra.genre);
+  if (g === 'Otros') {
+    filtered = filtered.filter(c => {
+      const hasMain = !!c.group_title;
+      const hasExtra = Array.isArray(c.extra_genres) && c.extra_genres.length > 0;
+      const hasAdditional = Array.isArray(c.additional_streams) && c.additional_streams.some(s => s.group_title);
+      return !hasMain && !hasExtra && !hasAdditional;
+    });
+  } else {
     filtered = filtered.filter(c =>
       c.group_title === g ||
       (Array.isArray(c.extra_genres) && c.extra_genres.includes(g)) ||
       (Array.isArray(c.additional_streams) && c.additional_streams.some(s => s.group_title === g))
     );
-    console.log(logPrefix, `aplicado genre="${g}", tras filtro: ${filtered.length}`);
   }
+  console.log(logPrefix, `aplicado genre="${g}", tras filtro: ${filtered.length}`);
+}
 
   const configId = (id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID) || DEFAULT_CONFIG_ID;
 
