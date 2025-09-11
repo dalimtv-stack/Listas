@@ -394,8 +394,23 @@ async function kvSetJsonTTL(key, obj) {
   await kvSet(key, JSON.stringify(payload));
 }
 
-async function extractAndStoreGenres(channels, configId) {
+// -------------------- Extraer y guardar géneros solo si cambia la M3U --------------------
+async function extractAndStoreGenresIfChanged(channels, configId, m3uUrl) {
   try {
+    // 1) Calcular hash del contenido actual de la M3U
+    const m3uText = channels.map(c => `${c.group_title || ''}|${c.name || ''}`).join('\n');
+    const currentHash = crypto.createHash('md5').update(m3uText).digest('hex');
+
+    // 2) Leer último hash guardado en KV
+    const lastHashKey = `genres_hash:${configId}`;
+    const lastHash = await kvGet(lastHashKey);
+
+    if (lastHash && lastHash === currentHash) {
+      console.log('[GENRES] M3U sin cambios, no se recalculan géneros');
+      return; // No recalcular
+    }
+
+    // 3) Extraer géneros
     const genreSet = new Set();
     let orphanCount = 0;
 
@@ -414,8 +429,10 @@ async function extractAndStoreGenres(channels, configId) {
     const genreList = Array.from(genreSet).filter(Boolean).sort();
     if (orphanCount > 0 && !genreList.includes('Otros')) genreList.push('Otros');
 
+    // 4) Guardar géneros y nuevo hash en KV
     if (genreList.length) {
       await kvSetJsonTTL(`genres:${configId}`, genreList);
+      await kvSet(lastHashKey, currentHash);
       console.log('[GENRES] extraídos y guardados:', genreList.length, `(incluye Otros=${orphanCount > 0})`);
     }
   } catch (e) {
@@ -460,12 +477,23 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
     const kvCached = await kvGetJsonTTL(kvKey);
     if (kvCached) {
       console.log('[CATALOG] KV HIT', kvKey);
-
-      // Extraer géneros aunque el catálogo esté cacheado
+    
+      // Extraer géneros solo si la M3U ha cambiado
       const channels = await getChannels({ m3uUrl });
-      await extractAndStoreGenres(channels, configId);
-
+      await extractAndStoreGenresIfChanged(channels, configId, m3uUrl);
+    
       return res.json(kvCached);
+    }
+    
+    const result = await handleCatalog({ type, id, extra, m3uUrl });
+    await kvSetJsonTTL(kvKey, result);
+    
+    // Extraer géneros solo si la M3U ha cambiado
+    const channels = await getChannels({ m3uUrl });
+    await extractAndStoreGenresIfChanged(channels, configId, m3uUrl);
+    
+    res.json(result);
+
     }
 
     const result = await handleCatalog({ type, id, extra, m3uUrl });
