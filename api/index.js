@@ -132,7 +132,6 @@ async function buildManifest(configId) {
   }
 
   // Refrescar la etiqueta de última actualización por si se generó antes
-  // (No bloqueante; si falla, mantenemos el valor leído al inicio)
   try {
     lastUpdateStr = await getLastUpdateString(configId);
   } catch {}
@@ -429,14 +428,11 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
     }).join('\n');
     const currentHash = crypto.createHash('md5').update(m3uText).digest('hex');
 
-    // 2) Leer último hash guardado en KV (sin TTL)
+    // 2) Leer último hash y última fecha guardada en KV (sin TTL)
     const lastHashKey = `genres_hash:${configId}`;
     const lastHash = await kvGet(lastHashKey);
-
-    if (lastHash && lastHash === currentHash) {
-      console.log('[GENRES] M3U sin cambios, no se recalculan géneros');
-      return; // No recalcular
-    }
+    const lastUpdateKey = `last_update:${configId}`;
+    const lastUpdate = await kvGet(lastUpdateKey);
 
     // 3) Contar por canal+género y detectar huérfanos
     const genreCount = new Map();
@@ -445,22 +441,11 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
     channels.forEach(c => {
       const seenGenresForThisChannel = new Set();
 
-      // Género principal
-      if (c.group_title) {
-        seenGenresForThisChannel.add(c.group_title);
-      }
-
-      // Géneros extra
-      if (Array.isArray(c.extra_genres)) {
-        c.extra_genres.forEach(g => g && seenGenresForThisChannel.add(g));
-      }
-
-      // Géneros de additional_streams
+      if (c.group_title) seenGenresForThisChannel.add(c.group_title);
+      if (Array.isArray(c.extra_genres)) c.extra_genres.forEach(g => g && seenGenresForThisChannel.add(g));
       if (Array.isArray(c.additional_streams)) {
         c.additional_streams.forEach(s => {
-          if (s && s.group_title) {
-            seenGenresForThisChannel.add(s.group_title);
-          }
+          if (s && s.group_title) seenGenresForThisChannel.add(s.group_title);
         });
       }
 
@@ -485,17 +470,23 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
       })
       .map(([genre]) => genre);
 
-    // 5) Guardar géneros (con TTL), hash (sin TTL) y timestamp de última actualización
+    // 5) Guardar géneros, hash y fecha de última actualización
     if (genreList.length) {
-      await kvSetJsonTTL(`genres:${configId}`, genreList);
-      await kvSet(lastHashKey, currentHash);
-
-      // NUEVO: guardar fecha/hora de última actualización
       const nowStr = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
-      await kvSet(`last_update:${configId}`, nowStr);
 
-      console.log(`[GENRES] extraídos y guardados: ${genreList.length} géneros (Otros=${orphanCount})`);
-      console.log(`[GENRES] última actualización registrada: ${nowStr}`);
+      // Guardar siempre géneros y hash si el hash cambió
+      if (!lastHash || lastHash !== currentHash) {
+        await kvSetJsonTTL(`genres:${configId}`, genreList);
+        await kvSet(lastHashKey, currentHash);
+        await kvSet(lastUpdateKey, nowStr);
+        console.log(`[GENRES] extraídos y guardados: ${genreList.length} géneros (Otros=${orphanCount})`);
+        console.log(`[GENRES] última actualización registrada: ${nowStr}`);
+      }
+      // NUEVO: si no hay last_update aún, guardarlo aunque el hash sea igual (solo primera vez)
+      else if (!lastUpdate) {
+        await kvSet(lastUpdateKey, nowStr);
+        console.log(`[GENRES] última actualización inicial registrada: ${nowStr}`);
+      }
     }
   } catch (e) {
     console.error('[GENRES] error al extraer:', e.message);
@@ -541,7 +532,6 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
     const kvCached = await kvGetJsonTTL(kvKey);
     if (kvCached) {
       console.log('[CATALOG] KV HIT', kvKey);
-      // Recalcular géneros solo si la M3U cambió
       try {
         const channels = await getChannels({ m3uUrl });
         await extractAndStoreGenresIfChanged(channels, configId);
@@ -561,7 +551,7 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
       result = { metas: [] };
     }
 
-    // 3) Recalcular géneros solo si la M3U cambió
+    // 3) Recalcular géneros solo si la M3U cambió o si no hay last_update
     try {
       const channels = await getChannels({ m3uUrl });
       await extractAndStoreGenresIfChanged(channels, configId);
