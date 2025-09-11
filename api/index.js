@@ -416,25 +416,39 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
       return; // No recalcular
     }
 
-    // 3) Contar canales por género y detectar huérfanos
+    // 3) Contar por canal+género y detectar huérfanos
     const genreCount = new Map();
     let orphanCount = 0;
 
-    const addGenre = (g) => {
-      if (!g) return;
-      genreCount.set(g, (genreCount.get(g) || 0) + 1);
-    };
-
     channels.forEach(c => {
-      const hasMain = !!c.group_title;
-      const hasExtra = Array.isArray(c.extra_genres) && c.extra_genres.length > 0;
-      const hasAdditional = Array.isArray(c.additional_streams) && c.additional_streams.some(s => s.group_title);
+      const seenGenresForThisChannel = new Set();
 
-      if (hasMain) addGenre(c.group_title);
-      if (hasExtra) c.extra_genres.forEach(addGenre);
-      if (hasAdditional) c.additional_streams.forEach(s => addGenre(s.group_title));
+      // Género principal
+      if (c.group_title) {
+        seenGenresForThisChannel.add(c.group_title);
+      }
 
-      if (!hasMain && !hasExtra && !hasAdditional) orphanCount++;
+      // Géneros extra
+      if (Array.isArray(c.extra_genres)) {
+        c.extra_genres.forEach(g => g && seenGenresForThisChannel.add(g));
+      }
+
+      // Géneros de additional_streams
+      if (Array.isArray(c.additional_streams)) {
+        c.additional_streams.forEach(s => {
+          if (s && s.group_title) {
+            seenGenresForThisChannel.add(s.group_title);
+          }
+        });
+      }
+
+      if (seenGenresForThisChannel.size > 0) {
+        seenGenresForThisChannel.forEach(g => {
+          genreCount.set(g, (genreCount.get(g) || 0) + 1);
+        });
+      } else {
+        orphanCount++;
+      }
     });
 
     if (orphanCount > 0) {
@@ -453,7 +467,7 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
     if (genreList.length) {
       await kvSetJsonTTL(`genres:${configId}`, genreList);
       await kvSet(lastHashKey, currentHash);
-      console.log('[GENRES] extraídos y guardados:', genreList.length, `(incluye Otros=${orphanCount > 0})`);
+      console.log(`[GENRES] extraídos y guardados: ${genreList.length} géneros (Otros=${orphanCount})`);
     }
   } catch (e) {
     console.error('[GENRES] error al extraer:', e.message);
