@@ -83,7 +83,7 @@ function buildManifest(configId) {
         name: 'Heimdallr Live Channels',
         extra: [
           { name: 'search', isRequired: false },
-          { name: 'genre', isRequired: false, options: ['Deportes', 'Movistar', 'Noticias', 'Hulu.to', 'Telegram', 'Shickat.me', 'Elcano.top', 'NEW LOOP', 'Adultos'] }
+          { name: 'genre', isRequired: false, options: ['Deportes', 'Movistar', 'Dazn', 'Noticias', 'Huhu.to', 'Telegram', 'Shickat.me', 'Elcano.top', 'NEW LOOP', 'Adultos'] }
         ]
       }
     ]
