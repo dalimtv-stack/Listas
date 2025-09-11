@@ -70,7 +70,6 @@ async function buildManifest(configId) {
   let genreOptions = ['General'];
 
   try {
-    // 1) Intentar leer géneros desde KV (con TTL lógico de 1h)
     const genresKV = await kvGetJsonTTL(`genres:${configId}`);
     if (Array.isArray(genresKV) && genresKV.length) {
       genreOptions = genresKV;
@@ -78,28 +77,31 @@ async function buildManifest(configId) {
     } else {
       console.log(`[MANIFEST] géneros no encontrados en KV para ${configId}, intentando precargar desde M3U...`);
 
-      // 2) Precargar desde M3U si no hay géneros en KV
       const m3uUrl = await resolveM3uUrl(configId);
       if (m3uUrl) {
         try {
           const channels = await getChannels({ m3uUrl });
 
           const genreSet = new Set();
+          let orphanCount = 0;
+
           channels.forEach(c => {
-            if (c.group_title) genreSet.add(c.group_title);
-            if (Array.isArray(c.extra_genres)) c.extra_genres.forEach(g => genreSet.add(g));
-            if (Array.isArray(c.additional_streams)) {
-              c.additional_streams.forEach(s => {
-                if (s.group_title) genreSet.add(s.group_title);
-              });
-            }
+            const hasMain = !!c.group_title;
+            const hasExtra = Array.isArray(c.extra_genres) && c.extra_genres.length > 0;
+            const hasAdditional = Array.isArray(c.additional_streams) && c.additional_streams.some(s => s.group_title);
+            if (hasMain) genreSet.add(c.group_title);
+            if (hasExtra) c.extra_genres.forEach(g => genreSet.add(g));
+            if (hasAdditional) c.additional_streams.forEach(s => s.group_title && genreSet.add(s.group_title));
+            if (!hasMain && !hasExtra && !hasAdditional) orphanCount++;
           });
 
           const genreList = Array.from(genreSet).filter(Boolean).sort();
+          if (orphanCount > 0 && !genreList.includes('Otros')) genreList.push('Otros');
+
           if (genreList.length) {
             await kvSetJsonTTL(`genres:${configId}`, genreList);
             genreOptions = genreList;
-            console.log(`[MANIFEST] géneros extraídos y guardados desde M3U para ${configId}: ${genreOptions.length}`);
+            console.log(`[MANIFEST] géneros extraídos y guardados desde M3U para ${configId}: ${genreOptions.length} (incluye Otros=${orphanCount > 0})`);
           } else {
             console.log(`[MANIFEST] sin géneros detectados en la M3U para ${configId}, usando fallback`);
           }
@@ -116,7 +118,7 @@ async function buildManifest(configId) {
 
   return {
     id: BASE_ADDON_ID,
-    version: '1.3.4',
+    version: '1.3.5',
     name: ADDON_NAME,
     description: 'Carga canales Acestream o M3U8 desde lista M3U (KV o por defecto).',
     types: ['tv'],
