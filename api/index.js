@@ -416,26 +416,40 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
       return; // No recalcular
     }
 
-    // 3) Extraer géneros + “Otros” si hay huérfanos
-    const genreSet = new Set();
+    // 3) Contar canales por género y detectar huérfanos
+    const genreCount = new Map();
     let orphanCount = 0;
+
+    const addGenre = (g) => {
+      if (!g) return;
+      genreCount.set(g, (genreCount.get(g) || 0) + 1);
+    };
 
     channels.forEach(c => {
       const hasMain = !!c.group_title;
       const hasExtra = Array.isArray(c.extra_genres) && c.extra_genres.length > 0;
       const hasAdditional = Array.isArray(c.additional_streams) && c.additional_streams.some(s => s.group_title);
 
-      if (hasMain) genreSet.add(c.group_title);
-      if (hasExtra) c.extra_genres.forEach(g => genreSet.add(g));
-      if (hasAdditional) c.additional_streams.forEach(s => s.group_title && genreSet.add(s.group_title));
+      if (hasMain) addGenre(c.group_title);
+      if (hasExtra) c.extra_genres.forEach(addGenre);
+      if (hasAdditional) c.additional_streams.forEach(s => addGenre(s.group_title));
 
       if (!hasMain && !hasExtra && !hasAdditional) orphanCount++;
     });
 
-    const genreList = Array.from(genreSet).filter(Boolean).sort();
-    if (orphanCount > 0 && !genreList.includes('Otros')) genreList.push('Otros');
+    if (orphanCount > 0) {
+      genreCount.set('Otros', orphanCount);
+    }
 
-    // 4) Guardar géneros (con TTL) y nuevo hash (sin TTL)
+    // 4) Ordenar por número de canales (desc) y luego alfabéticamente
+    const genreList = Array.from(genreCount.entries())
+      .sort((a, b) => {
+        if (b[1] === a[1]) return a[0].localeCompare(b[0], 'es', { sensitivity: 'base' });
+        return b[1] - a[1];
+      })
+      .map(([genre]) => genre);
+
+    // 5) Guardar géneros (con TTL) y nuevo hash (sin TTL)
     if (genreList.length) {
       await kvSetJsonTTL(`genres:${configId}`, genreList);
       await kvSet(lastHashKey, currentHash);
@@ -519,7 +533,6 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
     return res.status(200).json({ metas: [] });
   }
 }
-
 // -------------------- Meta y Stream con KV cache + TTL 1h --------------------
 async function kvGetJsonTTL(key) {
   const val = await kvGet(key);
