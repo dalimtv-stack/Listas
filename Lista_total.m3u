@@ -677,21 +677,21 @@ acestream://9231f38e71a85ad24b4c11a5e360992e30c916ed
 #EXTINF:-1 tvg-id="CNN.es" tvg-logo="https://i.imgur.com/cnn-esp-logo.png" group-title="Noticias", CNN ESPAÑOL
 http://45.176.193.222:2405/play/a019
 
-#EXTINF:-1 tvg-id="Golden.xxx" tvg-logo="" group-title="Adultos", Golden
+#EXTINF:-1 tvg-id="Golden.xxx" tvg-logo="" group-title="", Golden
 http://181.78.106.127:9000/play/ca076/index.m3u8
-#EXTINF:-1 tvg-id="Golden.2.xxx" tvg-logo="" group-title="Adultos", Golden 2
+#EXTINF:-1 tvg-id="Golden.2.xxx" tvg-logo="" group-title="", Golden 2
 http://181.78.106.127:9000/play/ca078/index.m3u8
-#EXTINF:-1 tvg-id="Golden.Edge.xxx" tvg-logo="" group-title="Adultos", Golden Edge
+#EXTINF:-1 tvg-id="Golden.Edge.xxx" tvg-logo="" group-title="", Golden Edge
 http://181.78.106.127:9000/play/ca078/index.m3u8
-#EXTINF:-1 group-title="Golden.Premiere.xxx" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Canal_Golden_logo.svg/360px-Canal_Golden_logo.svg.png" group-title="Adultos", Golden Premiere
+#EXTINF:-1 tvg-id="Golden.Premiere.xxx" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Canal_Golden_logo.svg/360px-Canal_Golden_logo.svg.png" group-title="", Golden Premiere
 http://45.184.87.142:8000/play/a03a
-#EXTINF:-1 group-title="Golden.Premiere.xxx" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Canal_Golden_logo.svg/360px-Canal_Golden_logo.svg.png" group-title="Adultos", Golden Premiere HD
+#EXTINF:-1 tvg-id="Golden.Premiere.xxx" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Canal_Golden_logo.svg/360px-Canal_Golden_logo.svg.png" group-title="", Golden Premiere HD
 http://200.125.170.122:8000/play/a00l
-#EXTINF:-1 group-title="Golden.Premiere.xxx" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Canal_Golden_logo.svg/360px-Canal_Golden_logo.svg.png" group-title="Adultos", Golden Premiere HD (Opcion 2)
+#EXTINF:-1 tvg-id="Golden.Premiere.xxx" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Canal_Golden_logo.svg/360px-Canal_Golden_logo.svg.png" group-title="", Golden Premiere HD (Opcion 2)
 http://190.61.117.35:8000/play/a036
-#EXTINF:-1 group-title="Golden.Premiere.2.xxx" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Canal_Golden_logo.svg/360px-Canal_Golden_logo.svg.png" group-title="Adultos", Golden Premiere 2 HD
+#EXTINF:-1 tvg-id="Golden.Premiere.2.xxx" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Canal_Golden_logo.svg/360px-Canal_Golden_logo.svg.png" group-title="", Golden Premiere 2 HD
 http://190.61.117.35:8000/play/a037
-#EXTINF:-1 group-title="Golden.Premiere.2.xxx" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Canal_Golden_logo.svg/360px-Canal_Golden_logo.svg.png" group-title="Adultos", Golden Premiere 2 HD
+#EXTINF:-1 tvg-id="Golden.Premiere.2.xxx" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Canal_Golden_logo.svg/360px-Canal_Golden_logo.svg.png" group-title="", Golden Premiere 2 HD
 http://200.125.170.121:8000/play/a00m
 
 #EXTINF:-1 tvg-id="ESPN.mx" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/ESPN.png" group-title="Telegram", ESPN MX
