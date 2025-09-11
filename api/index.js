@@ -29,7 +29,7 @@ const DEFAULT_CONFIG_ID = 'default';
 const DEFAULT_M3U_URL = process.env.DEFAULT_M3U_URL || 'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u';
 
 // VERSION ahora se lee directamente de package.json
-const { version: VERSION } = require('./package.json');
+const { version: VERSION } = require('../package.json');
 
 
 // -------------------- CORS --------------------
