@@ -66,8 +66,23 @@ async function kvSet(configId, value) {
 }
 
 // -------------------- Utils --------------------
+
+// Helper: obtener la cadena de última actualización para mostrarla en manifest/catalog
+async function getLastUpdateString(configId) {
+  try {
+    const raw = await kvGet(`last_update:${configId}`);
+    if (raw && typeof raw === 'string' && raw.trim()) {
+      return raw.trim();
+    }
+  } catch (e) {
+    console.log('[UTILS] no se pudo leer last_update:', e.message);
+  }
+  return 'Sin actualizar aún';
+}
+
 async function buildManifest(configId) {
   let genreOptions = ['General'];
+  let lastUpdateStr = await getLastUpdateString(configId);
 
   try {
     const genresKV = await kvGetJsonTTL(`genres:${configId}`);
@@ -116,11 +131,17 @@ async function buildManifest(configId) {
     console.error('[MANIFEST] error general al cargar géneros dinámicos:', e.message);
   }
 
+  // Refrescar la etiqueta de última actualización por si se generó antes
+  // (No bloqueante; si falla, mantenemos el valor leído al inicio)
+  try {
+    lastUpdateStr = await getLastUpdateString(configId);
+  } catch {}
+
   return {
     id: BASE_ADDON_ID,
     version: '1.3.5',
     name: ADDON_NAME,
-    description: 'Carga canales Acestream o M3U8 desde lista M3U (KV o por defecto).',
+    description: `Carga canales Acestream o M3U8 desde lista M3U (KV o por defecto).\nÚltima actualización: ${lastUpdateStr}`,
     types: ['tv'],
     logo: 'https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960',
     resources: ['catalog', 'meta', 'stream'],
@@ -131,6 +152,7 @@ async function buildManifest(configId) {
         type: 'tv',
         id: `${CATALOG_PREFIX}_${configId}`,
         name: 'Heimdallr Live Channels',
+        description: `Última actualización: ${lastUpdateStr}`,
         extra: [
           { name: 'search', isRequired: false },
           { name: 'genre', isRequired: false, options: genreOptions }
