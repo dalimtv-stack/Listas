@@ -68,10 +68,14 @@ async function kvSet(configId, value) {
 // -------------------- Utils --------------------
 async function buildManifest(configId) {
   let genreOptions = ['General'];
+
   try {
     const genresKV = await kvGetJsonTTL(`genres:${configId}`);
     if (Array.isArray(genresKV) && genresKV.length) {
       genreOptions = genresKV;
+      console.log(`[MANIFEST] géneros cargados desde KV para ${configId}: ${genreOptions.length}`);
+    } else {
+      console.log(`[MANIFEST] géneros no encontrados en KV para ${configId}, usando fallback`);
     }
   } catch (e) {
     console.error('[MANIFEST] error al cargar géneros dinámicos:', e.message);
@@ -346,6 +350,28 @@ async function kvSetJsonTTL(key, obj) {
   await kvSet(key, JSON.stringify(payload));
 }
 
+async function extractAndStoreGenres(channels, configId) {
+  try {
+    const genreSet = new Set();
+    channels.forEach(c => {
+      if (c.group_title) genreSet.add(c.group_title);
+      if (Array.isArray(c.extra_genres)) c.extra_genres.forEach(g => genreSet.add(g));
+      if (Array.isArray(c.additional_streams)) {
+        c.additional_streams.forEach(s => {
+          if (s.group_title) genreSet.add(s.group_title);
+        });
+      }
+    });
+    const genreList = Array.from(genreSet).filter(Boolean).sort();
+    if (genreList.length) {
+      await kvSetJsonTTL(`genres:${configId}`, genreList);
+      console.log('[GENRES] extraídos y guardados:', genreList.length);
+    }
+  } catch (e) {
+    console.error('[GENRES] error al extraer:', e.message);
+  }
+}
+
 router.get('/catalog/:type/:rest(.+)\\.json', async (req, res) => {
   console.log('[ROUTE] CATALOG (sin configId)', {
     url: req.originalUrl,
@@ -383,11 +409,21 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
     const kvCached = await kvGetJsonTTL(kvKey);
     if (kvCached) {
       console.log('[CATALOG] KV HIT', kvKey);
+
+      // Extraer géneros aunque el catálogo esté cacheado
+      const channels = await getChannels({ m3uUrl });
+      await extractAndStoreGenres(channels, configId);
+
       return res.json(kvCached);
     }
 
     const result = await handleCatalog({ type, id, extra, m3uUrl });
     await kvSetJsonTTL(kvKey, result);
+
+    // Extraer géneros desde canales frescos
+    const channels = await getChannels({ m3uUrl });
+    await extractAndStoreGenres(channels, configId);
+
     res.json(result);
   } catch (e) {
     console.error('[CATALOG] route error:', e.message);
