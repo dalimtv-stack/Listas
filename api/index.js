@@ -70,15 +70,48 @@ async function buildManifest(configId) {
   let genreOptions = ['General'];
 
   try {
+    // 1) Intentar leer géneros desde KV (con TTL lógico de 1h)
     const genresKV = await kvGetJsonTTL(`genres:${configId}`);
     if (Array.isArray(genresKV) && genresKV.length) {
       genreOptions = genresKV;
       console.log(`[MANIFEST] géneros cargados desde KV para ${configId}: ${genreOptions.length}`);
     } else {
-      console.log(`[MANIFEST] géneros no encontrados en KV para ${configId}, usando fallback`);
+      console.log(`[MANIFEST] géneros no encontrados en KV para ${configId}, intentando precargar desde M3U...`);
+
+      // 2) Precargar desde M3U si no hay géneros en KV
+      const m3uUrl = await resolveM3uUrl(configId);
+      if (m3uUrl) {
+        try {
+          const channels = await getChannels({ m3uUrl });
+
+          const genreSet = new Set();
+          channels.forEach(c => {
+            if (c.group_title) genreSet.add(c.group_title);
+            if (Array.isArray(c.extra_genres)) c.extra_genres.forEach(g => genreSet.add(g));
+            if (Array.isArray(c.additional_streams)) {
+              c.additional_streams.forEach(s => {
+                if (s.group_title) genreSet.add(s.group_title);
+              });
+            }
+          });
+
+          const genreList = Array.from(genreSet).filter(Boolean).sort();
+          if (genreList.length) {
+            await kvSetJsonTTL(`genres:${configId}`, genreList);
+            genreOptions = genreList;
+            console.log(`[MANIFEST] géneros extraídos y guardados desde M3U para ${configId}: ${genreOptions.length}`);
+          } else {
+            console.log(`[MANIFEST] sin géneros detectados en la M3U para ${configId}, usando fallback`);
+          }
+        } catch (e) {
+          console.error(`[MANIFEST] error al extraer géneros desde M3U para ${configId}:`, e.message);
+        }
+      } else {
+        console.log(`[MANIFEST] no hay M3U resuelta para ${configId}, usando fallback`);
+      }
     }
   } catch (e) {
-    console.error('[MANIFEST] error al cargar géneros dinámicos:', e.message);
+    console.error('[MANIFEST] error general al cargar géneros dinámicos:', e.message);
   }
 
   return {
