@@ -18,6 +18,7 @@ app.use(bodyParser.json());
 
 const CACHE_TTL = parseInt(process.env.CACHE_TTL || '300', 10);
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
+const KV_TTL_MS = 60 * 60 * 1000; // 1 hora en milisegundos
 
 const BASE_ADDON_ID = 'org.stremio.Heimdallr';
 const ADDON_NAME = 'Heimdallr Channels';
@@ -308,8 +309,6 @@ router.get('/:configId/manifest.json', (req, res) => {
 });
 
 // -------------------- Catalog con soporte de "rest" + logs + KV TTL --------------------
-const KV_TTL_MS = 60 * 60 * 1000; // 1 hora
-
 async function kvGetJsonTTL(key) {
   const val = await kvGet(key);
   if (!val) return null;
@@ -385,8 +384,6 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
 }
 
 // -------------------- Meta y Stream con KV cache + TTL 1h --------------------
-const KV_TTL_MS = 60 * 60 * 1000; // 1 hora en milisegundos
-
 async function kvGetJsonTTL(key) {
   const val = await kvGet(key);
   if (!val) return null;
