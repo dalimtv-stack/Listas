@@ -152,7 +152,7 @@ async function buildManifest(configId) {
         type: 'tv',
         id: `${CATALOG_PREFIX}_${configId}`,
         name: 'Heimdallr Live Channels',
-        description: `Última actualización: ${lastUpdateStr}`,
+        description: `Última actualización de la lista M3U: ${lastUpdateStr}`,
         extra: [
           { name: 'search', isRequired: false },
           { name: 'genre', isRequired: false, options: genreOptions }
