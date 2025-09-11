@@ -388,19 +388,26 @@ async function kvSetJsonTTL(key, obj) {
 async function extractAndStoreGenres(channels, configId) {
   try {
     const genreSet = new Set();
+    let orphanCount = 0;
+
     channels.forEach(c => {
-      if (c.group_title) genreSet.add(c.group_title);
-      if (Array.isArray(c.extra_genres)) c.extra_genres.forEach(g => genreSet.add(g));
-      if (Array.isArray(c.additional_streams)) {
-        c.additional_streams.forEach(s => {
-          if (s.group_title) genreSet.add(s.group_title);
-        });
-      }
+      const hasMain = !!c.group_title;
+      const hasExtra = Array.isArray(c.extra_genres) && c.extra_genres.length > 0;
+      const hasAdditional = Array.isArray(c.additional_streams) && c.additional_streams.some(s => s.group_title);
+
+      if (hasMain) genreSet.add(c.group_title);
+      if (hasExtra) c.extra_genres.forEach(g => genreSet.add(g));
+      if (hasAdditional) c.additional_streams.forEach(s => s.group_title && genreSet.add(s.group_title));
+
+      if (!hasMain && !hasExtra && !hasAdditional) orphanCount++;
     });
+
     const genreList = Array.from(genreSet).filter(Boolean).sort();
+    if (orphanCount > 0 && !genreList.includes('Otros')) genreList.push('Otros');
+
     if (genreList.length) {
       await kvSetJsonTTL(`genres:${configId}`, genreList);
-      console.log('[GENRES] extraídos y guardados:', genreList.length);
+      console.log('[GENRES] extraídos y guardados:', genreList.length, `(incluye Otros=${orphanCount > 0})`);
     }
   } catch (e) {
     console.error('[GENRES] error al extraer:', e.message);
