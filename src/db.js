@@ -8,11 +8,14 @@ const DEFAULT_M3U_URL = 'https://raw.githubusercontent.com/dalimtv-stack/Listas/
 function getExtraGenres(name) {
   const lowerName = name.toLowerCase();
   const extraGenres = [];
-  if (lowerName.includes('deporte') || lowerName.includes('espn') || lowerName.includes('liga') || lowerName.includes('futbol') || lowerName.includes('football') || lowerName.includes('sport')) {
+  if (lowerName.includes('deporte') || lowerName.includes('formula 1') || lowerName.includes('bein') || lowerName.includes('F1') || lowerName.includes('dazn') || lowerName.includes('nba') || lowerName.includes('espn') || lowerName.includes('liga') || lowerName.includes('futbol') || lowerName.includes('football') || lowerName.includes('sport')) {
     extraGenres.push('Deportes');
   }
   if (lowerName.includes('movistar')) {
     extraGenres.push('Movistar');
+  }
+  if (lowerName.includes('dazn')) {
+    extraGenres.push('Dazn');
   }
   return extraGenres;
 }
