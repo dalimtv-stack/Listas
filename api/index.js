@@ -277,13 +277,32 @@ router.get('/:configId/manifest.json', (req, res) => {
   res.json(buildManifest(configId));
 });
 
-// -------------------- Catalog con soporte de "rest" + logs + KV cache --------------------
-async function kvGetJson(key) {
+// -------------------- Catalog con soporte de "rest" + logs + KV TTL --------------------
+const KV_TTL_MS = 60 * 60 * 1000; // 1 hora
+
+async function kvGetJsonTTL(key) {
   const val = await kvGet(key);
-  return val ? JSON.parse(val) : null;
+  if (!val) return null;
+  try {
+    const parsed = JSON.parse(val);
+    if (!parsed.timestamp || !parsed.data) return null;
+    const age = Date.now() - parsed.timestamp;
+    if (age > KV_TTL_MS) {
+      console.log(`[KV] Caducado (${Math.round(age / 60000)} min)`, key);
+      return null;
+    }
+    return parsed.data;
+  } catch {
+    return null;
+  }
 }
-async function kvSetJson(key, obj) {
-  await kvSet(key, JSON.stringify(obj));
+
+async function kvSetJsonTTL(key, obj) {
+  const payload = {
+    timestamp: Date.now(),
+    data: obj
+  };
+  await kvSet(key, JSON.stringify(payload));
 }
 
 router.get('/catalog/:type/:rest(.+)\\.json', async (req, res) => {
@@ -320,14 +339,14 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
 
     const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
     const kvKey = `catalog:${m3uHash}:${extra.genre || ''}:${extra.search || ''}`;
-    const kvCached = await kvGetJson(kvKey);
+    const kvCached = await kvGetJsonTTL(kvKey);
     if (kvCached) {
       console.log('[CATALOG] KV HIT', kvKey);
       return res.json(kvCached);
     }
 
     const result = await handleCatalog({ type, id, extra, m3uUrl });
-    await kvSetJson(kvKey, result);
+    await kvSetJsonTTL(kvKey, result);
     res.json(result);
   } catch (e) {
     console.error('[CATALOG] route error:', e.message);
