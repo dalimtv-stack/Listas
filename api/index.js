@@ -141,7 +141,7 @@ async function buildManifest(configId) {
     id: BASE_ADDON_ID,
     version: '1.3.5',
     name: ADDON_NAME,
-    description: `Carga canales Acestream o M3U8 desde lista M3U (KV o por defecto).\nÚltima actualización: ${lastUpdateStr}`,
+    description: `Carga canales Acestream o M3U8 desde lista M3U (KV o por defecto).\nÚltima actualización de la lista M3U: ${lastUpdateStr}`,
     types: ['tv'],
     logo: 'https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960',
     resources: ['catalog', 'meta', 'stream'],
