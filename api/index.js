@@ -297,15 +297,27 @@ async function handleStream({ id, m3uUrl }) {
 }
 
 // -------------------- Manifest --------------------
-router.get('/manifest.json', (req, res) => {
+router.get('/manifest.json', async (req, res) => {
   console.log('[MANIFEST] default', req.originalUrl);
-  res.json(buildManifest(DEFAULT_CONFIG_ID));
+  try {
+    const manifest = await buildManifest(DEFAULT_CONFIG_ID);
+    res.json(manifest);
+  } catch (e) {
+    console.error('[MANIFEST] error al generar default:', e.message);
+    res.status(500).json({});
+  }
 });
 
-router.get('/:configId/manifest.json', (req, res) => {
+router.get('/:configId/manifest.json', async (req, res) => {
   const configId = req.params.configId || DEFAULT_CONFIG_ID;
   console.log('[MANIFEST]', configId, req.originalUrl);
-  res.json(buildManifest(configId));
+  try {
+    const manifest = await buildManifest(configId);
+    res.json(manifest);
+  } catch (e) {
+    console.error(`[MANIFEST] error al generar para ${configId}:`, e.message);
+    res.status(500).json({});
+  }
 });
 
 // -------------------- Catalog con soporte de "rest" + logs + KV TTL --------------------
