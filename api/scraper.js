@@ -1,17 +1,19 @@
+'use strict';
+
 // -------------------- scraper.js --------------------
 // Encargado de scrapear webs adicionales y devolver streams compatibles con Stremio
 
-const { kvGetJsonTTL, kvSetJsonTTL } = require('./db');
-const fetch = require('node-fetch'); // Asegúrate de tenerlo instalado
-const cheerio = require('cheerio');  // npm install cheerio
+const fetch = require('node-fetch');
+const cheerio = require('cheerio'); // npm install cheerio
+const { kvGetJsonTTL, kvSetJsonTTL } = require('./index'); // Usa las funciones TTL de tu index.js
 
 /**
  * Scrapea las webs adicionales buscando streams para un canal concreto.
  * @param {string} channelName - Nombre del canal (ej: "La 2")
- * @param {string} extraWebsString - Lista de webs separadas por ; o |
+ * @param {string[]} extraWebsList - Lista de URLs de webs a scrapear
  * @returns {Promise<Array>} - Array de objetos stream para Stremio
  */
-async function scrapeExtraWebs(channelName, extraWebsString) {
+async function scrapeExtraWebs(channelName, extraWebsList) {
   const cacheKey = `scrape:${channelName.toLowerCase()}`;
   const cached = await kvGetJsonTTL(cacheKey);
   if (cached) {
@@ -19,41 +21,58 @@ async function scrapeExtraWebs(channelName, extraWebsString) {
     return cached;
   }
 
-  const urls = extraWebsString.split(/;|\|/).map(u => u.trim()).filter(Boolean);
   const results = [];
 
-  for (const url of urls) {
+  for (const url of extraWebsList) {
     try {
       console.log(`[SCRAPER] Buscando en ${url} para canal ${channelName}`);
       const html = await fetch(url, { timeout: 8000 }).then(r => r.text());
       const $ = cheerio.load(html);
 
-      // --------------------
-      // Aquí debes adaptar el selector y la lógica de extracción
-      // según la estructura HTML de tus webs.
-      // Ejemplo genérico: buscar enlaces que contengan el nombre del canal
-      // --------------------
-      $('a, source').each((_, el) => {
-        const text = $(el).text() || $(el).attr('src') || '';
-        if (text.toLowerCase().includes(channelName.toLowerCase())) {
-          const streamUrl = $(el).attr('href') || $(el).attr('src');
-          if (streamUrl && (streamUrl.startsWith('http') || streamUrl.startsWith('acestream://'))) {
-            results.push({
-              name: `${channelName} (extra)`,
-              title: `${channelName} (extra)`,
-              url: streamUrl
-            });
-          }
+      // Buscar solo coincidencias con el canal
+      $('#linksList li').each((_, li) => {
+        const name = $(li).find('.link-name').text().trim();
+        const href = $(li).find('.link-url a').attr('href');
+
+        if (
+          name &&
+          href &&
+          href.startsWith('acestream://') &&
+          name.toLowerCase().includes(channelName.toLowerCase())
+        ) {
+          results.push({
+            name: `${name} (extra)`,
+            title: `${name} (extra)`,
+            url: href
+          });
         }
       });
+
+      // Si no encontró nada para ese canal, usar todos los enlaces de la página
+      if (results.length === 0) {
+        console.log(`[SCRAPER] No se encontraron coincidencias exactas, usando todos los enlaces de ${url}`);
+        $('#linksList li').each((_, li) => {
+          const name = $(li).find('.link-name').text().trim();
+          const href = $(li).find('.link-url a').attr('href');
+
+          if (name && href && href.startsWith('acestream://')) {
+            results.push({
+              name: `${name} (extra)`,
+              title: `${name} (extra)`,
+              url: href
+            });
+          }
+        });
+      }
 
     } catch (e) {
       console.error(`[SCRAPER] Error scrapeando ${url}:`, e.message);
     }
   }
 
-  // Guardar en cache con TTL de 1 hora
+  // Guardar en cache con TTL de 1 hora (3600 segundos)
   await kvSetJsonTTL(cacheKey, results, 3600);
+
   return results;
 }
 
