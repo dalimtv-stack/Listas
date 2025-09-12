@@ -397,10 +397,14 @@ async function handleStream({ id, m3uUrl, configId }) { // *** CAMBIO extraWebs:
 
   // *** CAMBIO extraWebs: añadir streams desde webs adicionales
   const extraWebsList = await resolveExtraWebs(configId);
+  console.log(`[STREAM] Extra webs para ${ch.name}:`, extraWebsList);
+  
   if (extraWebsList.length) {
+    console.log(`[STREAM] Llamando a scrapeExtraWebs para ${ch.name}`);
     try {
       const { scrapeExtraWebs } = require('./scraper');
       const extraStreams = await scrapeExtraWebs(ch.name, extraWebsList);
+      console.log(`[STREAM] scrapeExtraWebs devolvió ${extraStreams.length} streams extra`);
       if (extraStreams.length) {
         streams = [...extraStreams, ...streams];
         console.log(logPrefix, `añadidos ${extraStreams.length} streams extra desde webs`);
