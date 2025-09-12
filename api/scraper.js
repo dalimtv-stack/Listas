@@ -1,34 +1,22 @@
 //api/scraper.js
 'use strict';
 
-// -------------------- scraper.js --------------------
-// Encargado de scrapear webs adicionales y devolver streams compatibles con Stremio
-
 const fetch = require('node-fetch');
-const cheerio = require('cheerio'); // npm install cheerio
-const { kvGetJsonTTL, kvSetJsonTTL } = require('./index'); // Usa las funciones TTL de tu index.js
+const cheerio = require('cheerio');
+const { kvGetJsonTTL, kvSetJsonTTL } = require('./index');
 
-// Mapa de equivalencias: clave = nombre en M3U (minúsculas, sin espacios extra)
-// valores = array de posibles nombres en la web
+// Equivalencias entre nombres M3U y nombres en las webs
 const channelAliases = {
-  'movistar laliga (fhd)': ['m. laliga', 'm. laliga 1080p', 'movistar laliga', 'm+ la liga'],
-  'dazn f1 (fhd)': ['dazn f1', 'dazn f1 1080', 'dazn f1 1080  (fórmula 1)', 'fórmula 1']
+  'movistar laliga (fhd)': ['m. laliga', 'm. laliga 1080p', 'movistar laliga'],
+  'dazn f1 (fhd)': ['dazn f1', 'dazn f1 1080', 'dazn f1 1080  (fórmula 1)', 'fórmula 1'],
+  'primera federacion "rfef" (fhd)': ['rfef', 'primera federacion', 'primera federación']
 };
 
-/**
- * Obtiene términos de búsqueda para un canal usando alias si existen
- */
 function getSearchTerms(channelName) {
   const normalized = channelName.trim().toLowerCase();
   return channelAliases[normalized] || [channelName];
 }
 
-/**
- * Scrapea las webs adicionales buscando streams para un canal concreto.
- * @param {string} channelName - Nombre del canal (ej: "La 2")
- * @param {string[]} extraWebsList - Lista de URLs de webs a scrapear
- * @returns {Promise<Array>} - Array de objetos stream para Stremio
- */
 async function scrapeExtraWebs(channelName, extraWebsList) {
   console.log(`[SCRAPER] Iniciado para canal: ${channelName}`);
   console.log(`[SCRAPER] Lista de webs a scrapear:`, extraWebsList);
@@ -50,10 +38,30 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
       const $ = cheerio.load(html);
 
       let encontrados = 0;
+
+      // 🔹 Estructura Elcano.top
       $('#linksList li').each((_, li) => {
         const name = $(li).find('.link-name').text().trim();
         const href = $(li).find('.link-url a').attr('href');
+        if (
+          name &&
+          href &&
+          href.startsWith('acestream://') &&
+          searchTerms.some(term => name.toLowerCase().includes(term))
+        ) {
+          results.push({
+            name: `${name} (extra)`,
+            title: `${name} (extra)`,
+            url: href
+          });
+          encontrados++;
+        }
+      });
 
+      // 🔹 Estructura Shickat
+      $('.canal-card').each((_, card) => {
+        const name = $(card).find('.canal-nombre').text().trim();
+        const href = $(card).find('.acestream-link').attr('href');
         if (
           name &&
           href &&
@@ -73,9 +81,24 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
 
       if (encontrados === 0) {
         console.log(`[SCRAPER] Fallback: añadiendo todos los enlaces de ${url}`);
+
+        // Fallback Elcano
         $('#linksList li').each((_, li) => {
           const name = $(li).find('.link-name').text().trim();
           const href = $(li).find('.link-url a').attr('href');
+          if (name && href && href.startsWith('acestream://')) {
+            results.push({
+              name: `${name} (extra)`,
+              title: `${name} (extra)`,
+              url: href
+            });
+          }
+        });
+
+        // Fallback Shickat
+        $('.canal-card').each((_, card) => {
+          const name = $(card).find('.canal-nombre').text().trim();
+          const href = $(card).find('.acestream-link').attr('href');
           if (name && href && href.startsWith('acestream://')) {
             results.push({
               name: `${name} (extra)`,
