@@ -1,3 +1,4 @@
+//api/scraper.js
 'use strict';
 
 // -------------------- scraper.js --------------------
@@ -6,6 +7,21 @@
 const fetch = require('node-fetch');
 const cheerio = require('cheerio'); // npm install cheerio
 const { kvGetJsonTTL, kvSetJsonTTL } = require('./index'); // Usa las funciones TTL de tu index.js
+
+// Mapa de equivalencias: clave = nombre en M3U (minúsculas, sin espacios extra)
+// valores = array de posibles nombres en la web
+const channelAliases = {
+  'movistar laliga (fhd)': ['m. laliga', 'm. laliga 1080p', 'movistar laliga', 'm+ la liga'],
+  'dazn f1 (fhd)': ['dazn f1', 'dazn f1 1080', 'dazn f1 1080  (fórmula 1)', 'fórmula 1']
+};
+
+/**
+ * Obtiene términos de búsqueda para un canal usando alias si existen
+ */
+function getSearchTerms(channelName) {
+  const normalized = channelName.trim().toLowerCase();
+  return channelAliases[normalized] || [channelName];
+}
 
 /**
  * Scrapea las webs adicionales buscando streams para un canal concreto.
@@ -16,6 +32,7 @@ const { kvGetJsonTTL, kvSetJsonTTL } = require('./index'); // Usa las funciones 
 async function scrapeExtraWebs(channelName, extraWebsList) {
   console.log(`[SCRAPER] Iniciado para canal: ${channelName}`);
   console.log(`[SCRAPER] Lista de webs a scrapear:`, extraWebsList);
+
   const cacheKey = `scrape:${channelName.toLowerCase()}`;
   const cached = await kvGetJsonTTL(cacheKey);
   if (cached) {
@@ -24,15 +41,15 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
   }
 
   const results = [];
+  const searchTerms = getSearchTerms(channelName).map(s => s.toLowerCase());
 
   for (const url of extraWebsList) {
     try {
-      console.log(`[SCRAPER] Buscando en ${url} para canal ${channelName}`);
+      console.log(`[SCRAPER] Fetch -> ${url}`);
       const html = await fetch(url, { timeout: 8000 }).then(r => r.text());
       const $ = cheerio.load(html);
-      let encontrados = 0;
 
-      // Buscar solo coincidencias con el canal
+      let encontrados = 0;
       $('#linksList li').each((_, li) => {
         const name = $(li).find('.link-name').text().trim();
         const href = $(li).find('.link-url a').attr('href');
@@ -41,7 +58,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
           name &&
           href &&
           href.startsWith('acestream://') &&
-          name.toLowerCase().includes(channelName.toLowerCase())
+          searchTerms.some(term => name.toLowerCase().includes(term))
         ) {
           results.push({
             name: `${name} (extra)`,
@@ -51,15 +68,14 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
           encontrados++;
         }
       });
-      console.log(`[SCRAPER] Coincidencias exactas en ${url}: ${encontrados}`);
 
-      // Si no encontró nada para ese canal, usar todos los enlaces de la página
-      if (results.length === 0) {
-        console.log(`[SCRAPER] No se encontraron coincidencias exactas, usando todos los enlaces de ${url}`);
+      console.log(`[SCRAPER] Coincidencias en ${url}: ${encontrados}`);
+
+      if (encontrados === 0) {
+        console.log(`[SCRAPER] Fallback: añadiendo todos los enlaces de ${url}`);
         $('#linksList li').each((_, li) => {
           const name = $(li).find('.link-name').text().trim();
           const href = $(li).find('.link-url a').attr('href');
-
           if (name && href && href.startsWith('acestream://')) {
             results.push({
               name: `${name} (extra)`,
@@ -71,14 +87,12 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
       }
 
     } catch (e) {
-      console.error(`[SCRAPER] Error scrapeando ${url}:`, e.message);
+      console.error(`[SCRAPER] Error en ${url}:`, e.message);
     }
   }
+
   console.log(`[SCRAPER] Total streams extra encontrados: ${results.length}`);
-
-  // Guardar en cache con TTL de 1 hora (3600 segundos)
   await kvSetJsonTTL(cacheKey, results, 3600);
-
   return results;
 }
 
