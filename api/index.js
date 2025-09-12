@@ -31,7 +31,6 @@ const DEFAULT_M3U_URL = process.env.DEFAULT_M3U_URL || 'https://raw.githubuserco
 // VERSION ahora se lee directamente de package.json
 const { version: VERSION } = require('../package.json');
 
-
 // -------------------- CORS --------------------
 router.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -70,6 +69,17 @@ async function kvSet(configId, value) {
   if (!r.ok) throw new Error(`KV set failed: ${r.status}`);
 }
 
+// *** CAMBIO extraWebs: helpers JSON para guardar { m3uUrl, extraWebs }
+async function kvGetJson(configId) {
+  const raw = await kvGet(configId);
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch { return null; }
+}
+
+async function kvSetJson(configId, obj) {
+  await kvSet(configId, JSON.stringify(obj));
+}
+
 // -------------------- Utils --------------------
 
 // Helper: obtener la cadena de última actualización para mostrarla en manifest/catalog
@@ -85,6 +95,7 @@ async function getLastUpdateString(configId) {
   return 'Sin actualizar aún';
 }
 
+// -------------------- Manifest dinámico --------------------
 async function buildManifest(configId) {
   let genreOptions = ['General'];
   let lastUpdateStr = await getLastUpdateString(configId);
@@ -151,6 +162,11 @@ async function buildManifest(configId) {
     resources: ['catalog', 'meta', 'stream'],
     idPrefixes: [`${ADDON_PREFIX}_`],
     behaviorHints: { configurable: true },
+    // *** CAMBIO extraWebs: añadimos configuración editable
+    config: [
+      { name: 'm3uUrl', label: 'URL de la lista M3U', type: 'text', required: true },
+      { name: 'extraWebs', label: 'Webs adicionales (separadas por ; o |)', type: 'text', required: false }
+    ],
     catalogs: [
       {
         type: 'tv',
@@ -166,11 +182,26 @@ async function buildManifest(configId) {
   };
 }
 
+// *** CAMBIO extraWebs: resolver M3U desde JSON o string y exponer extraWebs
 async function resolveM3uUrl(configId) {
+  // Primero intentar como objeto JSON { m3uUrl, extraWebs }
+  const cfg = await kvGetJson(configId);
+  if (cfg && cfg.m3uUrl) return cfg.m3uUrl;
+
+  // Fallback: valor plano de M3U guardado previamente
   const kv = await kvGet(configId);
   if (kv) return kv;
+
   if (DEFAULT_M3U_URL) return DEFAULT_M3U_URL;
   return null;
+}
+
+async function resolveExtraWebs(configId) {
+  const cfg = await kvGetJson(configId);
+  if (cfg && cfg.extraWebs) {
+    return cfg.extraWebs.split(/;|\|/).map(s => s.trim()).filter(Boolean);
+  }
+  return [];
 }
 
 function extractConfigIdFromUrl(req) {
@@ -179,7 +210,7 @@ function extractConfigIdFromUrl(req) {
   return DEFAULT_CONFIG_ID;
 }
 
-// Parseador de rutas de catálogo estilo Stremio:
+// ------ Parseador de rutas de catálogo estilo Stremio ------
 // - rest = "Heimdallr_<configId>"
 // - o "Heimdallr_<configId>/genre=Telegram"
 // - o "Heimdallr_<configId>/search=foo/genre=Bar"
@@ -252,23 +283,23 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
   }
 
   if (extra.genre) {
-  const g = String(extra.genre);
-  if (g === 'Otros') {
-    filtered = filtered.filter(c => {
-      const hasMain = !!c.group_title;
-      const hasExtra = Array.isArray(c.extra_genres) && c.extra_genres.length > 0;
-      const hasAdditional = Array.isArray(c.additional_streams) && c.additional_streams.some(s => s.group_title);
-      return !hasMain && !hasExtra && !hasAdditional;
-    });
-  } else {
-    filtered = filtered.filter(c =>
-      c.group_title === g ||
-      (Array.isArray(c.extra_genres) && c.extra_genres.includes(g)) ||
-      (Array.isArray(c.additional_streams) && c.additional_streams.some(s => s.group_title === g))
-    );
+    const g = String(extra.genre);
+    if (g === 'Otros') {
+      filtered = filtered.filter(c => {
+        const hasMain = !!c.group_title;
+        const hasExtra = Array.isArray(c.extra_genres) && c.extra_genres.length > 0;
+        const hasAdditional = Array.isArray(c.additional_streams) && c.additional_streams.some(s => s.group_title);
+        return !hasMain && !hasExtra && !hasAdditional;
+      });
+    } else {
+      filtered = filtered.filter(c =>
+        c.group_title === g ||
+        (Array.isArray(c.extra_genres) && c.extra_genres.includes(g)) ||
+        (Array.isArray(c.additional_streams) && c.additional_streams.some(s => s.group_title === g))
+      );
+    }
+    console.log(logPrefix, `aplicado genre="${g}", tras filtro: ${filtered.length}`);
   }
-  console.log(logPrefix, `aplicado genre="${g}", tras filtro: ${filtered.length}`);
-}
 
   const configId = (id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID) || DEFAULT_CONFIG_ID;
 
@@ -320,7 +351,7 @@ async function handleMeta({ id, m3uUrl }) {
   return resp;
 }
 
-async function handleStream({ id, m3uUrl }) {
+async function handleStream({ id, m3uUrl, configId }) { // *** CAMBIO extraWebs: añadimos configId
   const logPrefix = '[STREAM]';
   if (!m3uUrl) {
     console.log(logPrefix, 'm3uUrl no resuelta');
@@ -340,7 +371,7 @@ async function handleStream({ id, m3uUrl }) {
   }
 
   const ch = await getChannel(channelId, { m3uUrl });
-  const streams = [];
+  let streams = [];
 
   const addStream = (src) => {
     const out = { name: src.group_title, title: src.title };
@@ -362,6 +393,21 @@ async function handleStream({ id, m3uUrl }) {
       externalUrl: ch.website_url,
       behaviorHints: { notWebReady: true, external: true }
     });
+  }
+
+  // *** CAMBIO extraWebs: añadir streams desde webs adicionales
+  const extraWebsList = await resolveExtraWebs(configId);
+  if (extraWebsList.length) {
+    try {
+      const { scrapeExtraWebs } = require('./scraper');
+      const extraStreams = await scrapeExtraWebs(ch.name, extraWebsList);
+      if (extraStreams.length) {
+        streams = [...extraStreams, ...streams];
+        console.log(logPrefix, `añadidos ${extraStreams.length} streams extra desde webs`);
+      }
+    } catch (e) {
+      console.error(logPrefix, 'error en scrapeo de extraWebs:', e.message);
+    }
   }
 
   const resp = { streams };
@@ -394,7 +440,7 @@ router.get('/:configId/manifest.json', async (req, res) => {
   }
 });
 
-// -------------------- Catalog con soporte de "rest" + logs + KV TTL --------------------
+// -------------------- KV JSON con TTL configurable --------------------
 async function kvGetJsonTTL(key) {
   const val = await kvGet(key);
   if (!val) return null;
@@ -402,7 +448,8 @@ async function kvGetJsonTTL(key) {
     const parsed = JSON.parse(val);
     if (!parsed.timestamp || !parsed.data) return null;
     const age = Date.now() - parsed.timestamp;
-    if (age > KV_TTL_MS) {
+    const ttlMs = parsed.ttlMs || KV_TTL_MS; // usa el TTL guardado o el global
+    if (age > ttlMs) {
       console.log(`[KV] Caducado (${Math.round(age / 60000)} min)`, key);
       return null;
     }
@@ -412,13 +459,21 @@ async function kvGetJsonTTL(key) {
   }
 }
 
-async function kvSetJsonTTL(key, obj) {
+/**
+ * Guarda un objeto en KV con un TTL configurable.
+ * @param {string} key - Clave en KV
+ * @param {any} obj - Datos a guardar
+ * @param {number} ttlSeconds - TTL en segundos (opcional, por defecto 3600s)
+ */
+async function kvSetJsonTTL(key, obj, ttlSeconds = 3600) {
   const payload = {
     timestamp: Date.now(),
+    ttlMs: ttlSeconds * 1000,
     data: obj
   };
   await kvSet(key, JSON.stringify(payload));
 }
+
 
 // -------------------- Extraer y guardar géneros solo si cambia la M3U --------------------
 async function extractAndStoreGenresIfChanged(channels, configId) {
@@ -498,6 +553,7 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
   }
 }
 
+// -------------------- Rutas de catálogo --------------------
 router.get('/catalog/:type/:rest(.+)\\.json', async (req, res) => {
   console.log('[ROUTE] CATALOG (sin configId)', {
     url: req.originalUrl,
@@ -570,32 +626,8 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
     return res.status(200).json({ metas: [] });
   }
 }
+
 // -------------------- Meta y Stream con KV cache + TTL 1h --------------------
-async function kvGetJsonTTL(key) {
-  const val = await kvGet(key);
-  if (!val) return null;
-  try {
-    const parsed = JSON.parse(val);
-    if (!parsed.timestamp || !parsed.data) return null;
-    const age = Date.now() - parsed.timestamp;
-    if (age > KV_TTL_MS) {
-      console.log(`[KV] Caducado (${Math.round(age / 60000)} min)`, key);
-      return null;
-    }
-    return parsed.data;
-  } catch {
-    return null;
-  }
-}
-
-async function kvSetJsonTTL(key, obj) {
-  const payload = {
-    timestamp: Date.now(),
-    data: obj
-  };
-  await kvSet(key, JSON.stringify(payload));
-}
-
 async function metaRoute(req, res) {
   try {
     const id = String(req.params.id).replace(/\.json$/, '');
@@ -635,7 +667,8 @@ async function streamRoute(req, res) {
       return res.json(kvCached);
     }
 
-    const result = await handleStream({ id, m3uUrl });
+    // *** CAMBIO extraWebs: pasamos configId a handleStream
+    const result = await handleStream({ id, m3uUrl, configId });
     await kvSetJsonTTL(kvKey, result);
     res.json(result);
   } catch (e) {
@@ -644,6 +677,7 @@ async function streamRoute(req, res) {
   }
 }
 
+// -------------------- Bind de rutas META y STREAM --------------------
 router.get('/meta/:type/:id.json', metaRoute);
 router.get('/:configId/meta/:type/:id.json', metaRoute);
 router.get('/stream/:type/:id.json', streamRoute);
@@ -682,9 +716,11 @@ router.get('/configure', (req, res) => {
       </head>
       <body>
         <h1>Configure Heimdallr Channels</h1>
-        <p>Enter the URL of your M3U playlist:</p>
+        <p>Enter the URL of your M3U playlist and optionally extra websites separated by ; or |:</p>
         <form action="/generate-url" method="post">
           <input type="text" name="m3uUrl" placeholder="https://example.com/list.m3u" required>
+          <!-- *** CAMBIO extraWebs: nuevo campo -->
+          <input type="text" name="extraWebs" placeholder="https://web1.com;https://web2.com">
           <button type="submit">Generate Install URL</button>
         </form>
       </body>
@@ -696,6 +732,8 @@ router.get('/configure', (req, res) => {
 router.post('/generate-url', async (req, res) => {
   try {
     const m3uUrl = String(req.body?.m3uUrl || '').trim();
+    const extraWebs = String(req.body?.extraWebs || '').trim(); // *** CAMBIO extraWebs
+
     if (!m3uUrl) throw new Error('URL M3U requerida');
 
     // Validación rápida
@@ -711,7 +749,8 @@ router.post('/generate-url', async (req, res) => {
     }
 
     const configId = uuidv4();
-    await kvSet(configId, m3uUrl);
+    // *** CAMBIO extraWebs: guardamos objeto JSON con m3uUrl y extraWebs
+    await kvSetJson(configId, { m3uUrl, extraWebs });
 
     const baseHost = req.headers['x-forwarded-host'] || req.headers.host;
     const baseProto = req.headers['x-forwarded-proto'] || 'https';
@@ -767,7 +806,7 @@ router.post('/generate-url', async (req, res) => {
 app.use(router);
 module.exports = app;
 
-// Local
+// -------------------- Arranque local --------------------
 if (require.main === module) {
   const port = process.env.PORT || 3000;
   app.listen(port, () => console.log(`Heimdallr listening on http://localhost:${port}`));
