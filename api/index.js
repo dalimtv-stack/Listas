@@ -197,12 +197,19 @@ async function resolveM3uUrl(configId) {
 }
 
 async function resolveExtraWebs(configId) {
-  const cfg = await kvGetJson(configId);
+  const cfg = await kvGetJson(`config:${configId}`);
   if (cfg && cfg.extraWebs) {
-    return cfg.extraWebs.split(/;|\|/).map(s => s.trim()).filter(Boolean);
+    const list = cfg.extraWebs
+      .split(/;|\|/)
+      .map(s => s.trim())
+      .filter(Boolean);
+    console.log(`[DEBUG] Extra webs configuradas para configId=${configId}:`, list);
+    return list;
   }
+  console.log(`[DEBUG] No hay extraWebs configuradas para configId=${configId}`);
   return [];
 }
+
 
 function extractConfigIdFromUrl(req) {
   const m = req.url.match(/^\/([^/]+)\/(manifest\.json|catalog|meta|stream)\b/);
