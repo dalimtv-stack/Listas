@@ -39,7 +39,7 @@ function normalizeUrlForDisplay(url) {
 // Nueva función para verificar si un nombre contiene un número secuencial
 function hasSequentialNumber(name) {
   const normalized = normalizeName(name);
-  return /\d$/.test(normalized); // Verifica si el nombre termina en un dígito
+  return /\b\d+\b/.test(normalized); // Detecta cualquier número como palabra independiente
 }
 
 // Nueva función para verificar coincidencias flexibles
