@@ -726,17 +726,25 @@ async function streamRoute(req, res) {
 
     const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
     const kvKey = `stream:${m3uHash}:${id}`;
-    let kvCached = await kvGetJsonTTL(kvKey);
+    let kvCached = await kvGetJson(kvKey); // lectura directa del objeto guardado
 
     if (kvCached) {
       console.log('[STREAM] KV HIT', kvKey);
 
-      // 🔹 Siempre intentar añadir webs extra aunque haya KV HIT
+      if (!Array.isArray(kvCached.streams)) {
+        kvCached.streams = [];
+      }
+
+      let chName = kvCached.chName;
+      if (!chName || typeof chName !== 'string') {
+        const parts = id.split('_').slice(2);
+        chName = parts.join(' ');
+      }
+
       const extraWebsList = await resolveExtraWebs(configId);
       console.log(`[DEBUG] Extra webs configuradas para configId=${configId}:`, extraWebsList);
 
       if (extraWebsList.length) {
-        const chName = kvCached.chName || id.split('_').slice(2).join('_');
         const extraStreams = await scrapeExtraWebs(chName, extraWebsList);
 
         const existingUrls = new Set(kvCached.streams.map(s => s.url || s.externalUrl));
@@ -748,7 +756,7 @@ async function streamRoute(req, res) {
         if (nuevos.length) {
           console.log(`[STREAM] Añadiendo ${nuevos.length} streams extra desde webs`);
           kvCached.streams.push(...nuevos);
-          await kvSetJsonTTL(kvKey, kvCached); // actualizar en KV
+          await kvSetJson(kvKey, kvCached); // actualizar en KV sin TTL
         }
       }
 
