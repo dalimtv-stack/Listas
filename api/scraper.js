@@ -26,6 +26,13 @@ function getSearchTerms(channelName) {
   return channelAliases[normalized] || [normalized];
 }
 
+// Nueva función para normalizar URLs y quitar prefijos
+function normalizeUrlForDisplay(url) {
+  return String(url || '')
+    .replace(/^https?:\/\/(www\.)?/, '') // Elimina http://, https://, www.
+    .replace(/\/+$/, ''); // Elimina barras finales
+}
+
 async function scrapeExtraWebs(channelName, extraWebsList) {
   const logPrefix = '[SCRAPER]';
   if (!channelName || typeof channelName !== 'string') {
@@ -82,11 +89,12 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
           searchTerms.some(term => normalizedName.includes(term)) &&
           !seenUrls.has(href)
         ) {
+          const displayName = normalizeUrlForDisplay(url); // Usar URL normalizada para name
           const stream = {
-            name: url,
+            name: displayName,
             title: `${name} (extra)`,
             externalUrl: href,
-            group_title: url, // Origen de la web
+            group_title: displayName, // Usar la misma normalización para group_title
             behaviorHints: { notWebReady: true, external: true }
           };
           results.push(stream);
@@ -108,11 +116,12 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
           searchTerms.some(term => normalizedName.includes(term)) &&
           !seenUrls.has(href)
         ) {
+          const displayName = normalizeUrlForDisplay(url); // Usar URL normalizada para name
           const stream = {
-            name: url,
+            name: displayName,
             title: `${name} (extra)`,
             externalUrl: href,
-            group_title: url, // Origen de la web
+            group_title: displayName, // Usar la misma normalización para group_title
             behaviorHints: { notWebReady: true, external: true }
           };
           results.push(stream);
