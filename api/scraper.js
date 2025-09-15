@@ -123,45 +123,6 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
       });
 
       console.log(logPrefix, `Coincidencias en ${url}: ${encontrados}`);
-
-      if (encontrados === 0) {
-        console.log(logPrefix, `Fallback: añadiendo todos los enlaces de ${url}`);
-        $('#linksList li').each((_, li) => {
-          const name = $(li).find('.link-name').text().trim();
-          const href = $(li).find('.link-url a').attr('href');
-          const normalizedName = normalizeName(name); // Normalizar el nombre extraído
-          if (name && href && href.startsWith('acestream://') && !seenUrls.has(href)) {
-            const stream = {
-              name: `${name} (extra)`,
-              title: `${name} (extra)`,
-              externalUrl: href,
-              group_title: url, // Origen de la web
-              behaviorHints: { notWebReady: true, external: true }
-            };
-            results.push(stream);
-            seenUrls.add(href);
-            console.log(logPrefix, `Stream añadido (fallback): ${JSON.stringify(stream)}`);
-          }
-        });
-
-        $('.canal-card').each((_, card) => {
-          const name = $(card).find('.canal-nombre').text().trim();
-          const href = $(card).find('.acestream-link').attr('href');
-          const normalizedName = normalizeName(name); // Normalizar el nombre extraído
-          if (name && href && href.startsWith('acestream://') && !seenUrls.has(href)) {
-            const stream = {
-              name: `${name} (extra)`,
-              title: `${name} (extra)`,
-              externalUrl: href,
-              group_title: url, // Origen de la web
-              behaviorHints: { notWebReady: true, external: true }
-            };
-            results.push(stream);
-            seenUrls.add(href);
-            console.log(logPrefix, `Stream añadido (fallback): ${JSON.stringify(stream)}`);
-          }
-        });
-      }
     } catch (e) {
       console.error(logPrefix, `Error en ${url}:`, e.message);
     }
