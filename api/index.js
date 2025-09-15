@@ -20,7 +20,7 @@ const {
   kvSetJson,
   kvGetJsonTTL,
   kvSetJsonTTL
-} = require('./kv');
+} = require('./kv.js');
 
 const app = express();
 const router = express.Router();
