@@ -2,17 +2,22 @@
 'use strict';
 
 const fetch = require('node-fetch');
-const { kvGetJsonTTL, kvSetJsonTTL } = require('./kv.js'); // Importar directo de kv.js
+const { kvGetJsonTTL, kvSetJsonTTL } = require('./kv.js');
 
 function normalizeName(name) {
   return String(name || '')
     .toLowerCase()
-    .replace(/\s*\(.*?\)\s*/g, '') // quita paréntesis y su contenido
-    .replace(/\s+/g, ' ')          // colapsa espacios
+    .replace(/\s*`\(.*?\)`\s*/g, '') // quita paréntesis y su contenido
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
 async function scrapeExtraWebs(ch) {
+  if (!ch || !ch.name) {
+    console.warn('[SCRAPER] Canal no definido o sin nombre');
+    return [];
+  }
+
   const normalizedTarget = normalizeName(ch.name);
   const cacheKey = `extra_streams:${ch.id}`;
   const ttlSeconds = 3600; // 1 hora
@@ -20,14 +25,16 @@ async function scrapeExtraWebs(ch) {
   // Intentar cache KV
   const cached = await kvGetJsonTTL(cacheKey);
   if (cached) {
-    console.log(`[SCRAPER] Usando cache (${cached.length} resultados)`);
+    console.log(`[SCRAPER] Usando cache (${cached.length} resultados) para "${normalizedTarget}"`);
     return cached;
   }
 
-  const webs = [
-    'https://ipfs.io/ipns/elcano.top',
-    'https://shickat.me'
-  ];
+  // Obtener lista de webs desde KV
+  const webs = await kvGetJsonTTL('extra_webs') || [];
+  if (!Array.isArray(webs) || webs.length === 0) {
+    console.warn('[SCRAPER] No hay webs configuradas en KV para scrapear');
+    return [];
+  }
 
   console.log(`[SCRAPER] Iniciado para canal: ${ch.name}`);
   console.log(`[SCRAPER] Nombre normalizado: "${normalizedTarget}"`);
@@ -46,26 +53,25 @@ async function scrapeExtraWebs(ch) {
 
       const html = await res.text();
 
-      // Extraer todos los enlaces como fallback
-      const allLinks = Array.from(html.matchAll(/https?:\/\/[^\s"'<>]+/g)).map(m => m[0]);
-      console.log(`[SCRAPER] Total enlaces encontrados en ${web}: ${allLinks.length}`);
+      // Buscar enlaces con su texto visible
+      const linkRegex = /<a[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi;
+      let match;
+      let matchedLinks = [];
 
-      // Filtrar por coincidencia normalizada
-      const matched = allLinks.filter(link =>
-        normalizeName(link).includes(normalizedTarget)
-      );
-
-      if (matched.length > 0) {
-        console.log(`[SCRAPER] Coincidencias en ${web}: ${matched.length}`);
-        matched.forEach(m => console.log(`  MATCH: ${m}`));
-        allResults.push(...matched);
-      } else {
-        console.warn(`[SCRAPER] 0 coincidencias en ${web} para "${normalizedTarget}"`);
-        console.log(`[SCRAPER] Mostrando primeros 10 enlaces para inspección:`);
-        allLinks.slice(0, 10).forEach(l => console.log(`  LINK: ${l}`));
-        // Fallback: añadir todos los enlaces
-        allResults.push(...allLinks);
+      while ((match = linkRegex.exec(html)) !== null) {
+        const url = match[1];
+        const textNorm = normalizeName(match[2]);
+        // Coincidencia si el texto visible contiene el nombre normalizado
+        if (textNorm.includes(normalizedTarget)) {
+          matchedLinks.push(url);
+        }
       }
+
+      console.log(`[SCRAPER] Coincidencias en ${web}: ${matchedLinks.length}`);
+      matchedLinks.forEach(m => console.log(`  MATCH: ${m}`));
+
+      allResults.push(...matchedLinks);
+
     } catch (err) {
       console.error(`[SCRAPER] Error al scrapear ${web}:`, err.message);
     }
