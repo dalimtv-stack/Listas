@@ -227,78 +227,74 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
   return { metas };
 }
 
-async function handleMeta({ id, m3uUrl }) {
-  const parts = id.split('_');
-  const channelId = parts.slice(2).join('_');
+// Maneja la ruta /meta/:type/:id
+async function handleMeta(type, id) {
+    try {
+        console.log('[META] id recibido:', id);
 
-  const ch = await getChannel(channelId, { m3uUrl }); // ✅ orden correcto
+        const parts = id.split('_');
+        if (parts.length < 3) {
+            throw new Error(`Formato de id inválido: ${id}`);
+        }
 
-  if (!ch) {
-    console.warn(`[META] Canal no encontrado para id: ${channelId}`);
-    return { meta: null };
-  }
+        const configId = parts[1];
+        const channelId = parts.slice(2).join('_');
 
-  return {
-    meta: {
-      id,
-      name: ch.name || id,
-      logo: ch.logo || '',
-      background: ch.background || '',
-      description: ch.description || '',
-      type: ch.type || 'tv',
-      posterShape: 'landscape'
+        const { m3uUrl } = await getConfig(configId);
+        const ch = await getChannel(channelId, { m3uUrl });
+
+        if (!ch) {
+            throw new Error(`Canal con id ${channelId} no encontrado`);
+        }
+
+        return {
+            meta: {
+                id,
+                type: 'tv',
+                name: ch.name,
+                poster: ch.logo || '',
+                background: ch.logo || '',
+                description: ch.group || ''
+            }
+        };
+    } catch (err) {
+        console.error('[META] Error:', err.message);
+        throw err;
     }
-  };
 }
 
-async function handleStream({ id, m3uUrl, configId }) {
-  if (!m3uUrl) return { streams: [], chName: '' };
+// Maneja la ruta /stream/:type/:id
+async function handleStream(type, id) {
+    try {
+        console.log('[STREAM] id recibido:', id);
 
-  const parts = id.split('_');
-  const channelId = parts.slice(2).join('_');
+        const parts = id.split('_');
+        if (parts.length < 3) {
+            throw new Error(`Formato de id inválido: ${id}`);
+        }
 
-  const ch = await getChannel(m3uUrl, channelId);
-  if (!ch) {
-    console.warn(`[STREAM] Canal no encontrado para id: ${channelId}`);
-    return { streams: [], chName: '' };
-  }
+        const configId = parts[1];
+        const channelId = parts.slice(2).join('_');
 
-  const chName = ch.name;
-  const streams = [];
+        const { m3uUrl } = await getConfig(configId);
+        const ch = await getChannel(channelId, { m3uUrl });
 
-  const addStream = (src) => {
-    const out = { name: src.group_title, title: src.title };
-    if (src.acestream_id) {
-      out.externalUrl = `acestream://${src.acestream_id}`;
-      out.behaviorHints = { notWebReady: true, external: true };
-    } else if (src.m3u8_url || src.stream_url || src.url) {
-      out.url = src.m3u8_url || src.stream_url || src.url;
-      out.behaviorHints = { notWebReady: false, external: false };
+        if (!ch || !ch.url) {
+            throw new Error(`Canal con id ${channelId} no encontrado o sin URL`);
+        }
+
+        return {
+            streams: [
+                {
+                    url: ch.url,
+                    title: ch.name
+                }
+            ]
+        };
+    } catch (err) {
+        console.error('[STREAM] Error:', err.message);
+        throw err;
     }
-    streams.push(out);
-  };
-
-  if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) addStream(ch);
-  (ch.additional_streams || []).forEach(addStream);
-
-  if (ch.website_url) {
-    streams.push({
-      title: `${ch.name} - Website`,
-      externalUrl: ch.website_url,
-      behaviorHints: { notWebReady: true, external: true }
-    });
-  }
-
-  const extraStreams = await scrapeExtraWebs(ch);
-  extraStreams.forEach(url => {
-    streams.push({
-      title: `${ch.name} (extra)`,
-      url,
-      name: ch.group_title || 'extra'
-    });
-  });
-
-  return { streams, chName };
 }
 
 // -------------------- Extraer y guardar géneros solo si cambia la M3U --------------------
