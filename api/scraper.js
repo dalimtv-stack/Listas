@@ -9,7 +9,7 @@ const channelAliases = {
   'movistar laliga (fhd)': ['m. laliga', 'm. laliga 1080p', 'movistar laliga'],
   'dazn f1 (fhd)': ['dazn f1', 'dazn f1 1080', 'dazn f1 1080  (fórmula 1)', 'fórmula 1'],
   'primera federacion "rfef" (fhd)': ['rfef', 'primera federacion', 'primera federación'],
-  'movistar plus (1080)': ['movistar plus', 'm. plus', 'movistar plus fhd'] // Añadido para el canal del log
+  'movistar plus (1080)': ['movistar plus', 'm. plus', 'movistar plus fhd', 'movistar+', 'plus fhd']
 };
 
 function normalizeName(name) {
@@ -84,6 +84,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
             name: `${name} (extra)`,
             title: `${name} (extra)`,
             externalUrl: href,
+            group_title: url, // Añade la web de origen como group_title
             behaviorHints: { notWebReady: true, external: true }
           });
           seenUrls.add(href);
@@ -106,6 +107,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
             name: `${name} (extra)`,
             title: `${name} (extra)`,
             externalUrl: href,
+            group_title: url, // Añade la web de origen como group_title
             behaviorHints: { notWebReady: true, external: true }
           });
           seenUrls.add(href);
@@ -125,6 +127,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
               name: `${name} (extra)`,
               title: `${name} (extra)`,
               externalUrl: href,
+              group_title: url, // Añade la web de origen como group_title
               behaviorHints: { notWebReady: true, external: true }
             });
             seenUrls.add(href);
@@ -139,6 +142,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
               name: `${name} (extra)`,
               title: `${name} (extra)`,
               externalUrl: href,
+              group_title: url, // Añade la web de origen como group_title
               behaviorHints: { notWebReady: true, external: true }
             });
             seenUrls.add(href);
