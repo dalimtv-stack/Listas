@@ -16,13 +16,14 @@ function normalizeName(name) {
   return String(name || '')
     .toLowerCase()
     .replace(/\s*`\(.*?\)`\s*/g, '') // Quita paréntesis y su contenido
+    .replace(/\s*\(.*?\)\s*/g, '')  // Añade eliminación de paréntesis sin comillas
     .replace(/\s+/g, ' ')
     .trim();
 }
 
 function getSearchTerms(channelName) {
   const normalized = normalizeName(channelName);
-  return channelAliases[normalized] || [channelName];
+  return channelAliases[normalized] || [normalized];
 }
 
 async function scrapeExtraWebs(channelName, extraWebsList) {
@@ -73,22 +74,25 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
       $('#linksList li').each((_, li) => {
         const name = $(li).find('.link-name').text().trim();
         const href = $(li).find('.link-url a').attr('href');
+        const normalizedName = normalizeName(name); // Normalizar el nombre extraído
         if (
           name &&
           href &&
           href.startsWith('acestream://') &&
-          searchTerms.some(term => normalizeName(name).includes(term)) &&
+          searchTerms.some(term => normalizedName.includes(term)) &&
           !seenUrls.has(href)
         ) {
-          results.push({
+          const stream = {
             name: `${name} (extra)`,
             title: `${name} (extra)`,
             externalUrl: href,
-            group_title: url, // Añade la web de origen como group_title
+            group_title: url, // Origen de la web
             behaviorHints: { notWebReady: true, external: true }
-          });
+          };
+          results.push(stream);
           seenUrls.add(href);
           encontrados++;
+          console.log(logPrefix, `Stream añadido: ${JSON.stringify(stream)}`);
         }
       });
 
@@ -96,22 +100,25 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
       $('.canal-card').each((_, card) => {
         const name = $(card).find('.canal-nombre').text().trim();
         const href = $(card).find('.acestream-link').attr('href');
+        const normalizedName = normalizeName(name); // Normalizar el nombre extraído
         if (
           name &&
           href &&
           href.startsWith('acestream://') &&
-          searchTerms.some(term => normalizeName(name).includes(term)) &&
+          searchTerms.some(term => normalizedName.includes(term)) &&
           !seenUrls.has(href)
         ) {
-          results.push({
+          const stream = {
             name: `${name} (extra)`,
             title: `${name} (extra)`,
             externalUrl: href,
-            group_title: url, // Añade la web de origen como group_title
+            group_title: url, // Origen de la web
             behaviorHints: { notWebReady: true, external: true }
-          });
+          };
+          results.push(stream);
           seenUrls.add(href);
           encontrados++;
+          console.log(logPrefix, `Stream añadido: ${JSON.stringify(stream)}`);
         }
       });
 
@@ -122,30 +129,36 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
         $('#linksList li').each((_, li) => {
           const name = $(li).find('.link-name').text().trim();
           const href = $(li).find('.link-url a').attr('href');
+          const normalizedName = normalizeName(name); // Normalizar el nombre extraído
           if (name && href && href.startsWith('acestream://') && !seenUrls.has(href)) {
-            results.push({
+            const stream = {
               name: `${name} (extra)`,
               title: `${name} (extra)`,
               externalUrl: href,
-              group_title: url, // Añade la web de origen como group_title
+              group_title: url, // Origen de la web
               behaviorHints: { notWebReady: true, external: true }
-            });
+            };
+            results.push(stream);
             seenUrls.add(href);
+            console.log(logPrefix, `Stream añadido (fallback): ${JSON.stringify(stream)}`);
           }
         });
 
         $('.canal-card').each((_, card) => {
           const name = $(card).find('.canal-nombre').text().trim();
           const href = $(card).find('.acestream-link').attr('href');
+          const normalizedName = normalizeName(name); // Normalizar el nombre extraído
           if (name && href && href.startsWith('acestream://') && !seenUrls.has(href)) {
-            results.push({
+            const stream = {
               name: `${name} (extra)`,
               title: `${name} (extra)`,
               externalUrl: href,
-              group_title: url, // Añade la web de origen como group_title
+              group_title: url, // Origen de la web
               behaviorHints: { notWebReady: true, external: true }
-            });
+            };
+            results.push(stream);
             seenUrls.add(href);
+            console.log(logPrefix, `Stream añadido (fallback): ${JSON.stringify(stream)}`);
           }
         });
       }
