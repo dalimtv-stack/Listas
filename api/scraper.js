@@ -42,7 +42,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
 
   const normalizedTarget = normalizeName(channelName);
   const cacheKey = `scrape:${normalizedTarget}`;
-  const ttlSeconds = 30; // 1800 son 30 minutos
+  const ttlSeconds = 60; // 1 minuto
 
   const cached = await kvGetJsonTTL(cacheKey);
   if (cached) {
@@ -138,7 +138,9 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
   }
 
   console.log(logPrefix, `Total streams extra encontrados: ${results.length}`);
-  await kvSetJsonTTL(cacheKey, results, ttlSeconds);
+  if (results.length > 0) {
+    await kvSetJsonTTL(cacheKey, results, ttlSeconds);
+  }
   return results;
 }
 
