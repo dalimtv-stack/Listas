@@ -292,10 +292,10 @@ acestream://1f092144252939810fd302cbd00d46de760b5dd7
 #EXTINF:-1 tvg-id="Movistar.Series.es" tvg-logo="https://i.ibb.co/rGVmRcSH/hits.png" group-title="NEW ERA", Movistar Originales (FHD)
 acestream://2752dee68a7faa9c847216dc22a6821661db891a
 
-#EXTINF:-1 tvg-id="Canal 1 (1RFEF)" tvg-logo="https://i.ibb.co/4wVnPgDk/Primera-RFEF-2021.png" group-title="NEW ERA", Canal 1 (1RFEF) (SOLO EVENTOS)
+#EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://i.ibb.co/4wVnPgDk/Primera-RFEF-2021.png" group-title="NEW ERA", Canal 1 [1RFEF] (SOLO EVENTOS)
 acestream://c1ee6e1e0ef5928d8261f855c417de21794f437d
 
-#EXTINF:-1 tvg-id="Canal 2 (1RFEF)" tvg-logo="https://i.ibb.co/4wVnPgDk/Primera-RFEF-2021.png" group-title="NEW ERA", Canal 2 (1RFEF) (SOLO EVENTOS)
+#EXTINF:-1 tvg-id="Canal.2.1RFEF" tvg-logo="https://i.ibb.co/4wVnPgDk/Primera-RFEF-2021.png" group-title="NEW ERA", Canal 2 [1RFEF] (SOLO EVENTOS)
 acestream://8677d339ecddd75165c0015025f598b6215974cf
 
 #EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/M1857850V3157130" group-title="NEW ERA", Movistar Golf (FHD)
