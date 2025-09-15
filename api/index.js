@@ -359,76 +359,80 @@ async function handleMeta({ id, m3uUrl }) {
   return resp;
 }
 
-async function handleStream({ id, m3uUrl, configId }) { // *** CAMBIO extraWebs: añadimos configId
+async function handleStream({ id, m3uUrl, configId }) {
   const logPrefix = '[STREAM]';
+
   if (!m3uUrl) {
     console.log(logPrefix, 'm3uUrl no resuelta');
     return { streams: [] };
   }
+
   const parts = id.split('_');
   const channelId = parts.slice(2).join('_');
-
   const m3uHash = crypto.createHash('md5').update(m3uUrl).digest('hex');
   const cacheKey = `stream_${m3uHash}_${channelId}`;
-  const cached = cache.get(cacheKey);
+
+  let cached = cache.get(cacheKey);
   if (cached) {
     console.log(logPrefix, 'cache HIT', cacheKey);
-    return cached;
   } else {
     console.log(logPrefix, 'cache MISS', cacheKey);
-  }
+    const ch = await getChannel(channelId, { m3uUrl });
+    if (!ch) return { streams: [] };
 
-  const ch = await getChannel(channelId, { m3uUrl });
-  let streams = [];
+    let streams = [];
 
-  const addStream = (src) => {
-    const out = { name: src.group_title, title: src.title };
-    if (src.acestream_id) {
-      out.externalUrl = `acestream://${src.acestream_id}`;
-      out.behaviorHints = { notWebReady: true, external: true };
-    } else if (src.m3u8_url || src.stream_url || src.url) {
-      out.url = src.m3u8_url || src.stream_url || src.url;
-      out.behaviorHints = { notWebReady: false, external: false };
-    }
-    streams.push(out);
-  };
-
-  if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) addStream(ch);
-  (ch.additional_streams || []).forEach(addStream);
-  if (ch.website_url) {
-    streams.push({
-      title: `${ch.name} - Website`,
-      externalUrl: ch.website_url,
-      behaviorHints: { notWebReady: true, external: true }
-    });
-  }
-  console.log(`[STREAM] Canal solicitado: ${ch?.name}`);
-  console.log(`[STREAM] ConfigId: ${configId}`);
-  console.log(`[STREAM] Intentando resolver extraWebs...`);
-
-  // *** CAMBIO extraWebs: añadir streams desde webs adicionales
-  const extraWebsList = await resolveExtraWebs(configId);
-  console.log(`[STREAM] Extra webs para ${ch.name}:`, extraWebsList);
-  
-  if (extraWebsList.length) {
-    console.log(`[STREAM] Llamando a scrapeExtraWebs para ${ch.name}`);
-    try {
-      const { scrapeExtraWebs } = require('./scraper');
-      const extraStreams = await scrapeExtraWebs(ch.name, extraWebsList);
-      console.log(`[STREAM] scrapeExtraWebs devolvió ${extraStreams.length} streams extra`);
-      if (extraStreams.length) {
-        streams = [...extraStreams, ...streams];
-        console.log(logPrefix, `añadidos ${extraStreams.length} streams extra desde webs`);
+    const addStream = (src) => {
+      const out = { name: src.group_title, title: src.title };
+      if (src.acestream_id) {
+        out.externalUrl = `acestream://${src.acestream_id}`;
+        out.behaviorHints = { notWebReady: true, external: true };
+      } else if (src.m3u8_url || src.stream_url || src.url) {
+        out.url = src.m3u8_url || src.stream_url || src.url;
+        out.behaviorHints = { notWebReady: false, external: false };
       }
-    } catch (e) {
-      console.error(logPrefix, 'error en scrapeo de extraWebs:', e.message);
+      streams.push(out);
+    };
+
+    if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) addStream(ch);
+    (ch.additional_streams || []).forEach(addStream);
+
+    if (ch.website_url) {
+      streams.push({
+        title: `${ch.name} - Website`,
+        externalUrl: ch.website_url,
+        behaviorHints: { notWebReady: true, external: true }
+      });
+    }
+
+    cached = { streams, chName: ch.name }; // guardamos también el nombre para usarlo luego
+    cache.set(cacheKey, cached);
+  }
+
+  // 🔹 Aquí siempre añadimos streams extra, incluso en cache HIT
+  const extraWebsList = await resolveExtraWebs(configId);
+  console.log(`[STREAM] ExtraWebsList para ${cached.chName || 'desconocido'}:`, extraWebsList);
+
+  if (extraWebsList.length) {
+    const extraStreams = await scrapeExtraWebs(cached.chName || channelId, extraWebsList);
+
+    // Evitar duplicados por URL
+    const existingUrls = new Set(
+      cached.streams.map(s => s.url || s.externalUrl)
+    );
+    const nuevos = extraStreams.filter(s => {
+      const url = s.url || s.externalUrl;
+      return url && !existingUrls.has(url);
+    });
+
+    if (nuevos.length) {
+      console.log(`[STREAM] Añadiendo ${nuevos.length} streams extra`);
+      cached.streams.push(...nuevos);
+      cache.set(cacheKey, cached); // actualizamos cache con los extra
     }
   }
 
-  const resp = { streams };
-  cache.set(cacheKey, resp);
-  console.log(logPrefix, `streams para ${channelId}: ${streams.length}`);
-  return resp;
+  return { streams: cached.streams };
 }
 
 // -------------------- Manifest --------------------
