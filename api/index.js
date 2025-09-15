@@ -228,7 +228,11 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
 }
 
 async function handleMeta({ id, m3uUrl }) {
-  const ch = await getChannel(m3uUrl, id);
+  // id viene con formato heimdallr_configId_channelId
+  const parts = id.split('_');
+  const channelId = parts.slice(2).join('_');
+
+  const ch = await getChannel(m3uUrl, channelId);
 
   if (!ch) {
     console.warn(`[META] Canal no encontrado para id: ${id}`);
