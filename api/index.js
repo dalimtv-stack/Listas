@@ -228,7 +228,6 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
 }
 
 async function handleMeta({ id, m3uUrl }) {
-  // id viene con formato heimdallr_configId_channelId
   const parts = id.split('_');
   const channelId = parts.slice(2).join('_');
 
@@ -257,8 +256,8 @@ async function handleStream({ id, m3uUrl, configId }) {
 
   const parts = id.split('_');
   const channelId = parts.slice(2).join('_');
-  const ch = await getChannel(channelId, { m3uUrl });
 
+  const ch = await getChannel(m3uUrl, channelId);
   if (!ch) {
     console.warn(`[STREAM] Canal no encontrado para id: ${id}`);
     return { streams: [], chName: '' };
@@ -290,8 +289,18 @@ async function handleStream({ id, m3uUrl, configId }) {
     });
   }
 
+  const extraStreams = await scrapeExtraWebs(ch);
+  extraStreams.forEach(url => {
+    streams.push({
+      title: `${ch.name} (extra)`,
+      url,
+      name: ch.group_title || 'extra'
+    });
+  });
+
   return { streams, chName };
 }
+
 // -------------------- Extraer y guardar géneros solo si cambia la M3U --------------------
 async function extractAndStoreGenresIfChanged(channels, configId) {
   try {
