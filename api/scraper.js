@@ -1,4 +1,4 @@
-//api/scraper.js
+// api/scraper.js
 'use strict';
 
 const fetch = require('node-fetch');
@@ -21,6 +21,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
   console.log(`[SCRAPER] Iniciado para canal: ${channelName}`);
   console.log(`[SCRAPER] Lista de webs a scrapear:`, extraWebsList);
 
+  // Cache en KV por canal
   const cacheKey = `scrape:${channelName.toLowerCase()}`;
   const cached = await kvGetJsonTTL(cacheKey);
   if (cached) {
@@ -29,6 +30,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
   }
 
   const results = [];
+  const seenUrls = new Set(); // para evitar duplicados
   const searchTerms = getSearchTerms(channelName).map(s => s.toLowerCase());
 
   for (const url of extraWebsList) {
@@ -47,13 +49,11 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
           name &&
           href &&
           href.startsWith('acestream://') &&
-          searchTerms.some(term => name.toLowerCase().includes(term))
+          searchTerms.some(term => name.toLowerCase().includes(term)) &&
+          !seenUrls.has(href)
         ) {
-          results.push({
-            name: `${name} (extra)`,
-            title: `${name} (extra)`,
-            url: href
-          });
+          results.push({ name: `${name} (extra)`, title: `${name} (extra)`, url: href });
+          seenUrls.add(href);
           encontrados++;
         }
       });
@@ -66,45 +66,36 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
           name &&
           href &&
           href.startsWith('acestream://') &&
-          searchTerms.some(term => name.toLowerCase().includes(term))
+          searchTerms.some(term => name.toLowerCase().includes(term)) &&
+          !seenUrls.has(href)
         ) {
-          results.push({
-            name: `${name} (extra)`,
-            title: `${name} (extra)`,
-            url: href
-          });
+          results.push({ name: `${name} (extra)`, title: `${name} (extra)`, url: href });
+          seenUrls.add(href);
           encontrados++;
         }
       });
 
       console.log(`[SCRAPER] Coincidencias en ${url}: ${encontrados}`);
 
+      // 🔹 Fallback si no hay coincidencias
       if (encontrados === 0) {
         console.log(`[SCRAPER] Fallback: añadiendo todos los enlaces de ${url}`);
 
-        // Fallback Elcano
         $('#linksList li').each((_, li) => {
           const name = $(li).find('.link-name').text().trim();
           const href = $(li).find('.link-url a').attr('href');
-          if (name && href && href.startsWith('acestream://')) {
-            results.push({
-              name: `${name} (extra)`,
-              title: `${name} (extra)`,
-              url: href
-            });
+          if (name && href && href.startsWith('acestream://') && !seenUrls.has(href)) {
+            results.push({ name: `${name} (extra)`, title: `${name} (extra)`, url: href });
+            seenUrls.add(href);
           }
         });
 
-        // Fallback Shickat
         $('.canal-card').each((_, card) => {
           const name = $(card).find('.canal-nombre').text().trim();
           const href = $(card).find('.acestream-link').attr('href');
-          if (name && href && href.startsWith('acestream://')) {
-            results.push({
-              name: `${name} (extra)`,
-              title: `${name} (extra)`,
-              url: href
-            });
+          if (name && href && href.startsWith('acestream://') && !seenUrls.has(href)) {
+            results.push({ name: `${name} (extra)`, title: `${name} (extra)`, url: href });
+            seenUrls.add(href);
           }
         });
       }
@@ -115,7 +106,8 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
   }
 
   console.log(`[SCRAPER] Total streams extra encontrados: ${results.length}`);
-  await kvSetJsonTTL(cacheKey, results, 3600);
+  // Cachear 30 minutos
+  await kvSetJsonTTL(cacheKey, results, 1800);
   return results;
 }
 
