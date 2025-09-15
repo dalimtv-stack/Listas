@@ -228,13 +228,19 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
 }
 
 async function handleMeta({ id, m3uUrl }) {
+  if (!id || !m3uUrl) {
+    console.warn('[META] Parámetros inválidos:', { id, m3uUrl });
+    return { meta: null };
+  }
+
   const parts = id.split('_');
+  const configId = parts[1];
   const channelId = parts.slice(2).join('_');
 
   const ch = await getChannel(m3uUrl, channelId);
 
   if (!ch) {
-    console.warn(`[META] Canal no encontrado para id: ${id}`);
+    console.warn(`[META] Canal no encontrado para id: ${channelId}`);
     return { meta: null };
   }
 
@@ -259,7 +265,7 @@ async function handleStream({ id, m3uUrl, configId }) {
 
   const ch = await getChannel(m3uUrl, channelId);
   if (!ch) {
-    console.warn(`[STREAM] Canal no encontrado para id: ${id}`);
+    console.warn(`[STREAM] Canal no encontrado para id: ${channelId}`);
     return { streams: [], chName: '' };
   }
 
