@@ -1,7 +1,6 @@
 // api/index.js
 'use strict';
 
-// -------------------- Constantes globales --------------------
 const express = require('express');
 const bodyParser = require('body-parser');
 const NodeCache = require('node-cache');
@@ -12,8 +11,6 @@ require('dotenv').config();
 
 const { getChannels, getChannel } = require('../src/db');
 const { scrapeExtraWebs } = require('./scraper');
-
-// 🔹 Importar helpers KV desde api/kv.js
 const {
   kvGet,
   kvSet,
@@ -38,9 +35,7 @@ const CATALOG_PREFIX = 'Heimdallr';
 const DEFAULT_CONFIG_ID = 'default';
 const DEFAULT_M3U_URL = process.env.DEFAULT_M3U_URL || 'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u';
 
-// VERSION ahora se lee directamente de package.json
 const { version: VERSION } = require('../package.json');
-
 // -------------------- CORS --------------------
 router.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -51,25 +46,26 @@ router.use((req, res, next) => {
 });
 
 // -------------------- Utils --------------------
-
-// Helper: obtener la cadena de última actualización para mostrarla en manifest/catalog
 async function getLastUpdateString(configId) {
   try {
     const raw = await kvGet(`last_update:${configId}`);
-    if (raw && typeof raw === 'string' && raw.trim()) {
-      return raw.trim();
-    }
+    if (raw && typeof raw === 'string' && raw.trim()) return raw.trim();
   } catch (e) {
     console.log('[UTILS] no se pudo leer last_update:', e.message);
   }
   return 'Sin actualizar aún';
 }
-// -------------------- Manifest dinámico --------------------
+
+function extractConfigIdFromUrl(req) {
+  const m = req.url.match(/^\/([^/]+)\/(manifest\.json|catalog|meta|stream)\b/);
+  if (m && m[1]) return m[1];
+  return DEFAULT_CONFIG_ID;
+}
+// -------------------- Manifest --------------------
 async function buildManifest(configId) {
   let genreOptions = ['General'];
   let lastUpdateStr = await getLastUpdateString(configId);
 
-  // 🔹 Leer configuración actual para precargar valores en el manifest
   let currentM3u = '';
   let currentExtraWebs = '';
   try {
@@ -78,30 +74,20 @@ async function buildManifest(configId) {
       if (cfg.m3uUrl) currentM3u = cfg.m3uUrl;
       if (cfg.extraWebs) currentExtraWebs = cfg.extraWebs;
     }
-  } catch (e) {
-    console.error(`[MANIFEST] error al leer configuración para ${configId}:`, e.message);
-  }
+  } catch {}
 
   try {
     const genresKV = await kvGetJsonTTL(`genres:${configId}`);
-    if (Array.isArray(genresKV) && genresKV.length) {
-      genreOptions = genresKV;
-      console.log(`[MANIFEST] géneros cargados desde KV para ${configId}: ${genreOptions.length}`);
-    }
-  } catch (e) {
-    console.error('[MANIFEST] error general al cargar géneros dinámicos:', e.message);
-  }
-
-  // Refrescar la etiqueta de última actualización
-  try {
-    lastUpdateStr = await getLastUpdateString(configId);
+    if (Array.isArray(genresKV) && genresKV.length) genreOptions = genresKV;
   } catch {}
+
+  lastUpdateStr = await getLastUpdateString(configId);
 
   return {
     id: BASE_ADDON_ID,
     version: VERSION,
     name: ADDON_NAME,
-    description: `Carga canales Acestream o M3U8 desde lista M3U (KV o por defecto).\nÚltima actualización de la lista M3U: ${lastUpdateStr}`,
+    description: `Carga canales Acestream o M3U8 desde lista M3U.\nÚltima actualización: ${lastUpdateStr}`,
     types: ['tv'],
     logo: 'https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960',
     resources: ['catalog', 'meta', 'stream'],
@@ -109,14 +95,14 @@ async function buildManifest(configId) {
     behaviorHints: { configurable: true },
     config: [
       { name: 'm3uUrl', label: 'URL de la lista M3U', type: 'text', required: true, value: currentM3u },
-      { name: 'extraWebs', label: 'Webs adicionales (separadas por ; o |)', type: 'text', required: false, value: currentExtraWebs }
+      { name: 'extraWebs', label: 'Webs adicionales', type: 'text', required: false, value: currentExtraWebs }
     ],
     catalogs: [
       {
         type: 'tv',
         id: `${CATALOG_PREFIX}_${configId}`,
         name: 'Heimdallr Live Channels',
-        description: `Última actualización de la lista M3U: ${lastUpdateStr}`,
+        description: `Última actualización: ${lastUpdateStr}`,
         extra: [
           { name: 'search', isRequired: false },
           { name: 'genre', isRequired: false, options: genreOptions }
@@ -125,7 +111,6 @@ async function buildManifest(configId) {
     ]
   };
 }
-
 // -------------------- Resolver M3U y webs extra --------------------
 async function resolveM3uUrl(configId) {
   const cfg = await kvGetJson(configId);
@@ -143,10 +128,7 @@ async function resolveExtraWebs(configId) {
     const cfg = await kvGetJson(configId);
     const raw = (cfg && typeof cfg.extraWebs === 'string') ? cfg.extraWebs : '';
 
-    if (!raw.trim()) {
-      console.log(`[DEBUG] No hay extraWebs configuradas para configId=${configId}`);
-      return [];
-    }
+    if (!raw.trim()) return [];
 
     const split = raw.split(/[;|,\n]+/g)
       .map(s => s.trim())
@@ -168,7 +150,6 @@ async function resolveExtraWebs(configId) {
       }
     }
 
-    console.log(`[DEBUG] Extra webs configuradas para configId=${configId}:`, urls);
     return urls;
   } catch (e) {
     console.error(`[DEBUG] Error resolviendo extraWebs para ${configId}:`, e.message);
@@ -176,37 +157,9 @@ async function resolveExtraWebs(configId) {
   }
 }
 
-function extractConfigIdFromUrl(req) {
-  const m = req.url.match(/^\/([^/]+)\/(manifest\.json|catalog|meta|stream)\b/);
-  if (m && m[1]) return m[1];
-  return DEFAULT_CONFIG_ID;
-}
-// ------ Parseador de rutas de catálogo estilo Stremio ------
-function parseCatalogRest(restRaw) {
-  const rest = decodeURIComponent(restRaw);
-  const segments = rest.split('/');
-  const id = segments.shift();
-  const extra = {};
-  for (const seg of segments) {
-    const [k, v] = seg.split('=');
-    if (!k || v === undefined) continue;
-    const key = k.trim();
-    const val = decodeURIComponent(v.trim());
-    if (key === 'genre' || key === 'search') extra[key] = val;
-  }
-  return { id, extra };
-}
-
-// -------------------- Core handlers --------------------
+// -------------------- Handlers principales --------------------
 async function handleCatalog({ type, id, extra, m3uUrl }) {
-  const logPrefix = '[CATALOG]';
-  if (type !== 'tv') return { metas: [] };
-  if (!m3uUrl) return { metas: [] };
-
-  const m3uHash = crypto.createHash('md5').update(m3uUrl).digest('hex');
-  const cacheKey = `catalog_${m3uHash}_${extra?.genre || ''}_${extra?.search || ''}`;
-  const cached = cache.get(cacheKey);
-  if (cached) return cached;
+  if (type !== 'tv' || !m3uUrl) return { metas: [] };
 
   const channels = await getChannels({ m3uUrl });
 
@@ -222,10 +175,10 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
       }
     });
     const genreList = Array.from(genreSet).filter(Boolean).sort();
-    const configId = (id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID) || DEFAULT_CONFIG_ID;
+    const configId = (id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID);
     await kvSetJsonTTL(`genres:${configId}`, genreList);
   } catch (e) {
-    console.error(logPrefix, 'error al extraer géneros:', e.message);
+    console.error('[CATALOG] error al extraer géneros:', e.message);
   }
 
   let filtered = channels;
@@ -251,7 +204,7 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
     }
   }
 
-  const configId = (id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID) || DEFAULT_CONFIG_ID;
+  const configId = (id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID);
   const metas = filtered.map(c => ({
     id: `${ADDON_PREFIX}_${configId}_${c.id}`,
     type: 'tv',
@@ -259,25 +212,17 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
     poster: c.logo_url
   }));
 
-  const resp = { metas };
-  cache.set(cacheKey, resp);
-  return resp;
+  return { metas };
 }
 
 async function handleMeta({ id, m3uUrl }) {
-  const logPrefix = '[META]';
   if (!m3uUrl) return { meta: null };
 
   const parts = id.split('_');
   const channelId = parts.slice(2).join('_');
 
-  const m3uHash = crypto.createHash('md5').update(m3uUrl).digest('hex');
-  const cacheKey = `meta_${m3uHash}_${channelId}`;
-  const cached = cache.get(cacheKey);
-  if (cached) return cached;
-
   const ch = await getChannel(channelId, { m3uUrl });
-  const resp = {
+  return {
     meta: {
       id,
       type: 'tv',
@@ -287,117 +232,194 @@ async function handleMeta({ id, m3uUrl }) {
       description: ch.name
     }
   };
-  cache.set(cacheKey, resp);
-  return resp;
 }
 
 async function handleStream({ id, m3uUrl, configId }) {
-  const logPrefix = '[STREAM]';
   if (!m3uUrl) return { streams: [], chName: '' };
 
   const parts = id.split('_');
   const channelId = parts.slice(2).join('_');
-  const m3uHash = crypto.createHash('md5').update(m3uUrl).digest('hex');
-  const cacheKey = `stream_${m3uHash}_${channelId}`;
 
-  let cached = cache.get(cacheKey);
-  let chName;
+  const ch = await getChannel(channelId, { m3uUrl });
+  if (!ch) return { streams: [], chName: '' };
 
-  if (cached) {
-    chName = cached.chName;
-  } else {
-    const ch = await getChannel(channelId, { m3uUrl });
-    if (!ch) return { streams: [], chName: '' };
+  const chName = ch.name;
+  let streams = [];
 
-    chName = ch.name;
-    let streams = [];
-
-    const addStream = (src) => {
-      const out = { name: src.group_title, title: src.title };
-      if (src.acestream_id) {
-        out.externalUrl = `acestream://${src.acestream_id}`;
-        out.behaviorHints = { notWebReady: true, external: true };
-      } else if (src.m3u8_url || src.stream_url || src.url) {
-        out.url = src.m3u8_url || src.stream_url || src.url;
-        out.behaviorHints = { notWebReady: false, external: false };
-      }
-      streams.push(out);
-    };
-
-    if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) addStream(ch);
-    (ch.additional_streams || []).forEach(addStream);
-
-    if (ch.website_url) {
-      streams.push({
-        title: `${ch.name} - Website`,
-        externalUrl: ch.website_url,
-        behaviorHints: { notWebReady: true, external: true }
-      });
+  const addStream = (src) => {
+    const out = { name: src.group_title, title: src.title };
+    if (src.acestream_id) {
+      out.externalUrl = `acestream://${src.acestream_id}`;
+      out.behaviorHints = { notWebReady: true, external: true };
+    } else if (src.m3u8_url || src.stream_url || src.url) {
+      out.url = src.m3u8_url || src.stream_url || src.url;
+      out.behaviorHints = { notWebReady: false, external: false };
     }
-
-    cached = { streams, chName };
-    cache.set(cacheKey, cached);
-  }
-
-  return { streams: cached.streams, chName };
-}
-// -------------------- Rutas de catálogo --------------------
-router.get('/catalog/:type/:rest(.+)\\.json', async (req, res) => {
-  const { id, extra: extraFromRest } = parseCatalogRest(req.params.rest || '');
-  const configId = extractConfigIdFromUrl(req);
-  const m3uUrl = await resolveM3uUrl(configId);
-
-  const extra = {
-    search: req.query.search || extraFromRest.search || '',
-    genre: req.query.genre || extraFromRest.genre || ''
+    streams.push(out);
   };
 
-  const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
-  const kvKey = `catalog:${m3uHash}:${extra.genre || ''}:${extra.search || ''}`;
+  if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) addStream(ch);
+  (ch.additional_streams || []).forEach(addStream);
 
-  const kvCached = await kvGetJsonTTL(kvKey);
-  if (kvCached) return res.json(kvCached);
+  if (ch.website_url) {
+    streams.push({
+      title: `${ch.name} - Website`,
+      externalUrl: ch.website_url,
+      behaviorHints: { notWebReady: true, external: true }
+    });
+  }
 
-  const result = await handleCatalog({ type: req.params.type, id, extra, m3uUrl });
-  await kvSetJsonTTL(kvKey, result);
-  res.json(result);
+  return { streams, chName };
+}
+// -------------------- Extraer y guardar géneros solo si cambia la M3U --------------------
+async function extractAndStoreGenresIfChanged(channels, configId) {
+  try {
+    const m3uText = channels.map(c => {
+      const extras = Array.isArray(c.extra_genres) ? c.extra_genres.join(',') : '';
+      const adds = Array.isArray(c.additional_streams)
+        ? c.additional_streams.map(s => s.group_title || '').join(',')
+        : '';
+      return `${c.group_title || ''}|${extras}|${adds}|${c.name || ''}`;
+    }).join('\n');
+    const currentHash = crypto.createHash('md5').update(m3uText).digest('hex');
+
+    const lastHashKey = `genres_hash:${configId}`;
+    const lastHash = await kvGet(lastHashKey);
+    const lastUpdateKey = `last_update:${configId}`;
+    const lastUpdate = await kvGet(lastUpdateKey);
+
+    const genreCount = new Map();
+    let orphanCount = 0;
+
+    channels.forEach(c => {
+      const seenGenres = new Set();
+      if (c.group_title) seenGenres.add(c.group_title);
+      if (Array.isArray(c.extra_genres)) c.extra_genres.forEach(g => g && seenGenres.add(g));
+      if (Array.isArray(c.additional_streams)) {
+        c.additional_streams.forEach(s => {
+          if (s && s.group_title) seenGenres.add(s.group_title);
+        });
+      }
+      if (seenGenres.size > 0) {
+        seenGenres.forEach(g => genreCount.set(g, (genreCount.get(g) || 0) + 1));
+      } else {
+        orphanCount++;
+      }
+    });
+
+    if (orphanCount > 0) genreCount.set('Otros', orphanCount);
+
+    const genreList = Array.from(genreCount.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'es', { sensitivity: 'base' }))
+      .map(([g]) => g);
+
+    if (genreList.length) {
+      const nowStr = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
+
+      if (!lastHash || lastHash !== currentHash) {
+        await kvSetJsonTTL(`genres:${configId}`, genreList);
+        await kvSet(lastHashKey, currentHash);
+        await kvSet(lastUpdateKey, nowStr);
+        console.log(`[GENRES] actualizados: ${genreList.length} géneros (Otros=${orphanCount})`);
+      } else if (!lastUpdate) {
+        await kvSet(lastUpdateKey, nowStr);
+        console.log(`[GENRES] timestamp inicial registrado: ${nowStr}`);
+      }
+    }
+  } catch (e) {
+    console.error('[GENRES] error al extraer:', e.message);
+  }
+}
+
+// -------------------- Rutas de catálogo --------------------
+router.get('/catalog/:type/:rest(.+)\\.json', async (req, res) => {
+  console.log('[ROUTE] CATALOG (sin configId)', {
+    url: req.originalUrl,
+    params: req.params,
+    query: req.query
+  });
+  await catalogRouteParsed(req, res, null);
 });
 
 router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
-  const { id, extra: extraFromRest } = parseCatalogRest(req.params.rest || '');
-  const configId = req.params.configId;
-  const m3uUrl = await resolveM3uUrl(configId);
-
-  const extra = {
-    search: req.query.search || extraFromRest.search || '',
-    genre: req.query.genre || extraFromRest.genre || ''
-  };
-
-  const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
-  const kvKey = `catalog:${m3uHash}:${extra.genre || ''}:${extra.search || ''}`;
-
-  const kvCached = await kvGetJsonTTL(kvKey);
-  if (kvCached) return res.json(kvCached);
-
-  const result = await handleCatalog({ type: req.params.type, id, extra, m3uUrl });
-  await kvSetJsonTTL(kvKey, result);
-  res.json(result);
+  console.log('[ROUTE] CATALOG (con configId)', {
+    url: req.originalUrl,
+    params: req.params,
+    query: req.query
+  });
+  await catalogRouteParsed(req, res, req.params.configId);
 });
 
-// -------------------- Meta y Stream --------------------
+async function catalogRouteParsed(req, res, configIdFromPath) {
+  try {
+    const type = String(req.params.type);
+    const { id, extra: extraFromRest } = parseCatalogRest(req.params.rest || '');
+    const configId = configIdFromPath || extractConfigIdFromUrl(req);
+    const m3uUrl = await resolveM3uUrl(configId);
+
+    const extra = {
+      search: req.query.search || extraFromRest.search || '',
+      genre: req.query.genre || extraFromRest.genre || ''
+    };
+
+    console.log('[CATALOG] parsed', { type, id, configId, extra, m3uUrl: m3uUrl ? '[ok]' : null });
+
+    const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
+    const kvKey = `catalog:${m3uHash}:${extra.genre || ''}:${extra.search || ''}`;
+
+    const kvCached = await kvGetJsonTTL(kvKey);
+    if (kvCached) {
+      console.log('[CATALOG] KV HIT', kvKey);
+      try {
+        const channels = await getChannels({ m3uUrl });
+        await extractAndStoreGenresIfChanged(channels, configId);
+      } catch (e) {
+        console.error('[CATALOG] error al actualizar géneros tras KV HIT:', e.message);
+      }
+      return res.json(kvCached);
+    }
+
+    let result;
+    try {
+      result = await handleCatalog({ type, id, extra, m3uUrl });
+      await kvSetJsonTTL(kvKey, result);
+    } catch (e) {
+      console.error('[CATALOG] error en handleCatalog:', e.message);
+      result = { metas: [] };
+    }
+
+    try {
+      const channels = await getChannels({ m3uUrl });
+      await extractAndStoreGenresIfChanged(channels, configId);
+    } catch (e) {
+      console.error('[CATALOG] error al actualizar géneros tras MISS:', e.message);
+    }
+
+    return res.json(result);
+  } catch (e) {
+    console.error('[CATALOG] route error:', e.message);
+    return res.status(200).json({ metas: [] });
+  }
+}
+// -------------------- Rutas META y STREAM --------------------
 async function metaRoute(req, res) {
-  const id = String(req.params.id).replace(/\.json$/, '');
-  const configId = req.params.configId || extractConfigIdFromUrl(req);
-  const m3uUrl = await resolveM3uUrl(configId);
+  try {
+    const id = String(req.params.id).replace(/\.json$/, '');
+    const configId = req.params.configId || extractConfigIdFromUrl(req);
+    const m3uUrl = await resolveM3uUrl(configId);
 
-  const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
-  const kvKey = `meta:${m3uHash}:${id}`;
-  const kvCached = await kvGetJsonTTL(kvKey);
-  if (kvCached) return res.json(kvCached);
+    const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
+    const kvKey = `meta:${m3uHash}:${id}`;
+    const kvCached = await kvGetJsonTTL(kvKey);
+    if (kvCached) return res.json(kvCached);
 
-  const result = await handleMeta({ id, m3uUrl });
-  await kvSetJsonTTL(kvKey, result);
-  res.json(result);
+    const result = await handleMeta({ id, m3uUrl });
+    await kvSetJsonTTL(kvKey, result);
+    res.json(result);
+  } catch (e) {
+    console.error('[META] route error:', e.message);
+    res.status(200).json({ meta: null });
+  }
 }
 
 async function streamRoute(req, res) {
@@ -465,9 +487,19 @@ router.get('/configure', (req, res) => {
   res.end(`
     <!DOCTYPE html>
     <html>
-      <head><title>Configure Heimdallr Channels</title></head>
+      <head>
+        <title>Configure Heimdallr Channels</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
+          input { width: 100%; padding: 10px; margin: 10px 0; }
+          button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
+          a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
+          pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
+        </style>
+      </head>
       <body>
         <h1>Configure Heimdallr Channels</h1>
+        <p>Enter the URL of your M3U playlist and optionally extra websites separated by ; or |:</p>
         <form action="/generate-url" method="post">
           <input type="text" name="m3uUrl" placeholder="https://example.com/list.m3u" required>
           <input type="text" name="extraWebs" placeholder="https://web1.com;https://web2.com">
@@ -482,7 +514,19 @@ router.post('/generate-url', async (req, res) => {
   try {
     const m3uUrl = String(req.body?.m3uUrl || '').trim();
     const extraWebs = String(req.body?.extraWebs || '').trim();
+
     if (!m3uUrl) throw new Error('URL M3U requerida');
+
+    try {
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), 5000);
+      const head = await fetch(m3uUrl, { method: 'HEAD', signal: controller.signal });
+      clearTimeout(t);
+      if (!head.ok) throw new Error(`HEAD ${head.status}`);
+    } catch {
+      const r = await fetch(m3uUrl, { method: 'GET' });
+      if (!r.ok) throw new Error('La URL M3U no es accesible');
+    }
 
     const configId = uuidv4();
     await kvSetJson(configId, { m3uUrl, extraWebs });
@@ -493,9 +537,47 @@ router.post('/generate-url', async (req, res) => {
     const installUrl = `stremio://${encodeURIComponent(manifestUrl)}`;
 
     res.setHeader('Content-Type', 'text/html');
-    res.end(`<a href="${installUrl}">Install Addon</a><pre>${manifestUrl}</pre>`);
+    res.end(`
+      <html>
+        <head>
+          <title>Install Heimdallr Channels</title>
+          <style>
+            body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
+            button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
+            a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
+            pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
+          </style>
+          <script>
+            function copyManifest() {
+              navigator.clipboard.writeText('${manifestUrl}').then(() => {
+                alert('Manifest URL copied to clipboard!');
+              }).catch(err => {
+                alert('Failed to copy: ' + err);
+              });
+            }
+          </script>
+        </head>
+        <body>
+          <h1>Install URL Generated</h1>
+          <p>Click the buttons below to install the addon or copy the manifest URL:</p>
+          <a href="${installUrl}" style="background: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px;">Install Addon</a>
+          <button onclick="copyManifest()">Copy Manifest URL</button>
+          <p>Or copy this URL:</p>
+          <pre>${manifestUrl}</pre>
+        </body>
+      </html>
+    `);
   } catch (err) {
-    res.status(500).end(`Error: ${err.message}`);
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'text/html');
+    res.end(`
+      <html>
+        <body>
+          <h1>Server Error</h1>
+          <p>Error: ${err.message}. <a href="/configure">Go back</a></p>
+        </body>
+      </html>
+    `);
   }
 });
 
