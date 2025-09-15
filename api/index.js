@@ -706,6 +706,8 @@ async function streamRoute(req, res) {
 
       // 🔹 Siempre intentar añadir webs extra aunque haya KV HIT
       const extraWebsList = await resolveExtraWebs(configId);
+      console.log(`[DEBUG] Extra webs configuradas para configId=${configId}:`, extraWebsList);
+
       if (extraWebsList.length) {
         const chName = kvCached.chName || id.split('_').slice(2).join('_');
         const extraStreams = await scrapeExtraWebs(chName, extraWebsList);
