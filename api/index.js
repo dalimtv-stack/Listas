@@ -104,7 +104,7 @@ async function buildManifest(configId) {
   let currentM3u = '';
   let currentExtraWebs = '';
   try {
-    const cfg = await kvGetJson(`config:${configId}`);
+    const cfg = await kvGetJson(configId);
     if (cfg) {
       if (cfg.m3uUrl) currentM3u = cfg.m3uUrl;
       if (cfg.extraWebs) currentExtraWebs = cfg.extraWebs;
@@ -210,7 +210,7 @@ async function resolveM3uUrl(configId) {
 }
 
 async function resolveExtraWebs(configId) {
-  const cfg = await kvGetJson(`config:${configId}`);
+  const cfg = await kvGetJson(configId);
   if (cfg && cfg.extraWebs) {
     const list = cfg.extraWebs
       .split(/;|\|/)
