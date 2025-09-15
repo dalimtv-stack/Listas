@@ -83,7 +83,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
           !seenUrls.has(href)
         ) {
           const stream = {
-            name: `${name} (extra)`,
+            name: url,
             title: `${name} (extra)`,
             externalUrl: href,
             group_title: url, // Origen de la web
@@ -109,7 +109,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
           !seenUrls.has(href)
         ) {
           const stream = {
-            name: `${name} (extra)`,
+            name: url,
             title: `${name} (extra)`,
             externalUrl: href,
             group_title: url, // Origen de la web
