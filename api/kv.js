@@ -1,0 +1,80 @@
+// api/kv.js
+'use strict';
+
+const fetch = require('node-fetch');
+
+const KV_TTL_MS = 60 * 60 * 1000; // 1 hora en milisegundos
+
+async function kvGet(configId) {
+  if (!configId) return null;
+  try {
+    const { CLOUDFLARE_KV_ACCOUNT_ID, CLOUDFLARE_KV_NAMESPACE_ID, CLOUDFLARE_KV_API_TOKEN } = process.env;
+    if (!CLOUDFLARE_KV_ACCOUNT_ID || !CLOUDFLARE_KV_NAMESPACE_ID || !CLOUDFLARE_KV_API_TOKEN) return null;
+    const url = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/values/${configId}`;
+    const r = await fetch(url, { headers: { Authorization: `Bearer ${CLOUDFLARE_KV_API_TOKEN}` } });
+    return r.ok ? await r.text() : null;
+  } catch (e) {
+    console.error('[KV] get error:', e.message);
+    return null;
+  }
+}
+
+async function kvSet(configId, value) {
+  const { CLOUDFLARE_KV_ACCOUNT_ID, CLOUDFLARE_KV_NAMESPACE_ID, CLOUDFLARE_KV_API_TOKEN } = process.env;
+  if (!CLOUDFLARE_KV_ACCOUNT_ID || !CLOUDFLARE_KV_NAMESPACE_ID || !CLOUDFLARE_KV_API_TOKEN) {
+    throw new Error('Cloudflare KV no configurado');
+  }
+  const url = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/values/${configId}`;
+  const r = await fetch(url, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${CLOUDFLARE_KV_API_TOKEN}`, 'Content-Type': 'text/plain' },
+    body: value
+  });
+  if (!r.ok) throw new Error(`KV set failed: ${r.status}`);
+}
+
+async function kvGetJson(configId) {
+  const raw = await kvGet(configId);
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch { return null; }
+}
+
+async function kvSetJson(configId, obj) {
+  await kvSet(configId, JSON.stringify(obj));
+}
+
+async function kvGetJsonTTL(key) {
+  const val = await kvGet(key);
+  if (!val) return null;
+  try {
+    const parsed = JSON.parse(val);
+    if (!parsed.timestamp || !parsed.data) return null;
+    const age = Date.now() - parsed.timestamp;
+    const ttlMs = parsed.ttlMs || KV_TTL_MS;
+    if (age > ttlMs) {
+      console.log(`[KV] Caducado (${Math.round(age / 60000)} min)`, key);
+      return null;
+    }
+    return parsed.data;
+  } catch {
+    return null;
+  }
+}
+
+async function kvSetJsonTTL(key, obj, ttlSeconds = 3600) {
+  const payload = {
+    timestamp: Date.now(),
+    ttlMs: ttlSeconds * 1000,
+    data: obj
+  };
+  await kvSet(key, JSON.stringify(payload));
+}
+
+module.exports = {
+  kvGet,
+  kvSet,
+  kvGetJson,
+  kvSetJson,
+  kvGetJsonTTL,
+  kvSetJsonTTL
+};
