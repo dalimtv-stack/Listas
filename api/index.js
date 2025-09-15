@@ -698,16 +698,38 @@ async function streamRoute(req, res) {
 
     const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
     const kvKey = `stream:${m3uHash}:${id}`;
-    const kvCached = await kvGetJsonTTL(kvKey);
+    let kvCached = await kvGetJsonTTL(kvKey);
+
     if (kvCached) {
       console.log('[STREAM] KV HIT', kvKey);
+
+      // 🔹 Siempre intentar añadir webs extra aunque haya KV HIT
+      const extraWebsList = await resolveExtraWebs(configId);
+      if (extraWebsList.length) {
+        const chName = kvCached.chName || id.split('_').slice(2).join('_');
+        const extraStreams = await scrapeExtraWebs(chName, extraWebsList);
+
+        const existingUrls = new Set(kvCached.streams.map(s => s.url || s.externalUrl));
+        const nuevos = extraStreams.filter(s => {
+          const url = s.url || s.externalUrl;
+          return url && !existingUrls.has(url);
+        });
+
+        if (nuevos.length) {
+          console.log(`[STREAM] Añadiendo ${nuevos.length} streams extra desde webs`);
+          kvCached.streams.push(...nuevos);
+          await kvSetJsonTTL(kvKey, kvCached); // actualizar en KV
+        }
+      }
+
       return res.json(kvCached);
     }
 
-    // *** CAMBIO extraWebs: pasamos configId a handleStream
+    // Si no hay KV HIT, flujo normal
     const result = await handleStream({ id, m3uUrl, configId });
     await kvSetJsonTTL(kvKey, result);
     res.json(result);
+
   } catch (e) {
     console.error('[STREAM] route error:', e.message);
     res.status(200).json({ streams: [] });
