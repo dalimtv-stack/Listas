@@ -400,13 +400,13 @@ async function handleMeta({ id, m3uUrl }) {
   return resp;
 }
 
-// ----- handleStream modificado -----
+// ----- handleStream con chName y sin tocar KV aquí -----
 async function handleStream({ id, m3uUrl, configId }) {
   const logPrefix = '[STREAM]';
 
   if (!m3uUrl) {
     console.log(logPrefix, 'm3uUrl no resuelta');
-    return { streams: [] };
+    return { streams: [], chName: '' };
   }
 
   const parts = id.split('_');
@@ -423,7 +423,7 @@ async function handleStream({ id, m3uUrl, configId }) {
   } else {
     console.log(logPrefix, 'cache MISS', cacheKey);
     const ch = await getChannel(channelId, { m3uUrl });
-    if (!ch) return { streams: [] };
+    if (!ch) return { streams: [], chName: '' };
 
     chName = ch.name;
     let streams = [];
@@ -455,30 +455,8 @@ async function handleStream({ id, m3uUrl, configId }) {
     cache.set(cacheKey, cached);
   }
 
-  // 🔹 Siempre añadimos streams extra, incluso en cache HIT
-  const extraWebsList = await resolveExtraWebs(configId);
-  console.log(`[STREAM] ExtraWebsList para ${chName}:`, extraWebsList);
-
-  if (extraWebsList.length) {
-    const extraStreams = await scrapeExtraWebs(chName, extraWebsList);
-
-    // Evitar duplicados por URL
-    const existingUrls = new Set(
-      cached.streams.map(s => s.url || s.externalUrl)
-    );
-    const nuevos = extraStreams.filter(s => {
-      const url = s.url || s.externalUrl;
-      return url && !existingUrls.has(url);
-    });
-
-    if (nuevos.length) {
-      console.log(`[STREAM] Añadiendo ${nuevos.length} streams extra`);
-      cached.streams.push(...nuevos);
-      cache.set(cacheKey, cached); // actualizamos cache con los extra
-    }
-  }
-
-  return { streams: cached.streams };
+  // Importante: devolvemos chName para que el caller lo guarde en KV con TTL
+  return { streams: cached.streams, chName };
 }
 
 // -------------------- Manifest --------------------
@@ -726,16 +704,14 @@ async function streamRoute(req, res) {
 
     const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
     const kvKey = `stream:${m3uHash}:${id}`;
-    let kvCached = await kvGetJson(kvKey); // lectura directa del objeto guardado
+    let kvCached = await kvGetJsonTTL(kvKey); // TTL preservado
 
-    if (kvCached) {
-      console.log('[STREAM] KV HIT', kvKey);
+    // Función auxiliar para añadir webs extra sobre un objeto { streams, chName }
+    const enrichWithExtra = async (baseObj) => {
+      if (!baseObj || typeof baseObj !== 'object') return baseObj;
+      if (!Array.isArray(baseObj.streams)) baseObj.streams = [];
 
-      if (!Array.isArray(kvCached.streams)) {
-        kvCached.streams = [];
-      }
-
-      let chName = kvCached.chName;
+      let chName = baseObj.chName;
       if (!chName || typeof chName !== 'string') {
         const parts = id.split('_').slice(2);
         chName = parts.join(' ');
@@ -747,7 +723,7 @@ async function streamRoute(req, res) {
       if (extraWebsList.length) {
         const extraStreams = await scrapeExtraWebs(chName, extraWebsList);
 
-        const existingUrls = new Set(kvCached.streams.map(s => s.url || s.externalUrl));
+        const existingUrls = new Set(baseObj.streams.map(s => s.url || s.externalUrl));
         const nuevos = extraStreams.filter(s => {
           const url = s.url || s.externalUrl;
           return url && !existingUrls.has(url);
@@ -755,18 +731,38 @@ async function streamRoute(req, res) {
 
         if (nuevos.length) {
           console.log(`[STREAM] Añadiendo ${nuevos.length} streams extra desde webs`);
-          kvCached.streams.push(...nuevos);
-          await kvSetJson(kvKey, kvCached); // actualizar en KV sin TTL
+          baseObj.streams.push(...nuevos);
         }
       }
 
-      return res.json(kvCached);
+      return baseObj;
+    };
+
+    if (kvCached) {
+      console.log('[STREAM] KV HIT', kvKey);
+      const enriched = await enrichWithExtra(kvCached);
+
+      // Si hubo cambios (se añadieron nuevos), guardar de nuevo con TTL
+      if (enriched.streams.length !== (kvCached.streams?.length || 0)) {
+        await kvSetJsonTTL(kvKey, enriched);
+      }
+
+      return res.json({ streams: enriched.streams });
     }
 
-    // Si no hay KV HIT, flujo normal
-    const result = await handleStream({ id, m3uUrl, configId });
+    // KV MISS: construir base con handleStream, guardar con TTL y luego enriquecer
+    let result = await handleStream({ id, m3uUrl, configId }); // { streams, chName }
     await kvSetJsonTTL(kvKey, result);
-    res.json(result);
+
+    result = await enrichWithExtra(result);
+
+    // Si el enriquecimiento añadió algo, persistirlo también con TTL
+    const fresh = await kvGetJsonTTL(kvKey);
+    if (!fresh || (fresh.streams?.length || 0) !== (result.streams?.length || 0)) {
+      await kvSetJsonTTL(kvKey, result);
+    }
+
+    return res.json({ streams: result.streams });
 
   } catch (e) {
     console.error('[STREAM] route error:', e.message);
