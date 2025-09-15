@@ -117,7 +117,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
           const displayName = normalizeUrlForDisplay(url);
           const stream = {
             name: displayName,
-            title: `${name} (extra)`,
+            title: `${name} (Acestream)`,
             externalUrl: href,
             group_title: displayName,
             behaviorHints: { notWebReady: true, external: true }
@@ -145,7 +145,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
           const displayName = normalizeUrlForDisplay(url);
           const stream = {
             name: displayName,
-            title: `${name} (extra)`,
+            title: `${name} (Acestream)`,
             externalUrl: href,
             group_title: displayName,
             behaviorHints: { notWebReady: true, external: true }
