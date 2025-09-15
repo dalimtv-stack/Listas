@@ -221,22 +221,21 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
 
 async function handleMeta({ id, m3uUrl }) {
   const ch = await getChannel(m3uUrl, id);
+
   if (!ch) {
     console.warn(`[META] Canal no encontrado para id: ${id}`);
     return { meta: null };
   }
-  if (!m3uUrl) return { meta: null };
-  const parts = id.split('_');
-  const channelId = parts.slice(2).join('_');
-  const ch = await getChannel(channelId, { m3uUrl });
+
   return {
     meta: {
       id,
-      type: 'tv',
-      name: ch.name,
-      poster: ch.logo_url,
-      background: ch.logo_url,
-      description: ch.name
+      name: ch.name || id,
+      logo: ch.logo || '',
+      background: ch.background || '',
+      description: ch.description || '',
+      type: ch.type || 'tv',
+      posterShape: 'landscape'
     }
   };
 }
