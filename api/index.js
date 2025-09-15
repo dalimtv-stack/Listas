@@ -169,7 +169,9 @@ async function resolveExtraWebs(configId) {
 // -------------------- Handlers principales --------------------
 async function handleCatalog({ type, id, extra, m3uUrl }) {
   if (type !== 'tv' || !m3uUrl) return { metas: [] };
+
   const channels = await getChannels({ m3uUrl });
+
   try {
     const genreSet = new Set();
     channels.forEach(c => {
@@ -181,17 +183,21 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
         });
       }
     });
+
     const genreList = Array.from(genreSet).filter(Boolean).sort();
-    const configId = (id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID);
+    const configId = id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID;
     await kvSetJsonTTL(`genres:${configId}`, genreList);
   } catch (e) {
     console.error('[CATALOG] error al extraer géneros:', e.message);
   }
+
   let filtered = channels;
+
   if (extra.search) {
     const q = String(extra.search).toLowerCase();
     filtered = filtered.filter(c => c.name?.toLowerCase().includes(q));
   }
+
   if (extra.genre) {
     const g = String(extra.genre);
     if (g === 'Otros') {
@@ -209,13 +215,15 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
       );
     }
   }
-  const configId = (id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID);
+
+  const configId = id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID;
   const metas = filtered.map(c => ({
     id: `${ADDON_PREFIX}_${configId}_${c.id}`,
     type: 'tv',
     name: c.name,
     poster: c.logo_url
   }));
+
   return { metas };
 }
 
@@ -242,12 +250,19 @@ async function handleMeta({ id, m3uUrl }) {
 
 async function handleStream({ id, m3uUrl, configId }) {
   if (!m3uUrl) return { streams: [], chName: '' };
+
   const parts = id.split('_');
   const channelId = parts.slice(2).join('_');
   const ch = await getChannel(channelId, { m3uUrl });
-  if (!ch) return { streams: [], chName: '' };
+
+  if (!ch) {
+    console.warn(`[STREAM] Canal no encontrado para id: ${id}`);
+    return { streams: [], chName: '' };
+  }
+
   const chName = ch.name;
-  let streams = [];
+  const streams = [];
+
   const addStream = (src) => {
     const out = { name: src.group_title, title: src.title };
     if (src.acestream_id) {
@@ -259,8 +274,10 @@ async function handleStream({ id, m3uUrl, configId }) {
     }
     streams.push(out);
   };
+
   if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) addStream(ch);
   (ch.additional_streams || []).forEach(addStream);
+
   if (ch.website_url) {
     streams.push({
       title: `${ch.name} - Website`,
@@ -268,6 +285,7 @@ async function handleStream({ id, m3uUrl, configId }) {
       behaviorHints: { notWebReady: true, external: true }
     });
   }
+
   return { streams, chName };
 }
 // -------------------- Extraer y guardar géneros solo si cambia la M3U --------------------
