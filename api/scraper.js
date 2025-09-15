@@ -8,23 +8,25 @@ const { kvGetJsonTTL, kvSetJsonTTL } = require('./kv');
 const channelAliases = {
   'movistar laliga (fhd)': ['m. laliga', 'm. laliga 1080p', 'movistar laliga'],
   'dazn f1 (fhd)': ['dazn f1', 'dazn f1 1080', 'dazn f1 1080  (fórmula 1)', 'fórmula 1'],
-  'primera federacion "rfef" (fhd)': ['rfef', 'primera federacion', 'primera federación'],
+  'primera federacion "rfef" (fhd)': ['rfef', 'primera federacion', 'primera federación', '1rfef', 'canal 1 [1rfef]'],
   'movistar plus (1080)': ['movistar plus', 'm. plus', 'movistar plus fhd', 'movistar+', 'plus fhd'],
-  'canal 1 [1rfef] (solo eventos)': ['primera federacion', 'primera federacion "rfef"']
+  'canal 1 [1rfef] (solo eventos)': ['primera federacion', 'primera federacion "rfef"', '1rfef', 'primera federacion rfef', 'canal 1 1rfef']
 };
 
 function normalizeName(name) {
   return String(name || '')
     .toLowerCase()
     .replace(/\s*`\(.*?\)`\s*/g, '') // Quita paréntesis y su contenido
-    .replace(/\s*\(.*?\)\s*/g, '')  // Añade eliminación de paréntesis sin comillas
+    .replace(/\s*\(.*?\)\s*/g, '')  // Elimina paréntesis sin comillas
     .replace(/\s+/g, ' ')
+    .replace(/\[.*?\]/g, '') // Elimina texto entre corchetes (como [1RFEF])
     .trim();
 }
 
 function getSearchTerms(channelName) {
   const normalized = normalizeName(channelName);
-  return channelAliases[normalized] || [normalized];
+  const aliases = channelAliases[normalized] || [];
+  return [...new Set([normalized, ...aliases])]; // Evita duplicados
 }
 
 // Nueva función para normalizar URLs y quitar prefijos
@@ -38,6 +40,15 @@ function normalizeUrlForDisplay(url) {
 function hasSequentialNumber(name) {
   const normalized = normalizeName(name);
   return /\d$/.test(normalized); // Verifica si el nombre termina en un dígito
+}
+
+// Nueva función para verificar coincidencias flexibles
+function isMatch(normalizedName, searchTerms) {
+  return searchTerms.some(term => {
+    const baseTerm = normalizeName(term).replace(/\d/g, ''); // Ignora números en el término
+    const baseName = normalizeName(normalizedName).replace(/\d/g, ''); // Ignora números en el nombre
+    return baseName.includes(baseTerm) || baseTerm.includes(baseName);
+  });
 }
 
 async function scrapeExtraWebs(channelName, extraWebsList) {
@@ -68,7 +79,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
 
   const results = [];
   const seenUrls = new Set();
-  const searchTerms = getSearchTerms(channelName).map(s => normalizeName(s));
+  const searchTerms = getSearchTerms(channelName);
 
   for (const url of extraWebsList) {
     try {
@@ -93,13 +104,14 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
           name &&
           href &&
           href.startsWith('acestream://') &&
-          searchTerms.some(term => normalizedName === term && !hasSequentialNumber(name)) &&
+          isMatch(normalizedName, searchTerms) &&
+          !hasSequentialNumber(name) &&
           !seenUrls.has(href)
         ) {
           const displayName = normalizeUrlForDisplay(url);
           const stream = {
             name: displayName,
-            title: `${name} (Acestream)`,
+            title: `${name} (extra)`,
             externalUrl: href,
             group_title: displayName,
             behaviorHints: { notWebReady: true, external: true }
@@ -120,13 +132,14 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
           name &&
           href &&
           href.startsWith('acestream://') &&
-          searchTerms.some(term => normalizedName === term && !hasSequentialNumber(name)) &&
+          isMatch(normalizedName, searchTerms) &&
+          !hasSequentialNumber(name) &&
           !seenUrls.has(href)
         ) {
           const displayName = normalizeUrlForDisplay(url);
           const stream = {
             name: displayName,
-            title: `${name} (Acestream)`,
+            title: `${name} (extra)`,
             externalUrl: href,
             group_title: displayName,
             behaviorHints: { notWebReady: true, external: true }
