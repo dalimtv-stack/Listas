@@ -3,7 +3,7 @@
 
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
-const { kvGetJsonTTL, kvSetJsonTTL } = require('./index');
+const { kvGetJsonTTL, kvSetJsonTTL } = require('./kv.js');
 
 // Equivalencias entre nombres M3U y nombres en las webs
 const channelAliases = {
