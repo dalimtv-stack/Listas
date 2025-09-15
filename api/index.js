@@ -9,10 +9,11 @@ const { v4: uuidv4 } = require('uuid');
 const fetch = require('node-fetch');
 require('dotenv').config();
 
+// Primero, módulos que podrían depender indirectamente de index.js
 const { getChannels, getChannel } = require('../src/db');
 const { scrapeExtraWebs } = require('./scraper');
 
-// Importar helpers KV desde api/kv.js
+// Ahora, importar helpers KV desde api/kv.js (después de db y scraper)
 const {
   kvGet,
   kvSet,
@@ -35,7 +36,9 @@ const ADDON_NAME = 'Heimdallr Channels';
 const ADDON_PREFIX = 'heimdallr';
 const CATALOG_PREFIX = 'Heimdallr';
 const DEFAULT_CONFIG_ID = 'default';
-const DEFAULT_M3U_URL = process.env.DEFAULT_M3U_URL || 'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u';
+const DEFAULT_M3U_URL =
+  process.env.DEFAULT_M3U_URL ||
+  'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u';
 
 const { version: VERSION } = require('../package.json');
 
