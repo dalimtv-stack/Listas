@@ -210,19 +210,46 @@ async function resolveM3uUrl(configId) {
   return null;
 }
 
+// Lee webs extra desde KV usando la clave = configId (sin prefijo)
 async function resolveExtraWebs(configId) {
-  const cfg = await kvGetJson(configId);
-  if (cfg && cfg.extraWebs) {
-    const list = cfg.extraWebs
-      .split(/;|\|/)
+  try {
+    const cfg = await kvGetJson(configId); // <- clave tal cual en tu KV
+    const raw = (cfg && typeof cfg.extraWebs === 'string') ? cfg.extraWebs : '';
+
+    if (!raw.trim()) {
+      console.log(`[DEBUG] No hay extraWebs configuradas para configId=${configId}`);
+      return [];
+    }
+
+    // Separar por ; | , o saltos de línea
+    const split = raw.split(/[;|,\n]+/g)
       .map(s => s.trim())
-      .filter(Boolean);
-    console.log(`[DEBUG] Extra webs configuradas para configId=${configId}:`, list);
-    return list;
+      .filter(Boolean)
+      // quitar barras finales para evitar duplicados por trailing slash
+      .map(u => u.replace(/\/+$/, ''));
+
+    // Validar URLs y deduplicar
+    const seen = new Set();
+    const urls = [];
+    for (const u of split) {
+      try {
+        const parsed = new URL(u);
+        const norm = `${parsed.protocol}//${parsed.host}${parsed.pathname}`.replace(/\/+$/, '');
+        if (!seen.has(norm)) {
+          seen.add(norm);
+          urls.push(norm);
+        }
+      } catch {
+        console.warn(`[DEBUG] extraWeb inválida descartada: ${u}`);
+      }
+    }
+
+    console.log(`[DEBUG] Extra webs configuradas para configId=${configId}:`, urls);
+    return urls;
+  } catch (e) {
+    console.error(`[DEBUG] Error resolviendo extraWebs para ${configId}:`, e.message);
+    return [];
   }
-  console.log(`[DEBUG] No hay extraWebs configuradas para configId=${configId}`);
-  return [];
-  console.log(`[STREAM] ExtraWebsList para ${ch?.name}:`, extraWebsList);
 }
 
 
