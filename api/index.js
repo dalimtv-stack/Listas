@@ -497,40 +497,35 @@ router.get('/:configId/stream/:type/:id.json', async (req, res) => {
     const kvKey = `stream:${m3uHash}:${id}`;
     let kvCached = await kvGetJsonTTL(kvKey);
 
-    const enrichWithExtra = async (baseObj) => {
-      if (!baseObj || typeof baseObj !== 'object') return { streams: [], chName: '' };
-      if (!Array.isArray(baseObj.streams)) baseObj.streams = [];
-
-      let chName = baseObj.chName;
-      if (!chName || typeof chName !== 'string') {
-        const parts = id.split('_').slice(2);
-        chName = parts.join(' ');
-      }
-
-      const extraWebsList = await resolveExtraWebs(configId);
-      if (extraWebsList.length) {
-        try {
-          const extraStreams = await scrapeExtraWebs(chName, extraWebsList);
-          console.log('[STREAM] Streams extra devueltos por scraper:', extraStreams);
-          const existingUrls = new Set(baseObj.streams.map(s => s.url || s.externalUrl));
-          const nuevos = extraStreams.filter(s => {
-            const url = s.url || s.externalUrl;
-            return url && !existingUrls.has(url);
-          });
-          if (nuevos.length) {
-            baseObj.streams.push(...nuevos);
-            console.log(`[STREAM] Añadidos ${nuevos.length} streams extra para ${chName} con group_title`);
-          }
-        } catch (e) {
-          console.error(`[STREAM] Error en scrapeExtraWebs para ${chName}:`, e.message);
-        }
-      }
-      return baseObj;
-    };
-
     if (kvCached) {
       console.log('[STREAM] Usando caché KV:', kvCached);
-      const enriched = await enrichWithExtra(kvCached);
+      const enriched = await (async () => {
+        const baseObj = { ...kvCached };
+        const chName = baseObj.chName || id.split('_').slice(2).join(' ');
+        const extraWebsList = await resolveExtraWebs(configId);
+        if (extraWebsList.length) {
+          try {
+            const extraStreams = await scrapeExtraWebs(chName, extraWebsList);
+            console.log('[STREAM] Streams extra devueltos por scraper:', extraStreams);
+            if (extraStreams.length > 0) {
+              const existingUrls = new Set(baseObj.streams.map(s => s.url || s.externalUrl));
+              const nuevos = extraStreams.filter(s => {
+                const url = s.url || s.externalUrl;
+                return url && !existingUrls.has(url);
+              });
+              if (nuevos.length) {
+                baseObj.streams.push(...nuevos);
+                console.log(`[STREAM] Añadidos ${nuevos.length} streams extra para ${chName} con group_title`);
+              }
+            } else {
+              console.log(`[STREAM] No se añadieron streams extra para ${chName} (sin coincidencias)`);
+            }
+          } catch (e) {
+            console.error(`[STREAM] Error en scrapeExtraWebs para ${chName}:`, e.message);
+          }
+        }
+        return baseObj;
+      })();
       if (enriched.streams.length !== (kvCached.streams?.length || 0)) {
         console.log('[STREAM] Caché actualizado por nuevos streams extra');
         await kvSetJsonTTL(kvKey, enriched);
@@ -541,10 +536,36 @@ router.get('/:configId/stream/:type/:id.json', async (req, res) => {
 
     let result = await handleStream({ id, m3uUrl, configId });
     console.log('[STREAM] Resultado inicial de handleStream:', result);
-    result = await enrichWithExtra(result);
-    console.log('[STREAM] Respuesta final tras enrichWithExtra:', result.streams);
-    await kvSetJsonTTL(kvKey, result);
-    res.json({ streams: result.streams });
+    const enriched = await (async () => {
+      const baseObj = { ...result };
+      const chName = baseObj.chName || id.split('_').slice(2).join(' ');
+      const extraWebsList = await resolveExtraWebs(configId);
+      if (extraWebsList.length) {
+        try {
+          const extraStreams = await scrapeExtraWebs(chName, extraWebsList);
+          console.log('[STREAM] Streams extra devueltos por scraper:', extraStreams);
+          if (extraStreams.length > 0) {
+            const existingUrls = new Set(baseObj.streams.map(s => s.url || s.externalUrl));
+            const nuevos = extraStreams.filter(s => {
+              const url = s.url || s.externalUrl;
+              return url && !existingUrls.has(url);
+            });
+            if (nuevos.length) {
+              baseObj.streams.push(...nuevos);
+              console.log(`[STREAM] Añadidos ${nuevos.length} streams extra para ${chName} con group_title`);
+            }
+          } else {
+            console.log(`[STREAM] No se añadieron streams extra para ${chName} (sin coincidencias)`);
+          }
+        } catch (e) {
+          console.error(`[STREAM] Error en scrapeExtraWebs para ${chName}:`, e.message);
+        }
+      }
+      return baseObj;
+    })();
+    console.log('[STREAM] Respuesta final tras enrichWithExtra:', enriched.streams);
+    await kvSetJsonTTL(kvKey, enriched);
+    res.json({ streams: enriched.streams });
   } catch (e) {
     console.error('[STREAM] route error:', e.message);
     res.status(200).json({ streams: [] });
