@@ -43,14 +43,17 @@ function hasSequentialNumber(name) {
 }
 
 // Nueva función para verificar coincidencias flexibles
-function isMatch(normalizedName, searchTerms) {
+function isMatch(normalizedName, searchTerms, channelName) {
+  const isChannel1 = normalizeName(channelName).includes('canal 1 [1rfef]');
   return searchTerms.some(term => {
     const baseTerm = normalizeName(term);
     const baseName = normalizeName(normalizedName);
     // Coincidencia exacta o parcial ignorando paréntesis y corchetes
-    return baseName.includes(baseTerm) || baseTerm.includes(baseName) ||
-           (baseName.includes('1rfef') && baseTerm.includes('rfef')) ||
-           (baseTerm.includes('1rfef') && baseName.includes('rfef'));
+    const baseMatch = baseName.includes(baseTerm) || baseTerm.includes(baseName);
+    // Coincidencia específica para 1RFEF/RFEF solo si es Canal 1
+    const rfefMatch = (baseName.includes('1rfef') && baseTerm.includes('rfef')) ||
+                     (baseTerm.includes('1rfef') && baseName.includes('rfef'));
+    return (baseMatch || (rfefMatch && isChannel1));
   });
 }
 
@@ -107,7 +110,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
           name &&
           href &&
           href.startsWith('acestream://') &&
-          isMatch(normalizedName, searchTerms) &&
+          isMatch(normalizedName, searchTerms, channelName) &&
           !hasSequentialNumber(name) &&
           !seenUrls.has(href)
         ) {
@@ -135,7 +138,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
           name &&
           href &&
           href.startsWith('acestream://') &&
-          isMatch(normalizedName, searchTerms) &&
+          isMatch(normalizedName, searchTerms, channelName) &&
           !hasSequentialNumber(name) &&
           !seenUrls.has(href)
         ) {
