@@ -228,16 +228,10 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
 }
 
 async function handleMeta({ id, m3uUrl }) {
-  if (!id || !m3uUrl) {
-    console.warn('[META] Parámetros inválidos:', { id, m3uUrl });
-    return { meta: null };
-  }
-
   const parts = id.split('_');
-  const configId = parts[1];
   const channelId = parts.slice(2).join('_');
 
-  const ch = await getChannel(m3uUrl, channelId);
+  const ch = await getChannel(channelId, { m3uUrl }); // ✅ orden correcto
 
   if (!ch) {
     console.warn(`[META] Canal no encontrado para id: ${channelId}`);
