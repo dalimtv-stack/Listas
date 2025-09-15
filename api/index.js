@@ -27,7 +27,7 @@ const ADDON_PREFIX = 'heimdallr';
 const CATALOG_PREFIX = 'Heimdallr';
 const DEFAULT_CONFIG_ID = 'default';
 const DEFAULT_M3U_URL = process.env.DEFAULT_M3U_URL || 'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u';
-const VERSION = '1.3.700'; // Fijo para evitar dependencia de package.json
+const VERSION = '1.3.701'; // Fijo para evitar dependencia de package.json
 
 // -------------------- CORS --------------------
 router.use((req, res, next) => {
