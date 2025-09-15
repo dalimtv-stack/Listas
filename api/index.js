@@ -220,6 +220,11 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
 }
 
 async function handleMeta({ id, m3uUrl }) {
+  const ch = await getChannel(m3uUrl, id);
+  if (!ch) {
+    console.warn(`[META] Canal no encontrado para id: ${id}`);
+    return { meta: null };
+  }
   if (!m3uUrl) return { meta: null };
   const parts = id.split('_');
   const channelId = parts.slice(2).join('_');
