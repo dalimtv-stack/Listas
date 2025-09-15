@@ -33,6 +33,12 @@ function normalizeUrlForDisplay(url) {
     .replace(/\/+$/, ''); // Elimina barras finales
 }
 
+// Nueva función para verificar si un nombre contiene un número secuencial
+function hasSequentialNumber(name) {
+  const normalized = normalizeName(name);
+  return /\d$/.test(normalized); // Verifica si el nombre termina en un dígito
+}
+
 async function scrapeExtraWebs(channelName, extraWebsList) {
   const logPrefix = '[SCRAPER]';
   if (!channelName || typeof channelName !== 'string') {
@@ -81,20 +87,20 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
       $('#linksList li').each((_, li) => {
         const name = $(li).find('.link-name').text().trim();
         const href = $(li).find('.link-url a').attr('href');
-        const normalizedName = normalizeName(name); // Normalizar el nombre extraído
+        const normalizedName = normalizeName(name);
         if (
           name &&
           href &&
           href.startsWith('acestream://') &&
-          searchTerms.some(term => normalizedName.includes(term)) &&
+          searchTerms.some(term => normalizedName === term && !hasSequentialNumber(name)) &&
           !seenUrls.has(href)
         ) {
-          const displayName = normalizeUrlForDisplay(url); // Usar URL normalizada para name
+          const displayName = normalizeUrlForDisplay(url);
           const stream = {
             name: displayName,
             title: `${name} (extra)`,
             externalUrl: href,
-            group_title: displayName, // Usar la misma normalización para group_title
+            group_title: displayName,
             behaviorHints: { notWebReady: true, external: true }
           };
           results.push(stream);
@@ -108,20 +114,20 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
       $('.canal-card').each((_, card) => {
         const name = $(card).find('.canal-nombre').text().trim();
         const href = $(card).find('.acestream-link').attr('href');
-        const normalizedName = normalizeName(name); // Normalizar el nombre extraído
+        const normalizedName = normalizeName(name);
         if (
           name &&
           href &&
           href.startsWith('acestream://') &&
-          searchTerms.some(term => normalizedName.includes(term)) &&
+          searchTerms.some(term => normalizedName === term && !hasSequentialNumber(name)) &&
           !seenUrls.has(href)
         ) {
-          const displayName = normalizeUrlForDisplay(url); // Usar URL normalizada para name
+          const displayName = normalizeUrlForDisplay(url);
           const stream = {
             name: displayName,
             title: `${name} (extra)`,
             externalUrl: href,
-            group_title: displayName, // Usar la misma normalización para group_title
+            group_title: displayName,
             behaviorHints: { notWebReady: true, external: true }
           };
           results.push(stream);
