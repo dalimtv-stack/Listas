@@ -208,6 +208,7 @@ async function resolveExtraWebs(configId) {
   }
   console.log(`[DEBUG] No hay extraWebs configuradas para configId=${configId}`);
   return [];
+  console.log(`[STREAM] ExtraWebsList para ${ch?.name}:`, extraWebsList);
 }
 
 
@@ -401,6 +402,9 @@ async function handleStream({ id, m3uUrl, configId }) { // *** CAMBIO extraWebs:
       behaviorHints: { notWebReady: true, external: true }
     });
   }
+  console.log(`[STREAM] Canal solicitado: ${ch?.name}`);
+  console.log(`[STREAM] ConfigId: ${configId}`);
+  console.log(`[STREAM] Intentando resolver extraWebs...`);
 
   // *** CAMBIO extraWebs: añadir streams desde webs adicionales
   const extraWebsList = await resolveExtraWebs(configId);
