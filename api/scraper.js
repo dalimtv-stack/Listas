@@ -10,23 +10,23 @@ const channelAliases = {
   'dazn f1 (fhd)': ['dazn f1', 'dazn f1 1080', 'dazn f1 1080  (fórmula 1)', 'fórmula 1'],
   'primera federacion "rfef" (fhd)': ['rfef', 'primera federacion', 'primera federación', '1rfef', 'canal 1 [1rfef]'],
   'movistar plus (1080)': ['movistar plus', 'm. plus', 'movistar plus fhd', 'movistar+', 'plus fhd'],
-  'canal 1 1rfef solo eventos': ['primera federacion', 'primera federacion "rfef"', '1rfef', 'primera federacion rfef', 'canal 1 1rfef']
+  'canal 1 [1rfef] (solo eventos)': ['primera federacion', 'primera federacion "rfef"', '1rfef', 'primera federacion rfef', 'canal 1 [1rfef]']
 };
 
 function normalizeName(name) {
   return String(name || '')
     .toLowerCase()
-    .replace(/\s*`\(.*?\)`\s*/g, '') // Quita paréntesis y su contenido
-    .replace(/\s*\(.*?\)\s*/g, '')  // Elimina paréntesis sin comillas
     .replace(/\s+/g, ' ')
-    .replace(/\[.*?\]/g, '') // Elimina texto entre corchetes (como [1RFEF])
     .trim();
 }
 
 function getSearchTerms(channelName) {
-  const normalized = normalizeName(channelName);
-  const aliases = channelAliases[normalized] || [];
-  return [...new Set([normalized, ...aliases])]; // Evita duplicados
+  const original = String(channelName || '').toLowerCase(); // Usar el nombre original sin normalización agresiva
+  const normalized = normalizeName(channelName)
+    .replace(/\s*\(.*?\)\s*/g, '') // Eliminar solo paréntesis para normalización parcial
+    .replace(/\[.*?\]/g, ''); // Eliminar corchetes para normalización parcial
+  const aliases = channelAliases[normalized] || channelAliases[original] || [];
+  return [...new Set([normalized, original, ...aliases])]; // Incluir original y aliases sin duplicados
 }
 
 // Nueva función para normalizar URLs y quitar prefijos
@@ -45,9 +45,12 @@ function hasSequentialNumber(name) {
 // Nueva función para verificar coincidencias flexibles
 function isMatch(normalizedName, searchTerms) {
   return searchTerms.some(term => {
-    const baseTerm = normalizeName(term).replace(/\d/g, ''); // Ignora números en el término
-    const baseName = normalizeName(normalizedName).replace(/\d/g, ''); // Ignora números en el nombre
-    return baseName.includes(baseTerm) || baseTerm.includes(baseName);
+    const baseTerm = normalizeName(term);
+    const baseName = normalizeName(normalizedName);
+    // Coincidencia exacta o parcial ignorando paréntesis y corchetes
+    return baseName.includes(baseTerm) || baseTerm.includes(baseName) ||
+           (baseName.includes('1rfef') && baseTerm.includes('rfef')) ||
+           (baseTerm.includes('1rfef') && baseName.includes('rfef'));
   });
 }
 
