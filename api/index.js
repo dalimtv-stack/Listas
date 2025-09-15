@@ -100,6 +100,19 @@ async function buildManifest(configId) {
   let genreOptions = ['General'];
   let lastUpdateStr = await getLastUpdateString(configId);
 
+  // 🔹 Leer configuración actual para precargar valores en el manifest
+  let currentM3u = '';
+  let currentExtraWebs = '';
+  try {
+    const cfg = await kvGetJson(`config:${configId}`);
+    if (cfg) {
+      if (cfg.m3uUrl) currentM3u = cfg.m3uUrl;
+      if (cfg.extraWebs) currentExtraWebs = cfg.extraWebs;
+    }
+  } catch (e) {
+    console.error(`[MANIFEST] error al leer configuración para ${configId}:`, e.message);
+  }
+
   try {
     const genresKV = await kvGetJsonTTL(`genres:${configId}`);
     if (Array.isArray(genresKV) && genresKV.length) {
@@ -162,10 +175,10 @@ async function buildManifest(configId) {
     resources: ['catalog', 'meta', 'stream'],
     idPrefixes: [`${ADDON_PREFIX}_`],
     behaviorHints: { configurable: true },
-    // *** CAMBIO extraWebs: añadimos configuración editable
+    // 🔹 Campos de configuración con valores precargados
     config: [
-      { name: 'm3uUrl', label: 'URL de la lista M3U', type: 'text', required: true },
-      { name: 'extraWebs', label: 'Webs adicionales (separadas por ; o |)', type: 'text', required: false }
+      { name: 'm3uUrl', label: 'URL de la lista M3U', type: 'text', required: true, value: currentM3u },
+      { name: 'extraWebs', label: 'Webs adicionales (separadas por ; o |)', type: 'text', required: false, value: currentExtraWebs }
     ],
     catalogs: [
       {
