@@ -9,7 +9,8 @@ const channelAliases = {
   'movistar laliga (fhd)': ['m. laliga', 'm. laliga 1080p', 'movistar laliga'],
   'dazn f1 (fhd)': ['dazn f1', 'dazn f1 1080', 'dazn f1 1080  (fórmula 1)', 'fórmula 1'],
   'primera federacion "rfef" (fhd)': ['rfef', 'primera federacion', 'primera federación'],
-  'movistar plus (1080)': ['movistar plus', 'm. plus', 'movistar plus fhd', 'movistar+', 'plus fhd']
+  'movistar plus (1080)': ['movistar plus', 'm. plus', 'movistar plus fhd', 'movistar+', 'plus fhd'],
+  'canal 1 [1rfef] (solo eventos)': ['primera federacion', 'primera federacion "rfef"']
 };
 
 function normalizeName(name) {
