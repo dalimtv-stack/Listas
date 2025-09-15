@@ -2,114 +2,81 @@
 'use strict';
 
 const fetch = require('node-fetch');
-const cheerio = require('cheerio');
-const { kvGetJsonTTL, kvSetJsonTTL } = require('./kv.js');
+const { kvGetJsonTTL, kvSetJsonTTL } = require('./kv.js'); // Importar directo de kv.js
 
-// Equivalencias entre nombres M3U y nombres en las webs
-const channelAliases = {
-  'movistar laliga (fhd)': ['m. laliga', 'm. laliga 1080p', 'movistar laliga'],
-  'dazn f1 (fhd)': ['dazn f1', 'dazn f1 1080', 'dazn f1 1080  (fórmula 1)', 'fórmula 1'],
-  'primera federacion "rfef" (fhd)': ['rfef', 'primera federacion', 'primera federación']
-};
-
-// Devuelve términos de búsqueda para un canal
-function getSearchTerms(channelName) {
-  const normalized = channelName.trim().toLowerCase();
-  return channelAliases[normalized] || [channelName];
+function normalizeName(name) {
+  return String(name || '')
+    .toLowerCase()
+    .replace(/\s*\(.*?\)\s*/g, '') // quita paréntesis y su contenido
+    .replace(/\s+/g, ' ')          // colapsa espacios
+    .trim();
 }
 
-async function scrapeExtraWebs(channelName, extraWebsList) {
-  console.log(`[SCRAPER] Iniciado para canal: ${channelName}`);
-  console.log(`[SCRAPER] Lista de webs a scrapear:`, extraWebsList);
+async function scrapeExtraWebs(ch) {
+  const normalizedTarget = normalizeName(ch.name);
+  const cacheKey = `extra_streams:${ch.id}`;
+  const ttlSeconds = 3600; // 1 hora
 
-  // Cache en KV por canal (30 min)
-  const cacheKey = `scrape:${channelName.toLowerCase()}`;
+  // Intentar cache KV
   const cached = await kvGetJsonTTL(cacheKey);
   if (cached) {
     console.log(`[SCRAPER] Usando cache (${cached.length} resultados)`);
     return cached;
   }
 
-  const results = [];
-  const seenUrls = new Set(); // para evitar duplicados
-  const searchTerms = getSearchTerms(channelName).map(s => s.toLowerCase());
+  const webs = [
+    'https://ipfs.io/ipns/elcano.top',
+    'https://shickat.me'
+  ];
 
-  for (const url of extraWebsList) {
+  console.log(`[SCRAPER] Iniciado para canal: ${ch.name}`);
+  console.log(`[SCRAPER] Nombre normalizado: "${normalizedTarget}"`);
+  console.log(`[SCRAPER] Lista de webs a scrapear:`, webs);
+
+  let allResults = [];
+
+  for (const web of webs) {
+    console.log(`[SCRAPER] Fetch -> ${web}`);
     try {
-      console.log(`[SCRAPER] Fetch -> ${url}`);
-      const html = await fetch(url, { timeout: 8000 }).then(r => r.text());
-      const $ = cheerio.load(html);
-
-      let encontrados = 0;
-
-      // 🔹 Estructura Elcano.top
-      $('#linksList li').each((_, li) => {
-        const name = $(li).find('.link-name').text().trim();
-        const href = $(li).find('.link-url a').attr('href');
-        if (
-          name &&
-          href &&
-          href.startsWith('acestream://') &&
-          searchTerms.some(term => name.toLowerCase().includes(term)) &&
-          !seenUrls.has(href)
-        ) {
-          results.push({ name: `${name} (extra)`, title: `${name} (extra)`, url: href });
-          seenUrls.add(href);
-          encontrados++;
-        }
-      });
-
-      // 🔹 Estructura Shickat
-      $('.canal-card').each((_, card) => {
-        const name = $(card).find('.canal-nombre').text().trim();
-        const href = $(card).find('.acestream-link').attr('href');
-        if (
-          name &&
-          href &&
-          href.startsWith('acestream://') &&
-          searchTerms.some(term => name.toLowerCase().includes(term)) &&
-          !seenUrls.has(href)
-        ) {
-          results.push({ name: `${name} (extra)`, title: `${name} (extra)`, url: href });
-          seenUrls.add(href);
-          encontrados++;
-        }
-      });
-
-      console.log(`[SCRAPER] Coincidencias en ${url}: ${encontrados}`);
-
-      // 🔹 Fallback si no hay coincidencias
-      if (encontrados === 0) {
-        console.log(`[SCRAPER] Fallback: añadiendo todos los enlaces de ${url}`);
-
-        $('#linksList li').each((_, li) => {
-          const name = $(li).find('.link-name').text().trim();
-          const href = $(li).find('.link-url a').attr('href');
-          if (name && href && href.startsWith('acestream://') && !seenUrls.has(href)) {
-            results.push({ name: `${name} (extra)`, title: `${name} (extra)`, url: href });
-            seenUrls.add(href);
-          }
-        });
-
-        $('.canal-card').each((_, card) => {
-          const name = $(card).find('.canal-nombre').text().trim();
-          const href = $(card).find('.acestream-link').attr('href');
-          if (name && href && href.startsWith('acestream://') && !seenUrls.has(href)) {
-            results.push({ name: `${name} (extra)`, title: `${name} (extra)`, url: href });
-            seenUrls.add(href);
-          }
-        });
+      const res = await fetch(web, { timeout: 10000 });
+      if (!res.ok) {
+        console.warn(`[SCRAPER] Respuesta HTTP no OK (${res.status}) en ${web}`);
+        continue;
       }
 
-    } catch (e) {
-      console.error(`[SCRAPER] Error en ${url}:`, e.message);
+      const html = await res.text();
+
+      // Extraer todos los enlaces como fallback
+      const allLinks = Array.from(html.matchAll(/https?:\/\/[^\s"'<>]+/g)).map(m => m[0]);
+      console.log(`[SCRAPER] Total enlaces encontrados en ${web}: ${allLinks.length}`);
+
+      // Filtrar por coincidencia normalizada
+      const matched = allLinks.filter(link =>
+        normalizeName(link).includes(normalizedTarget)
+      );
+
+      if (matched.length > 0) {
+        console.log(`[SCRAPER] Coincidencias en ${web}: ${matched.length}`);
+        matched.forEach(m => console.log(`  MATCH: ${m}`));
+        allResults.push(...matched);
+      } else {
+        console.warn(`[SCRAPER] 0 coincidencias en ${web} para "${normalizedTarget}"`);
+        console.log(`[SCRAPER] Mostrando primeros 10 enlaces para inspección:`);
+        allLinks.slice(0, 10).forEach(l => console.log(`  LINK: ${l}`));
+        // Fallback: añadir todos los enlaces
+        allResults.push(...allLinks);
+      }
+    } catch (err) {
+      console.error(`[SCRAPER] Error al scrapear ${web}:`, err.message);
     }
   }
 
-  console.log(`[SCRAPER] Total streams extra encontrados: ${results.length}`);
-  // Guardar en KV con TTL de 30 min
-  await kvSetJsonTTL(cacheKey, results, 1800);
-  return results;
+  console.log(`[SCRAPER] Total streams extra encontrados: ${allResults.length}`);
+
+  // Guardar en cache KV
+  await kvSetJsonTTL(cacheKey, allResults, ttlSeconds);
+
+  return allResults;
 }
 
 module.exports = { scrapeExtraWebs };
