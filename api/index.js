@@ -1,3 +1,4 @@
+// api/index.js
 'use strict';
 
 const express = require('express');
@@ -299,7 +300,7 @@ async function handleStream({ id, m3uUrl, configId }) {
   let streams = [];
 
   const addStream = (src) => {
-    const out = { name: src.group_title, title: src.title };
+    const out = { name: src.group_title || src.name, title: src.title || src.name };
     if (src.acestream_id) {
       out.externalUrl = `acestream://${src.acestream_id}`;
       out.behaviorHints = { notWebReady: true, external: true };
@@ -307,6 +308,7 @@ async function handleStream({ id, m3uUrl, configId }) {
       out.url = src.m3u8_url || src.stream_url || src.url;
       out.behaviorHints = { notWebReady: false, external: false };
     }
+    if (src.group_title) out.group_title = src.group_title; // Preservar group_title
     streams.push(out);
   };
 
@@ -509,6 +511,7 @@ router.get('/:configId/stream/:type/:id.json', async (req, res) => {
       if (extraWebsList.length) {
         try {
           const extraStreams = await scrapeExtraWebs(chName, extraWebsList);
+          console.log('[STREAM] Streams extra devueltos por scraper:', extraStreams);
           const existingUrls = new Set(baseObj.streams.map(s => s.url || s.externalUrl));
           const nuevos = extraStreams.filter(s => {
             const url = s.url || s.externalUrl;
@@ -516,7 +519,7 @@ router.get('/:configId/stream/:type/:id.json', async (req, res) => {
           });
           if (nuevos.length) {
             baseObj.streams.push(...nuevos);
-            console.log(`[STREAM] Añadidos ${nuevos.length} streams extra para ${chName}`);
+            console.log(`[STREAM] Añadidos ${nuevos.length} streams extra para ${chName} con group_title`);
           }
         } catch (e) {
           console.error(`[STREAM] Error en scrapeExtraWebs para ${chName}:`, e.message);
@@ -526,15 +529,20 @@ router.get('/:configId/stream/:type/:id.json', async (req, res) => {
     };
 
     if (kvCached) {
+      console.log('[STREAM] Usando caché KV:', kvCached);
       const enriched = await enrichWithExtra(kvCached);
       if (enriched.streams.length !== (kvCached.streams?.length || 0)) {
+        console.log('[STREAM] Caché actualizado por nuevos streams extra');
         await kvSetJsonTTL(kvKey, enriched);
       }
+      console.log('[STREAM] Respuesta final con streams:', enriched.streams);
       return res.json({ streams: enriched.streams });
     }
 
     let result = await handleStream({ id, m3uUrl, configId });
+    console.log('[STREAM] Resultado inicial de handleStream:', result);
     result = await enrichWithExtra(result);
+    console.log('[STREAM] Respuesta final tras enrichWithExtra:', result.streams);
     await kvSetJsonTTL(kvKey, result);
     res.json({ streams: result.streams });
   } catch (e) {
