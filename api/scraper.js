@@ -12,6 +12,7 @@ const channelAliases = {
   'primera federacion "rfef" (fhd)': ['rfef', 'primera federacion', 'primera federación']
 };
 
+// Devuelve términos de búsqueda para un canal
 function getSearchTerms(channelName) {
   const normalized = channelName.trim().toLowerCase();
   return channelAliases[normalized] || [channelName];
@@ -21,7 +22,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
   console.log(`[SCRAPER] Iniciado para canal: ${channelName}`);
   console.log(`[SCRAPER] Lista de webs a scrapear:`, extraWebsList);
 
-  // Cache en KV por canal
+  // Cache en KV por canal (30 min)
   const cacheKey = `scrape:${channelName.toLowerCase()}`;
   const cached = await kvGetJsonTTL(cacheKey);
   if (cached) {
@@ -106,7 +107,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
   }
 
   console.log(`[SCRAPER] Total streams extra encontrados: ${results.length}`);
-  // Cachear 30 minutos
+  // Guardar en KV con TTL de 30 min
   await kvSetJsonTTL(cacheKey, results, 1800);
   return results;
 }
