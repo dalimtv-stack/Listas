@@ -81,7 +81,7 @@ async function loadM3U(args = {}) {
         stream_url: (!isAce && !isM3u8) ? item.url : null
       };
 
-      console.log(`[loadM3U] Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}`);
+      //console.log(`[loadM3U] Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}`);
 
       if (!channelMap[tvgId]) {
         channelMap[tvgId] = {
