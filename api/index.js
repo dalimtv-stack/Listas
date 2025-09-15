@@ -11,6 +11,8 @@ require('dotenv').config();
 
 const { getChannels, getChannel } = require('../src/db');
 const { scrapeExtraWebs } = require('./scraper');
+
+// Importar helpers KV desde api/kv.js
 const {
   kvGet,
   kvSet,
@@ -36,6 +38,7 @@ const DEFAULT_CONFIG_ID = 'default';
 const DEFAULT_M3U_URL = process.env.DEFAULT_M3U_URL || 'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u';
 
 const { version: VERSION } = require('../package.json');
+
 // -------------------- CORS --------------------
 router.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -44,15 +47,12 @@ router.use((req, res, next) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   next();
 });
-
 // -------------------- Utils --------------------
 async function getLastUpdateString(configId) {
   try {
     const raw = await kvGet(`last_update:${configId}`);
     if (raw && typeof raw === 'string' && raw.trim()) return raw.trim();
-  } catch (e) {
-    console.log('[UTILS] no se pudo leer last_update:', e.message);
-  }
+  } catch {}
   return 'Sin actualizar aún';
 }
 
@@ -61,7 +61,22 @@ function extractConfigIdFromUrl(req) {
   if (m && m[1]) return m[1];
   return DEFAULT_CONFIG_ID;
 }
-// -------------------- Manifest --------------------
+
+function parseCatalogRest(restRaw) {
+  const rest = decodeURIComponent(restRaw);
+  const segments = rest.split('/');
+  const id = segments.shift();
+  const extra = {};
+  for (const seg of segments) {
+    const [k, v] = seg.split('=');
+    if (!k || v === undefined) continue;
+    const key = k.trim();
+    const val = decodeURIComponent(v.trim());
+    if (key === 'genre' || key === 'search') extra[key] = val;
+  }
+  return { id, extra };
+}
+// -------------------- Manifest dinámico --------------------
 async function buildManifest(configId) {
   let genreOptions = ['General'];
   let lastUpdateStr = await getLastUpdateString(configId);
@@ -115,10 +130,8 @@ async function buildManifest(configId) {
 async function resolveM3uUrl(configId) {
   const cfg = await kvGetJson(configId);
   if (cfg && cfg.m3uUrl) return cfg.m3uUrl;
-
   const kv = await kvGet(configId);
   if (kv) return kv;
-
   if (DEFAULT_M3U_URL) return DEFAULT_M3U_URL;
   return null;
 }
@@ -127,14 +140,8 @@ async function resolveExtraWebs(configId) {
   try {
     const cfg = await kvGetJson(configId);
     const raw = (cfg && typeof cfg.extraWebs === 'string') ? cfg.extraWebs : '';
-
     if (!raw.trim()) return [];
-
-    const split = raw.split(/[;|,\n]+/g)
-      .map(s => s.trim())
-      .filter(Boolean)
-      .map(u => u.replace(/\/+$/, ''));
-
+    const split = raw.split(/[;|,\n]+/g).map(s => s.trim()).filter(Boolean).map(u => u.replace(/\/+$/, ''));
     const seen = new Set();
     const urls = [];
     for (const u of split) {
@@ -149,7 +156,6 @@ async function resolveExtraWebs(configId) {
         console.warn(`[DEBUG] extraWeb inválida descartada: ${u}`);
       }
     }
-
     return urls;
   } catch (e) {
     console.error(`[DEBUG] Error resolviendo extraWebs para ${configId}:`, e.message);
@@ -160,9 +166,7 @@ async function resolveExtraWebs(configId) {
 // -------------------- Handlers principales --------------------
 async function handleCatalog({ type, id, extra, m3uUrl }) {
   if (type !== 'tv' || !m3uUrl) return { metas: [] };
-
   const channels = await getChannels({ m3uUrl });
-
   try {
     const genreSet = new Set();
     channels.forEach(c => {
@@ -180,7 +184,6 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
   } catch (e) {
     console.error('[CATALOG] error al extraer géneros:', e.message);
   }
-
   let filtered = channels;
   if (extra.search) {
     const q = String(extra.search).toLowerCase();
@@ -203,7 +206,6 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
       );
     }
   }
-
   const configId = (id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID);
   const metas = filtered.map(c => ({
     id: `${ADDON_PREFIX}_${configId}_${c.id}`,
@@ -211,16 +213,13 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
     name: c.name,
     poster: c.logo_url
   }));
-
   return { metas };
 }
 
 async function handleMeta({ id, m3uUrl }) {
   if (!m3uUrl) return { meta: null };
-
   const parts = id.split('_');
   const channelId = parts.slice(2).join('_');
-
   const ch = await getChannel(channelId, { m3uUrl });
   return {
     meta: {
@@ -236,16 +235,12 @@ async function handleMeta({ id, m3uUrl }) {
 
 async function handleStream({ id, m3uUrl, configId }) {
   if (!m3uUrl) return { streams: [], chName: '' };
-
   const parts = id.split('_');
   const channelId = parts.slice(2).join('_');
-
   const ch = await getChannel(channelId, { m3uUrl });
   if (!ch) return { streams: [], chName: '' };
-
   const chName = ch.name;
   let streams = [];
-
   const addStream = (src) => {
     const out = { name: src.group_title, title: src.title };
     if (src.acestream_id) {
@@ -257,10 +252,8 @@ async function handleStream({ id, m3uUrl, configId }) {
     }
     streams.push(out);
   };
-
   if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) addStream(ch);
   (ch.additional_streams || []).forEach(addStream);
-
   if (ch.website_url) {
     streams.push({
       title: `${ch.name} - Website`,
@@ -268,7 +261,6 @@ async function handleStream({ id, m3uUrl, configId }) {
       behaviorHints: { notWebReady: true, external: true }
     });
   }
-
   return { streams, chName };
 }
 // -------------------- Extraer y guardar géneros solo si cambia la M3U --------------------
@@ -330,6 +322,16 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
     console.error('[GENRES] error al extraer:', e.message);
   }
 }
+
+// -------------------- Rutas MANIFEST --------------------
+router.get('/manifest.json', async (req, res) => {
+  const manifest = await buildManifest(DEFAULT_CONFIG_ID);
+  res.json(manifest);
+});
+router.get('/:configId/manifest.json', async (req, res) => {
+  const manifest = await buildManifest(req.params.configId);
+  res.json(manifest);
+});
 
 // -------------------- Rutas de catálogo --------------------
 router.get('/catalog/:type/:rest(.+)\\.json', async (req, res) => {
