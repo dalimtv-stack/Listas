@@ -1,4 +1,3 @@
-// api/index.js
 'use strict';
 
 const express = require('express');
@@ -9,19 +8,9 @@ const { v4: uuidv4 } = require('uuid');
 const fetch = require('node-fetch');
 require('dotenv').config();
 
-// Primero, módulos que podrían depender indirectamente de index.js
 const { getChannels, getChannel } = require('../src/db');
 const { scrapeExtraWebs } = require('./scraper');
-
-// Ahora, importar helpers KV desde api/kv.js (después de db y scraper)
-const {
-  kvGet,
-  kvSet,
-  kvGetJson,
-  kvSetJson,
-  kvGetJsonTTL,
-  kvSetJsonTTL
-} = require('./kv.js');
+const { kvGet, kvSet, kvGetJson, kvSetJson, kvGetJsonTTL, kvSetJsonTTL } = require('./kv');
 
 const app = express();
 const router = express.Router();
@@ -36,11 +25,8 @@ const ADDON_NAME = 'Heimdallr Channels';
 const ADDON_PREFIX = 'heimdallr';
 const CATALOG_PREFIX = 'Heimdallr';
 const DEFAULT_CONFIG_ID = 'default';
-const DEFAULT_M3U_URL =
-  process.env.DEFAULT_M3U_URL ||
-  'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u';
-
-const { version: VERSION } = require('../package.json');
+const DEFAULT_M3U_URL = process.env.DEFAULT_M3U_URL || 'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u';
+const VERSION = '1.3.700'; // Fijo para evitar dependencia de package.json
 
 // -------------------- CORS --------------------
 router.use((req, res, next) => {
@@ -50,7 +36,12 @@ router.use((req, res, next) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   next();
 });
+
 // -------------------- Utils --------------------
+function getM3uHash(m3uUrl) {
+  return crypto.createHash('md5').update(m3uUrl || '').digest('hex');
+}
+
 async function getLastUpdateString(configId) {
   try {
     const raw = await kvGet(`last_update:${configId}`);
@@ -61,8 +52,7 @@ async function getLastUpdateString(configId) {
 
 function extractConfigIdFromUrl(req) {
   const m = req.url.match(/^\/([^/]+)\/(manifest\.json|catalog|meta|stream)\b/);
-  if (m && m[1]) return m[1];
-  return DEFAULT_CONFIG_ID;
+  return m && m[1] ? m[1] : DEFAULT_CONFIG_ID;
 }
 
 function parseCatalogRest(restRaw) {
@@ -79,27 +69,31 @@ function parseCatalogRest(restRaw) {
   }
   return { id, extra };
 }
+
 // -------------------- Manifest dinámico --------------------
 async function buildManifest(configId) {
   let genreOptions = ['General'];
-  let lastUpdateStr = await getLastUpdateString(configId);
-
+  const lastUpdateStr = await getLastUpdateString(configId);
   let currentM3u = '';
   let currentExtraWebs = '';
+
   try {
     const cfg = await kvGetJson(configId);
     if (cfg) {
-      if (cfg.m3uUrl) currentM3u = cfg.m3uUrl;
-      if (cfg.extraWebs) currentExtraWebs = cfg.extraWebs;
+      currentM3u = cfg.m3uUrl || '';
+      currentExtraWebs = cfg.extraWebs || '';
     }
   } catch {}
 
   try {
     const genresKV = await kvGetJsonTTL(`genres:${configId}`);
-    if (Array.isArray(genresKV) && genresKV.length) genreOptions = genresKV;
-  } catch {}
-
-  lastUpdateStr = await getLastUpdateString(configId);
+    if (Array.isArray(genresKV) && genresKV.length) {
+      genreOptions = genresKV;
+      console.log(`[MANIFEST] géneros cargados desde KV para ${configId}: ${genreOptions.length}`);
+    }
+  } catch (e) {
+    console.error(`[MANIFEST] error al cargar géneros para ${configId}:`, e.message);
+  }
 
   return {
     id: BASE_ADDON_ID,
@@ -129,6 +123,7 @@ async function buildManifest(configId) {
     ]
   };
 }
+
 // -------------------- Resolver M3U y webs extra --------------------
 async function resolveM3uUrl(configId) {
   const cfg = await kvGetJson(configId);
@@ -168,34 +163,41 @@ async function resolveExtraWebs(configId) {
 
 // -------------------- Handlers principales --------------------
 async function handleCatalog({ type, id, extra, m3uUrl }) {
-  if (type !== 'tv' || !m3uUrl) return { metas: [] };
+  const logPrefix = '[CATALOG]';
+  if (type !== 'tv' || !m3uUrl) {
+    console.log(logPrefix, type !== 'tv' ? `type no soportado: ${type}` : 'm3uUrl no resuelta');
+    return { metas: [] };
+  }
 
-  const channels = await getChannels({ m3uUrl });
+  const configId = (id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID) || DEFAULT_CONFIG_ID;
+  const m3uHash = getM3uHash(m3uUrl);
+  const cacheKey = `catalog_${m3uHash}_${extra?.genre || ''}_${extra?.search || ''}`;
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    console.log(logPrefix, 'cache HIT', cacheKey);
+    return cached;
+  }
+
+  let channels;
+  try {
+    channels = await getChannels({ m3uUrl });
+    console.log(logPrefix, `canales cargados: ${channels.length}`);
+  } catch (e) {
+    console.error(logPrefix, `error cargando canales: ${e.message}`);
+    return { metas: [] };
+  }
 
   try {
-    const genreSet = new Set();
-    channels.forEach(c => {
-      if (c.group_title) genreSet.add(c.group_title);
-      if (Array.isArray(c.extra_genres)) c.extra_genres.forEach(g => genreSet.add(g));
-      if (Array.isArray(c.additional_streams)) {
-        c.additional_streams.forEach(s => {
-          if (s.group_title) genreSet.add(s.group_title);
-        });
-      }
-    });
-
-    const genreList = Array.from(genreSet).filter(Boolean).sort();
-    const configId = id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID;
-    await kvSetJsonTTL(`genres:${configId}`, genreList);
+    await extractAndStoreGenresIfChanged(channels, configId);
   } catch (e) {
-    console.error('[CATALOG] error al extraer géneros:', e.message);
+    console.error(logPrefix, 'error al extraer géneros:', e.message);
   }
 
   let filtered = channels;
-
   if (extra.search) {
     const q = String(extra.search).toLowerCase();
     filtered = filtered.filter(c => c.name?.toLowerCase().includes(q));
+    console.log(logPrefix, `aplicado search="${q}", tras filtro: ${filtered.length}`);
   }
 
   if (extra.genre) {
@@ -214,9 +216,9 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
         (Array.isArray(c.additional_streams) && c.additional_streams.some(s => s.group_title === g))
       );
     }
+    console.log(logPrefix, `aplicado genre="${g}", tras filtro: ${filtered.length}`);
   }
 
-  const configId = id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID;
   const metas = filtered.map(c => ({
     id: `${ADDON_PREFIX}_${configId}_${c.id}`,
     type: 'tv',
@@ -224,80 +226,107 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
     poster: c.logo_url
   }));
 
-  return { metas };
+  const resp = { metas };
+  cache.set(cacheKey, resp);
+  await kvSetJsonTTL(`catalog:${m3uHash}:${extra?.genre || ''}:${extra?.search || ''}`, resp);
+  console.log(logPrefix, `respuesta metas: ${metas.length}`);
+  return resp;
 }
 
-// Maneja la ruta /meta/:type/:id
-async function handleMeta(type, id) {
-    try {
-        console.log('[META] id recibido:', id);
+async function handleMeta({ id, m3uUrl }) {
+  const logPrefix = '[META]';
+  if (!m3uUrl) {
+    console.log(logPrefix, 'm3uUrl no resuelta');
+    return { meta: null };
+  }
+  const parts = id.split('_');
+  const channelId = parts.slice(2).join('_');
 
-        const parts = id.split('_');
-        if (parts.length < 3) {
-            throw new Error(`Formato de id inválido: ${id}`);
-        }
+  const m3uHash = getM3uHash(m3uUrl);
+  const cacheKey = `meta_${m3uHash}_${channelId}`;
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    console.log(logPrefix, 'cache HIT', cacheKey);
+    return cached;
+  }
 
-        const configId = parts[1];
-        const channelId = parts.slice(2).join('_');
+  const ch = await getChannel(channelId, { m3uUrl });
+  if (!ch) {
+    console.log(logPrefix, `canal no encontrado: ${channelId}`);
+    return { meta: null };
+  }
 
-        const { m3uUrl } = await getConfig(configId);
-        const ch = await getChannel(channelId, { m3uUrl });
-
-        if (!ch) {
-            throw new Error(`Canal con id ${channelId} no encontrado`);
-        }
-
-        return {
-            meta: {
-                id,
-                type: 'tv',
-                name: ch.name,
-                poster: ch.logo || '',
-                background: ch.logo || '',
-                description: ch.group || ''
-            }
-        };
-    } catch (err) {
-        console.error('[META] Error:', err.message);
-        throw err;
+  const resp = {
+    meta: {
+      id,
+      type: 'tv',
+      name: ch.name,
+      poster: ch.logo_url,
+      background: ch.logo_url,
+      description: ch.name
     }
+  };
+  cache.set(cacheKey, resp);
+  await kvSetJsonTTL(`meta:${m3uHash}:${channelId}`, resp);
+  console.log(logPrefix, `meta para ${channelId}: ${ch.name}`);
+  return resp;
 }
 
-// Maneja la ruta /stream/:type/:id
-async function handleStream(type, id) {
-    try {
-        console.log('[STREAM] id recibido:', id);
+async function handleStream({ id, m3uUrl, configId }) {
+  const logPrefix = '[STREAM]';
+  if (!m3uUrl) {
+    console.log(logPrefix, 'm3uUrl no resuelta');
+    return { streams: [], chName: '' };
+  }
+  const parts = id.split('_');
+  const channelId = parts.slice(2).join('_');
 
-        const parts = id.split('_');
-        if (parts.length < 3) {
-            throw new Error(`Formato de id inválido: ${id}`);
-        }
+  const m3uHash = getM3uHash(m3uUrl);
+  const cacheKey = `stream_${m3uHash}_${channelId}`;
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    console.log(logPrefix, 'cache HIT', cacheKey);
+    return cached;
+  }
 
-        const configId = parts[1];
-        const channelId = parts.slice(2).join('_');
+  const ch = await getChannel(channelId, { m3uUrl });
+  if (!ch) {
+    console.log(logPrefix, `canal no encontrado: ${channelId}`);
+    return { streams: [], chName: '' };
+  }
 
-        const { m3uUrl } = await getConfig(configId);
-        const ch = await getChannel(channelId, { m3uUrl });
+  const chName = ch.name;
+  let streams = [];
 
-        if (!ch || !ch.url) {
-            throw new Error(`Canal con id ${channelId} no encontrado o sin URL`);
-        }
-
-        return {
-            streams: [
-                {
-                    url: ch.url,
-                    title: ch.name
-                }
-            ]
-        };
-    } catch (err) {
-        console.error('[STREAM] Error:', err.message);
-        throw err;
+  const addStream = (src) => {
+    const out = { name: src.group_title, title: src.title };
+    if (src.acestream_id) {
+      out.externalUrl = `acestream://${src.acestream_id}`;
+      out.behaviorHints = { notWebReady: true, external: true };
+    } else if (src.m3u8_url || src.stream_url || src.url) {
+      out.url = src.m3u8_url || src.stream_url || src.url;
+      out.behaviorHints = { notWebReady: false, external: false };
     }
+    streams.push(out);
+  };
+
+  if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) addStream(ch);
+  (ch.additional_streams || []).forEach(addStream);
+  if (ch.website_url) {
+    streams.push({
+      title: `${ch.name} - Website`,
+      externalUrl: ch.website_url,
+      behaviorHints: { notWebReady: true, external: true }
+    });
+  }
+
+  const resp = { streams, chName };
+  cache.set(cacheKey, resp);
+  console.log(logPrefix, `streams para ${channelId}: ${streams.length}`);
+  return resp;
 }
 
-// -------------------- Extraer y guardar géneros solo si cambia la M3U --------------------
+// -------------------- Extraer y guardar géneros --------------------
 async function extractAndStoreGenresIfChanged(channels, configId) {
   try {
     const m3uText = channels.map(c => {
@@ -341,7 +370,6 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
 
     if (genreList.length) {
       const nowStr = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
-
       if (!lastHash || lastHash !== currentHash) {
         await kvSetJsonTTL(`genres:${configId}`, genreList);
         await kvSet(lastHashKey, currentHash);
@@ -359,40 +387,33 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
 
 // -------------------- Rutas MANIFEST --------------------
 router.get('/manifest.json', async (req, res) => {
-  const manifest = await buildManifest(DEFAULT_CONFIG_ID);
-  res.json(manifest);
+  try {
+    const manifest = await buildManifest(DEFAULT_CONFIG_ID);
+    res.json(manifest);
+  } catch (e) {
+    console.error('[MANIFEST] error al generar default:', e.message);
+    res.status(500).json({});
+  }
 });
+
 router.get('/:configId/manifest.json', async (req, res) => {
-  const manifest = await buildManifest(req.params.configId);
-  res.json(manifest);
+  try {
+    const manifest = await buildManifest(req.params.configId);
+    res.json(manifest);
+  } catch (e) {
+    console.error(`[MANIFEST] error al generar para ${req.params.configId}:`, e.message);
+    res.status(500).json({});
+  }
 });
 
 // -------------------- Rutas de catálogo --------------------
-router.get('/catalog/:type/:rest(.+)\\.json', async (req, res) => {
-  console.log('[ROUTE] CATALOG (sin configId)', {
-    url: req.originalUrl,
-    params: req.params,
-    query: req.query
-  });
-  await catalogRouteParsed(req, res, null);
-});
-
 router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
-  console.log('[ROUTE] CATALOG (con configId)', {
-    url: req.originalUrl,
-    params: req.params,
-    query: req.query
-  });
-  await catalogRouteParsed(req, res, req.params.configId);
-});
-
-async function catalogRouteParsed(req, res, configIdFromPath) {
+  console.log('[ROUTE] CATALOG', { url: req.originalUrl, params: req.params, query: req.query });
   try {
     const type = String(req.params.type);
     const { id, extra: extraFromRest } = parseCatalogRest(req.params.rest || '');
-    const configId = configIdFromPath || extractConfigIdFromUrl(req);
+    const configId = req.params.configId || extractConfigIdFromUrl(req);
     const m3uUrl = await resolveM3uUrl(configId);
-
     const extra = {
       search: req.query.search || extraFromRest.search || '',
       genre: req.query.genre || extraFromRest.genre || ''
@@ -400,7 +421,7 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
 
     console.log('[CATALOG] parsed', { type, id, configId, extra, m3uUrl: m3uUrl ? '[ok]' : null });
 
-    const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
+    const m3uHash = getM3uHash(m3uUrl);
     const kvKey = `catalog:${m3uHash}:${extra.genre || ''}:${extra.search || ''}`;
 
     const kvCached = await kvGetJsonTTL(kvKey);
@@ -436,18 +457,23 @@ async function catalogRouteParsed(req, res, configIdFromPath) {
     console.error('[CATALOG] route error:', e.message);
     return res.status(200).json({ metas: [] });
   }
-}
+});
+
 // -------------------- Rutas META y STREAM --------------------
-async function metaRoute(req, res) {
+router.get('/:configId/meta/:type/:id.json', async (req, res) => {
   try {
     const id = String(req.params.id).replace(/\.json$/, '');
     const configId = req.params.configId || extractConfigIdFromUrl(req);
     const m3uUrl = await resolveM3uUrl(configId);
+    console.log('[ROUTE] META', { url: req.originalUrl, id, configId, m3uUrl: m3uUrl ? '[ok]' : null });
 
-    const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
+    const m3uHash = getM3uHash(m3uUrl);
     const kvKey = `meta:${m3uHash}:${id}`;
     const kvCached = await kvGetJsonTTL(kvKey);
-    if (kvCached) return res.json(kvCached);
+    if (kvCached) {
+      console.log('[META] KV HIT', kvKey);
+      return res.json(kvCached);
+    }
 
     const result = await handleMeta({ id, m3uUrl });
     await kvSetJsonTTL(kvKey, result);
@@ -456,20 +482,21 @@ async function metaRoute(req, res) {
     console.error('[META] route error:', e.message);
     res.status(200).json({ meta: null });
   }
-}
+});
 
-async function streamRoute(req, res) {
+router.get('/:configId/stream/:type/:id.json', async (req, res) => {
   try {
     const id = String(req.params.id).replace(/\.json$/, '');
     const configId = req.params.configId || extractConfigIdFromUrl(req);
     const m3uUrl = await resolveM3uUrl(configId);
+    console.log('[ROUTE] STREAM', { url: req.originalUrl, id, configId, m3uUrl: m3uUrl ? '[ok]' : null });
 
-    const m3uHash = crypto.createHash('md5').update(m3uUrl || '').digest('hex');
+    const m3uHash = getM3uHash(m3uUrl);
     const kvKey = `stream:${m3uHash}:${id}`;
     let kvCached = await kvGetJsonTTL(kvKey);
 
     const enrichWithExtra = async (baseObj) => {
-      if (!baseObj || typeof baseObj !== 'object') return baseObj;
+      if (!baseObj || typeof baseObj !== 'object') return { streams: [], chName: '' };
       if (!Array.isArray(baseObj.streams)) baseObj.streams = [];
 
       let chName = baseObj.chName;
@@ -480,14 +507,19 @@ async function streamRoute(req, res) {
 
       const extraWebsList = await resolveExtraWebs(configId);
       if (extraWebsList.length) {
-        const extraStreams = await scrapeExtraWebs(chName, extraWebsList);
-        const existingUrls = new Set(baseObj.streams.map(s => s.url || s.externalUrl));
-        const nuevos = extraStreams.filter(s => {
-          const url = s.url || s.externalUrl;
-          return url && !existingUrls.has(url);
-        });
-        if (nuevos.length) {
-          baseObj.streams.push(...nuevos);
+        try {
+          const extraStreams = await scrapeExtraWebs(chName, extraWebsList);
+          const existingUrls = new Set(baseObj.streams.map(s => s.url || s.externalUrl));
+          const nuevos = extraStreams.filter(s => {
+            const url = s.url || s.externalUrl;
+            return url && !existingUrls.has(url);
+          });
+          if (nuevos.length) {
+            baseObj.streams.push(...nuevos);
+            console.log(`[STREAM] Añadidos ${nuevos.length} streams extra para ${chName}`);
+          }
+        } catch (e) {
+          console.error(`[STREAM] Error en scrapeExtraWebs para ${chName}:`, e.message);
         }
       }
       return baseObj;
@@ -505,19 +537,13 @@ async function streamRoute(req, res) {
     result = await enrichWithExtra(result);
     await kvSetJsonTTL(kvKey, result);
     res.json({ streams: result.streams });
-
   } catch (e) {
     console.error('[STREAM] route error:', e.message);
     res.status(200).json({ streams: [] });
   }
-}
+});
 
-router.get('/meta/:type/:id.json', metaRoute);
-router.get('/:configId/meta/:type/:id.json', metaRoute);
-router.get('/stream/:type/:id.json', streamRoute);
-router.get('/:configId/stream/:type/:id.json', streamRoute);
-
-// -------------------- Config web opcional --------------------
+// -------------------- Config web --------------------
 router.get('/configure', (req, res) => {
   res.setHeader('Content-Type', 'text/html');
   res.end(`
@@ -550,8 +576,10 @@ router.post('/generate-url', async (req, res) => {
   try {
     const m3uUrl = String(req.body?.m3uUrl || '').trim();
     const extraWebs = String(req.body?.extraWebs || '').trim();
-
     if (!m3uUrl) throw new Error('URL M3U requerida');
+
+    const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/;
+    const extraWebsList = extraWebs ? extraWebs.split(/[;|,\n]+/).map(s => s.trim()).filter(s => urlRegex.test(s)) : [];
 
     try {
       const controller = new AbortController();
@@ -562,10 +590,12 @@ router.post('/generate-url', async (req, res) => {
     } catch {
       const r = await fetch(m3uUrl, { method: 'GET' });
       if (!r.ok) throw new Error('La URL M3U no es accesible');
+      const text = await r.text();
+      if (!text.includes('#EXTINF')) throw new Error('No es un archivo M3U válido');
     }
 
     const configId = uuidv4();
-    await kvSetJson(configId, { m3uUrl, extraWebs });
+    await kvSetJson(configId, { m3uUrl, extraWebs: extraWebsList.join(';') });
 
     const baseHost = req.headers['x-forwarded-host'] || req.headers.host;
     const baseProto = req.headers['x-forwarded-proto'] || 'https';
@@ -621,7 +651,6 @@ router.post('/generate-url', async (req, res) => {
 app.use(router);
 module.exports = app;
 
-// -------------------- Arranque local --------------------
 if (require.main === module) {
   const port = process.env.PORT || 3000;
   app.listen(port, () => console.log(`Heimdallr listening on http://localhost:${port}`));
