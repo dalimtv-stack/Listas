@@ -373,13 +373,17 @@ async function handleStream({ id, m3uUrl, configId }) {
   const cacheKey = `stream_${m3uHash}_${channelId}`;
 
   let cached = cache.get(cacheKey);
+  let chName;
+
   if (cached) {
     console.log(logPrefix, 'cache HIT', cacheKey);
+    chName = cached.chName;
   } else {
     console.log(logPrefix, 'cache MISS', cacheKey);
     const ch = await getChannel(channelId, { m3uUrl });
     if (!ch) return { streams: [] };
 
+    chName = ch.name;
     let streams = [];
 
     const addStream = (src) => {
@@ -405,16 +409,16 @@ async function handleStream({ id, m3uUrl, configId }) {
       });
     }
 
-    cached = { streams, chName: ch.name }; // guardamos también el nombre para usarlo luego
+    cached = { streams, chName };
     cache.set(cacheKey, cached);
   }
 
-  // 🔹 Aquí siempre añadimos streams extra, incluso en cache HIT
+  // 🔹 Siempre añadimos streams extra, incluso en cache HIT
   const extraWebsList = await resolveExtraWebs(configId);
-  console.log(`[STREAM] ExtraWebsList para ${cached.chName || 'desconocido'}:`, extraWebsList);
+  console.log(`[STREAM] ExtraWebsList para ${chName}:`, extraWebsList);
 
   if (extraWebsList.length) {
-    const extraStreams = await scrapeExtraWebs(cached.chName || channelId, extraWebsList);
+    const extraStreams = await scrapeExtraWebs(chName, extraWebsList);
 
     // Evitar duplicados por URL
     const existingUrls = new Set(
