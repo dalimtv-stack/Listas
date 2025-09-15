@@ -359,6 +359,7 @@ async function handleMeta({ id, m3uUrl }) {
   return resp;
 }
 
+// ----- handleStream modificado -----
 async function handleStream({ id, m3uUrl, configId }) {
   const logPrefix = '[STREAM]';
 
