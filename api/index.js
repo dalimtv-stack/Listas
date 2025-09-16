@@ -463,6 +463,19 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
       .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'es', { sensitivity: 'base' }))
       .map(([g]) => g);
 
+    // Obtener géneros existentes del KV
+    const existingGenres = await kvGetJsonTTL(`genres:${configId}`) || [];
+    console.log('[GENRES] Géneros existentes en KV:', existingGenres);
+
+    // Identificar géneros obsoletos (existentes en KV pero no en genreList)
+    const obsoleteGenres = existingGenres.filter(g => !genreList.includes(g) && g !== 'General');
+    if (obsoleteGenres.length > 0) {
+      console.log('[GENRES] Géneros obsoletos detectados:', obsoleteGenres);
+      const updatedGenres = existingGenres.filter(g => genreList.includes(g) || g === 'General');
+      await kvSetJsonTTL(`genres:${configId}`, updatedGenres, 24 * 3600); // Actualizar con géneros válidos
+      console.log('[GENRES] Géneros obsoletos eliminados, lista actualizada:', updatedGenres);
+    }
+
     if (genreList.length) {
       const nowStr = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
       if (!lastHash || lastHash !== currentHash) {
