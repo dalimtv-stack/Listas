@@ -128,6 +128,7 @@ acestream://4fc2fce0d019bdb622164bba3cff84c120fb9243
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.3.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%203.png" group-title="NEW ERA", Movistar Liga de Campeones 3 (FHD) (Opcion 3)
 acestream://15127320406cf6a072c4f485f31c841d7d3e62f3
 
+# https://i.ibb.co/CV4CLjz/deportes.png
 #EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4265923" group-title="Telegram", Movistar Deportes
 http://195.66.210.10:80/Rtr6yAJJqg/mEAp9xefv6/203769
 #EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://i.imgur.com/movistar-deporte-logo.png" group-title="Telegram", Movistar Deportes (Opcion 2)
@@ -591,3 +592,8 @@ http://200.125.170.121:8000/play/a00m
 http://38.180.133.31:8000/play/a0ox/index.m3u8
 #EXTINF:-1 tvg-id="ESPN.mx" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/ESPN.png" group-title="Telegram", ESPN MX (Opcion 2)
 http://181.78.106.127:9000/play/ca033/index.m3u8
+
+#EXTINF:-1 tvg-logo="https://i.ibb.co/rGVmRcSH/hits.png" tvg-id="M+ Hits HD" group-title="MOVISTAR", MOVISTAR SERIES FHD --> NEW ERA
+acestream://226d067f3022a15bbc9332dce19c26a1d7bbc843
+#EXTINF:-1 tvg-logo="https://i.ibb.co/JWpf4FcM/clasicos.png" tvg-id="M+ Clásicos HD" group-title="MOVISTAR", MOVISTAR CLASICOS FHD --> NEW ERA
+acestream://eeea4f9de29fb23bb6db4c11b4e973f14bfe6bc0
