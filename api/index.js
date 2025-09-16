@@ -512,7 +512,7 @@ router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
 
     console.log('[CATALOG] parsed', { type, id, configId, extra, m3uUrl: m3uUrl ? '[ok]' : null });
 
-    const m3uHash = getM3uHash(m3uUrl);
+    const m3uHash = await getM3uHash(m3uUrl); // Ahora incluye el contenido
     const kvKey = `catalog:${m3uHash}:${extra.genre || ''}:${extra.search || ''}`;
 
     let kvCached = await kvGetJsonTTL(kvKey);
