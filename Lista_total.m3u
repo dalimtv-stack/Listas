@@ -304,6 +304,7 @@ acestream://508ffdbab097339adb4f3d922070b5df2c114d01
 #EXTINF:-1 tvg-id="Movistar.Documentales.es" tvg-logo="https://i.ibb.co/S7GD8x7R/M-documentales.png" group-title="Shickat.me", Movistar Documentales (FHD)
 acestream://6cda7d2622bcafd6aef486016238936855927d7d
 
+# https://i.ibb.co/rGVmRcSH/hits.png
 #EXTINF:-1 tvg-id="Movistar.Series.es" tvg-logo="https://i.ibb.co/hFWq93DZ/M-Originales.jpg" group-title="Shickat.me", Movistar Originales (FHD)
 acestream://1f092144252939810fd302cbd00d46de760b5dd7
 #EXTINF:-1 tvg-id="Movistar.Series.es" tvg-logo="https://i.ibb.co/rGVmRcSH/hits.png" group-title="NEW ERA", Movistar Originales (FHD)
@@ -608,11 +609,3 @@ http://200.125.170.121:8000/play/a00m
 http://38.180.133.31:8000/play/a0ox/index.m3u8
 #EXTINF:-1 tvg-id="ESPN.mx" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/ESPN.png" group-title="Telegram", ESPN MX (Opcion 2)
 http://181.78.106.127:9000/play/ca033/index.m3u8
-
-#EXTINF:-1 tvg-logo="https://i.ibb.co/rGVmRcSH/hits.png" tvg-id="M+ Hits HD" group-title="MOVISTAR", MOVISTAR SERIES FHD --> NEW ERA
-acestream://226d067f3022a15bbc9332dce19c26a1d7bbc843
-#EXTINF:-1 tvg-logo="https://i.ibb.co/JWpf4FcM/clasicos.png" tvg-id="M+ Clásicos HD" group-title="MOVISTAR", MOVISTAR CLASICOS FHD --> NEW ERA
-acestream://eeea4f9de29fb23bb6db4c11b4e973f14bfe6bc0
-
-
-
