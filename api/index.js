@@ -196,21 +196,21 @@ async function handleCatalog({ type, id, extra, m3uUrl, channels: preloadedChann
     return { metas: [] };
   }
 
+  // -------------------- Identificación y caché --------------------
   const configId = (id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID) || DEFAULT_CONFIG_ID;
   const m3uHash = await getM3uHash(m3uUrl);
   const cacheKey = `catalog_${m3uHash}_${extra?.genre || ''}_${extra?.search || ''}`;
   const cached = cache.get(cacheKey);
 
-  let channels = preloadedChannels; // Usar channels pre-cargados si existen
+  let channels = preloadedChannels;
   if (!channels) {
-    // Verificar si la M3U ha cambiado comparando el hash (redundante, pero por seguridad)
     const storedM3uHashKey = `m3u_hash:${configId}`;
     const storedM3uHash = await kvGet(storedM3uHashKey);
     if (!storedM3uHash || storedM3uHash !== m3uHash) {
       console.log(logPrefix, `M3U hash cambiado o no existe, recargando canales para ${configId}`);
       channels = await getChannels({ m3uUrl });
       console.log(logPrefix, `canales cargados: ${channels.length}`);
-      await kvSet(storedM3uHashKey, m3uHash); // Actualizar hash almacenado
+      await kvSet(storedM3uHashKey, m3uHash);
     } else if (cached) {
       console.log(logPrefix, 'cache HIT y M3U sin cambios', cacheKey);
       return cached;
@@ -220,17 +220,25 @@ async function handleCatalog({ type, id, extra, m3uUrl, channels: preloadedChann
     }
   }
 
-  // Forzar actualización de géneros si el listado está vacío (solo como fallback)
+  // -------------------- Verificación y actualización de géneros --------------------
   try {
-    const genresKV = await kvGetJsonTTL(`genres:${configId}`);
-    if (!Array.isArray(genresKV) || genresKV.length <= 1) {
-      console.log(logPrefix, `Géneros vacíos o no válidos para ${configId}, generando nuevos géneros`);
-      await extractAndStoreGenresIfChanged(channels, configId);
+    const newGenres = extractGenresFromChannels(channels); // ← función que devuelve array de géneros únicos
+    const storedGenresKey = `genres:${configId}`;
+    const storedGenres = await kvGetJsonTTL(storedGenresKey);
+
+    const genresChanged = !Array.isArray(storedGenres)
+      || storedGenres.length !== newGenres.length
+      || newGenres.some(g => !storedGenres.includes(g));
+
+    if (genresChanged) {
+      console.log(logPrefix, `Géneros han cambiado para ${configId}, actualizando KV`);
+      await kvSetJsonTTL(storedGenresKey, newGenres);
     }
   } catch (e) {
     console.error(logPrefix, `Error verificando géneros para ${configId}:`, e.message);
   }
 
+  // -------------------- Filtro por búsqueda --------------------
   let filtered = channels;
   if (extra.search) {
     const q = String(extra.search).toLowerCase();
@@ -238,6 +246,7 @@ async function handleCatalog({ type, id, extra, m3uUrl, channels: preloadedChann
     console.log(logPrefix, `aplicado search="${q}", tras filtro: ${filtered.length}`);
   }
 
+  // -------------------- Filtro por género --------------------
   if (extra.genre) {
     const g = String(extra.genre);
     if (g === 'Otros') {
@@ -257,6 +266,7 @@ async function handleCatalog({ type, id, extra, m3uUrl, channels: preloadedChann
     console.log(logPrefix, `aplicado genre="${g}", tras filtro: ${filtered.length}`);
   }
 
+  // -------------------- Construcción de respuesta --------------------
   const metas = filtered.map(c => ({
     id: `${ADDON_PREFIX}_${configId}_${c.id}`,
     type: 'tv',
@@ -269,143 +279,6 @@ async function handleCatalog({ type, id, extra, m3uUrl, channels: preloadedChann
   await kvSetJsonTTL(`catalog:${m3uHash}:${extra?.genre || ''}:${extra?.search || ''}`, resp);
   console.log(logPrefix, `respuesta metas: ${metas.length}`);
   return resp;
-}
-
-async function handleMeta({ id, m3uUrl }) {
-  const logPrefix = '[META]';
-  if (!m3uUrl) {
-    console.log(logPrefix, 'm3uUrl no resuelta');
-    return { meta: null };
-  }
-  const parts = id.split('_');
-  const channelId = parts.slice(2).join('_');
-
-  const m3uHash = getM3uHash(m3uUrl);
-  const cacheKey = `meta_${m3uHash}_${channelId}`;
-  const cached = cache.get(cacheKey);
-  if (cached) {
-    console.log(logPrefix, 'cache HIT', cacheKey);
-    return cached;
-  }
-
-  const ch = await getChannel(channelId, { m3uUrl });
-  if (!ch) {
-    console.log(logPrefix, `canal no encontrado: ${channelId}`);
-    return { meta: null };
-  }
-
-  const resp = {
-    meta: {
-      id,
-      type: 'tv',
-      name: ch.name, // Mantener nombre original en meta
-      poster: ch.logo_url,
-      background: ch.logo_url,
-      description: ch.name
-    }
-  };
-  cache.set(cacheKey, resp);
-  await kvSetJsonTTL(`meta:${m3uHash}:${channelId}`, resp);
-  console.log(logPrefix, `meta para ${channelId}: ${ch.name}`);
-  return resp;
-}
-
-async function handleStream({ id, m3uUrl, configId }) {
-  const logPrefix = '[STREAM]';
-  if (!m3uUrl) {
-    console.log(logPrefix, 'm3uUrl no resuelta');
-    return { streams: [], chName: '' };
-  }
-  const parts = id.split('_');
-  const channelId = parts.slice(2).join('_');
-
-  const m3uHash = getM3uHash(m3uUrl);
-  const cacheKey = `stream_${m3uHash}_${channelId}`;
-  const cached = cache.get(cacheKey);
-  if (cached) {
-    console.log(logPrefix, 'cache HIT', cacheKey);
-    const enriched = await enrichWithExtra(cached, configId, m3uUrl);
-    return enriched;
-  }
-
-  let result = await handleStreamInternal({ id, m3uUrl, configId });
-  const enriched = await enrichWithExtra(result, configId, m3uUrl);
-  await kvSetJsonTTL(cacheKey, enriched);
-  return enriched;
-}
-
-async function handleStreamInternal({ id, m3uUrl, configId }) {
-  const logPrefix = '[STREAM]';
-  const parts = id.split('_');
-  const channelId = parts.slice(2).join('_');
-
-  const ch = await getChannel(channelId, { m3uUrl });
-  if (!ch) {
-    console.log(logPrefix, `canal no encontrado: ${channelId}`);
-    return { streams: [], chName: '' };
-  }
-
-  const chName = ch.name;
-  let streams = [];
-
-  const addStream = (src) => {
-    const out = { name: src.group_title || src.name, title: src.title || src.name };
-    if (src.acestream_id) {
-      out.externalUrl = `acestream://${src.acestream_id}`;
-      out.behaviorHints = { notWebReady: true, external: true };
-    } else if (src.m3u8_url || src.stream_url || src.url) {
-      out.url = src.m3u8_url || src.stream_url || src.url;
-      out.behaviorHints = { notWebReady: false, external: false };
-    }
-    if (src.group_title) out.group_title = src.group_title;
-    streams.push(out);
-  };
-
-  if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) addStream(ch);
-  (ch.additional_streams || []).forEach(addStream);
-  if (ch.website_url) {
-    streams.push({
-      title: `${ch.name} - Website`,
-      externalUrl: ch.website_url,
-      behaviorHints: { notWebReady: true, external: true }
-    });
-  }
-
-  const resp = { streams, chName };
-  console.log(logPrefix, `streams para ${channelId}: ${streams.length}`);
-  return resp;
-}
-
-async function enrichWithExtra(baseObj, configId, m3uUrl) {
-  const logPrefix = '[STREAM]';
-  const chName = baseObj.chName || baseObj.id.split('_').slice(2).join(' ');
-  const extraWebsList = await resolveExtraWebs(configId);
-  if (extraWebsList.length) {
-    try {
-      const extraStreams = await scrapeExtraWebs(chName, extraWebsList);
-      console.log('[STREAM] Streams extra devueltos por scraper:', extraStreams);
-      if (extraStreams.length > 0) {
-        const existingUrls = new Set(baseObj.streams.map(s => s.url || s.externalUrl));
-        const nuevos = extraStreams.filter(s => {
-          const url = s.url || s.externalUrl;
-          return url && !existingUrls.has(url);
-        });
-        if (nuevos.length) {
-          // Reordenar: extra streams primero, luego streams originales
-          baseObj.streams = [...nuevos, ...baseObj.streams.filter(s => !nuevos.some(n => (n.url || n.externalUrl) === (s.url || s.externalUrl)))];
-          console.log(`[STREAM] Añadidos ${nuevos.length} streams extra para ${chName} con group_title`);
-        } else {
-          console.log(`[STREAM] No se añadieron streams extra para ${chName} (sin coincidencias)`);
-        }
-      } else {
-        console.log(`[STREAM] No se añadieron streams extra para ${chName} (sin coincidencias)`);
-      }
-    } catch (e) {
-      console.error(`[STREAM] Error en scrapeExtraWebs para ${chName}:`, e.message);
-    }
-  }
-  console.log('[STREAM] Respuesta final con streams:', baseObj.streams);
-  return baseObj;
 }
 
 // -------------------- Extraer y guardar géneros --------------------
@@ -542,7 +415,6 @@ router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
       console.log('[CATALOG] M3U hash cambiado o no existe, recargando canales y géneros para', configId);
       channels = await getChannels({ m3uUrl });
       console.log('[CATALOG] canales cargados:', channels.length);
-      await extractAndStoreGenresIfChanged(channels, configId); // Regenerar géneros con los nuevos canales
       await kvSet(storedM3uHashKey, currentM3uHash); // Actualizar hash almacenado
     } else {
       channels = await getChannels({ m3uUrl }); // Recargar canales para consistencia, pero usar caché si disponible
@@ -555,12 +427,19 @@ router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
     let kvCached = await kvGetJsonTTL(kvKey);
     if (kvCached) {
       console.log('[CATALOG] KV HIT', kvKey);
-      // Verificación adicional de géneros (solo si necesario tras recarga)
+
       try {
-        const genresKV = await kvGetJsonTTL(`genres:${configId}`);
-        if (!Array.isArray(genresKV) || genresKV.length <= 1) { // Solo 'General' no cuenta como género válido
-          console.log('[CATALOG] Géneros vacíos o no válidos tras recarga, forzando regeneración');
-          await extractAndStoreGenresIfChanged(channels, configId);
+        const newGenres = extractGenresFromChannels(channels); // función que devuelve array de géneros únicos
+        const storedGenresKey = `genres:${configId}`;
+        const storedGenres = await kvGetJsonTTL(storedGenresKey);
+
+        const genresChanged = !Array.isArray(storedGenres)
+          || storedGenres.length !== newGenres.length
+          || newGenres.some(g => !storedGenres.includes(g));
+
+        if (genresChanged) {
+          console.log('[CATALOG] Géneros han cambiado, actualizando KV y forzando recálculo');
+          await kvSetJsonTTL(storedGenresKey, newGenres);
           kvCached = null; // Invalida el caché para forzar recálculo
         }
       } catch (e) {
@@ -586,6 +465,7 @@ router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
     return res.status(200).json({ metas: [] });
   }
 });
+
 
 // -------------------- Rutas META y STREAM --------------------
 router.get('/:configId/meta/:type/:id.json', async (req, res) => {
