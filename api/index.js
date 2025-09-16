@@ -97,9 +97,11 @@ async function buildManifest(configId) {
 
   try {
     const genresKV = await kvGetJsonTTL(`genres:${configId}`);
-    if (Array.isArray(genresKV) && genresKV.length) {
+    if (Array.isArray(genresKV) && genresKV.length > 1) { // Solo 'General' no cuenta como género válido
       genreOptions = genresKV;
       console.log(`[MANIFEST] géneros cargados desde KV para ${configId}: ${genreOptions.length}`);
+    } else {
+      console.warn(`[MANIFEST] No se encontraron géneros válidos en KV para ${configId}, usando ['General']`);
     }
   } catch (e) {
     console.error(`[MANIFEST] error al cargar géneros para ${configId}:`, e.message);
@@ -189,28 +191,33 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
   const storedM3uHash = await kvGet(storedM3uHashKey);
 
   let channels;
-  if (!storedM3uHash || storedM3uHash !== m3uHash) {
-    try {
+  try {
+    if (!storedM3uHash || storedM3uHash !== m3uHash) {
       console.log(logPrefix, `M3U hash cambiado o no existe, recargando canales para ${configId}`);
       channels = await getChannels({ m3uUrl });
       console.log(logPrefix, `canales cargados: ${channels.length}`);
       await kvSet(storedM3uHashKey, m3uHash); // Actualizar hash almacenado
-      await extractAndStoreGenresIfChanged(channels, configId); // Actualizar géneros
-    } catch (e) {
-      console.error(logPrefix, `error cargando canales: ${e.message}`);
-      return { metas: [] };
-    }
-  } else if (cached) {
-    console.log(logPrefix, 'cache HIT y M3U sin cambios', cacheKey);
-    return cached;
-  } else {
-    try {
+    } else if (cached) {
+      console.log(logPrefix, 'cache HIT y M3U sin cambios', cacheKey);
+      return cached;
+    } else {
       channels = await getChannels({ m3uUrl });
       console.log(logPrefix, `canales cargados (sin cambio de hash): ${channels.length}`);
-    } catch (e) {
-      console.error(logPrefix, `error cargando canales: ${e.message}`);
-      return { metas: [] };
     }
+  } catch (e) {
+    console.error(logPrefix, `error cargando canales: ${e.message}`);
+    return { metas: [] };
+  }
+
+  // Forzar actualización de géneros si el listado está vacío
+  try {
+    const genresKV = await kvGetJsonTTL(`genres:${configId}`);
+    if (!Array.isArray(genresKV) || genresKV.length <= 1) { // Solo 'General' no cuenta como género válido
+      console.log(logPrefix, `Géneros vacíos o no válidos para ${configId}, generando nuevos géneros`);
+      await extractAndStoreGenresIfChanged(channels, configId);
+    }
+  } catch (e) {
+    console.error(logPrefix, `Error verificando géneros para ${configId}:`, e.message);
   }
 
   let filtered = channels;
@@ -435,14 +442,18 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
     if (genreList.length) {
       const nowStr = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
       if (!lastHash || lastHash !== currentHash) {
-        await kvSetJsonTTL(`genres:${configId}`, genreList);
+        await kvSetJsonTTL(`genres:${configId}`, genreList, 24 * 3600); // TTL de 24 horas
         await kvSet(lastHashKey, currentHash);
         await kvSet(lastUpdateKey, nowStr);
         console.log(`[GENRES] actualizados: ${genreList.length} géneros (Otros=${orphanCount})`);
       } else if (!lastUpdate) {
         await kvSet(lastUpdateKey, nowStr);
         console.log(`[GENRES] timestamp inicial registrado: ${nowStr}`);
+      } else {
+        console.log(`[GENRES] géneros sin cambios, usando caché: ${genreList.length}`);
       }
+    } else {
+      console.warn(`[GENRES] No se encontraron géneros válidos para ${configId}`);
     }
   } catch (e) {
     console.error('[GENRES] error al extraer:', e.message);
@@ -491,12 +502,6 @@ router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
     const kvCached = await kvGetJsonTTL(kvKey);
     if (kvCached) {
       console.log('[CATALOG] KV HIT', kvKey);
-      try {
-        const channels = await getChannels({ m3uUrl });
-        await extractAndStoreGenresIfChanged(channels, configId);
-      } catch (e) {
-        console.error('[CATALOG] error al actualizar géneros tras KV HIT:', e.message);
-      }
       return res.json(kvCached);
     }
 
@@ -507,13 +512,6 @@ router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
     } catch (e) {
       console.error('[CATALOG] error en handleCatalog:', e.message);
       result = { metas: [] };
-    }
-
-    try {
-      const channels = await getChannels({ m3uUrl });
-      await extractAndStoreGenresIfChanged(channels, configId);
-    } catch (e) {
-      console.error('[CATALOG] error al actualizar géneros tras MISS:', e.message);
     }
 
     return res.json(result);
