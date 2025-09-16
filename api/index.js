@@ -27,7 +27,7 @@ const ADDON_PREFIX = 'heimdallr';
 const CATALOG_PREFIX = 'Heimdallr';
 const DEFAULT_CONFIG_ID = 'default';
 const DEFAULT_M3U_URL = process.env.DEFAULT_M3U_URL || 'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u';
-const VERSION = '1.3.702';
+const VERSION = '1.3.701';
 
 // Función auxiliar para normalizar nombres (quitando paréntesis pero manteniendo corchetes)
 function normalizeCatalogName(name) {
@@ -183,24 +183,34 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
   const m3uHash = getM3uHash(m3uUrl);
   const cacheKey = `catalog_${m3uHash}_${extra?.genre || ''}_${extra?.search || ''}`;
   const cached = cache.get(cacheKey);
-  if (cached) {
-    console.log(logPrefix, 'cache HIT', cacheKey);
-    return cached;
-  }
+
+  // Verificar si la M3U ha cambiado comparando el hash
+  const storedM3uHashKey = `m3u_hash:${configId}`;
+  const storedM3uHash = await kvGet(storedM3uHashKey);
 
   let channels;
-  try {
-    channels = await getChannels({ m3uUrl });
-    console.log(logPrefix, `canales cargados: ${channels.length}`);
-  } catch (e) {
-    console.error(logPrefix, `error cargando canales: ${e.message}`);
-    return { metas: [] };
-  }
-
-  try {
-    await extractAndStoreGenresIfChanged(channels, configId);
-  } catch (e) {
-    console.error(logPrefix, 'error al extraer géneros:', e.message);
+  if (!storedM3uHash || storedM3uHash !== m3uHash) {
+    try {
+      console.log(logPrefix, `M3U hash cambiado o no existe, recargando canales para ${configId}`);
+      channels = await getChannels({ m3uUrl });
+      console.log(logPrefix, `canales cargados: ${channels.length}`);
+      await kvSet(storedM3uHashKey, m3uHash); // Actualizar hash almacenado
+      await extractAndStoreGenresIfChanged(channels, configId); // Actualizar géneros
+    } catch (e) {
+      console.error(logPrefix, `error cargando canales: ${e.message}`);
+      return { metas: [] };
+    }
+  } else if (cached) {
+    console.log(logPrefix, 'cache HIT y M3U sin cambios', cacheKey);
+    return cached;
+  } else {
+    try {
+      channels = await getChannels({ m3uUrl });
+      console.log(logPrefix, `canales cargados (sin cambio de hash): ${channels.length}`);
+    } catch (e) {
+      console.error(logPrefix, `error cargando canales: ${e.message}`);
+      return { metas: [] };
+    }
   }
 
   let filtered = channels;
