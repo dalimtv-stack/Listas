@@ -52,7 +52,19 @@ router.use((req, res, next) => {
 
 // -------------------- Utils --------------------
 function getM3uHash(m3uUrl) {
-  return crypto.createHash('md5').update(m3uUrl || '').digest('hex');
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch(m3uUrl, { method: 'GET', timeout: 5000 });
+      if (!response.ok) throw new Error(`Error fetching M3U: ${response.status}`);
+      const m3uText = await response.text();
+      const hash = crypto.createHash('md5').update(m3uText).digest('hex');
+      console.log(`[UTILS] Generado hash para ${m3uUrl}: ${hash}`);
+      resolve(hash);
+    } catch (e) {
+      console.error(`[UTILS] Error generando hash para ${m3uUrl}:`, e.message);
+      resolve(crypto.createHash('md5').update(m3uUrl || '').digest('hex')); // Fallback a hash de URL
+    }
+  });
 }
 
 async function getLastUpdateString(configId) {
