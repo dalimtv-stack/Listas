@@ -24,11 +24,7 @@ function getSearchTerms(channelName) {
   const original = String(channelName || '').toLowerCase();
   const normalized = normalizeName(channelName)
     .replace(/\s*\(.*?\)\s*/g, '')
-    .replace(/
-
-\[.*?\]
-
-/g, '');
+    .replace(/\[.*?\]/g, '');
   const aliases = channelAliases[normalized] || channelAliases[original] || [];
   return [...new Set([normalized, original, ...aliases])];
 }
