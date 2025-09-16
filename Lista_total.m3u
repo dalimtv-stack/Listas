@@ -11,10 +11,6 @@ http://www.huhu.to/play/4205258144/index.m3u8
 
 # https://i.ibb.co/VcRYc75W/M-plus.png
 # https://www.movistarplus.es/recorte/m-DP/modmarcas/MPLUHD
-#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://i.ibb.co/VcRYc75W/M-plus.png" group-title="daddylivestream", Movistar Plus
-https://world-proxifier.xyz/ddy/p/XSQhJT0FNygtXl5RW08kNElTLF0gJCQvLygtXl5ROjgvX0hfIl8DBydSKUklOV8GIh4=/index.m3u8
-#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://i.ibb.co/VcRYc75W/M-plus.png" group-title="daddylivestream", Movistar Plus (Browser)
-https://daddylivestream.com/embed/stream-436.php
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://i.ibb.co/VcRYc75W/M-plus.png" group-title="Elcano.top", Movistar Plus (1080)
 acestream://1ab443f5b4beb6d586f19e8b25b9f9646cf2ab78
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://i.ibb.co/hFYPWbpJ/plus.png" group-title="NEW ERA", Movistar Plus (FHD)
@@ -23,7 +19,9 @@ acestream://b2a4d1eba9b46df5f52a87105df779f9d39abeb4
 acestream://56ac8e227d526e722624675ccdd91b0cc850582f
 
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="daddylivestream", Movistar LaLiga
-https://windnew.newkso.ru/wind/premium84/mono.m3u8
+https://world-proxifier.xyz/ddy/p/XSQhJT0FNygtXl5RW08kNElTLF0gJCQvLygtXl5ROjgvX0hfIl8DBydSKUklOV8GIh4=/index.m3u8
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="daddylivestream", Movistar LaLiga (Browser)
+https://daddylivestream.com/embed/stream-436.php
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://i.imgur.com/26c7mQb.png" group-title="7pal.short.gy",Movistar LaLiga (UHD) 
 https://7pal.short.gy/mplusuhd
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="Elcano.top", Movistar LaLiga (1080 MultiAudio)
@@ -61,6 +59,8 @@ acestream://ebe14f1edeb49f2253e3b355a8beeadc9b4f0bc4
 #EXTINF:-1 tvg-id="Movistar.LaLiga.3.es" tvg-logo="https://i.ibb.co/BZF0xG9/liga3.png" group-title="ELCANO", Movistar LaLiga 3 (SD)
 acestream://835639b89db00cc0d94660da3c10b6e38bfbcdc1
 
+#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://dazngroup.com/wp-content/uploads/2025/08/DAZN-x-LALIGA.webp" group-title="daddylivestream", DAZN LaLiga
+https://world-proxifier.xyz/ddy/p/XSQhJT0FNyhQJF1YJBlTXz44W1csWD0sNDUjOlQkWEUsCSgkJ1daXj9SDRQCOl8kWzkxVxQjAw==/index.m3u8
 #EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://dazngroup.com/wp-content/uploads/2025/08/DAZN-x-LALIGA.webp" group-title="Elcano.top", DAZN LaLiga (1080 MultiAudio)
 acestream://e2b8a4aba2f4ea3dd68992fcdb65c9e62d910b05
 #EXTINF:-1 tvg-id="DAZN.LALIGA.es" group-title="Elcano.top", DAZN LaLiga (1080 MultiAudio) (Opcion 2)
@@ -78,6 +78,8 @@ acestream://8c8c1e047a1c5ed213ba74722a5345dc55c3c0eb
 
 #https://i.ibb.co/nsyG7wRV/DAZN-x-LALIGA-2.png
 #https://i.ibb.co/tw7G81gf/dazn-laliga-2-es.png
+#EXTINF:-1 tvg-id="DAZN.LALIGA.2.es" tvg-logo="https://i.ibb.co/XxMT4qnN/DAZN-x-LALIGA-2.webp" group-title="daddylivestream", DAZN LaLiga 2
+https://world-proxifier.xyz/ddy/p/XSQhJT0FNygtXl5RW08kNElTLF0gJCQvLygtXl5ROjgvX0hfIl8HBidSKUklOV8GIh4=/index.m3u8
 #EXTINF:-1 tvg-id="DAZN.LALIGA.2.es" tvg-logo="https://i.ibb.co/XxMT4qnN/DAZN-x-LALIGA-2.webp" group-title="Elcano.top", DAZN LaLiga 2 (1080 MultiAudio)
 acestream://a231b2fa1f7754433efeb8bb8d69d7b9096dcba8
 #EXTINF:-1 tvg-id="DAZN.LALIGA.2.es" group-title="Elcano.top", DAZN LaLiga 2 (1080 MultiAudio) (Opcion 2)
