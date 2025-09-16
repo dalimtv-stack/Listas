@@ -189,7 +189,7 @@ async function resolveExtraWebs(configId) {
 }
 
 // -------------------- Handlers principales --------------------
-async function handleCatalog({ type, id, extra, m3uUrl }) {
+async function handleCatalog({ type, id, extra, m3uUrl, channels: preloadedChannels }) {
   const logPrefix = '[CATALOG]';
   if (type !== 'tv' || !m3uUrl) {
     console.log(logPrefix, type !== 'tv' ? `type no soportado: ${type}` : 'm3uUrl no resuelta');
@@ -197,16 +197,15 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
   }
 
   const configId = (id.startsWith(`${CATALOG_PREFIX}_`) ? id.split('_')[1] : DEFAULT_CONFIG_ID) || DEFAULT_CONFIG_ID;
-  const m3uHash = getM3uHash(m3uUrl);
+  const m3uHash = await getM3uHash(m3uUrl);
   const cacheKey = `catalog_${m3uHash}_${extra?.genre || ''}_${extra?.search || ''}`;
   const cached = cache.get(cacheKey);
 
-  // Verificar si la M3U ha cambiado comparando el hash
-  const storedM3uHashKey = `m3u_hash:${configId}`;
-  const storedM3uHash = await kvGet(storedM3uHashKey);
-
-  let channels;
-  try {
+  let channels = preloadedChannels; // Usar channels pre-cargados si existen
+  if (!channels) {
+    // Verificar si la M3U ha cambiado comparando el hash (redundante, pero por seguridad)
+    const storedM3uHashKey = `m3u_hash:${configId}`;
+    const storedM3uHash = await kvGet(storedM3uHashKey);
     if (!storedM3uHash || storedM3uHash !== m3uHash) {
       console.log(logPrefix, `M3U hash cambiado o no existe, recargando canales para ${configId}`);
       channels = await getChannels({ m3uUrl });
@@ -219,15 +218,12 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
       channels = await getChannels({ m3uUrl });
       console.log(logPrefix, `canales cargados (sin cambio de hash): ${channels.length}`);
     }
-  } catch (e) {
-    console.error(logPrefix, `error cargando canales: ${e.message}`);
-    return { metas: [] };
   }
 
-  // Forzar actualización de géneros si el listado está vacío
+  // Forzar actualización de géneros si el listado está vacío (solo como fallback)
   try {
     const genresKV = await kvGetJsonTTL(`genres:${configId}`);
-    if (!Array.isArray(genresKV) || genresKV.length <= 1) { // Solo 'General' no cuenta como género válido
+    if (!Array.isArray(genresKV) || genresKV.length <= 1) {
       console.log(logPrefix, `Géneros vacíos o no válidos para ${configId}, generando nuevos géneros`);
       await extractAndStoreGenresIfChanged(channels, configId);
     }
@@ -264,7 +260,7 @@ async function handleCatalog({ type, id, extra, m3uUrl }) {
   const metas = filtered.map(c => ({
     id: `${ADDON_PREFIX}_${configId}_${c.id}`,
     type: 'tv',
-    name: normalizeCatalogName(c.name), // Aplicar normalización aquí
+    name: normalizeCatalogName(c.name),
     poster: c.logo_url
   }));
 
