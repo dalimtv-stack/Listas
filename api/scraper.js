@@ -1,3 +1,4 @@
+// api/scraper.js
 'use strict';
 
 const fetch = require('node-fetch');
@@ -38,7 +39,7 @@ function normalizeUrlForDisplay(url) {
     .replace(/\/+$/, '');
 }
 
-// ✅ Nueva función: bloquea streams con número si el canal original no lo tiene
+// ✅ Bloquea streams con número si el canal original no lo tiene
 function isNumberMismatch(streamName, channelName) {
   const streamNums = normalizeName(streamName).match(/\b\d+\b/g);
   const channelNums = normalizeName(channelName).match(/\b\d+\b/g);
