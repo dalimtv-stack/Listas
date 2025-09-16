@@ -1,4 +1,5 @@
 #EXTM3U url-tvg="https://raw.githubusercontent.com/pigzillaaa/daddylive/refs/heads/main/epgs/daddylive-events-epg.xml"
+# https://github.com/pigzillaaa/daddylive/raw/refs/heads/main/daddylive-events.m3u8
 
 #EXTINF:-1 tvg-id="c03bc15259eb1c9137668c16500f8e13" tvg-logo="https://raw.githubusercontent.com/pigzillaaa/daddylive/refs/heads/main/imgs/soccer-logo.png" group-title="SOCCER",Israel - Liga Leumit : Hapoel Nazareth Illit vs Hapoel Rishon LeZion (5 LIVE ISRAEL)
 https://world-proxifier.xyz/ddy/p/XSQhJT0FNyguUl0kW08kNElTLF0gJCQvLyguUl0kOjgvX0hfIl8EBxwyVzZaJDxaBj8L/index.m3u8
