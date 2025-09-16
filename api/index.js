@@ -222,9 +222,13 @@ async function handleCatalog({ type, id, extra, m3uUrl, channels: preloadedChann
 
   // -------------------- Verificación y actualización de géneros --------------------
   try {
-    const newGenres = extractGenresFromChannels(channels); // ← función que devuelve array de géneros únicos
+    await extractAndStoreGenresIfChanged(channels, configId);
+
     const storedGenresKey = `genres:${configId}`;
     const storedGenres = await kvGetJsonTTL(storedGenresKey);
+
+    // Obtener géneros recién extraídos desde KV tras la actualización
+    const newGenres = Array.isArray(storedGenres) ? storedGenres : [];
 
     const genresChanged = !Array.isArray(storedGenres)
       || storedGenres.length !== newGenres.length
@@ -279,6 +283,142 @@ async function handleCatalog({ type, id, extra, m3uUrl, channels: preloadedChann
   await kvSetJsonTTL(`catalog:${m3uHash}:${extra?.genre || ''}:${extra?.search || ''}`, resp);
   console.log(logPrefix, `respuesta metas: ${metas.length}`);
   return resp;
+}
+
+async function handleMeta({ id, m3uUrl }) {
+  const logPrefix = '[META]';
+  if (!m3uUrl) {
+    console.log(logPrefix, 'm3uUrl no resuelta');
+    return { meta: null };
+  }
+  const parts = id.split('_');
+  const channelId = parts.slice(2).join('_');
+
+  const m3uHash = getM3uHash(m3uUrl);
+  const cacheKey = `meta_${m3uHash}_${channelId}`;
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    console.log(logPrefix, 'cache HIT', cacheKey);
+    return cached;
+  }
+
+  const ch = await getChannel(channelId, { m3uUrl });
+  if (!ch) {
+    console.log(logPrefix, `canal no encontrado: ${channelId}`);
+    return { meta: null };
+  }
+
+  const resp = {
+    meta: {
+      id,
+      type: 'tv',
+      name: ch.name,
+      poster: ch.logo_url,
+      background: ch.logo_url,
+      description: ch.name
+    }
+  };
+  cache.set(cacheKey, resp);
+  await kvSetJsonTTL(`meta:${m3uHash}:${channelId}`, resp);
+  console.log(logPrefix, `meta para ${channelId}: ${ch.name}`);
+  return resp;
+}
+
+async function handleStream({ id, m3uUrl, configId }) {
+  const logPrefix = '[STREAM]';
+  if (!m3uUrl) {
+    console.log(logPrefix, 'm3uUrl no resuelta');
+    return { streams: [], chName: '' };
+  }
+  const parts = id.split('_');
+  const channelId = parts.slice(2).join('_');
+
+  const m3uHash = getM3uHash(m3uUrl);
+  const cacheKey = `stream_${m3uHash}_${channelId}`;
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    console.log(logPrefix, 'cache HIT', cacheKey);
+    const enriched = await enrichWithExtra(cached, configId, m3uUrl);
+    return enriched;
+  }
+
+  let result = await handleStreamInternal({ id, m3uUrl, configId });
+  const enriched = await enrichWithExtra(result, configId, m3uUrl);
+  await kvSetJsonTTL(cacheKey, enriched);
+  return enriched;
+}
+
+async function handleStreamInternal({ id, m3uUrl, configId }) {
+  const logPrefix = '[STREAM]';
+  const parts = id.split('_');
+  const channelId = parts.slice(2).join('_');
+
+  const ch = await getChannel(channelId, { m3uUrl });
+  if (!ch) {
+    console.log(logPrefix, `canal no encontrado: ${channelId}`);
+    return { streams: [], chName: '' };
+  }
+
+  const chName = ch.name;
+  let streams = [];
+
+  const addStream = (src) => {
+    const out = { name: src.group_title || src.name, title: src.title || src.name };
+    if (src.acestream_id) {
+      out.externalUrl = `acestream://${src.acestream_id}`;
+      out.behaviorHints = { notWebReady: true, external: true };
+    } else if (src.m3u8_url || src.stream_url || src.url) {
+      out.url = src.m3u8_url || src.stream_url || src.url;
+      out.behaviorHints = { notWebReady: false, external: false };
+    }
+    if (src.group_title) out.group_title = src.group_title;
+    streams.push(out);
+  };
+
+  if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) addStream(ch);
+  (ch.additional_streams || []).forEach(addStream);
+  if (ch.website_url) {
+    streams.push({
+      title: `${ch.name} - Website`,
+      externalUrl: ch.website_url,
+      behaviorHints: { notWebReady: true, external: true }
+    });
+  }
+
+  const resp = { streams, chName };
+  console.log(logPrefix, `streams para ${channelId}: ${streams.length}`);
+  return resp;
+}
+
+async function enrichWithExtra(baseObj, configId, m3uUrl) {
+  const logPrefix = '[STREAM]';
+  const chName = baseObj.chName || baseObj.id.split('_').slice(2).join(' ');
+  const extraWebsList = await resolveExtraWebs(configId);
+  if (extraWebsList.length) {
+    try {
+      const extraStreams = await scrapeExtraWebs(chName, extraWebsList);
+      console.log('[STREAM] Streams extra devueltos por scraper:', extraStreams);
+      if (extraStreams.length > 0) {
+        const existingUrls = new Set(baseObj.streams.map(s => s.url || s.externalUrl));
+        const nuevos = extraStreams.filter(s => {
+          const url = s.url || s.externalUrl;
+          return url && !existingUrls.has(url);
+        });
+        if (nuevos.length) {
+          baseObj.streams = [...nuevos, ...baseObj.streams.filter(s => !nuevos.some(n => (n.url || n.externalUrl) === (s.url || s.externalUrl)))];
+          console.log(`[STREAM] Añadidos ${nuevos.length} streams extra para ${chName} con group_title`);
+        } else {
+          console.log(`[STREAM] No se añadieron streams extra para ${chName} (sin coincidencias)`);
+        }
+      } else {
+        console.log(`[STREAM] No se añadieron streams extra para ${chName} (sin coincidencias)`);
+      }
+    } catch (e) {
+      console.error(`[STREAM] Error en scrapeExtraWebs para ${chName}:`, e.message);
+    }
+  }
+  console.log('[STREAM] Respuesta final con streams:', baseObj.streams);
+  return baseObj;
 }
 
 // -------------------- Extraer y guardar géneros --------------------
@@ -429,7 +569,7 @@ router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
       console.log('[CATALOG] KV HIT', kvKey);
 
       try {
-        const newGenres = extractGenresFromChannels(channels); // función que devuelve array de géneros únicos
+        await extractAndStoreGenresIfChanged(channels, configId); // función que devuelve array de géneros únicos
         const storedGenresKey = `genres:${configId}`;
         const storedGenres = await kvGetJsonTTL(storedGenresKey);
 
