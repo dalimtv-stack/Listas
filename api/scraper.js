@@ -1,4 +1,3 @@
-// api/scraper.js
 'use strict';
 
 const fetch = require('node-fetch');
@@ -21,36 +20,39 @@ function normalizeName(name) {
 }
 
 function getSearchTerms(channelName) {
-  const original = String(channelName || '').toLowerCase(); // Usar el nombre original sin normalización agresiva
+  const original = String(channelName || '').toLowerCase();
   const normalized = normalizeName(channelName)
-    .replace(/\s*\(.*?\)\s*/g, '') // Eliminar solo paréntesis para normalización parcial
-    .replace(/\[.*?\]/g, ''); // Eliminar corchetes para normalización parcial
+    .replace(/\s*\(.*?\)\s*/g, '')
+    .replace(/
+
+\[.*?\]
+
+/g, '');
   const aliases = channelAliases[normalized] || channelAliases[original] || [];
-  return [...new Set([normalized, original, ...aliases])]; // Incluir original y aliases sin duplicados
+  return [...new Set([normalized, original, ...aliases])];
 }
 
-// Nueva función para normalizar URLs y quitar prefijos
 function normalizeUrlForDisplay(url) {
   return String(url || '')
-    .replace(/^https?:\/\/(www\.)?/, '') // Elimina http://, https://, www.
-    .replace(/\/+$/, ''); // Elimina barras finales
+    .replace(/^https?:\/\/(www\.)?/, '')
+    .replace(/\/+$/, '');
 }
 
-// Nueva función para verificar si un nombre contiene un número secuencial
-function hasSequentialNumber(name) {
-  const normalized = normalizeName(name);
-  return /\b\d+\b/.test(normalized); // Detecta cualquier número como palabra independiente
+// ✅ Nueva función: bloquea streams con número si el canal original no lo tiene
+function isNumberMismatch(streamName, channelName) {
+  const streamNums = normalizeName(streamName).match(/\b\d+\b/g);
+  const channelNums = normalizeName(channelName).match(/\b\d+\b/g);
+  if (!streamNums) return false;
+  if (!channelNums) return true;
+  return streamNums.some(n => !channelNums.includes(n));
 }
 
-// Nueva función para verificar coincidencias flexibles
 function isMatch(normalizedName, searchTerms, channelName) {
   const isChannel1 = normalizeName(channelName).includes('canal 1 [1rfef]');
   return searchTerms.some(term => {
     const baseTerm = normalizeName(term);
     const baseName = normalizeName(normalizedName);
-    // Coincidencia exacta o parcial ignorando paréntesis y corchetes
     const baseMatch = baseName.includes(baseTerm) || baseTerm.includes(baseName);
-    // Coincidencia específica para 1RFEF/RFEF solo si es Canal 1
     const rfefMatch = (baseName.includes('1rfef') && baseTerm.includes('rfef')) ||
                      (baseTerm.includes('1rfef') && baseName.includes('rfef'));
     return (baseMatch || (rfefMatch && isChannel1));
@@ -66,7 +68,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
 
   const normalizedTarget = normalizeName(channelName);
   const cacheKey = `scrape:${normalizedTarget}`;
-  const ttlSeconds = 60; // 1 minuto
+  const ttlSeconds = 60;
 
   const cached = await kvGetJsonTTL(cacheKey);
   if (cached) {
@@ -101,7 +103,6 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
       const $ = cheerio.load(html);
       let encontrados = 0;
 
-      // Estructura Elcano.top
       $('#linksList li').each((_, li) => {
         const name = $(li).find('.link-name').text().trim();
         const href = $(li).find('.link-url a').attr('href');
@@ -111,7 +112,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
           href &&
           href.startsWith('acestream://') &&
           isMatch(normalizedName, searchTerms, channelName) &&
-          !hasSequentialNumber(name) &&
+          !isNumberMismatch(name, channelName) &&
           !seenUrls.has(href)
         ) {
           const displayName = normalizeUrlForDisplay(url);
@@ -129,7 +130,6 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
         }
       });
 
-      // Estructura Shickat
       $('.canal-card').each((_, card) => {
         const name = $(card).find('.canal-nombre').text().trim();
         const href = $(card).find('.acestream-link').attr('href');
@@ -139,7 +139,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
           href &&
           href.startsWith('acestream://') &&
           isMatch(normalizedName, searchTerms, channelName) &&
-          !hasSequentialNumber(name) &&
+          !isNumberMismatch(name, channelName) &&
           !seenUrls.has(href)
         ) {
           const displayName = normalizeUrlForDisplay(url);
