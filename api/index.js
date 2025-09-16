@@ -27,7 +27,7 @@ const ADDON_PREFIX = 'heimdallr';
 const CATALOG_PREFIX = 'Heimdallr';
 const DEFAULT_CONFIG_ID = 'default';
 const DEFAULT_M3U_URL = process.env.DEFAULT_M3U_URL || 'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u';
-const VERSION = '1.3.701';
+const VERSION = '1.3.702';
 
 // Función auxiliar para normalizar nombres (quitando paréntesis pero manteniendo corchetes)
 function normalizeCatalogName(name) {
