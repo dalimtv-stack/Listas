@@ -524,18 +524,33 @@ router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
 
     console.log('[CATALOG] parsed', { type, id, configId, extra, m3uUrl: m3uUrl ? '[ok]' : null });
 
-    const m3uHash = await getM3uHash(m3uUrl); // Ahora incluye el contenido
+    const currentM3uHash = await getM3uHash(m3uUrl); // Hash basado en contenido
+    const storedM3uHashKey = `m3u_hash:${configId}`;
+    const storedM3uHash = await kvGet(storedM3uHashKey);
+
+    let channels;
+    if (!storedM3uHash || storedM3uHash !== currentM3uHash) {
+      console.log('[CATALOG] M3U hash cambiado o no existe, recargando canales y géneros para', configId);
+      channels = await getChannels({ m3uUrl });
+      console.log('[CATALOG] canales cargados:', channels.length);
+      await extractAndStoreGenresIfChanged(channels, configId); // Regenerar géneros con los nuevos canales
+      await kvSet(storedM3uHashKey, currentM3uHash); // Actualizar hash almacenado
+    } else {
+      channels = await getChannels({ m3uUrl }); // Recargar canales para consistencia, pero usar caché si disponible
+      console.log('[CATALOG] M3U sin cambios, canales cargados:', channels.length);
+    }
+
+    const m3uHash = currentM3uHash; // Usar el hash actual para la clave de caché
     const kvKey = `catalog:${m3uHash}:${extra.genre || ''}:${extra.search || ''}`;
 
     let kvCached = await kvGetJsonTTL(kvKey);
     if (kvCached) {
       console.log('[CATALOG] KV HIT', kvKey);
-      // Verificar si los géneros están vacíos o no válidos antes de usar el caché
+      // Verificación adicional de géneros (solo si necesario tras recarga)
       try {
         const genresKV = await kvGetJsonTTL(`genres:${configId}`);
         if (!Array.isArray(genresKV) || genresKV.length <= 1) { // Solo 'General' no cuenta como género válido
-          console.log('[CATALOG] Géneros vacíos o no válidos en KV, forzando regeneración');
-          const channels = await getChannels({ m3uUrl });
+          console.log('[CATALOG] Géneros vacíos o no válidos tras recarga, forzando regeneración');
           await extractAndStoreGenresIfChanged(channels, configId);
           kvCached = null; // Invalida el caché para forzar recálculo
         }
@@ -547,7 +562,7 @@ router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
     if (!kvCached) {
       let result;
       try {
-        result = await handleCatalog({ type, id, extra, m3uUrl });
+        result = await handleCatalog({ type, id, extra, m3uUrl, channels }); // Pasar channels pre-cargados
         await kvSetJsonTTL(kvKey, result);
       } catch (e) {
         console.error('[CATALOG] error en handleCatalog:', e.message);
