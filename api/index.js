@@ -482,6 +482,7 @@ router.get('/:configId/manifest.json', async (req, res) => {
 });
 
 // -------------------- Rutas de catálogo --------------------
+// -------------------- Rutas de catálogo --------------------
 router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
   console.log('[ROUTE] CATALOG', { url: req.originalUrl, params: req.params, query: req.query });
   try {
@@ -499,22 +500,36 @@ router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
     const m3uHash = getM3uHash(m3uUrl);
     const kvKey = `catalog:${m3uHash}:${extra.genre || ''}:${extra.search || ''}`;
 
-    const kvCached = await kvGetJsonTTL(kvKey);
+    let kvCached = await kvGetJsonTTL(kvKey);
     if (kvCached) {
       console.log('[CATALOG] KV HIT', kvKey);
-      return res.json(kvCached);
+      // Verificar si los géneros están vacíos o no válidos antes de usar el caché
+      try {
+        const genresKV = await kvGetJsonTTL(`genres:${configId}`);
+        if (!Array.isArray(genresKV) || genresKV.length <= 1) { // Solo 'General' no cuenta como género válido
+          console.log('[CATALOG] Géneros vacíos o no válidos en KV, forzando regeneración');
+          const channels = await getChannels({ m3uUrl });
+          await extractAndStoreGenresIfChanged(channels, configId);
+          kvCached = null; // Invalida el caché para forzar recálculo
+        }
+      } catch (e) {
+        console.error('[CATALOG] Error verificando géneros en KV:', e.message);
+      }
     }
 
-    let result;
-    try {
-      result = await handleCatalog({ type, id, extra, m3uUrl });
-      await kvSetJsonTTL(kvKey, result);
-    } catch (e) {
-      console.error('[CATALOG] error en handleCatalog:', e.message);
-      result = { metas: [] };
+    if (!kvCached) {
+      let result;
+      try {
+        result = await handleCatalog({ type, id, extra, m3uUrl });
+        await kvSetJsonTTL(kvKey, result);
+      } catch (e) {
+        console.error('[CATALOG] error en handleCatalog:', e.message);
+        result = { metas: [] };
+      }
+      return res.json(result);
     }
 
-    return res.json(result);
+    return res.json(kvCached);
   } catch (e) {
     console.error('[CATALOG] route error:', e.message);
     return res.status(200).json({ metas: [] });
