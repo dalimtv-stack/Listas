@@ -316,6 +316,8 @@ acestream://c1ee6e1e0ef5928d8261f855c417de21794f437d
 #EXTINF:-1 tvg-id="Canal.2.1RFEF" tvg-logo="https://i.ibb.co/4wVnPgDk/Primera-RFEF-2021.png" group-title="NEW ERA", Canal 2 [1RFEF] (SOLO EVENTOS)
 acestream://8677d339ecddd75165c0015025f598b6215974cf
 
+#EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/M1857850V3157130" group-title="daddylivestream", Movistar Golf
+https://world-proxifier.xyz/ddy/p/XSQhJT0FNyhQJF1YJBlTXz44W1csWD0sNDUjOlQkWEUsCSgkJ1daXj9SDRcCOl8kWzkxVxQjAw==/index.m3u8
 #EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/M1857850V3157130" group-title="NEW ERA", Movistar Golf (FHD)
 acestream://8546cff89e4ee8bf3ad31cf6457c3bc2c4341031
 #EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://i.ibb.co/Vp04N3pT/golf.png" group-title="NEW LOOP", Movistar Golf (HD)
