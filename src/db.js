@@ -17,6 +17,12 @@ function getExtraGenres(name) {
   if (lowerName.includes('dazn')) {
     extraGenres.push('Dazn');
   }
+  if (lowerName.includes('espn')) {
+    extraGenres.push('ESPN');
+  }
+  if (lowerName.includes('campeones')) {
+    extraGenres.push('Liga de Campeones');
+  }
   return extraGenres;
 }
 
