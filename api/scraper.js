@@ -162,9 +162,22 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
 
   console.log(logPrefix, `Total streams extra encontrados: ${results.length}`);
   if (results.length > 0) {
-    await kvSetJsonTTL(cacheKey, results, ttlSeconds);
+    // Verificar si los resultados han cambiado antes de escribir
+    const hasChanged = !cached || !arraysEqual(cached, results, (a, b) => a.externalUrl === b.externalUrl);
+    if (hasChanged) {
+      await kvSetJsonTTL(cacheKey, results, ttlSeconds);
+      console.log(logPrefix, `Cache actualizado para "${normalizedTarget}" con ${results.length} streams`);
+    } else {
+      console.log(logPrefix, `No hay cambios en los streams, cache no actualizado para "${normalizedTarget}"`);
+    }
   }
   return results;
+}
+
+// Función auxiliar para comparar arrays de objetos
+function arraysEqual(arr1, arr2, compareFn) {
+  if (arr1.length !== arr2.length) return false;
+  return arr1.every((item, index) => compareFn(item, arr2[index]));
 }
 
 module.exports = { scrapeExtraWebs };
