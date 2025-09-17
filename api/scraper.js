@@ -51,7 +51,8 @@ function isMatch(normalizedName, searchTerms, channelName) {
     const baseMatch = baseName.includes(baseTerm) || baseTerm.includes(baseName);
     const rfefMatch = (baseName.includes('1rfef') && baseTerm.includes('rfef')) ||
                      (baseTerm.includes('1rfef') && baseName.includes('rfef'));
-    return (baseMatch || (rfefMatch && isChannel1));
+    const movistarMatch = baseName.includes('movistarplus') && baseTerm.includes('movistar plus'); // Añadido para MovistarPlus 1080
+    return (baseMatch || rfefMatch || movistarMatch) && (isChannel1 ? rfefMatch : true);
   });
 }
 
@@ -66,9 +67,9 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
   const cacheKey = `scrape:${normalizedTarget}`;
   const ttlSeconds = 3600;
 
-  // Verificar caché solo si no se fuerza el scrapeo
+  let cached = null;
   if (!forceScrape) {
-    const cached = await kvGetJsonTTL(cacheKey);
+    cached = await kvGetJsonTTL(cacheKey);
     if (cached) {
       console.log(logPrefix, `Usando cache (${cached.length} resultados) para "${normalizedTarget}"`);
       return cached;
@@ -86,6 +87,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
   console.log(logPrefix, `Iniciado para canal: ${channelName}, forceScrape: ${forceScrape}`);
   console.log(logPrefix, `Nombre normalizado: "${normalizedTarget}"`);
   console.log(logPrefix, `Lista de webs a scrapear:`, extraWebsList);
+  console.log(logPrefix, `Términos de búsqueda:`, getSearchTerms(channelName));
 
   const results = [];
   const seenUrls = new Set();
@@ -107,7 +109,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
       const $ = cheerio.load(html);
       let encontrados = 0;
 
-      // Selector para shickat.me u otros (mantiene el original)
+      // Selector para shickat.me u otros
       $('#linksList li').each((_, li) => {
         const name = $(li).find('.link-name').text().trim();
         const href = $(li).find('.link-url a').attr('href');
@@ -132,6 +134,8 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
           seenUrls.add(href);
           encontrados++;
           console.log(logPrefix, `Stream añadido: ${JSON.stringify(stream)}`);
+        } else {
+          console.log(logPrefix, `Descartado shickat.me: name="${name}", href="${href}", isMatch=${isMatch(normalizedName, searchTerms, channelName)}, numberMismatch=${isNumberMismatch(name, channelName)}`);
         }
       });
 
@@ -159,18 +163,22 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
           seenUrls.add(href);
           encontrados++;
           console.log(logPrefix, `Stream añadido: ${JSON.stringify(stream)}`);
+        } else {
+          console.log(logPrefix, `Descartado canal-card: name="${name}", href="${href}", isMatch=${isMatch(normalizedName, searchTerms, channelName)}, numberMismatch=${isNumberMismatch(name, channelName)}`);
         }
       });
 
-      // NUEVO: Selector específico para elcano.top - extrae JSON de linksData en <script>
+      // Selector para elcano.top - extrae JSON de linksData
       if (url.includes('elcano.top')) {
         console.log(logPrefix, 'Detectado elcano.top, extrayendo JSON de linksData');
         const scriptText = $('script').filter((i, el) => $(el).html().includes('linksData')).html();
         if (scriptText) {
+          console.log(logPrefix, `Script encontrado, longitud: ${scriptText.length}`);
           const linksDataMatch = scriptText.match(/const linksData = ({.*?});/s);
           if (linksDataMatch) {
             try {
               const linksData = JSON.parse(linksDataMatch[1]);
+              console.log(logPrefix, `linksData parseado: ${JSON.stringify(linksData)}`);
               if (linksData.links && Array.isArray(linksData.links)) {
                 linksData.links.forEach(link => {
                   const name = link.name;
@@ -196,13 +204,21 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
                     seenUrls.add(href);
                     encontrados++;
                     console.log(logPrefix, `Stream añadido desde linksData (elcano): ${JSON.stringify(stream)}`);
+                  } else {
+                    console.log(logPrefix, `Descartado elcano.top: name="${name}", href="${href}", isMatch=${isMatch(normalizedName, searchTerms, channelName)}, numberMismatch=${isNumberMismatch(name, channelName)}`);
                   }
                 });
+              } else {
+                console.log(logPrefix, 'linksData.links no es un array o no existe');
               }
             } catch (parseErr) {
               console.error(logPrefix, 'Error parseando linksData JSON:', parseErr.message);
             }
+          } else {
+            console.log(logPrefix, 'No se encontró linksData en el script de elcano.top');
           }
+        } else {
+          console.log(logPrefix, 'No se encontró script con linksData en elcano.top');
         }
       }
 
@@ -214,7 +230,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
 
   console.log(logPrefix, `Total streams extra encontrados: ${results.length}`);
   if (results.length > 0) {
-    const hasChanged = !cached || !arraysEqual(cached, results, (a, b) => a.externalUrl === b.externalUrl);
+    const hasChanged = !cached || !arraysEqual(cached || [], results, (a, b) => a.externalUrl === b.externalUrl);
     if (hasChanged) {
       await kvSetJsonTTL(cacheKey, results, ttlSeconds);
       console.log(logPrefix, `Cache actualizado para "${normalizedTarget}" con ${results.length} streams`);
@@ -225,7 +241,6 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
   return results;
 }
 
-// Función auxiliar para comparar arrays de objetos
 function arraysEqual(arr1, arr2, compareFn) {
   if (arr1.length !== arr2.length) return false;
   return arr1.every((item, index) => compareFn(item, arr2[index]));
