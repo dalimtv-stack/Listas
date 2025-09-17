@@ -6,10 +6,10 @@ const cheerio = require('cheerio');
 const { kvGetJsonTTL, kvSetJsonTTL, kvDelete } = require('./kv');
 
 const channelAliases = {
+  'movistar plus': ['movistar plus', 'movistarplus', 'm. plus', 'm+ plus', 'm+plus', 'movistar plus fhd', 'movistar+', 'plus fhd', 'movistarplus 1080', 'movistar plus 1080'],
   'movistar laliga (fhd)': ['m. laliga', 'm. laliga 1080p', 'movistar laliga'],
-  'dazn f1 (fhd)': ['dazn f1', 'dazn f1 1080', 'dazn f1 1080  (fórmula 1)', 'fórmula 1'],
+  'dazn f1 (fhd)': ['dazn f1', 'dazn f1 1080', 'dazn f1 1080 (fórmula 1)', 'fórmula 1'],
   'primera federacion "rfef" (fhd)': ['rfef', 'primera federacion', 'primera federación', '1rfef', 'canal 1 [1rfef]'],
-  'movistar plus': ['movistar plus', 'movistarplus', 'm. plus', 'm+ plus', 'm+plus', 'movistar plus fhd', 'movistar+', 'plus fhd', 'movistar plus 1080', 'movistarplus 1080'],
   'canal 1 [1rfef] (solo eventos)': ['primera federacion', 'primera federacion "rfef"', '1rfef', 'primera federacion rfef', 'canal 1 [1rfef]']
 };
 
@@ -26,7 +26,9 @@ function getSearchTerms(channelName) {
     .replace(/\s*\(.*?\)\s*/g, '')
     .replace(/\[.*?\]/g, '');
   const aliases = channelAliases[normalized] || channelAliases[original] || [];
-  return [...new Set([normalized, original, ...aliases])];
+  const terms = [...new Set([normalized, original, ...aliases])];
+  console.log('[SCRAPER] Términos de búsqueda generados para', channelName, ':', terms);
+  return terms;
 }
 
 function normalizeUrlForDisplay(url) {
@@ -39,26 +41,45 @@ function isNumberMismatch(streamName, channelName) {
   const streamNums = normalizeName(streamName).match(/\b\d+\b/g) || [];
   const channelNums = normalizeName(channelName).match(/\b\d+\b/g) || [];
 
+  console.log('[SCRAPER] isNumberMismatch:', {
+    streamName,
+    channelName,
+    streamNums,
+    channelNums
+  });
+
   // Ignorar "1080" y "720" como números, ya que son indicadores de calidad
   const qualityIndicators = ['1080', '720'];
   const filteredStreamNums = streamNums.filter(n => !qualityIndicators.includes(n));
   const filteredChannelNums = channelNums.filter(n => !qualityIndicators.includes(n));
 
-  if (filteredChannelNums.length === 0 && filteredStreamNums.length > 0) return true;
-  return filteredStreamNums.some(n => !filteredChannelNums.includes(n));
+  console.log('[SCRAPER] isNumberMismatch post-filter:', {
+    filteredStreamNums,
+    filteredChannelNums
+  });
+
+  if (filteredChannelNums.length === 0 && filteredStreamNums.length > 0) {
+    console.log('[SCRAPER] numberMismatch=true: No hay números en channelName pero sí en streamName (post-filter)');
+    return true;
+  }
+  const mismatch = filteredStreamNums.some(n => !filteredChannelNums.includes(n));
+  console.log('[SCRAPER] numberMismatch result:', mismatch);
+  return mismatch;
 }
 
 function isMatch(normalizedName, searchTerms, channelName) {
   const isChannel1 = normalizeName(channelName).includes('canal 1 [1rfef]');
-  return searchTerms.some(term => {
+  const match = searchTerms.some(term => {
     const baseTerm = normalizeName(term);
     const baseName = normalizeName(normalizedName);
     const baseMatch = baseName.includes(baseTerm) || baseTerm.includes(baseName);
     const rfefMatch = (baseName.includes('1rfef') && baseTerm.includes('rfef')) ||
                      (baseTerm.includes('1rfef') && baseName.includes('rfef'));
-    const movistarMatch = baseName.includes('movistarplus') && baseTerm.includes('movistar plus'); // Añadido para MovistarPlus 1080
+    const movistarMatch = baseName.includes('movistarplus') && baseTerm.includes('movistar plus');
     return (baseMatch || rfefMatch || movistarMatch) && (isChannel1 ? rfefMatch : true);
   });
+  console.log('[SCRAPER] isMatch:', { normalizedName, channelName, match });
+  return match;
 }
 
 async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) {
@@ -81,18 +102,12 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
     }
   } else {
     console.log(logPrefix, `Forzando scrapeo para "${normalizedTarget}", limpiando caché`);
-    await kvDelete(cacheKey); // Limpiar caché explícitamente
-  }
-
-  if (!Array.isArray(extraWebsList) || extraWebsList.length === 0) {
-    console.warn(logPrefix, 'No hay webs configuradas para scrapear');
-    return [];
+    await kvDelete(cacheKey);
   }
 
   console.log(logPrefix, `Iniciado para canal: ${channelName}, forceScrape: ${forceScrape}`);
   console.log(logPrefix, `Nombre normalizado: "${normalizedTarget}"`);
   console.log(logPrefix, `Lista de webs a scrapear:`, extraWebsList);
-  console.log(logPrefix, `Términos de búsqueda:`, getSearchTerms(channelName));
 
   const results = [];
   const seenUrls = new Set();
