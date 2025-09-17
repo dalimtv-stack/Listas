@@ -11,7 +11,7 @@ require('dotenv').config();
 
 const { getChannels, getChannel } = require('../src/db');
 const { scrapeExtraWebs } = require('./scraper');
-const { kvGet, kvSet, kvGetJson, kvSetJson, kvGetJsonTTL, kvSetJsonTTL } = require('./kv');
+const { kvGet, kvSet, kvGetJson, kvSetJson, kvGetJsonTTL, kvSetJsonTTL, kvDelete } = require('./kv'); // Añadido kvDelete
 
 const app = express();
 const router = express.Router();
@@ -324,7 +324,7 @@ async function handleMeta({ id, m3uUrl }) {
   return resp;
 }
 
-async function handleStream({ id, m3uUrl, configId }) {
+async function handleStream({ id, m3uUrl, configId, forceScrape = false }) { // Añadido forceScrape
   const logPrefix = '[STREAM]';
   if (!m3uUrl) {
     console.log(logPrefix, 'm3uUrl no resuelta');
@@ -342,12 +342,12 @@ async function handleStream({ id, m3uUrl, configId }) {
   const cached = cache.get(cacheKey);
   if (cached) {
     console.log(logPrefix, 'cache HIT', cacheKey);
-    const enriched = await enrichWithExtra(cached, configId, m3uUrl);
+    const enriched = await enrichWithExtra(cached, configId, m3uUrl, forceScrape); // Pasar forceScrape
     return enriched;
   }
 
   let result = await handleStreamInternal({ id, m3uUrl, configId });
-  const enriched = await enrichWithExtra(result, configId, m3uUrl);
+  const enriched = await enrichWithExtra(result, configId, m3uUrl, forceScrape); // Pasar forceScrape
   await kvSetJsonTTL(cacheKey, enriched);
   return enriched;
 }
@@ -394,13 +394,13 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
   return resp;
 }
 
-async function enrichWithExtra(baseObj, configId, m3uUrl) {
+async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) { // Añadido forceScrape
   const logPrefix = '[STREAM]';
   const chName = baseObj.chName || baseObj.id.split('_').slice(2).join(' ');
   const extraWebsList = await resolveExtraWebs(configId);
   if (extraWebsList.length) {
     try {
-      const extraStreams = await scrapeExtraWebs(chName, extraWebsList);
+      const extraStreams = await scrapeExtraWebs(chName, extraWebsList, forceScrape); // Pasar forceScrape
       console.log('[STREAM] Streams extra devueltos por scraper:', extraStreams);
       if (extraStreams.length > 0) {
         const existingUrls = new Set(baseObj.streams.map(s => s.url || s.externalUrl));
@@ -646,11 +646,15 @@ router.get('/:configId/stream/:type/:id.json', async (req, res) => {
     const storedM3uHashKey = `m3u_hash:${configId}`;
     const storedM3uHash = await kvGet(storedM3uHashKey);
 
-    // Si el hash de la M3U cambió, invalidar el caché de streams
+    let forceScrape = false;
+    // Si el hash de la M3U cambió, invalidar el caché de streams y forzar scrapeo
     if (!storedM3uHash || storedM3uHash !== currentM3uHash) {
       console.log('[STREAM] M3U hash cambiado, invalidando caché de streams para', configId);
       await kvSet(storedM3uHashKey, currentM3uHash);
-      // Opcional: Eliminar claves de stream en KV si es posible, pero como no conocemos todas, forzamos recarga
+      forceScrape = true; // Forzar scrapeo en scrapeExtraWebs
+      // Limpiar caché de streams
+      const streamKvKey = `stream:${currentM3uHash}:${id}`;
+      await kvDelete(streamKvKey);
     }
 
     const m3uHash = currentM3uHash;
@@ -659,12 +663,12 @@ router.get('/:configId/stream/:type/:id.json', async (req, res) => {
 
     if (kvCached) {
       console.log('[STREAM] Usando caché KV:', kvCached);
-      const enriched = await enrichWithExtra(kvCached, configId, m3uUrl);
+      const enriched = await enrichWithExtra(kvCached, configId, m3uUrl, forceScrape);
       return res.json(enriched);
     }
 
     let result = await handleStreamInternal({ id, m3uUrl, configId });
-    const enriched = await enrichWithExtra(result, configId, m3uUrl);
+    const enriched = await enrichWithExtra(result, configId, m3uUrl, forceScrape);
     await kvSetJsonTTL(kvKey, enriched);
     res.json(enriched);
   } catch (e) {
