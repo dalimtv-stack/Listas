@@ -333,7 +333,11 @@ async function handleStream({ id, m3uUrl, configId }) {
   const parts = id.split('_');
   const channelId = parts.slice(2).join('_');
 
-  const m3uHash = getM3uHash(m3uUrl);
+  const currentM3uHash = await getM3uHash(m3uUrl); // Verificar hash de M3U para streams
+  const storedM3uHashKey = `m3u_hash:${configId}`;
+  const storedM3uHash = await kvGet(storedM3uHashKey);
+
+  const m3uHash = currentM3uHash;
   const cacheKey = `stream_${m3uHash}_${channelId}`;
   const cached = cache.get(cacheKey);
   if (cached) {
@@ -606,7 +610,6 @@ router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
   }
 });
 
-
 // -------------------- Rutas META y STREAM --------------------
 router.get('/:configId/meta/:type/:id.json', async (req, res) => {
   try {
@@ -639,7 +642,18 @@ router.get('/:configId/stream/:type/:id.json', async (req, res) => {
     const m3uUrl = await resolveM3uUrl(configId);
     console.log('[ROUTE] STREAM', { url: req.originalUrl, id, configId, m3uUrl: m3uUrl ? '[ok]' : null });
 
-    const m3uHash = getM3uHash(m3uUrl);
+    const currentM3uHash = await getM3uHash(m3uUrl); // Verificar hash de M3U para streams
+    const storedM3uHashKey = `m3u_hash:${configId}`;
+    const storedM3uHash = await kvGet(storedM3uHashKey);
+
+    // Si el hash de la M3U cambió, invalidar el caché de streams
+    if (!storedM3uHash || storedM3uHash !== currentM3uHash) {
+      console.log('[STREAM] M3U hash cambiado, invalidando caché de streams para', configId);
+      await kvSet(storedM3uHashKey, currentM3uHash);
+      // Opcional: Eliminar claves de stream en KV si es posible, pero como no conocemos todas, forzamos recarga
+    }
+
+    const m3uHash = currentM3uHash;
     const kvKey = `stream:${m3uHash}:${id}`;
     let kvCached = await kvGetJsonTTL(kvKey);
 
