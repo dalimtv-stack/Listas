@@ -205,6 +205,8 @@ acestream://6a1703a6bbe6110a1d27f35a41c88661e1740bfa
 #EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://i.ibb.co/FVzKq1y/dazn1.png" group-title="ELCANO", DAZN 1
 acestream://35c7f0c966ecde3390f4510bb4caded40018c07a
 
+#EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="daddylivestream", DAZN 2
+https://world-proxifier.xyz/ddy/p/XSQhJT0FNyguUl0kW08kNElTLF0gJCQvLyguUl0kOjgvX0hfIl8HBxwyVzZaJDxaBj8L/index.m3u8
 #EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="Elcano.top", DAZN 2
 acestream://ae68a0835039fab28fd2314108fabd4fab33b8ab
 #EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://i.ibb.co/Kz0GXSX/dazn2.png" group-title="NEW ERA", DAZN 2 (FHD)
