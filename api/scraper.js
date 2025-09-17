@@ -39,8 +39,13 @@ function isNumberMismatch(streamName, channelName) {
   const streamNums = normalizeName(streamName).match(/\b\d+\b/g) || [];
   const channelNums = normalizeName(channelName).match(/\b\d+\b/g) || [];
 
-  if (channelNums.length === 0 && streamNums.length > 0) return true;
-  return streamNums.some(n => !channelNums.includes(n));
+  // Ignorar "1080" y "720" como números, ya que son indicadores de calidad
+  const qualityIndicators = ['1080', '720'];
+  const filteredStreamNums = streamNums.filter(n => !qualityIndicators.includes(n));
+  const filteredChannelNums = channelNums.filter(n => !qualityIndicators.includes(n));
+
+  if (filteredChannelNums.length === 0 && filteredStreamNums.length > 0) return true;
+  return filteredStreamNums.some(n => !filteredChannelNums.includes(n));
 }
 
 function isMatch(normalizedName, searchTerms, channelName) {
