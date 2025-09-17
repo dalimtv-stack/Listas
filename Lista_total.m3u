@@ -13,8 +13,6 @@ http://www.huhu.to/play/4205258144/index.m3u8
 # https://www.movistarplus.es/recorte/m-DP/modmarcas/MPLUHD
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://i.ibb.co/VcRYc75W/M-plus.png" group-title="daddylivestream", Movistar Plus
 https://world-proxifier.xyz/ddy/p/XSQhJT0FNyguUl0kW08kNElTLF0gJCQvLyguUl0kOjgvX0hfIl8HBh8yVzZaJDxaBj8L/index.m3u8
-#/EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://i.ibb.co/VcRYc75W/M-plus.png" group-title="Elcano.top", Movistar Plus (1080)
-#/acestream://1ab443f5b4beb6d586f19e8b25b9f9646cf2ab78
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://i.ibb.co/hFYPWbpJ/plus.png" group-title="NEW ERA", Movistar Plus (FHD)
 acestream://b2a4d1eba9b46df5f52a87105df779f9d39abeb4
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://i.ibb.co/hFYPWbpJ/plus.png" group-title="NEW LOOP", Movistar Plus
