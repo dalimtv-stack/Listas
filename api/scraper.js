@@ -65,7 +65,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
 
   const normalizedTarget = normalizeName(channelName);
   const cacheKey = `scrape:${normalizedTarget}`;
-  const ttlSeconds = 60;
+  const ttlSeconds = 3600;
 
   const cached = await kvGetJsonTTL(cacheKey);
   if (cached) {
