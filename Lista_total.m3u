@@ -188,6 +188,8 @@ acestream://f6961e0dbf9b6ede4f5be93b72dc15533b4063d4
 #EXTINF:-1 tvg-id="Movistar.Deportes.5.es" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/spain/deportes-5-por-movistar-plus-es.png" group-title="NEW ERA II", Movistar Deportes 5 (FHD)
 acestream://fcc0fd75bf1dba40b108fcf0d3514e0e549bfbac
 
+#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="daddylivestream", DAZN 1
+https://world-proxifier.xyz/ddy/p/XSQhJT0FNygtXl5RW08kNElTLF0gJCQvLygtXl5ROjgvX0hfIl8HBx0yVzZaJDxaBj8L/index.m3u8
 #EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="Elcano.top", DAZN 1
 acestream://eb6ffec065b26259ad3d1811e0bbb0a5332ed276
 #EXTINF:-1 tvg-id="DAZN.1.es" group-title="Elcano.top", DAZN 1 (Opcion 2)
