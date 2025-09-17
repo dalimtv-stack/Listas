@@ -37,10 +37,10 @@ function normalizeUrlForDisplay(url) {
 
 // ✅ Bloquea streams con número si el canal original no lo tiene
 function isNumberMismatch(streamName, channelName) {
-  const streamNums = normalizeName(streamName).match(/\b\d+\b/g);
-  const channelNums = normalizeName(channelName).match(/\b\d+\b/g);
-  if (!streamNums) return false;
-  if (!channelNums) return true;
+  const streamNums = normalizeName(streamName).match(/\b\d+\b/g) || [];
+  const channelNums = normalizeName(channelName).match(/\b\d+\b/g) || [];
+
+  if (channelNums.length === 0 && streamNums.length > 0) return true;
   return streamNums.some(n => !channelNums.includes(n));
 }
 
