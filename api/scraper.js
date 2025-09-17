@@ -9,7 +9,7 @@ const channelAliases = {
   'movistar laliga (fhd)': ['m. laliga', 'm. laliga 1080p', 'movistar laliga'],
   'dazn f1 (fhd)': ['dazn f1', 'dazn f1 1080', 'dazn f1 1080  (fórmula 1)', 'fórmula 1'],
   'primera federacion "rfef" (fhd)': ['rfef', 'primera federacion', 'primera federación', '1rfef', 'canal 1 [1rfef]'],
-  'movistar plus (1080)': ['movistar plus', 'movistarplus', 'm. plus', 'm+ plus', 'm+plus', 'movistar plus fhd', 'movistar+', 'plus fhd'],
+  'movistar plus (1080)': ['movistar plus', 'movistarplus', 'm. plus', 'm+ plus', 'm+plus', 'movistar plus fhd', 'movistar+', 'plus fhd', 'movistarplus 1080'],
   'canal 1 [1rfef] (solo eventos)': ['primera federacion', 'primera federacion "rfef"', '1rfef', 'primera federacion rfef', 'canal 1 [1rfef]']
 };
 
@@ -90,16 +90,19 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
     try {
       console.log(logPrefix, `Fetch -> ${url}`);
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const timeoutId = setTimeout(() => controller.abort(), 20000);  // Aumentado a 20 seg para IPFS
       const html = await fetch(url, { signal: controller.signal }).then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.text();
       });
       clearTimeout(timeoutId);
 
+      console.log(logPrefix, `HTML recibido de ${url}, longitud: ${html.length}`);
+
       const $ = cheerio.load(html);
       let encontrados = 0;
 
+      // Selector para shickat.me u otros (mantiene el original)
       $('#linksList li').each((_, li) => {
         const name = $(li).find('.link-name').text().trim();
         const href = $(li).find('.link-url a').attr('href');
@@ -154,6 +157,50 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
         }
       });
 
+      // NUEVO: Selector específico para elcano.top - extrae JSON de linksData en <script>
+      if (url.includes('elcano.top')) {
+        console.log(logPrefix, 'Detectado elcano.top, extrayendo JSON de linksData');
+        const scriptText = $('script').filter((i, el) => $(el).html().includes('linksData')).html();
+        if (scriptText) {
+          const linksDataMatch = scriptText.match(/const linksData = ({.*?});/s);
+          if (linksDataMatch) {
+            try {
+              const linksData = JSON.parse(linksDataMatch[1]);
+              if (linksData.links && Array.isArray(linksData.links)) {
+                linksData.links.forEach(link => {
+                  const name = link.name;
+                  const href = link.url;
+                  const normalizedName = normalizeName(name);
+                  if (
+                    name &&
+                    href &&
+                    href.startsWith('acestream://') &&
+                    isMatch(normalizedName, searchTerms, channelName) &&
+                    !isNumberMismatch(name, channelName) &&
+                    !seenUrls.has(href)
+                  ) {
+                    const displayName = 'elcano.top';
+                    const stream = {
+                      name: displayName,
+                      title: `${name} (Acestream)`,
+                      externalUrl: href,
+                      group_title: displayName,
+                      behaviorHints: { notWebReady: true, external: true }
+                    };
+                    results.push(stream);
+                    seenUrls.add(href);
+                    encontrados++;
+                    console.log(logPrefix, `Stream añadido desde linksData (elcano): ${JSON.stringify(stream)}`);
+                  }
+                });
+              }
+            } catch (parseErr) {
+              console.error(logPrefix, 'Error parseando linksData JSON:', parseErr.message);
+            }
+          }
+        }
+      }
+
       console.log(logPrefix, `Coincidencias en ${url}: ${encontrados}`);
     } catch (e) {
       console.error(logPrefix, `Error en ${url}:`, e.message);
@@ -162,7 +209,6 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
 
   console.log(logPrefix, `Total streams extra encontrados: ${results.length}`);
   if (results.length > 0) {
-    // Verificar si los resultados han cambiado antes de escribir
     const hasChanged = !cached || !arraysEqual(cached, results, (a, b) => a.externalUrl === b.externalUrl);
     if (hasChanged) {
       await kvSetJsonTTL(cacheKey, results, ttlSeconds);
