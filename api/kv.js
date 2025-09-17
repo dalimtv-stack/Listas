@@ -70,11 +70,27 @@ async function kvSetJsonTTL(key, obj, ttlSeconds = 3600) {
   await kvSet(key, JSON.stringify(payload));
 }
 
+async function kvDelete(key) {
+  try {
+    const { CLOUDFLARE_KV_ACCOUNT_ID, CLOUDFLARE_KV_NAMESPACE_ID, CLOUDFLARE_KV_API_TOKEN } = process.env;
+    if (!CLOUDFLARE_KV_ACCOUNT_ID || !CLOUDFLARE_KV_NAMESPACE_ID || !CLOUDFLARE_KV_API_TOKEN) return;
+    const url = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/values/${key}`;
+    const r = await fetch(url, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${CLOUDFLARE_KV_API_TOKEN}` }
+    });
+    if (r.ok) console.log(`[KV] Borrada clave: ${key}`);
+  } catch (e) {
+    console.error('[KV] Error borrando clave:', e.message);
+  }
+}
+
 module.exports = {
   kvGet,
   kvSet,
   kvGetJson,
   kvSetJson,
   kvGetJsonTTL,
-  kvSetJsonTTL
+  kvSetJsonTTL,
+  kvDelete  // Añade esto
 };
