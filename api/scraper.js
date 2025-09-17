@@ -3,7 +3,7 @@
 
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
-const { kvGetJsonTTL, kvSetJsonTTL } = require('./kv');
+const { kvGetJsonTTL, kvSetJsonTTL, kvDelete } = require('./kv');
 
 const channelAliases = {
   'movistar laliga (fhd)': ['m. laliga', 'm. laliga 1080p', 'movistar laliga'],
@@ -35,7 +35,6 @@ function normalizeUrlForDisplay(url) {
     .replace(/\/+$/, '');
 }
 
-// ✅ Bloquea streams con número si el canal original no lo tiene
 function isNumberMismatch(streamName, channelName) {
   const streamNums = normalizeName(streamName).match(/\b\d+\b/g) || [];
   const channelNums = normalizeName(channelName).match(/\b\d+\b/g) || [];
@@ -56,7 +55,7 @@ function isMatch(normalizedName, searchTerms, channelName) {
   });
 }
 
-async function scrapeExtraWebs(channelName, extraWebsList) {
+async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) {
   const logPrefix = '[SCRAPER]';
   if (!channelName || typeof channelName !== 'string') {
     console.warn(logPrefix, 'Nombre de canal no definido o inválido');
@@ -67,10 +66,16 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
   const cacheKey = `scrape:${normalizedTarget}`;
   const ttlSeconds = 3600;
 
-  const cached = await kvGetJsonTTL(cacheKey);
-  if (cached) {
-    console.log(logPrefix, `Usando cache (${cached.length} resultados) para "${normalizedTarget}"`);
-    return cached;
+  // Verificar caché solo si no se fuerza el scrapeo
+  if (!forceScrape) {
+    const cached = await kvGetJsonTTL(cacheKey);
+    if (cached) {
+      console.log(logPrefix, `Usando cache (${cached.length} resultados) para "${normalizedTarget}"`);
+      return cached;
+    }
+  } else {
+    console.log(logPrefix, `Forzando scrapeo para "${normalizedTarget}", limpiando caché`);
+    await kvDelete(cacheKey); // Limpiar caché explícitamente
   }
 
   if (!Array.isArray(extraWebsList) || extraWebsList.length === 0) {
@@ -78,7 +83,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
     return [];
   }
 
-  console.log(logPrefix, `Iniciado para canal: ${channelName}`);
+  console.log(logPrefix, `Iniciado para canal: ${channelName}, forceScrape: ${forceScrape}`);
   console.log(logPrefix, `Nombre normalizado: "${normalizedTarget}"`);
   console.log(logPrefix, `Lista de webs a scrapear:`, extraWebsList);
 
@@ -90,7 +95,7 @@ async function scrapeExtraWebs(channelName, extraWebsList) {
     try {
       console.log(logPrefix, `Fetch -> ${url}`);
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 20000);  // Aumentado a 20 seg para IPFS
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
       const html = await fetch(url, { signal: controller.signal }).then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.text();
