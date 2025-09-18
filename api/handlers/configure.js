@@ -3,9 +3,29 @@
 
 const { v4: uuidv4 } = require('uuid');
 const fetch = require('node-fetch');
-const { kvSetJson } = require('../kv');
+const { kvSetJson, kvGetJson } = require('../kv');
 
-function configureGet(req, res) {
+async function configureGet(req, res) {
+  const configId = req.params.configId || null;
+  let m3uUrl = '';
+  let extraWebs = '';
+
+  // Si se proporciona un configId, intentar cargar los valores actuales desde KV
+  if (configId) {
+    try {
+      const config = await kvGetJson(configId);
+      if (config) {
+        m3uUrl = config.m3uUrl || '';
+        extraWebs = config.extraWebs || '';
+        console.log(`[CONFIGURE] Cargada configuración para configId=${configId}: m3uUrl=${m3uUrl}, extraWebs=${extraWebs}`);
+      } else {
+        console.warn(`[CONFIGURE] No se encontró configuración para configId=${configId}`);
+      }
+    } catch (e) {
+      console.error(`[CONFIGURE] Error al cargar configuración para configId=${configId}:`, e.message);
+    }
+  }
+
   res.setHeader('Content-Type', 'text/html');
   res.end(`
     <!DOCTYPE html>
@@ -24,10 +44,11 @@ function configureGet(req, res) {
         <h1>Configure Heimdallr Channels</h1>
         <p>Enter the URL of your M3U playlist and optionally extra websites separated by ; or |:</p>
         <form action="/generate-url" method="post">
-          <input type="text" name="m3uUrl" placeholder="https://example.com/list.m3u" required>
-          <input type="text" name="extraWebs" placeholder="https://web1.com;https://web2.com">
+          <input type="text" name="m3uUrl" placeholder="https://example.com/list.m3u" value="${m3uUrl}" required>
+          <input type="text" name="extraWebs" placeholder="https://web1.com;https://web2.com" value="${extraWebs}">
           <button type="submit">Generate Install URL</button>
         </form>
+        ${configId ? `<p>Editing configuration for ID: ${configId}</p>` : ''}
       </body>
     </html>
   `);
