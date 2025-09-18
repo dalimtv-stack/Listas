@@ -83,6 +83,8 @@ router.get('/:configId/stream/:type/:id.json', async (req, res) => {
 router.get('/configure', configureGet);
 router.post('/generate-url', configurePost);
 
+// ------------------------- Debug ------------------------
+router.get('/debug', require('./debug'));
 // -------------------- Mount & export --------------------
 app.use(router);
 module.exports = app;
