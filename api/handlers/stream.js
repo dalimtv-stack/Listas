@@ -68,29 +68,53 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
   }
 
   const chName = ch.name;
-  let streams = [];
+  const streams = [];
+  const seenUrls = new Set(); // Para evitar duplicados
 
   const addStream = (src) => {
     const out = { name: src.group_title || src.name, title: src.title || src.name };
+    let streamUrl = null;
+
     if (src.acestream_id) {
-      out.externalUrl = `acestream://${src.acestream_id}`;
+      streamUrl = `acestream://${src.acestream_id}`;
+      out.externalUrl = streamUrl;
       out.behaviorHints = { notWebReady: true, external: true };
     } else if (src.m3u8_url || src.stream_url || src.url) {
-      out.url = src.m3u8_url || src.stream_url || src.url;
+      streamUrl = src.m3u8_url || src.stream_url || src.url;
+      out.url = streamUrl;
       out.behaviorHints = { notWebReady: false, external: false };
     }
     if (src.group_title) out.group_title = src.group_title;
-    streams.push(out);
+
+    // Solo añadir si la URL no está ya en la lista
+    if (streamUrl && !seenUrls.has(streamUrl)) {
+      seenUrls.add(streamUrl);
+      streams.push(out);
+      console.log(logPrefix, `Añadido stream: ${streamUrl}`);
+    } else if (streamUrl) {
+      console.log(logPrefix, `Descartado stream duplicado: ${streamUrl}`);
+    }
   };
 
-  if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) addStream(ch);
-  (ch.additional_streams || []).forEach(addStream);
-  if (ch.website_url) {
+  // Añadir el stream principal del canal
+  if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) {
+    addStream(ch);
+  }
+
+  // Añadir streams adicionales, evitando duplicados
+  if (Array.isArray(ch.additional_streams)) {
+    ch.additional_streams.forEach(addStream);
+  }
+
+  // Añadir website_url si existe
+  if (ch.website_url && !seenUrls.has(ch.website_url)) {
     streams.push({
       title: `${ch.name} - Website`,
       externalUrl: ch.website_url,
       behaviorHints: { notWebReady: true, external: true }
     });
+    seenUrls.add(ch.website_url);
+    console.log(logPrefix, `Añadido website_url: ${ch.website_url}`);
   }
 
   const resp = { streams, chName };
@@ -114,8 +138,8 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
           return url && !existingUrls.has(url);
         });
         if (nuevos.length) {
-          baseObj.streams = [...nuevos, ...baseObj.streams.filter(s => !nuevos.some(n => (n.url || n.externalUrl) === (s.url || s.externalUrl)))];
-          console.log(logPrefix, `Añadidos ${nuevos.length} streams extra para ${chName} con group_title`);
+          baseObj.streams = [...nuevos, ...baseObj.streams];
+          console.log(logPrefix, `Añadidos ${nuevos.length} streams extra para ${chName}`);
         } else {
           console.log(logPrefix, `No se añadieron streams extra para ${chName} (sin coincidencias)`);
         }
