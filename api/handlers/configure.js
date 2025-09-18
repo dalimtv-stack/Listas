@@ -1,3 +1,4 @@
+// /api/handlers/configure.js
 'use strict';
 
 const { v4: uuidv4 } = require('uuid');
@@ -72,7 +73,7 @@ async function configureGet(req, res) {
           }
           textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 75px;
           }
           button {
             background: #4CAF50;
