@@ -58,6 +58,10 @@ async function configureGet(req, res) {
             flex-direction: column;
             gap: 1rem;
           }
+          label {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+          }
           input, textarea {
             padding: 0.8rem;
             font-size: 1rem;
@@ -145,8 +149,12 @@ async function configureGet(req, res) {
         <h1>Configure Heimdallr Channels</h1>
         <p>Enter the URL of your M3U playlist and optionally extra websites separated by ; or |:</p>
         <form action="/generate-url" method="post">
-          <input type="text" name="m3uUrl" placeholder="https://example.com/list.m3u" value="${m3uUrl}" required>
-          <input type="text" name="extraWebs" placeholder="https://web1.com;https://web2.com" value="${extraWebs}">
+          <label for="m3uUrl">M3U Playlist URL:</label>
+          <textarea name="m3uUrl" id="m3uUrl" placeholder="https://example.com/list.m3u" required>${m3uUrl}</textarea>
+
+          <label for="extraWebs">Extra Websites:</label>
+          <textarea name="extraWebs" id="extraWebs" placeholder="https://web1.com;https://web2.com">${extraWebs}</textarea>
+
           ${configId ? `<input type="hidden" name="configId" value="${configId}">` : ''}
           <div class="button-group">
             <button type="submit" name="action" value="generate">${configId ? 'Generate Install URL' : 'Generate Install URL'}</button>
@@ -159,6 +167,7 @@ async function configureGet(req, res) {
   `);
 }
 
+// configurePost se queda tal cual
 async function configurePost(req, res) {
   try {
     const m3uUrl = String(req.body?.m3uUrl || '').trim();
@@ -226,72 +235,14 @@ async function configurePost(req, res) {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Configuration Updated</title>
             <style>
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-                max-width: 600px;
-                margin: 2rem auto;
-                padding: 0 1rem;
-                line-height: 1.6;
-                color: #333;
-              }
-              h1 {
-                font-size: 2rem;
-                text-align: center;
-                margin-bottom: 1.5rem;
-              }
-              p {
-                font-size: 1.1rem;
-                margin-bottom: 1rem;
-              }
-              a {
-                display: inline-block;
-                background: #4CAF50;
-                color: white;
-                padding: 1rem 2rem;
-                text-decoration: none;
-                border-radius: 5px;
-                margin: 0.5rem;
-                min-height: 44px;
-                text-align: center;
-                transition: background 0.2s;
-              }
-              a:hover {
-                background: #45a049;
-              }
-              .button-group {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 1rem;
-                justify-content: center;
-              }
-              @media (min-width: 600px) {
-                body {
-                  max-width: 800px;
-                }
-                h1 {
-                  font-size: 2.5rem;
-                }
-                p {
-                  font-size: 1.2rem;
-                }
-                a {
-                  font-size: 1.1rem;
-                }
-                .button-group {
-                  justify-content: flex-start;
-                }
-              }
-              @media (max-width: 600px) {
-                h1 {
-                  font-size: 1.5rem;
-                }
-                p, a {
-                  font-size: 0.95rem;
-                }
-                a {
-                  width: 100%;
-                }
-              }
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #333; }
+              h1 { font-size: 2rem; text-align: center; margin-bottom: 1.5rem; }
+              p { font-size: 1.1rem; margin-bottom: 1rem; }
+              a { display: inline-block; background: #4CAF50; color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 5px; margin: 0.5rem; min-height: 44px; text-align: center; transition: background 0.2s; }
+              a:hover { background: #45a049; }
+              .button-group { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+              @media (min-width: 600px) { body { max-width: 800px; } h1 { font-size: 2.5rem; } p { font-size: 1.2rem; } a { font-size: 1.1rem; } .button-group { justify-content: flex-start; } }
+              @media (max-width: 600px) { h1 { font-size: 1.5rem; } p, a { font-size: 0.95rem; } a { width: 100%; } }
             </style>
           </head>
           <body>
@@ -314,83 +265,15 @@ async function configurePost(req, res) {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Install Heimdallr Channels</title>
             <style>
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-                max-width: 600px;
-                margin: 2rem auto;
-                padding: 0 1rem;
-                line-height: 1.6;
-                color: #333;
-              }
-              h1 {
-                font-size: 2rem;
-                text-align: center;
-                margin-bottom: 1.5rem;
-              }
-              p {
-                font-size: 1.1rem;
-                margin-bottom: 1rem;
-              }
-              button, a {
-                display: inline-block;
-                background: #4CAF50;
-                color: white;
-                padding: 1rem 2rem;
-                font-size: 1rem;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                margin: 0.5rem;
-                min-height: 44px;
-                text-align: center;
-                text-decoration: none;
-                transition: background 0.2s;
-              }
-              button:hover, a:hover {
-                background: #45a049;
-              }
-              .button-group {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 1rem;
-                justify-content: center;
-              }
-              pre {
-                background: #f4f4f4;
-                padding: 1rem;
-                border-radius: 5px;
-                font-size: 0.9rem;
-                overflow-x: auto;
-                margin: 1rem 0;
-              }
-              @media (min-width: 600px) {
-                body {
-                  max-width: 800px;
-                }
-                h1 {
-                  font-size: 2.5rem;
-                }
-                p {
-                  font-size: 1.2rem;
-                }
-                button, a {
-                  font-size: 1.1rem;
-                }
-                .button-group {
-                  justify-content: flex-start;
-                }
-              }
-              @media (max-width: 600px) {
-                h1 {
-                  font-size: 1.5rem;
-                }
-                p, button, a {
-                  font-size: 0.95rem;
-                }
-                button, a {
-                  width: 100%;
-                }
-              }
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #333; }
+              h1 { font-size: 2rem; text-align: center; margin-bottom: 1.5rem; }
+              p { font-size: 1.1rem; margin-bottom: 1rem; }
+              button, a { display: inline-block; background: #4CAF50; color: white; padding: 1rem 2rem; font-size: 1rem; border: none; border-radius: 5px; cursor: pointer; margin: 0.5rem; min-height: 44px; text-align: center; text-decoration: none; transition: background 0.2s; }
+              button:hover, a:hover { background: #45a049; }
+              .button-group { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+              pre { background: #f4f4f4; padding: 1rem; border-radius: 5px; font-size: 0.9rem; overflow-x: auto; margin: 1rem 0; }
+              @media (min-width: 600px) { body { max-width: 800px; } h1 { font-size: 2.5rem; } p { font-size: 1.2rem; } button, a { font-size: 1.1rem; } .button-group { justify-content: flex-start; } }
+              @media (max-width: 600px) { h1 { font-size: 1.5rem; } p, button, a { font-size: 0.95rem; } button, a { width: 100%; } }
             </style>
             <script>
               function copyManifest() {
@@ -427,63 +310,13 @@ async function configurePost(req, res) {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Server Error</title>
           <style>
-            body {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-              max-width: 600px;
-              margin: 2rem auto;
-              padding: 0 1rem;
-              line-height: 1.6;
-              color: #333;
-            }
-            h1 {
-              font-size: 2rem;
-              text-align: center;
-              margin-bottom: 1.5rem;
-            }
-            p {
-              font-size: 1.1rem;
-              margin-bottom: 1rem;
-            }
-            a {
-              display: inline-block;
-              background: #4CAF50;
-              color: white;
-              padding: 1rem 2rem;
-              text-decoration: none;
-              border-radius: 5px;
-              margin: 0.5rem;
-              min-height: 44px;
-              text-align: center;
-              transition: background 0.2s;
-            }
-            a:hover {
-              background: #45a049;
-            }
-            @media (min-width: 600px) {
-              body {
-                max-width: 800px;
-              }
-              h1 {
-                font-size: 2.5rem;
-              }
-              p {
-                font-size: 1.2rem;
-              }
-              a {
-                font-size: 1.1rem;
-              }
-            }
-            @media (max-width: 600px) {
-              h1 {
-                font-size: 1.5rem;
-              }
-              p, a {
-                font-size: 0.95rem;
-              }
-              a {
-                width: 100%;
-              }
-            }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #333; }
+            h1 { font-size: 2rem; text-align: center; margin-bottom: 1.5rem; }
+            p { font-size: 1.1rem; margin-bottom: 1rem; }
+            a { display: inline-block; background: #4CAF50; color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 5px; margin: 0.5rem; min-height: 44px; text-align: center; transition: background 0.2s; }
+            a:hover { background: #45a049; }
+            @media (min-width: 600px) { body { max-width: 800px; } h1 { font-size: 2.5rem; } p { font-size: 1.2rem; } a { font-size: 1.1rem; } }
+            @media (max-width: 600px) { h1 { font-size: 1.5rem; } p, a { font-size: 0.95rem; } a { width: 100%; } }
           </style>
         </head>
         <body>
