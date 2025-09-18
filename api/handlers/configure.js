@@ -58,17 +58,20 @@ async function configureGet(req, res) {
             flex-direction: column;
             gap: 1rem;
           }
-          input, textarea {
+          textarea {
             padding: 0.8rem;
             font-size: 1rem;
             border: 1px solid #ccc;
             border-radius: 5px;
             width: 100%;
             box-sizing: border-box;
-          }
-          textarea {
             resize: vertical;
-            min-height: 100px;
+          }
+          textarea.m3u-url {
+            min-height: 50px; /* Aproximadamente 2 líneas */
+          }
+          textarea.extra-webs {
+            min-height: 70px; /* Aproximadamente 3 líneas */
           }
           button {
             background: #4CAF50;
@@ -115,7 +118,7 @@ async function configureGet(req, res) {
             p {
               font-size: 1.2rem;
             }
-            input, textarea {
+            textarea {
               font-size: 1.1rem;
               padding: 1rem;
             }
@@ -131,7 +134,7 @@ async function configureGet(req, res) {
             h1 {
               font-size: 1.5rem;
             }
-            p, input, textarea, button, a {
+            p, textarea, button, a {
               font-size: 0.95rem;
             }
             button, a {
@@ -145,8 +148,8 @@ async function configureGet(req, res) {
         <h1>Configure Heimdallr Channels</h1>
         <p>Enter the URL of your M3U playlist and optionally extra websites separated by ; or |:</p>
         <form action="/generate-url" method="post">
-          <input type="text" name="m3uUrl" placeholder="https://example.com/list.m3u" value="${m3uUrl}" required>
-          <textarea name="extraWebs" placeholder="https://web1.com;https://web2.com">${extraWebs}</textarea>
+          <textarea name="m3uUrl" class="m3u-url" placeholder="https://example.com/list.m3u" required>${m3uUrl}</textarea>
+          <textarea name="extraWebs" class="extra-webs" placeholder="https://web1.com;https://web2.com">${extraWebs}</textarea>
           ${configId ? `<input type="hidden" name="configId" value="${configId}">` : ''}
           <div class="button-group">
             <button type="submit" name="action" value="generate">${configId ? 'Generate Install URL' : 'Generate Install URL'}</button>
@@ -206,7 +209,8 @@ async function configurePost(req, res) {
     res.setHeader('Content-Type', 'text/html');
     if (action === 'update') {
       res.end(`
-        <!DOCTYPE html>
+        <!DOCTY
+PE html>
         <html lang="en">
           <head>
             <meta charset="UTF-8">
