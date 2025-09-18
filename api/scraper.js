@@ -12,7 +12,8 @@ const channelAliases = {
   'dazn f1': ['dazn f1', 'dazn f1 1080', 'dazn f1 1080 (fórmula 1)', 'fórmula 1', 'dazn f1 es'],
   'primera federacion "rfef" (fhd)': ['rfef', 'primera federacion', 'primera federación', '1rfef', 'canal 1 [1rfef]'],
   'canal 1 [1rfef] (solo eventos)': ['primera federacion', 'primera federacion "rfef"', '1rfef', 'primera federacion rfef', 'canal 1 [1rfef]'],
-  'dazn f1 (1080)': ['dazn f1 es', 'dazn f1 [es]']
+  'dazn f1 (1080)': ['dazn f1 es', 'dazn f1 [es]'],
+  'laliga hypermotion': ['laliga tv hypermotion']
 };
 
 function normalizeName(name) {
