@@ -40,27 +40,26 @@ async function configureGet(req, res) {
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             max-width: 600px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-            line-height: 1.6;
+            margin: 20px auto;
+            padding: 0 10px;
             color: #333;
           }
           h1 {
-            font-size: 2rem;
+            font-size: 1.8rem;
             text-align: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 20px;
           }
           p {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
+            font-size: 1rem;
+            margin-bottom: 10px;
           }
           form {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 10px;
           }
           input {
-            padding: 0.8rem;
+            padding: 10px;
             font-size: 1rem;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -70,12 +69,11 @@ async function configureGet(req, res) {
           button {
             background: #4CAF50;
             color: white;
-            padding: 0.8rem 1.5rem;
+            padding: 10px;
             font-size: 1rem;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            min-height: 44px;
             transition: background 0.2s;
           }
           button:hover {
@@ -83,57 +81,18 @@ async function configureGet(req, res) {
           }
           .button-group {
             display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
+            gap: 10px;
             justify-content: center;
-          }
-          a {
-            display: inline-block;
-            margin-top: 1rem;
-            text-decoration: none;
-            color: #4CAF50;
-            font-size: 1rem;
-          }
-          pre {
-            background: #f4f4f4;
-            padding: 1rem;
-            border-radius: 5px;
-            font-size: 0.9rem;
-            overflow-x: auto;
-            margin: 1rem 0;
-          }
-          @media (min-width: 600px) {
-            body {
-              max-width: 800px;
-            }
-            h1 {
-              font-size: 2.5rem;
-            }
-            p {
-              font-size: 1.2rem;
-            }
-            input {
-              font-size: 1.1rem;
-              padding: 1rem;
-            }
-            button {
-              font-size: 1.1rem;
-              padding: 1rem 2rem;
-            }
-            .button-group {
-              justify-content: flex-start;
-            }
           }
           @media (max-width: 600px) {
             h1 {
               font-size: 1.5rem;
             }
-            p, input, button, a {
-              font-size: 0.95rem;
+            p, input, button {
+              font-size: 0.9rem;
             }
-            button, a {
-              width: 100%;
-              text-align: center;
+            input, button {
+              padding: 8px;
             }
           }
         </style>
@@ -167,7 +126,6 @@ async function configurePost(req, res) {
     const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/;
     const extraWebsList = extraWebs ? extraWebs.split(/[;|,\n]+/).map(s => s.trim()).filter(s => urlRegex.test(s)) : [];
 
-    // Validar la URL de la M3U
     try {
       const controller = new AbortController();
       const t = setTimeout(() => controller.abort(), 5000);
@@ -181,11 +139,9 @@ async function configurePost(req, res) {
       if (!text.includes('#EXTINF')) throw new Error('No es un archivo M3U válido');
     }
 
-    // Guardar la configuración en KV
     await kvSetJson(configId, { m3uUrl, extraWebs: extraWebsList.join(';') });
     console.log(`[CONFIGURE] Configuración ${action === 'update' ? 'actualizada' : 'guardada'} para configId=${configId}: m3uUrl=${m3uUrl}, extraWebs=${extraWebs}`);
 
-    // Generar y guardar géneros
     try {
       console.log(`[CONFIGURE] Generando géneros para configId=${configId}`);
       const channels = await getChannels({ m3uUrl });
@@ -196,7 +152,6 @@ async function configurePost(req, res) {
       console.error(`[CONFIGURE] Error al generar géneros para configId=${configId}:`, genreErr.message);
     }
 
-    // Invalidar cachés si se está actualizando
     if (action === 'update') {
       const m3uHash = await getM3uHash(m3uUrl);
       await kvDelete(`m3u_hash:${configId}`);
@@ -210,204 +165,112 @@ async function configurePost(req, res) {
 
     const baseHost = req.headers['x-forwarded-host'] || req.headers.host;
     const baseProto = req.headers['x-forwarded-proto'] || 'https';
-    const timestamp = Date.now(); // Añadir timestamp para evitar caché
+    const timestamp = Date.now();
     const manifestUrl = `${baseProto}://${baseHost}/${configId}/manifest.json?t=${timestamp}`;
     const installUrl = `stremio://${encodeURIComponent(manifestUrl)}`;
 
     res.setHeader('Content-Type', 'text/html');
-    if (action === 'update') {
-      res.end(`
-        <!DOCTYPE html>
-        <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Configuration Updated</title>
-            <style>
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-                max-width: 600px;
-                margin: 2rem auto;
-                padding: 0 1rem;
-                line-height: 1.6;
-                color: #333;
-              }
+    res.end(`
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>${action === 'update' ? 'Configuration Updated' : 'Install Heimdallr Channels'}</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+              max-width: 600px;
+              margin: 20px auto;
+              padding: 0 10px;
+              color: #333;
+            }
+            h1 {
+              font-size: 1.8rem;
+              text-align: center;
+              margin-bottom: 20px;
+            }
+            p {
+              font-size: 1rem;
+              margin-bottom: 10px;
+            }
+            a, button {
+              display: inline-block;
+              background: #4CAF50;
+              color: white;
+              padding: 10px;
+              font-size: 1rem;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+              text-decoration: none;
+              margin: 5px;
+              transition: background 0.2s;
+            }
+            a:hover, button:hover {
+              background: #45a049;
+            }
+            .button-group {
+              display: flex;
+              gap: 10px;
+              justify-content: center;
+            }
+            pre {
+              background: #f4f4f4;
+              padding: 10px;
+              border-radius: 5px;
+              font-size: 0.9rem;
+              overflow-x: auto;
+              margin: 10px 0;
+            }
+            @media (max-width: 600px) {
               h1 {
-                font-size: 2rem;
-                text-align: center;
-                margin-bottom: 1.5rem;
+                font-size: 1.5rem;
               }
-              p {
-                font-size: 1.1rem;
-                margin-bottom: 1rem;
-              }
-              a {
-                display: inline-block;
-                background: #4CAF50;
-                color: white;
-                padding: 1rem 2rem;
-                text-decoration: none;
-                border-radius: 5px;
-                margin: 0.5rem;
-                min-height: 44px;
-                text-align: center;
-                transition: background 0.2s;
-              }
-              a:hover {
-                background: #45a049;
-              }
-              .button-group {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 1rem;
-                justify-content: center;
-              }
-              @media (min-width: 600px) {
-                body {
-                  max-width: 800px;
-                }
-                h1 {
-                  font-size: 2.5rem;
-                }
-                p {
-                  font-size: 1.2rem;
-                }
-                a {
-                  font-size: 1.1rem;
-                }
-              }
-              @media (max-width: 600px) {
-                h1 {
-                  font-size: 1.5rem;
-                }
-                p, a {
-                  font-size: 0.95rem;
-                }
-                a {
-                  width: 100%;
-                }
-              }
-            </style>
-          </head>
-          <body>
-            <h1>Configuration Updated</h1>
-            <p>Your configuration has been updated for ID: ${configId}.</p>
-            <p>The changes will be reflected in Stremio automatically.</p>
-            <div class="button-group">
-              <a href="stremio://">Back to Stremio</a>
-              <a href="/${configId}/configure">Edit Configuration Again</a>
-            </div>
-          </body>
-        </html>
-      `);
-    } else {
-      res.end(`
-        <!DOCTYPE html>
-        <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Install Heimdallr Channels</title>
-            <style>
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-                max-width: 600px;
-                margin: 2rem auto;
-                padding: 0 1rem;
-                line-height: 1.6;
-                color: #333;
-              }
-              h1 {
-                font-size: 2rem;
-                text-align: center;
-                margin-bottom: 1.5rem;
-              }
-              p {
-                font-size: 1.1rem;
-                margin-bottom: 1rem;
-              }
-              button, a {
-                display: inline-block;
-                background: #4CAF50;
-                color: white;
-                padding: 1rem 2rem;
-                font-size: 1rem;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                margin: 0.5rem;
-                min-height: 44px;
-                text-align: center;
-                text-decoration: none;
-                transition: background 0.2s;
-              }
-              button:hover, a:hover {
-                background: #45a049;
-              }
-              .button-group {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 1rem;
-                justify-content: center;
-              }
-              pre {
-                background: #f4f4f4;
-                padding: 1rem;
-                border-radius: 5px;
+              p, a, button {
                 font-size: 0.9rem;
-                overflow-x: auto;
-                margin: 1rem 0;
               }
-              @media (min-width: 600px) {
-                body {
-                  max-width: 800px;
-                }
-                h1 {
-                  font-size: 2.5rem;
-                }
-                p {
-                  font-size: 1.2rem;
-                }
-                button, a {
-                  font-size: 1.1rem;
-                }
+              a, button {
+                padding: 8px;
+                width: 100%;
+                text-align: center;
               }
-              @media (max-width: 600px) {
-                h1 {
-                  font-size: 1.5rem;
-                }
-                p, button, a {
-                  font-size: 0.95rem;
-                }
-                button, a {
-                  width: 100%;
-                }
-              }
-            </style>
-            <script>
-              function copyManifest() {
-                navigator.clipboard.writeText('${manifestUrl}').then(() => {
-                  alert('Manifest URL copied to clipboard!');
-                }).catch(err => {
-                  alert('Failed to copy: ' + err);
-                });
-              }
-            </script>
-          </head>
-          <body>
-            <h1>Install URL Generated</h1>
-            <p>Click the buttons below to install the addon or copy the manifest URL:</p>
-            <div class="button-group">
-              <a href="${installUrl}">Install New Addon</a>
-              <button onclick="copyManifest()">Copy New Manifest URL</button>
-              <a href="/${configId}/configure">Edit Configuration</a>
-            </div>
-            <p>Or copy this URL:</p>
-            <pre>${manifestUrl}</pre>
-          </body>
-        </html>
-      `);
-    }
+            }
+          </style>
+          ${action !== 'update' ? `
+          <script>
+            function copyManifest() {
+              navigator.clipboard.writeText('${manifestUrl}').then(() => {
+                alert('Manifest URL copied to clipboard!');
+              }).catch(err => {
+                alert('Failed to copy: ' + err);
+              });
+            }
+          </script>
+          ` : ''}
+        </head>
+        <body>
+          <h1>${action === 'update' ? 'Configuration Updated' : 'Install URL Generated'}</h1>
+          ${action === 'update' ? `
+          <p>Your configuration has been updated for ID: ${configId}.</p>
+          <p>The changes will be reflected in Stremio automatically.</p>
+          <div class="button-group">
+            <a href="stremio://">Back to Stremio</a>
+            <a href="/${configId}/configure">Edit Configuration Again</a>
+          </div>
+          ` : `
+          <p>Click the buttons below to install the addon or copy the manifest URL:</p>
+          <div class="button-group">
+            <a href="${installUrl}">Install New Addon</a>
+            <button onclick="copyManifest()">Copy New Manifest URL</button>
+            <a href="/${configId}/configure">Edit Configuration</a>
+          </div>
+          <p>Or copy this URL:</p>
+          <pre>${manifestUrl}</pre>
+          `}
+        </body>
+      </html>
+    `);
   } catch (err) {
     res.setHeader('Content-Type', 'text/html');
     res.statusCode = 500;
@@ -422,58 +285,45 @@ async function configurePost(req, res) {
             body {
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
               max-width: 600px;
-              margin: 2rem auto;
-              padding: 0 1rem;
-              line-height: 1.6;
+              margin: 20px auto;
+              padding: 0 10px;
               color: #333;
             }
             h1 {
-              font-size: 2rem;
+              font-size: 1.8rem;
               text-align: center;
-              margin-bottom: 1.5rem;
+              margin-bottom: 20px;
             }
             p {
-              font-size: 1.1rem;
-              margin-bottom: 1rem;
+              font-size: 1rem;
+              margin-bottom: 10px;
             }
             a {
               display: inline-block;
               background: #4CAF50;
               color: white;
-              padding: 1rem 2rem;
-              text-decoration: none;
+              padding: 10px;
+              font-size: 1rem;
+              border: none;
               border-radius: 5px;
-              margin: 0.5rem;
-              min-height: 44px;
-              text-align: center;
+              text-decoration: none;
+              margin: 5px;
               transition: background 0.2s;
             }
             a:hover {
               background: #45a049;
-            }
-            @media (min-width: 600px) {
-              body {
-                max-width: 800px;
-              }
-              h1 {
-                font-size: 2.5rem;
-              }
-              p {
-                font-size: 1.2rem;
-              }
-              a {
-                font-size: 1.1rem;
-              }
             }
             @media (max-width: 600px) {
               h1 {
                 font-size: 1.5rem;
               }
               p, a {
-                font-size: 0.95rem;
+                font-size: 0.9rem;
               }
               a {
+                padding: 8px;
                 width: 100%;
+                text-align: center;
               }
             }
           </style>
