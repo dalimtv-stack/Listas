@@ -30,15 +30,92 @@ async function configureGet(req, res) {
   res.setHeader('Content-Type', 'text/html');
   res.end(`
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
       <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Configure Heimdallr Channels</title>
         <style>
-          body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
-          input, textarea { width: 100%; padding: 10px; margin: 10px 0; }
-          button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
-          a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; }
-          pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 90%;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            line-height: 1.6;
+            color: #333;
+          }
+          h1 {
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+          }
+          p {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+          }
+          form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+          }
+          input, textarea {
+            padding: 0.8rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+          }
+          textarea {
+            resize: vertical;
+            min-height: 80px;
+          }
+          button {
+            background: #4CAF50;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0.5rem 0;
+            min-height: 44px; /* Para accesibilidad táctil */
+          }
+          button:hover {
+            background: #45a049;
+          }
+          .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+          }
+          a {
+            display: inline-block;
+            margin-top: 1rem;
+            text-decoration: none;
+            color: #4CAF50;
+            font-size: 1rem;
+          }
+          pre {
+            background: #f4f4f4;
+            padding: 1rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+          }
+          @media (max-width: 600px) {
+            h1 {
+              font-size: 1.5rem;
+            }
+            p, input, textarea, button, a {
+              font-size: 0.95rem;
+            }
+            button {
+              width: 100%;
+            }
+          }
         </style>
       </head>
       <body>
@@ -46,10 +123,12 @@ async function configureGet(req, res) {
         <p>Enter the URL of your M3U playlist and optionally extra websites separated by ; or |:</p>
         <form action="/generate-url" method="post">
           <input type="text" name="m3uUrl" placeholder="https://example.com/list.m3u" value="${m3uUrl}" required>
-          <input type="text" name="extraWebs" placeholder="https://web1.com;https://web2.com" value="${extraWebs}">
+          <textarea name="extraWebs" placeholder="https://web1.com;https://web2.com">${extraWebs}</textarea>
           ${configId ? `<input type="hidden" name="configId" value="${configId}">` : ''}
-          <button type="submit" name="action" value="generate">${configId ? 'Generate Install URL' : 'Generate Install URL'}</button>
-          ${configId ? `<button type="submit" name="action" value="update">Update Configuration</button>` : ''}
+          <div class="button-group">
+            <button type="submit" name="action" value="generate">${configId ? 'Generate Install URL' : 'Generate Install URL'}</button>
+            ${configId ? `<button type="submit" name="action" value="update">Update Configuration</button>` : ''}
+          </div>
         </form>
         ${configId ? `<p>Editing configuration for ID: ${configId}</p>` : ''}
       </body>
@@ -104,33 +183,142 @@ async function configurePost(req, res) {
     res.setHeader('Content-Type', 'text/html');
     if (action === 'update') {
       res.end(`
-        <html>
+        <!DOCTYPE html>
+        <html lang="en">
           <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Configuration Updated</title>
             <style>
-              body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
-              a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; padding: 10px 20px; border-radius: 5px; background: #4CAF50; color: white; }
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+                max-width: 90%;
+                margin: 2rem auto;
+                padding: 0 1rem;
+                line-height: 1.6;
+                color: #333;
+              }
+              h1 {
+                font-size: 1.8rem;
+                text-align: center;
+                margin-bottom: 1.5rem;
+              }
+              p {
+                font-size: 1rem;
+                margin-bottom: 1rem;
+              }
+              a {
+                display: inline-block;
+                background: #4CAF50;
+                color: white;
+                padding: 0.8rem 1.5rem;
+                text-decoration: none;
+                border-radius: 5px;
+                margin: 0.5rem 0;
+                min-height: 44px;
+                text-align: center;
+              }
+              a:hover {
+                background: #45a049;
+              }
+              .button-group {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                justify-content: center;
+              }
+              @media (max-width: 600px) {
+                h1 {
+                  font-size: 1.5rem;
+                }
+                p, a {
+                  font-size: 0.95rem;
+                }
+                a {
+                  width: 100%;
+                }
+              }
             </style>
           </head>
           <body>
             <h1>Configuration Updated</h1>
             <p>Your configuration has been updated for ID: ${configId}.</p>
             <p>The changes will be reflected in Stremio automatically.</p>
-            <a href="stremio://">Back to Stremio</a>
-            <a href="/${configId}/configure">Edit Configuration Again</a>
+            <div class="button-group">
+              <a href="stremio://">Back to Stremio</a>
+              <a href="/${configId}/configure">Edit Configuration Again</a>
+            </div>
           </body>
         </html>
       `);
     } else {
       res.end(`
-        <html>
+        <!DOCTYPE html>
+        <html lang="en">
           <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Install Heimdallr Channels</title>
             <style>
-              body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
-              button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
-              a { display: inline-block; margin-top: 20px; text-decoration: none; color: #4CAF50; padding: 10px 20px; border-radius: 5px; background: #4CAF50; color: white; }
-              pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+                max-width: 90%;
+                margin: 2rem auto;
+                padding: 0 1rem;
+                line-height: 1.6;
+                color: #333;
+              }
+              h1 {
+                font-size: 1.8rem;
+                text-align: center;
+                margin-bottom: 1.5rem;
+              }
+              p {
+                font-size: 1rem;
+                margin-bottom: 1rem;
+              }
+              button, a {
+                display: inline-block;
+                background: #4CAF50;
+                color: white;
+                padding: 0.8rem 1.5rem;
+                font-size: 1rem;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                margin: 0.5rem 0;
+                min-height: 44px;
+                text-align: center;
+                text-decoration: none;
+              }
+              button:hover, a:hover {
+                background: #45a049;
+              }
+              .button-group {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                justify-content: center;
+              }
+              pre {
+                background: #f4f4f4;
+                padding: 1rem;
+                border-radius: 5px;
+                font-size: 0.9rem;
+                overflow-x: auto;
+                margin: 1rem 0;
+              }
+              @media (max-width: 600px) {
+                h1 {
+                  font-size: 1.5rem;
+                }
+                p, button, a {
+                  font-size: 0.95rem;
+                }
+                button, a {
+                  width: 100%;
+                }
+              }
             </style>
             <script>
               function copyManifest() {
@@ -145,9 +333,11 @@ async function configurePost(req, res) {
           <body>
             <h1>Install URL Generated</h1>
             <p>Click the buttons below to install the addon or copy the manifest URL:</p>
-            <a href="${installUrl}">Install New Addon</a>
-            <button onclick="copyManifest()">Copy New Manifest URL</button>
-            <a href="/${configId}/configure">Edit Configuration</a>
+            <div class="button-group">
+              <a href="${installUrl}">Install New Addon</a>
+              <button onclick="copyManifest()">Copy New Manifest URL</button>
+              <a href="/${configId}/configure">Edit Configuration</a>
+            </div>
             <p>Or copy this URL:</p>
             <pre>${manifestUrl}</pre>
           </body>
@@ -155,10 +345,60 @@ async function configurePost(req, res) {
       `);
     }
   } catch (err) {
-    res.statusCode = 500;
     res.setHeader('Content-Type', 'text/html');
+    res.statusCode = 500;
     res.end(`
-      <html>
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Server Error</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+              max-width: 90%;
+              margin: 2rem auto;
+              padding: 0 1rem;
+              line-height: 1.6;
+              color: #333;
+            }
+            h1 {
+              font-size: 1.8rem;
+              text-align: center;
+              margin-bottom: 1.5rem;
+            }
+            p {
+              font-size: 1rem;
+              margin-bottom: 1rem;
+            }
+            a {
+              display: inline-block;
+              background: #4CAF50;
+              color: white;
+              padding: 0.8rem 1.5rem;
+              text-decoration: none;
+              border-radius: 5px;
+              margin: 0.5rem 0;
+              min-height: 44px;
+              text-align: center;
+            }
+            a:hover {
+              background: #45a049;
+            }
+            @media (max-width: 600px) {
+              h1 {
+                font-size: 1.5rem;
+              }
+              p, a {
+                font-size: 0.95rem;
+              }
+              a {
+                width: 100%;
+              }
+            }
+          </style>
+        </head>
         <body>
           <h1>Server Error</h1>
           <p>Error: ${err.message}. <a href="${req.body.configId ? `/${req.body.configId}/configure` : '/configure'}">Go back</a></p>
