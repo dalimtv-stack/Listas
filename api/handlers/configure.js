@@ -38,19 +38,19 @@ async function configureGet(req, res) {
         <style>
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            max-width: 90%;
+            max-width: 600px;
             margin: 2rem auto;
             padding: 0 1rem;
             line-height: 1.6;
             color: #333;
           }
           h1 {
-            font-size: 1.8rem;
+            font-size: 2rem;
             text-align: center;
             margin-bottom: 1.5rem;
           }
           p {
-            font-size: 1rem;
+            font-size: 1.1rem;
             margin-bottom: 1rem;
           }
           form {
@@ -68,7 +68,7 @@ async function configureGet(req, res) {
           }
           textarea {
             resize: vertical;
-            min-height: 80px;
+            min-height: 100px;
           }
           button {
             background: #4CAF50;
@@ -78,8 +78,8 @@ async function configureGet(req, res) {
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            margin: 0.5rem 0;
-            min-height: 44px; /* Para accesibilidad táctil */
+            min-height: 44px;
+            transition: background 0.2s;
           }
           button:hover {
             background: #45a049;
@@ -87,7 +87,7 @@ async function configureGet(req, res) {
           .button-group {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.5rem;
+            gap: 1rem;
             justify-content: center;
           }
           a {
@@ -105,6 +105,28 @@ async function configureGet(req, res) {
             overflow-x: auto;
             margin: 1rem 0;
           }
+          @media (min-width: 600px) {
+            body {
+              max-width: 800px;
+            }
+            h1 {
+              font-size: 2.5rem;
+            }
+            p {
+              font-size: 1.2rem;
+            }
+            input, textarea {
+              font-size: 1.1rem;
+              padding: 1rem;
+            }
+            button {
+              font-size: 1.1rem;
+              padding: 1rem 2rem;
+            }
+            .button-group {
+              justify-content: flex-start;
+            }
+          }
           @media (max-width: 600px) {
             h1 {
               font-size: 1.5rem;
@@ -112,8 +134,9 @@ async function configureGet(req, res) {
             p, input, textarea, button, a {
               font-size: 0.95rem;
             }
-            button {
+            button, a {
               width: 100%;
+              text-align: center;
             }
           }
         </style>
@@ -192,31 +215,32 @@ async function configurePost(req, res) {
             <style>
               body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-                max-width: 90%;
+                max-width: 600px;
                 margin: 2rem auto;
                 padding: 0 1rem;
                 line-height: 1.6;
                 color: #333;
               }
               h1 {
-                font-size: 1.8rem;
+                font-size: 2rem;
                 text-align: center;
                 margin-bottom: 1.5rem;
               }
               p {
-                font-size: 1rem;
+                font-size: 1.1rem;
                 margin-bottom: 1rem;
               }
               a {
                 display: inline-block;
                 background: #4CAF50;
                 color: white;
-                padding: 0.8rem 1.5rem;
+                padding: 1rem 2rem;
                 text-decoration: none;
                 border-radius: 5px;
-                margin: 0.5rem 0;
+                margin: 0.5rem;
                 min-height: 44px;
                 text-align: center;
+                transition: background 0.2s;
               }
               a:hover {
                 background: #45a049;
@@ -224,8 +248,25 @@ async function configurePost(req, res) {
               .button-group {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 0.5rem;
+                gap: 1rem;
                 justify-content: center;
+              }
+              @media (min-width: 600px) {
+                body {
+                  max-width: 800px;
+                }
+                h1 {
+                  font-size: 2.5rem;
+                }
+                p {
+                  font-size: 1.2rem;
+                }
+                a {
+                  font-size: 1.1rem;
+                }
+                .button-group {
+                  justify-content: flex-start;
+                }
               }
               @media (max-width: 600px) {
                 h1 {
@@ -262,34 +303,35 @@ async function configurePost(req, res) {
             <style>
               body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-                max-width: 90%;
+                max-width: 600px;
                 margin: 2rem auto;
                 padding: 0 1rem;
                 line-height: 1.6;
                 color: #333;
               }
               h1 {
-                font-size: 1.8rem;
+                font-size: 2rem;
                 text-align: center;
                 margin-bottom: 1.5rem;
               }
               p {
-                font-size: 1rem;
+                font-size: 1.1rem;
                 margin-bottom: 1rem;
               }
               button, a {
                 display: inline-block;
                 background: #4CAF50;
                 color: white;
-                padding: 0.8rem 1.5rem;
+                padding: 1rem 2rem;
                 font-size: 1rem;
                 border: none;
                 border-radius: 5px;
                 cursor: pointer;
-                margin: 0.5rem 0;
+                margin: 0.5rem;
                 min-height: 44px;
                 text-align: center;
                 text-decoration: none;
+                transition: background 0.2s;
               }
               button:hover, a:hover {
                 background: #45a049;
@@ -297,7 +339,7 @@ async function configurePost(req, res) {
               .button-group {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 0.5rem;
+                gap: 1rem;
                 justify-content: center;
               }
               pre {
@@ -307,6 +349,23 @@ async function configurePost(req, res) {
                 font-size: 0.9rem;
                 overflow-x: auto;
                 margin: 1rem 0;
+              }
+              @media (min-width: 600px) {
+                body {
+                  max-width: 800px;
+                }
+                h1 {
+                  font-size: 2.5rem;
+                }
+                p {
+                  font-size: 1.2rem;
+                }
+                button, a {
+                  font-size: 1.1rem;
+                }
+                .button-group {
+                  justify-content: flex-start;
+                }
               }
               @media (max-width: 600px) {
                 h1 {
@@ -357,34 +416,49 @@ async function configurePost(req, res) {
           <style>
             body {
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-              max-width: 90%;
+              max-width: 600px;
               margin: 2rem auto;
               padding: 0 1rem;
               line-height: 1.6;
               color: #333;
             }
             h1 {
-              font-size: 1.8rem;
+              font-size: 2rem;
               text-align: center;
               margin-bottom: 1.5rem;
             }
             p {
-              font-size: 1rem;
+              font-size: 1.1rem;
               margin-bottom: 1rem;
             }
             a {
               display: inline-block;
               background: #4CAF50;
               color: white;
-              padding: 0.8rem 1.5rem;
+              padding: 1rem 2rem;
               text-decoration: none;
               border-radius: 5px;
-              margin: 0.5rem 0;
+              margin: 0.5rem;
               min-height: 44px;
               text-align: center;
+              transition: background 0.2s;
             }
             a:hover {
               background: #45a049;
+            }
+            @media (min-width: 600px) {
+              body {
+                max-width: 800px;
+              }
+              h1 {
+                font-size: 2.5rem;
+              }
+              p {
+                font-size: 1.2rem;
+              }
+              a {
+                font-size: 1.1rem;
+              }
             }
             @media (max-width: 600px) {
               h1 {
