@@ -3,6 +3,7 @@
 
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
+const { parse } = require('iptv-playlist-parser');
 const { kvGetJsonTTL, kvSetJsonTTL, kvDelete } = require('./kv');
 
 const channelAliases = {
@@ -63,7 +64,7 @@ function isNumberMismatch(streamName, channelName) {
     return true;
   }
   const mismatch = filteredStreamNums.some(n => !filteredChannelNums.includes(n));
-  console.log('[SCRAPER] numberMismatch result:', mismatch);
+  console.log('[SCRAPER] isNumberMismatch result:', mismatch);
   return mismatch;
 }
 
@@ -118,18 +119,62 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
       console.log(logPrefix, `Fetch -> ${url}`);
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 20000);
-      const html = await fetch(url, { signal: controller.signal }).then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.text();
-      });
+      const response = await fetch(url, { signal: controller.signal });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const content = await response.text();
       clearTimeout(timeoutId);
 
-      console.log(logPrefix, `HTML recibido de ${url}, longitud: ${html.length}`);
+      console.log(logPrefix, `Contenido recibido de ${url}, longitud: ${content.length}`);
 
-      const $ = cheerio.load(html);
+      // Procesar como M3U si la URL termina en .m3u o el contenido parece una lista M3U
+      if (url.endsWith('.m3u') || content.startsWith('#EXTM3U')) {
+        console.log(logPrefix, `Detectado contenido M3U en ${url}`);
+        let playlist;
+        try {
+          playlist = parse(content);
+        } catch (err) {
+          console.error(logPrefix, `Error parseando M3U desde ${url}: ${err.message}`);
+          continue;
+        }
+        console.log(logPrefix, `M3U parseado, items: ${playlist.items.length}`);
+
+        playlist.items.forEach((item, index) => {
+          const name = item.name || '';
+          const href = item.url;
+          const normalizedName = normalizeName(name);
+          const groupTitle = item.tvg.group || '';
+          if (
+            name &&
+            href &&
+            href.endsWith('.m3u8') &&
+            groupTitle === 'SPAIN' &&
+            isMatch(normalizedName, searchTerms, channelName) &&
+            !isNumberMismatch(name, channelName) &&
+            !seenUrls.has(href)
+          ) {
+            const displayName = normalizeUrlForDisplay(url);
+            const stream = {
+              name: displayName,
+              title: `${name} (M3U8)`,
+              url: href,
+              group_title: displayName,
+              behaviorHints: { notWebReady: false, external: false }
+            };
+            results.push(stream);
+            seenUrls.add(href);
+            console.log(logPrefix, `Stream M3U8 añadido: ${JSON.stringify(stream)}`);
+          } else {
+            console.log(logPrefix, `Descartado M3U: name="${name}", href="${href}", groupTitle="${groupTitle}", isMatch=${isMatch(normalizedName, searchTerms, channelName)}, numberMismatch=${isNumberMismatch(name, channelName)}`);
+          }
+        });
+        continue;
+      }
+
+      // Procesar HTML con Cheerio
+      const $ = cheerio.load(content);
       let encontrados = 0;
 
-      // Selector para shickat.me u otros
+      // Selector para shickat.me u otros (solo acestream://)
       $('#linksList li').each((_, li) => {
         const name = $(li).find('.link-name').text().trim();
         const href = $(li).find('.link-url a').attr('href');
@@ -159,6 +204,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
         }
       });
 
+      // Selector para canal-card (solo acestream://)
       $('.canal-card').each((_, card) => {
         const name = $(card).find('.canal-nombre').text().trim();
         const href = $(card).find('.acestream-link').attr('href');
@@ -188,7 +234,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
         }
       });
 
-      // Selector para elcano.top - extrae JSON de linksData
+      // Selector para elcano.top - extrae JSON de linksData (solo acestream://)
       if (url.includes('elcano.top')) {
         console.log(logPrefix, 'Detectado elcano.top, extrayendo JSON de linksData');
         const scriptText = $('script').filter((i, el) => $(el).html().includes('linksData')).html();
@@ -250,7 +296,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
 
   console.log(logPrefix, `Total streams extra encontrados: ${results.length}`);
   if (results.length > 0) {
-    const hasChanged = !cached || !arraysEqual(cached || [], results, (a, b) => a.externalUrl === b.externalUrl);
+    const hasChanged = !cached || !arraysEqual(cached || [], results, (a, b) => a.url === b.url || a.externalUrl === b.externalUrl);
     if (hasChanged) {
       await kvSetJsonTTL(cacheKey, results, ttlSeconds);
       console.log(logPrefix, `Cache actualizado para "${normalizedTarget}" con ${results.length} streams`);
