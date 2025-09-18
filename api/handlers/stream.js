@@ -72,28 +72,27 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
   const seenUrls = new Set(); // Para evitar duplicados
 
   const addStream = (src) => {
-    const out = { name: src.group_title || src.name, title: src.title || src.name };
-    let streamUrl = null;
+    const streamUrl = src.acestream_id ? `acestream://${src.acestream_id}` : src.m3u8_url || src.stream_url || src.url;
+    if (!streamUrl || seenUrls.has(streamUrl)) {
+      console.log(logPrefix, `Descartado stream duplicado o sin URL: ${streamUrl}`);
+      return;
+    }
+
+    const out = {
+      name: src.group_title || src.name || chName,
+      title: src.title || `${chName} (${src.group_title || 'Stream'})`,
+      behaviorHints: src.behaviorHints || { notWebReady: false, external: false }
+    };
 
     if (src.acestream_id) {
-      streamUrl = `acestream://${src.acestream_id}`;
       out.externalUrl = streamUrl;
-      out.behaviorHints = { notWebReady: true, external: true };
-    } else if (src.m3u8_url || src.stream_url || src.url) {
-      streamUrl = src.m3u8_url || src.stream_url || src.url;
+    } else {
       out.url = streamUrl;
-      out.behaviorHints = { notWebReady: false, external: false };
     }
-    if (src.group_title) out.group_title = src.group_title;
 
-    // Solo añadir si la URL no está ya en la lista
-    if (streamUrl && !seenUrls.has(streamUrl)) {
-      seenUrls.add(streamUrl);
-      streams.push(out);
-      console.log(logPrefix, `Añadido stream: ${streamUrl}`);
-    } else if (streamUrl) {
-      console.log(logPrefix, `Descartado stream duplicado: ${streamUrl}`);
-    }
+    seenUrls.add(streamUrl);
+    streams.push(out);
+    console.log(logPrefix, `Añadido stream: ${streamUrl}, behaviorHints=`, out.behaviorHints);
   };
 
   // Añadir el stream principal del canal
