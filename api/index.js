@@ -16,7 +16,7 @@ const router = express.Router();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// -------------------- CORS --------------------
+// CORS middleware
 router.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -25,7 +25,7 @@ router.use((req, res, next) => {
   next();
 });
 
-// -------------------- Rutas MANIFEST --------------------
+// Manifest routes
 router.get('/manifest.json', async (req, res) => {
   try {
     const manifest = await buildManifest('default');
@@ -46,7 +46,7 @@ router.get('/:configId/manifest.json', async (req, res) => {
   }
 });
 
-// ------------------- Rutas de catálogo -------------------
+// Catalog route
 router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
   try {
     const result = await handleCatalog(req);
@@ -57,7 +57,7 @@ router.get('/:configId/catalog/:type/:rest(.+)\\.json', async (req, res) => {
   }
 });
 
-// --------------------- Rutas META ---------------------
+// Meta route
 router.get('/:configId/meta/:type/:id.json', async (req, res) => {
   try {
     const result = await handleMeta(req);
@@ -68,7 +68,7 @@ router.get('/:configId/meta/:type/:id.json', async (req, res) => {
   }
 });
 
-// --------------------- Rutas STREAM ---------------------
+// Stream route
 router.get('/:configId/stream/:type/:id.json', async (req, res) => {
   try {
     const result = await handleStream(req);
@@ -79,13 +79,12 @@ router.get('/:configId/stream/:type/:id.json', async (req, res) => {
   }
 });
 
-// ---------------------- Config web ----------------------
+// Configuration routes
 router.get('/configure', configureGet);
+router.get('/:configId/configure', configureGet); // Nueva ruta
 router.post('/generate-url', configurePost);
 
-// ------------------------- Debug ------------------------
-router.get('/debug', require('./debug'));
-// -------------------- Mount & export --------------------
+// Mount and export
 app.use(router);
 module.exports = app;
 
