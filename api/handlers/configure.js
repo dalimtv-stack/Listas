@@ -5,7 +5,6 @@ const { v4: uuidv4 } = require('uuid');
 const fetch = require('node-fetch');
 const { kvSetJson, kvGetJson, kvDelete } = require('../kv');
 const { getM3uHash } = require('../utils');
-const { getChannels, extractAndStoreGenresIfChanged } = require('../../src/db'); // Añadido para generar géneros
 
 async function configureGet(req, res) {
   const configId = req.params.configId || null;
@@ -59,17 +58,20 @@ async function configureGet(req, res) {
             flex-direction: column;
             gap: 1rem;
           }
-          input, textarea {
+          textarea {
             padding: 0.8rem;
             font-size: 1rem;
             border: 1px solid #ccc;
             border-radius: 5px;
             width: 100%;
             box-sizing: border-box;
-          }
-          textarea {
             resize: vertical;
-            min-height: 100px;
+          }
+          textarea.m3u-url {
+            min-height: 50px; /* Aproximadamente 2 líneas */
+          }
+          textarea.extra-webs {
+            min-height: 70px; /* Aproximadamente 3 líneas */
           }
           button {
             background: #4CAF50;
@@ -116,7 +118,7 @@ async function configureGet(req, res) {
             p {
               font-size: 1.2rem;
             }
-            input, textarea {
+            textarea {
               font-size: 1.1rem;
               padding: 1rem;
             }
@@ -132,7 +134,7 @@ async function configureGet(req, res) {
             h1 {
               font-size: 1.5rem;
             }
-            p, input, textarea, button, a {
+            p, textarea, button, a {
               font-size: 0.95rem;
             }
             button, a {
@@ -146,8 +148,8 @@ async function configureGet(req, res) {
         <h1>Configure Heimdallr Channels</h1>
         <p>Enter the URL of your M3U playlist and optionally extra websites separated by ; or |:</p>
         <form action="/generate-url" method="post">
-          <input type="text" name="m3uUrl" placeholder="https://example.com/list.m3u" value="${m3uUrl}" required>
-          <input type="text" name="extraWebs" placeholder="https://web1.com;https://web2.com" value="${extraWebs}">
+          <textarea name="m3uUrl" class="m3u-url" placeholder="https://example.com/list.m3u" required>${m3uUrl}</textarea>
+          <textarea name="extraWebs" class="extra-webs" placeholder="https://web1.com;https://web2.com">${extraWebs}</textarea>
           ${configId ? `<input type="hidden" name="configId" value="${configId}">` : ''}
           <div class="button-group">
             <button type="submit" name="action" value="generate">${configId ? 'Generate Install URL' : 'Generate Install URL'}</button>
@@ -189,24 +191,11 @@ async function configurePost(req, res) {
     await kvSetJson(configId, { m3uUrl, extraWebs: extraWebsList.join(';') });
     console.log(`[CONFIGURE] Configuración ${action === 'update' ? 'actualizada' : 'guardada'} para configId=${configId}: m3uUrl=${m3uUrl}, extraWebs=${extraWebs}`);
 
-    // Generar y guardar géneros después de guardar la configuración
-    try {
-      console.log(`[CONFIGURE] Generando géneros para configId=${configId}`);
-      const channels = await getChannels({ m3uUrl });
-      console.log(`[CONFIGURE] Canales cargados: ${channels.length}`);
-      await extractAndStoreGenresIfChanged(channels, configId);
-      console.log(`[CONFIGURE] Géneros generados y guardados para configId=${configId}`);
-    } catch (genreErr) {
-      console.error(`[CONFIGURE] Error al generar géneros para configId=${configId}:`, genreErr.message);
-    }
-
     // Invalidar cachés si se está actualizando una configuración existente
     if (action === 'update') {
       const m3uHash = await getM3uHash(m3uUrl);
       await kvDelete(`m3u_hash:${configId}`);
       await kvDelete(`genres:${configId}`);
-      await kvDelete(`genres_hash:${configId}`);
-      await kvDelete(`last_update:${configId}`);
       await kvDelete(`stream:${m3uHash}:*`);
       await kvDelete(`scrape:*`);
       console.log(`[CONFIGURE] Cachés invalidadas para configId=${configId}`);
@@ -220,7 +209,8 @@ async function configurePost(req, res) {
     res.setHeader('Content-Type', 'text/html');
     if (action === 'update') {
       res.end(`
-        <!DOCTYPE html>
+        <!DOCTY
+PE html>
         <html lang="en">
           <head>
             <meta charset="UTF-8">
