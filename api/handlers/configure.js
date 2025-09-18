@@ -73,7 +73,12 @@ async function configureGet(req, res) {
           }
           textarea {
             resize: vertical;
-            min-height: 75px;
+          }
+          #m3uUrl {
+            min-height: 50px; /* ~2 líneas */
+          }
+          #extraWebs {
+            min-height: 75px; /* ~3 líneas */
           }
           button {
             background: #4CAF50;
