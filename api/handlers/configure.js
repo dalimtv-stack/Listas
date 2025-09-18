@@ -1,5 +1,4 @@
 // api/handlers/configure.js
-// api/handlers/configure.js
 'use strict';
 
 const { v4: uuidv4 } = require('uuid');
@@ -60,17 +59,13 @@ async function configureGet(req, res) {
             flex-direction: column;
             gap: 1rem;
           }
-          input, textarea {
+          input {
             padding: 0.8rem;
             font-size: 1rem;
             border: 1px solid #ccc;
             border-radius: 5px;
             width: 100%;
             box-sizing: border-box;
-          }
-          textarea {
-            resize: vertical;
-            min-height: 100px;
           }
           button {
             background: #4CAF50;
@@ -117,7 +112,7 @@ async function configureGet(req, res) {
             p {
               font-size: 1.2rem;
             }
-            input, textarea {
+            input {
               font-size: 1.1rem;
               padding: 1rem;
             }
@@ -133,7 +128,7 @@ async function configureGet(req, res) {
             h1 {
               font-size: 1.5rem;
             }
-            p, input, textarea, button, a {
+            p, input, button, a {
               font-size: 0.95rem;
             }
             button, a {
@@ -190,7 +185,7 @@ async function configurePost(req, res) {
     await kvSetJson(configId, { m3uUrl, extraWebs: extraWebsList.join(';') });
     console.log(`[CONFIGURE] Configuración ${action === 'update' ? 'actualizada' : 'guardada'} para configId=${configId}: m3uUrl=${m3uUrl}, extraWebs=${extraWebs}`);
 
-    // Generar y guardar géneros después de guardar la configuración
+    // Generar y guardar géneros
     try {
       console.log(`[CONFIGURE] Generando géneros para configId=${configId}`);
       const channels = await getChannels({ m3uUrl });
@@ -215,7 +210,8 @@ async function configurePost(req, res) {
 
     const baseHost = req.headers['x-forwarded-host'] || req.headers.host;
     const baseProto = req.headers['x-forwarded-proto'] || 'https';
-    const manifestUrl = `${baseProto}://${baseHost}/${configId}/manifest.json`;
+    const timestamp = Date.now(); // Añadir timestamp para evitar caché
+    const manifestUrl = `${baseProto}://${baseHost}/${configId}/manifest.json?t=${timestamp}`;
     const installUrl = `stremio://${encodeURIComponent(manifestUrl)}`;
 
     res.setHeader('Content-Type', 'text/html');
@@ -278,9 +274,6 @@ async function configurePost(req, res) {
                 }
                 a {
                   font-size: 1.1rem;
-                }
-                .button-group {
-                  justify-content: flex-start;
                 }
               }
               @media (max-width: 600px) {
@@ -377,9 +370,6 @@ async function configurePost(req, res) {
                 }
                 button, a {
                   font-size: 1.1rem;
-                }
-                .button-group {
-                  justify-content: flex-start;
                 }
               }
               @media (max-width: 600px) {
