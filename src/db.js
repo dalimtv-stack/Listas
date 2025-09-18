@@ -10,7 +10,7 @@ const DEFAULT_M3U_URL = 'https://raw.githubusercontent.com/dalimtv-stack/Listas/
 function getExtraGenres(name) {
   const lowerName = name.toLowerCase();
   const extraGenres = [];
-  if (lowerName.includes('deporte') || lowerName.includes('formula 1') || lowerName.includes('bein') || lowerName.includes('F1') || lowerName.includes('dazn') || lowerName.includes('nba') || lowerName.includes('espn') || lowerName.includes('liga') || lowerName.includes('futbol') || lowerName.includes('football') || lowerName.includes('sport')) {
+  if (lowerName.includes('deporte') || lowerName.includes('formula 1') || lowerName.includes('bein') || lowerName.includes('f1') || lowerName.includes('dazn') || lowerName.includes('nba') || lowerName.includes('espn') || lowerName.includes('liga') || lowerName.includes('futbol') || lowerName.includes('football') || lowerName.includes('sport')) {
     extraGenres.push('Deportes');
   }
   if (lowerName.includes('movistar')) {
@@ -25,6 +25,10 @@ function getExtraGenres(name) {
   if (lowerName.includes('campeones')) {
     extraGenres.push('Liga de Campeones');
   }
+  if (extraGenres.length === 0) {
+    extraGenres.push('General');
+  }
+  console.log(`[loadM3U] Extra géneros para "${name}": ${JSON.stringify(extraGenres)}`);
   return extraGenres;
 }
 
@@ -94,7 +98,7 @@ async function loadM3U(args = {}) {
       let groupTitle = item.tvg.group || '';
       if (!groupTitle && item.raw) {
         const groupMatch = item.raw.match(/group-title="([^"]+)"/);
-        groupTitle = groupMatch ? groupMatch[1] : 'Sin grupo';
+        groupTitle = groupMatch ? groupMatch[1] : 'General';
       }
 
       const stream = {
@@ -106,7 +110,8 @@ async function loadM3U(args = {}) {
         behaviorHints
       };
 
-      console.log(`[loadM3U] Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}, streamType=${streamType}, behaviorHints=`, behaviorHints);
+      const extraGenres = getExtraGenres(name);
+      console.log(`[loadM3U] Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}, streamType=${streamType}, extra_genres=${JSON.stringify(extraGenres)}, behaviorHints=`, behaviorHints);
 
       if (!channelMap[tvgId]) {
         channelMap[tvgId] = {
@@ -120,7 +125,7 @@ async function loadM3U(args = {}) {
           website_url: null,
           title: stream.title,
           additional_streams: [stream],
-          extra_genres: getExtraGenres(name)
+          extra_genres: extraGenres
         };
       } else {
         channelMap[tvgId].additional_streams.push(stream);
