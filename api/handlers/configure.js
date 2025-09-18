@@ -5,6 +5,8 @@ const { v4: uuidv4 } = require('uuid');
 const fetch = require('node-fetch');
 const { kvSetJson, kvGetJson, kvDelete } = require('../kv');
 const { getM3uHash } = require('../utils');
+const { getChannels } = require('../../src/db');
+const { extractAndStoreGenresIfChanged } = require('./catalog');
 
 async function configureGet(req, res) {
   const configId = req.params.configId || null;
@@ -77,6 +79,13 @@ async function configurePost(req, res) {
 
     const configId = uuidv4();
     await kvSetJson(configId, { m3uUrl, extraWebs: extraWebsList.join(';') });
+
+    try {
+      const channels = await getChannels({ m3uUrl });
+      await extractAndStoreGenresIfChanged(channels, configId);
+    } catch (e) {
+      console.error('Error generating genres:', e);
+    }
 
     const baseHost = req.headers['x-forwarded-host'] || req.headers.host;
     const baseProto = req.headers['x-forwarded-proto'] || 'https';
