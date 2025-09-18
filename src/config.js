@@ -13,5 +13,13 @@ module.exports = {
   ADDON_NAME: "Heimdallr Channels",
 
   // ID del addon (tiene que ser único)
-  ADDON_ID: "org.stremio.Heimdallr"
+  ADDON_ID: "org.stremio.Heimdallr",
+
+  // Constantes adicionales desde api/index.js
+  BASE_ADDON_ID: 'org.stremio.Heimdallr',
+  ADDON_PREFIX: 'heimdallr',
+  CATALOG_PREFIX: 'Heimdallr',
+  DEFAULT_CONFIG_ID: 'default',
+  DEFAULT_M3U_URL: process.env.DEFAULT_M3U_URL || 'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u',
+  VERSION: require('../package.json').version
 };
