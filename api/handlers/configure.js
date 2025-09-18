@@ -39,19 +39,19 @@ async function configureGet(req, res) {
         <style>
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            max-width: 90%;
+            max-width: 600px;
             margin: 2rem auto;
             padding: 0 1rem;
             line-height: 1.6;
             color: #333;
           }
           h1 {
-            font-size: 1.8rem;
+            font-size: 2rem;
             text-align: center;
             margin-bottom: 1.5rem;
           }
           p {
-            font-size: 1rem;
+            font-size: 1.1rem;
             margin-bottom: 1rem;
           }
           form {
@@ -203,7 +203,7 @@ async function configurePost(req, res) {
       console.error(`[CONFIGURE] Error al generar géneros para configId=${configId}:`, genreErr.message);
     }
 
-    // Invalidar cachés si se está actualizando
+    // Invalidar cachés si se está actualizando una configuración existente
     if (action === 'update') {
       const m3uHash = await getM3uHash(m3uUrl);
       await kvDelete(`m3u_hash:${configId}`);
@@ -233,29 +233,30 @@ async function configurePost(req, res) {
               body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
                 max-width: 600px;
-                margin: 20px auto;
-                padding: 0 10px;
+                margin: 2rem auto;
+                padding: 0 1rem;
+                line-height: 1.6;
                 color: #333;
               }
               h1 {
-                font-size: 1.8rem;
+                font-size: 2rem;
                 text-align: center;
-                margin-bottom: 20px;
+                margin-bottom: 1.5rem;
               }
               p {
-                font-size: 1rem;
-                margin-bottom: 10px;
+                font-size: 1.1rem;
+                margin-bottom: 1rem;
               }
               a {
                 display: inline-block;
                 background: #4CAF50;
                 color: white;
-                padding: 10px;
-                font-size: 1rem;
-                border: none;
-                border-radius: 5px;
+                padding: 1rem 2rem;
                 text-decoration: none;
-                margin: 5px;
+                border-radius: 5px;
+                margin: 0.5rem;
+                min-height: 44px;
+                text-align: center;
                 transition: background 0.2s;
               }
               a:hover {
@@ -263,20 +264,36 @@ async function configurePost(req, res) {
               }
               .button-group {
                 display: flex;
-                gap: 10px;
+                flex-wrap: wrap;
+                gap: 1rem;
                 justify-content: center;
+              }
+              @media (min-width: 600px) {
+                body {
+                  max-width: 800px;
+                }
+                h1 {
+                  font-size: 2.5rem;
+                }
+                p {
+                  font-size: 1.2rem;
+                }
+                a {
+                  font-size: 1.1rem;
+                }
+                .button-group {
+                  justify-content: flex-start;
+                }
               }
               @media (max-width: 600px) {
                 h1 {
                   font-size: 1.5rem;
                 }
                 p, a {
-                  font-size: 0.9rem;
+                  font-size: 0.95rem;
                 }
                 a {
-                  padding: 8px;
                   width: 100%;
-                  text-align: center;
                 }
               }
             </style>
@@ -304,30 +321,33 @@ async function configurePost(req, res) {
               body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
                 max-width: 600px;
-                margin: 20px auto;
-                padding: 0 10px;
+                margin: 2rem auto;
+                padding: 0 1rem;
+                line-height: 1.6;
                 color: #333;
               }
               h1 {
-                font-size: 1.8rem;
+                font-size: 2rem;
                 text-align: center;
-                margin-bottom: 20px;
+                margin-bottom: 1.5rem;
               }
               p {
-                font-size: 1rem;
-                margin-bottom: 10px;
+                font-size: 1.1rem;
+                margin-bottom: 1rem;
               }
               button, a {
                 display: inline-block;
                 background: #4CAF50;
                 color: white;
-                padding: 10px;
+                padding: 1rem 2rem;
                 font-size: 1rem;
                 border: none;
                 border-radius: 5px;
                 cursor: pointer;
+                margin: 0.5rem;
+                min-height: 44px;
+                text-align: center;
                 text-decoration: none;
-                margin: 5px;
                 transition: background 0.2s;
               }
               button:hover, a:hover {
@@ -335,28 +355,44 @@ async function configurePost(req, res) {
               }
               .button-group {
                 display: flex;
-                gap: 10px;
+                flex-wrap: wrap;
+                gap: 1rem;
                 justify-content: center;
               }
               pre {
                 background: #f4f4f4;
-                padding: 10px;
+                padding: 1rem;
                 border-radius: 5px;
                 font-size: 0.9rem;
                 overflow-x: auto;
-                margin: 10px 0;
+                margin: 1rem 0;
+              }
+              @media (min-width: 600px) {
+                body {
+                  max-width: 800px;
+                }
+                h1 {
+                  font-size: 2.5rem;
+                }
+                p {
+                  font-size: 1.2rem;
+                }
+                button, a {
+                  font-size: 1.1rem;
+                }
+                .button-group {
+                  justify-content: flex-start;
+                }
               }
               @media (max-width: 600px) {
                 h1 {
                   font-size: 1.5rem;
                 }
                 p, button, a {
-                  font-size: 0.9rem;
+                  font-size: 0.95rem;
                 }
                 button, a {
-                  padding: 8px;
                   width: 100%;
-                  text-align: center;
                 }
               }
             </style>
@@ -398,45 +434,58 @@ async function configurePost(req, res) {
             body {
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
               max-width: 600px;
-              margin: 20px auto;
-              padding: 0 10px;
+              margin: 2rem auto;
+              padding: 0 1rem;
+              line-height: 1.6;
               color: #333;
             }
             h1 {
-              font-size: 1.8rem;
+              font-size: 2rem;
               text-align: center;
-              margin-bottom: 20px;
+              margin-bottom: 1.5rem;
             }
             p {
-              font-size: 1rem;
-              margin-bottom: 10px;
+              font-size: 1.1rem;
+              margin-bottom: 1rem;
             }
             a {
               display: inline-block;
               background: #4CAF50;
               color: white;
-              padding: 10px;
-              font-size: 1rem;
-              border: none;
-              border-radius: 5px;
+              padding: 1rem 2rem;
               text-decoration: none;
-              margin: 5px;
+              border-radius: 5px;
+              margin: 0.5rem;
+              min-height: 44px;
+              text-align: center;
               transition: background 0.2s;
             }
             a:hover {
               background: #45a049;
+            }
+            @media (min-width: 600px) {
+              body {
+                max-width: 800px;
+              }
+              h1 {
+                font-size: 2.5rem;
+              }
+              p {
+                font-size: 1.2rem;
+              }
+              a {
+                font-size: 1.1rem;
+              }
             }
             @media (max-width: 600px) {
               h1 {
                 font-size: 1.5rem;
               }
               p, a {
-                font-size: 0.9rem;
+                font-size: 0.95rem;
               }
               a {
-                padding: 8px;
                 width: 100%;
-                text-align: center;
               }
             }
           </style>
