@@ -1,4 +1,6 @@
 // src/db.js
+'use strict';
+
 const fetch = require('node-fetch');
 const { parse } = require('iptv-playlist-parser');
 
@@ -59,13 +61,29 @@ async function loadM3U(args = {}) {
     }
 
     const channelMap = {};
+    const webPageExtensions = /\.(html|htm|php|asp|aspx|jsp)$/i;
 
     playlist.items.forEach((item, index) => {
       const tvgId = item.tvg.id || item.name.toLowerCase().replace(/[^a-z0-9]+/g, '_') || `channel_${index}`;
       const isAce = item.url.startsWith('acestream://');
       const isM3u8 = item.url.endsWith('.m3u8');
+      const isWebPage = webPageExtensions.test(item.url);
 
-      const streamType = isAce ? 'Acestream' : isM3u8 ? 'M3U8' : 'Browser';
+      let streamType;
+      let behaviorHints = {};
+      if (isAce) {
+        streamType = 'Acestream';
+        behaviorHints = { notWebReady: true, external: true };
+      } else if (isM3u8) {
+        streamType = 'M3U8';
+        behaviorHints = { notWebReady: false, external: false };
+      } else if (isWebPage) {
+        streamType = 'Browser';
+        behaviorHints = { notWebReady: true, external: true };
+      } else {
+        streamType = 'Directo';
+        behaviorHints = { notWebReady: false, external: false };
+      }
 
       let name = item.name || '';
       if (!name && item.raw) {
@@ -84,10 +102,11 @@ async function loadM3U(args = {}) {
         group_title: groupTitle,
         url: isM3u8 ? item.url : null,
         acestream_id: isAce ? item.url.replace('acestream://', '') : null,
-        stream_url: (!isAce && !isM3u8) ? item.url : null
+        stream_url: (!isAce && !isM3u8) ? item.url : null,
+        behaviorHints
       };
 
-      //console.log(`[loadM3U] Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}`);
+      console.log(`[loadM3U] Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}, streamType=${streamType}, behaviorHints=`, behaviorHints);
 
       if (!channelMap[tvgId]) {
         channelMap[tvgId] = {
