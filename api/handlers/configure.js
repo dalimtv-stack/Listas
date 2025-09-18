@@ -5,14 +5,14 @@ const { v4: uuidv4 } = require('uuid');
 const fetch = require('node-fetch');
 const { kvSetJson, kvGetJson, kvDelete } = require('../kv');
 const { getM3uHash } = require('../utils');
-const { getChannels } = require('../../src/db');
-const { extractAndStoreGenresIfChanged } = require('./catalog');
+const { getChannels, extractAndStoreGenresIfChanged } = require('../../src/db'); // Añadido para generar géneros
 
 async function configureGet(req, res) {
   const configId = req.params.configId || null;
   let m3uUrl = '';
   let extraWebs = '';
 
+  // Si se proporciona un configId, intentar cargar los valores actuales desde KV
   if (configId) {
     try {
       const config = await kvGetJson(configId);
@@ -200,7 +200,7 @@ async function configurePost(req, res) {
       console.error(`[CONFIGURE] Error al generar géneros para configId=${configId}:`, genreErr.message);
     }
 
-    // Invalidar cachés si se está actualizando
+    // Invalidar cachés si se está actualizando una configuración existente
     if (action === 'update') {
       const m3uHash = await getM3uHash(m3uUrl);
       await kvDelete(`m3u_hash:${configId}`);
