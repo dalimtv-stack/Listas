@@ -159,7 +159,8 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
         // console.log(logPrefix, `M3U parseado, items: ${playlist.items.length}`);
       
         playlist.items.forEach((item, index) => {
-          const name = item.name || '';
+          const rawName = item.name || '';
+          const name = rawName.startsWith('#') ? rawName.slice(1).trim() : rawName.trim();
           const href = item.url;
           let groupTitle = item.tvg.group || '';
       
