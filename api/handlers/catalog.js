@@ -33,13 +33,13 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
     channels.forEach(c => {
       const seenGenres = new Set();
       if (c.group_title) {
-        console.log(`[GENRES] Encontrado group_title: ${c.group_title} para ${c.name}`);
+        //console.log(`[GENRES] Encontrado group_title: ${c.group_title} para ${c.name}`);
         seenGenres.add(c.group_title);
       }
       if (Array.isArray(c.extra_genres)) {
         c.extra_genres.forEach(g => {
           if (g) {
-            console.log(`[GENRES] Encontrado extra_genre: ${g} para ${c.name}`);
+            //console.log(`[GENRES] Encontrado extra_genre: ${g} para ${c.name}`);
             seenGenres.add(g);
           }
         });
@@ -47,7 +47,7 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
       if (Array.isArray(c.additional_streams)) {
         c.additional_streams.forEach(s => {
           if (s && s.group_title) {
-            console.log(`[GENRES] Encontrado additional_stream group_title: ${s.group_title} para ${c.name}`);
+            //console.log(`[GENRES] Encontrado additional_stream group_title: ${s.group_title} para ${c.name}`);
             seenGenres.add(s.group_title);
           }
         });
