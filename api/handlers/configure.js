@@ -229,9 +229,6 @@ async function configurePost(req, res) {
     if (action === 'update') {
       const m3uHash = await getM3uHash(m3uUrl);
       await kvDelete(`m3u_hash:${configId}`);
-      await kvDelete(`genres:${configId}`);
-      await kvDelete(`genres_hash:${configId}`);
-      await kvDelete(`last_update:${configId}`);
       await kvDelete(`stream:${m3uHash}:*`);
       await kvDelete(`scrape:*`);
       console.log(`[CONFIGURE] Cachés invalidadas para configId=${configId}`);
