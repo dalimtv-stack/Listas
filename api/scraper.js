@@ -35,9 +35,24 @@ function getSearchTerms(channelName) {
 }
 
 function normalizeUrlForDisplay(url) {
-  return String(url || '')
-    .replace(/^https?:\/\/(www\.)?/, '')
-    .replace(/\/+$/, '');
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/^www\./, '');
+
+    // Si es GitHub raw, simplifica
+    if (host === 'raw.githubusercontent.com') {
+      const parts = parsed.pathname.split('/');
+      const repo = parts[2] || 'github';
+      return `github:${repo}`;
+    }
+
+    // Si es IPFS, simplifica
+    if (host.includes('ipfs.io')) return 'elcano.top';
+
+    return host;
+  } catch (e) {
+    return String(url || '').replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '');
+  }
 }
 
 function isNumberMismatch(streamName, channelName) {
