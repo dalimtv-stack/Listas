@@ -209,6 +209,16 @@ async function configurePost(req, res) {
     try {
       console.log(`[CONFIGURE] Generando géneros para configId=${configId}`);
       const channels = await getChannels({ m3uUrl });
+      // 🔄 Invalidar caché de scraping por canal
+      try {
+        for (const c of channels) {
+          const normalized = String(c.name || '').toLowerCase().replace(/\s+/g, ' ').trim();
+          await kvDelete(`scrape:${normalized}`);
+          console.log(`[CONFIGURE] Caché scrape invalidada para canal: "${normalized}"`);
+        }
+      } catch (e) {
+        console.warn(`[CONFIGURE] Error al invalidar caché scrape por canal:`, e.message);
+      }
       console.log(`[CONFIGURE] Canales cargados: ${channels.length}`);
       await extractAndStoreGenresIfChanged(channels, configId);
       console.log(`[CONFIGURE] Géneros generados y guardados para configId=${configId}`);
