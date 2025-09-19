@@ -30,7 +30,7 @@ function getSearchTerms(channelName) {
     .replace(/\[.*?\]/g, '');
   const aliases = channelAliases[normalized] || channelAliases[original] || [];
   const terms = [...new Set([normalized, original, ...aliases])];
-  console.log('[SCRAPER] Términos de búsqueda generados para', channelName, ':', terms);
+  // console.log('[SCRAPER] Términos de búsqueda generados para', channelName, ':', terms);
   return terms;
 }
 
@@ -44,29 +44,21 @@ function isNumberMismatch(streamName, channelName) {
   const streamNums = normalizeName(streamName).match(/\b\d+\b/g) || [];
   const channelNums = normalizeName(channelName).match(/\b\d+\b/g) || [];
 
-  console.log('[SCRAPER] isNumberMismatch:', {
-    streamName,
-    channelName,
-    streamNums,
-    channelNums
-  });
+  //console.log('[SCRAPER] isNumberMismatch:', {streamName, channelName, streamNums, channelNums});
 
   // Ignorar "1080" y "720" como números, ya que son indicadores de calidad
   const qualityIndicators = ['1080', '720'];
   const filteredStreamNums = streamNums.filter(n => !qualityIndicators.includes(n));
   const filteredChannelNums = channelNums.filter(n => !qualityIndicators.includes(n));
 
-  console.log('[SCRAPER] isNumberMismatch post-filter:', {
-    filteredStreamNums,
-    filteredChannelNums
-  });
+  // console.log('[SCRAPER] isNumberMismatch post-filter:', {filteredStreamNums, filteredChannelNums});
 
   if (filteredChannelNums.length === 0 && filteredStreamNums.length > 0) {
-    console.log('[SCRAPER] numberMismatch=true: No hay números en channelName pero sí en streamName (post-filter)');
+    // console.log('[SCRAPER] numberMismatch=true: No hay números en channelName pero sí en streamName (post-filter)');
     return true;
   }
   const mismatch = filteredStreamNums.some(n => !filteredChannelNums.includes(n));
-  console.log('[SCRAPER] isNumberMismatch result:', mismatch);
+  // console.log('[SCRAPER] isNumberMismatch result:', mismatch);
   return mismatch;
 }
 
@@ -81,7 +73,7 @@ function isMatch(normalizedName, searchTerms, channelName) {
     const movistarMatch = baseName.includes('movistarplus') && baseTerm.includes('movistar plus');
     return (baseMatch || rfefMatch || movistarMatch) && (isChannel1 ? rfefMatch : true);
   });
-  console.log('[SCRAPER] isMatch:', { normalizedName, channelName, match });
+  // console.log('[SCRAPER] isMatch:', { normalizedName, channelName, match });
   return match;
 }
 
@@ -118,7 +110,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
 
   for (const url of extraWebsList) {
     try {
-      console.log(logPrefix, `Fetch -> ${url}`);
+      // console.log(logPrefix, `Fetch -> ${url}`);
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 20000);
       const response = await fetch(url, { signal: controller.signal });
@@ -130,7 +122,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
 
       // Procesar como M3U si la URL termina en .m3u o el contenido parece una lista M3U
       if (url.endsWith('.m3u') || content.startsWith('#EXTM3U')) {
-        console.log(logPrefix, `Detectado contenido M3U en ${url}`);
+        // console.log(logPrefix, `Detectado contenido M3U en ${url}`);
         let playlist;
         try {
           playlist = parse(content);
@@ -138,7 +130,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
           console.error(logPrefix, `Error parseando M3U desde ${url}: ${err.message}`);
           continue;
         }
-        console.log(logPrefix, `M3U parseado, items: ${playlist.items.length}`);
+        // console.log(logPrefix, `M3U parseado, items: ${playlist.items.length}`);
       
         playlist.items.forEach((item, index) => {
           const name = item.name || '';
@@ -155,7 +147,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
           const matchResult = isMatch(normalizedName, searchTerms, channelName);
           const numberMismatch = isNumberMismatch(name, channelName);
       
-          console.log(logPrefix, `Evaluando M3U: name="${name}", href="${href}", groupTitle="${groupTitle}", isMatch=${matchResult}, numberMismatch=${numberMismatch}`);
+          // console.log(logPrefix, `Evaluando M3U: name="${name}", href="${href}", groupTitle="${groupTitle}", isMatch=${matchResult}, numberMismatch=${numberMismatch}`);
       
           if (
             name &&
