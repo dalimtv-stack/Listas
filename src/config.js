@@ -21,5 +21,8 @@ module.exports = {
   CATALOG_PREFIX: 'Heimdallr',
   DEFAULT_CONFIG_ID: 'default',
   DEFAULT_M3U_URL: process.env.DEFAULT_M3U_URL || 'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u',
-  VERSION: require('../package.json').version
+  VERSION: require('../package.json').version,
+  // Constante para forzar refresco
+  FORCE_REFRESH_GENRES: false
+
 };
