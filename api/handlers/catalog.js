@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const { getChannels } = require('../../src/db');
 const { kvGet, kvSet, kvGetJsonTTL, kvSetJsonTTL } = require('../kv');
 const { normalizeCatalogName, getM3uHash, parseCatalogRest, extractConfigIdFromUrl } = require('../utils');
-const { CACHE_TTL, ADDON_PREFIX, CATALOG_PREFIX } = require('../../src/config');
+const { CACHE_TTL, ADDON_PREFIX, CATALOG_PREFIX, FORCE_REFRESH_GENRES } = require('../../src/config');
 const { resolveM3uUrl } = require('../resolve');
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
@@ -32,25 +32,10 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
 
     channels.forEach(c => {
       const seenGenres = new Set();
-      if (c.group_title) {
-        //console.log(`[GENRES] Encontrado group_title: ${c.group_title} para ${c.name}`);
-        seenGenres.add(c.group_title);
-      }
-      if (Array.isArray(c.extra_genres)) {
-        c.extra_genres.forEach(g => {
-          if (g) {
-            //console.log(`[GENRES] Encontrado extra_genre: ${g} para ${c.name}`);
-            seenGenres.add(g);
-          }
-        });
-      }
+      if (c.group_title) seenGenres.add(c.group_title);
+      if (Array.isArray(c.extra_genres)) c.extra_genres.forEach(g => g && seenGenres.add(g));
       if (Array.isArray(c.additional_streams)) {
-        c.additional_streams.forEach(s => {
-          if (s && s.group_title) {
-            //console.log(`[GENRES] Encontrado additional_stream group_title: ${s.group_title} para ${c.name}`);
-            seenGenres.add(s.group_title);
-          }
-        });
+        c.additional_streams.forEach(s => s?.group_title && seenGenres.add(s.group_title));
       }
       if (seenGenres.size > 0) {
         seenGenres.forEach(g => genreCount.set(g, (genreCount.get(g) || 0) + 1));
@@ -66,31 +51,22 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
       .map(([g]) => g);
 
     const existingGenres = await kvGetJsonTTL(`genres:${configId}`) || [];
-    console.log('[GENRES] Géneros existentes en KV:', existingGenres);
-
     const obsoleteGenres = existingGenres.filter(g => !genreList.includes(g) && g !== 'General');
+
     if (obsoleteGenres.length > 0) {
-      console.log('[GENRES] Géneros obsoletos detectados:', obsoleteGenres);
       const updatedGenres = existingGenres.filter(g => genreList.includes(g) || g === 'General');
       await kvSetJsonTTL(`genres:${configId}`, updatedGenres, 24 * 3600);
-      console.log('[GENRES] Géneros obsoletos eliminados, lista actualizada:', updatedGenres);
     }
 
     if (genreList.length) {
       const nowStr = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
-      if (!lastHash || lastHash !== currentHash) {
+      if (!lastHash || lastHash !== currentHash || FORCE_REFRESH_GENRES) {
         await kvSetJsonTTL(`genres:${configId}`, genreList, 24 * 3600);
         await kvSet(lastHashKey, currentHash);
         await kvSet(lastUpdateKey, nowStr);
-        console.log(`[GENRES] actualizados: ${genreList.length} géneros (Otros=${orphanCount})`);
       } else if (!lastUpdate) {
         await kvSet(lastUpdateKey, nowStr);
-        console.log(`[GENRES] timestamp inicial registrado: ${nowStr}`);
-      } else {
-        console.log(`[GENRES] géneros sin cambios, usando caché: ${genreList.length}`);
       }
-    } else {
-      console.warn(`[GENRES] No se encontraron géneros válidos para ${configId}`);
     }
   } catch (e) {
     console.error('[GENRES] error al extraer:', e.message);
@@ -120,11 +96,11 @@ async function handleCatalog(req) {
   const storedM3uHash = await kvGet(storedM3uHashKey);
 
   let channels;
-  if (!storedM3uHash || storedM3uHash !== currentM3uHash) {
-    console.log(logPrefix, `M3U hash cambiado o no existe, recargando canales y géneros para ${configId}`);
+  if (!storedM3uHash || storedM3uHash !== currentM3uHash || FORCE_REFRESH_GENRES) {
+    console.log(logPrefix, `M3U hash cambiado o FORCE_REFRESH_GENRES activo, recargando canales y géneros para ${configId}`);
     channels = await getChannels({ m3uUrl });
-    console.log(logPrefix, `canales cargados: ${channels.length}`);
     await kvSet(storedM3uHashKey, currentM3uHash);
+    await extractAndStoreGenresIfChanged(channels, configId);
   } else {
     channels = await getChannels({ m3uUrl });
     console.log(logPrefix, `M3U sin cambios, canales cargados: ${channels.length}`);
@@ -133,18 +109,16 @@ async function handleCatalog(req) {
   const m3uHash = currentM3uHash;
   const cacheKey = `catalog_${m3uHash}_${extra.genre || ''}_${extra.search || ''}`;
   const cached = cache.get(cacheKey);
-  if (cached) {
+  if (cached && !FORCE_REFRESH_GENRES) {
     console.log(logPrefix, 'cache HIT y M3U sin cambios', cacheKey);
     return cached;
   }
 
-  await extractAndStoreGenresIfChanged(channels, configId);
   let filtered = channels;
 
   if (extra.search) {
     const q = String(extra.search).toLowerCase();
     filtered = filtered.filter(c => normalizeCatalogName(c.name).toLowerCase().includes(q));
-    console.log(logPrefix, `aplicado search="${q}", tras filtro: ${filtered.length}`);
   }
 
   if (extra.genre) {
@@ -163,7 +137,6 @@ async function handleCatalog(req) {
         (Array.isArray(c.additional_streams) && c.additional_streams.some(s => s.group_title === g))
       );
     }
-    console.log(logPrefix, `aplicado genre="${g}", tras filtro: ${filtered.length}`);
   }
 
   const metas = filtered.map(c => ({
@@ -176,7 +149,6 @@ async function handleCatalog(req) {
   const resp = { metas };
   cache.set(cacheKey, resp);
   await kvSetJsonTTL(`catalog:${m3uHash}:${extra.genre || ''}:${extra.search || ''}`, resp);
-  console.log(logPrefix, `respuesta metas: ${metas.length}`);
   return resp;
 }
 
