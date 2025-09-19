@@ -5,7 +5,8 @@ const { v4: uuidv4 } = require('uuid');
 const fetch = require('node-fetch');
 const { kvSetJson, kvGetJson, kvDelete } = require('../kv');
 const { getM3uHash } = require('../utils');
-const { getChannels, extractAndStoreGenresIfChanged } = require('../../src/db');
+const { getChannels } = require('../../src/db');
+const { extractAndStoreGenresIfChanged } = require('../handlers/catalog');
 const config = require('../../src/config'); // Importamos el módulo completo para mutar el flag
 
 async function configureGet(req, res) {
