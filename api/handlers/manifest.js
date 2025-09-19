@@ -1,8 +1,15 @@
-//api/handlers/manifest.js
+// api/handlers/manifest.js
 'use strict';
 
 const { kvGetJson, kvGetJsonTTL } = require('../kv');
-const { BASE_ADDON_ID, ADDON_NAME, ADDON_PREFIX, CATALOG_PREFIX, VERSION } = require('../../src/config');
+const {
+  BASE_ADDON_ID,
+  ADDON_NAME,
+  ADDON_PREFIX,
+  CATALOG_PREFIX,
+  VERSION,
+  FORCE_REFRESH_GENRES
+} = require('../../src/config');
 
 async function getLastUpdateString(configId) {
   try {
@@ -31,6 +38,8 @@ async function buildManifest(configId) {
     if (Array.isArray(genresKV) && genresKV.length > 1) {
       genreOptions = genresKV;
       console.log(`[MANIFEST] géneros cargados desde KV para ${configId}: ${genreOptions.length}`);
+    } else if (FORCE_REFRESH_GENRES) {
+      console.warn(`[MANIFEST] FORCE_REFRESH_GENRES activo pero géneros no disponibles, usando ['General']`);
     } else {
       console.warn(`[MANIFEST] No se encontraron géneros válidos en KV para ${configId}, usando ['General']`);
     }
