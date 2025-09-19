@@ -44,21 +44,32 @@ function isNumberMismatch(streamName, channelName) {
   const streamNums = normalizeName(streamName).match(/\b\d+\b/g) || [];
   const channelNums = normalizeName(channelName).match(/\b\d+\b/g) || [];
 
-  //console.log('[SCRAPER] isNumberMismatch:', {streamName, channelName, streamNums, channelNums});
+  console.log('[SCRAPER] isNumberMismatch:', {
+    streamName,
+    channelName,
+    streamNums,
+    channelNums
+  });
 
-  // Ignorar "1080" y "720" como números, ya que son indicadores de calidad
-  const qualityIndicators = ['1080', '720'];
+  // Ignorar indicadores de calidad como 1080, 720, 2160
+  const qualityIndicators = ['1080', '720', '2160'];
   const filteredStreamNums = streamNums.filter(n => !qualityIndicators.includes(n));
   const filteredChannelNums = channelNums.filter(n => !qualityIndicators.includes(n));
 
-  // console.log('[SCRAPER] isNumberMismatch post-filter:', {filteredStreamNums, filteredChannelNums});
+  console.log('[SCRAPER] isNumberMismatch post-filter:', {
+    filteredStreamNums,
+    filteredChannelNums
+  });
 
-  if (filteredChannelNums.length === 0 && filteredStreamNums.length > 0) {
-    // console.log('[SCRAPER] numberMismatch=true: No hay números en channelName pero sí en streamName (post-filter)');
+  // Si el canal tiene números (como "2", "3") y el stream no, es mismatch
+  if (filteredChannelNums.length > 0 && filteredStreamNums.length === 0) {
+    console.log('[SCRAPER] numberMismatch=true: canal tiene números pero el stream no');
     return true;
   }
+
+  // Si hay números en ambos pero no coinciden, también es mismatch
   const mismatch = filteredStreamNums.some(n => !filteredChannelNums.includes(n));
-  // console.log('[SCRAPER] isNumberMismatch result:', mismatch);
+  console.log('[SCRAPER] isNumberMismatch result:', mismatch);
   return mismatch;
 }
 
