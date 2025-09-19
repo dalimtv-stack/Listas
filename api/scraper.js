@@ -139,19 +139,31 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
           continue;
         }
         console.log(logPrefix, `M3U parseado, items: ${playlist.items.length}`);
-
+      
         playlist.items.forEach((item, index) => {
           const name = item.name || '';
           const href = item.url;
+          let groupTitle = item.tvg.group || '';
+      
+          // Extraer manualmente group-title si el parser no lo hizo
+          if (!groupTitle && item.raw) {
+            const match = item.raw.match(/group-title="([^"]+)"/);
+            if (match) groupTitle = match[1];
+          }
+      
           const normalizedName = normalizeName(name);
-          const groupTitle = item.tvg.group || '';
+          const matchResult = isMatch(normalizedName, searchTerms, channelName);
+          const numberMismatch = isNumberMismatch(name, channelName);
+      
+          console.log(logPrefix, `Evaluando M3U: name="${name}", href="${href}", groupTitle="${groupTitle}", isMatch=${matchResult}, numberMismatch=${numberMismatch}`);
+      
           if (
             name &&
             href &&
             href.endsWith('.m3u8') &&
             groupTitle === 'SPAIN' &&
-            isMatch(normalizedName, searchTerms, channelName) &&
-            !isNumberMismatch(name, channelName) &&
+            matchResult &&
+            !numberMismatch &&
             !seenUrls.has(href)
           ) {
             const displayName = normalizeUrlForDisplay(url);
@@ -166,12 +178,12 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
             seenUrls.add(href);
             console.log(logPrefix, `Stream M3U8 añadido: ${JSON.stringify(stream)}`);
           } else {
-            console.log(logPrefix, `Descartado M3U: name="${name}", href="${href}", groupTitle="${groupTitle}", isMatch=${isMatch(normalizedName, searchTerms, channelName)}, numberMismatch=${isNumberMismatch(name, channelName)}`);
+            console.log(logPrefix, `Descartado M3U: name="${name}", href="${href}", groupTitle="${groupTitle}", isMatch=${matchResult}, numberMismatch=${numberMismatch}`);
           }
         });
         continue;
       }
-
+      
       // Procesar HTML con Cheerio
       const $ = cheerio.load(content);
       let encontrados = 0;
