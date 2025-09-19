@@ -1,24 +1,24 @@
-// /api/handlers/configure.js
+// api/handlers/configure.js
 'use strict';
 
 const { v4: uuidv4 } = require('uuid');
 const fetch = require('node-fetch');
 const { kvSetJson, kvGetJson, kvDelete } = require('../kv');
 const { getM3uHash } = require('../utils');
-const { getChannels, extractAndStoreGenresIfChanged } = require('../../src/db'); // Añadido para generar géneros
+const { getChannels, extractAndStoreGenresIfChanged } = require('../../src/db');
+const config = require('../../src/config'); // Importamos el módulo completo para mutar el flag
 
 async function configureGet(req, res) {
   const configId = req.params.configId || null;
   let m3uUrl = '';
   let extraWebs = '';
 
-  // Si se proporciona un configId, intentar cargar los valores actuales desde KV
   if (configId) {
     try {
-      const config = await kvGetJson(configId);
-      if (config) {
-        m3uUrl = config.m3uUrl || '';
-        extraWebs = config.extraWebs || '';
+      const configData = await kvGetJson(configId);
+      if (configData) {
+        m3uUrl = configData.m3uUrl || '';
+        extraWebs = configData.extraWebs || '';
         console.log(`[CONFIGURE] Cargada configuración para configId=${configId}: m3uUrl=${m3uUrl}, extraWebs=${extraWebs}`);
       } else {
         console.warn(`[CONFIGURE] No se encontró configuración para configId=${configId}`);
@@ -173,7 +173,6 @@ async function configureGet(req, res) {
   `);
 }
 
-// configurePost se queda tal cual
 async function configurePost(req, res) {
   try {
     const m3uUrl = String(req.body?.m3uUrl || '').trim();
@@ -183,9 +182,10 @@ async function configurePost(req, res) {
     if (!m3uUrl) throw new Error('URL M3U requerida');
 
     const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/;
-    const extraWebsList = extraWebs ? extraWebs.split(/[;|,\n]+/).map(s => s.trim()).filter(s => urlRegex.test(s)) : [];
+    const extraWebsList = extraWebs
+      ? extraWebs.split(/[;|,\n]+/).map(s => s.trim()).filter(s => urlRegex.test(s))
+      : [];
 
-    // Validar la URL de la M3U
     try {
       const controller = new AbortController();
       const t = setTimeout(() => controller.abort(), 5000);
@@ -199,11 +199,12 @@ async function configurePost(req, res) {
       if (!text.includes('#EXTINF')) throw new Error('No es un archivo M3U válido');
     }
 
-    // Guardar la configuración en KV
     await kvSetJson(configId, { m3uUrl, extraWebs: extraWebsList.join(';') });
     console.log(`[CONFIGURE] Configuración ${action === 'update' ? 'actualizada' : 'guardada'} para configId=${configId}: m3uUrl=${m3uUrl}, extraWebs=${extraWebs}`);
 
-    // Generar y guardar géneros después de guardar la configuración
+    // Activar el flag global para forzar regeneración de géneros
+    config.FORCE_REFRESH_GENRES = true;
+
     try {
       console.log(`[CONFIGURE] Generando géneros para configId=${configId}`);
       const channels = await getChannels({ m3uUrl });
@@ -214,7 +215,6 @@ async function configurePost(req, res) {
       console.error(`[CONFIGURE] Error al generar géneros para configId=${configId}:`, genreErr.message);
     }
 
-    // Invalidar cachés si se está actualizando una configuración existente
     if (action === 'update') {
       const m3uHash = await getM3uHash(m3uUrl);
       await kvDelete(`m3u_hash:${configId}`);
@@ -233,8 +233,8 @@ async function configurePost(req, res) {
 
     res.setHeader('Content-Type', 'text/html');
     if (action === 'update') {
-      res.end(`
-        <!DOCTYPE html>
+    res.end(`
+      <!DOCTYPE html>
         <html lang="en">
           <head>
             <meta charset="UTF-8">
