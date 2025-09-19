@@ -72,6 +72,8 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
       await kvSet(lastHashKey, currentHash);
       await kvSet(lastUpdateKey, nowStr);
       console.log(`[GENRES] actualizados: ${genreList.length} géneros (Otros=${orphanCount})`);
+      require('../../src/config').FORCE_REFRESH_GENRES = false;
+      console.log(`[GENRES] Flag FORCE_REFRESH_GENRES desactivado tras actualización para ${configId}`);
     } else if (!lastUpdate) {
       await kvSet(lastUpdateKey, nowStr);
       console.log(`[GENRES] timestamp inicial registrado: ${nowStr}`);
