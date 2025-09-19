@@ -205,26 +205,29 @@ async function configurePost(req, res) {
 
     // Activar el flag global para forzar regeneración de géneros
     config.FORCE_REFRESH_GENRES = true;
-
+    
     try {
-      console.log(`[CONFIGURE] Generando géneros para configId=${configId}`);
+      console.log(`[CONFIGURE] Generando canales para configId=${configId}`);
       const channels = await getChannels({ m3uUrl });
-      // 🔄 Invalidar caché de scraping por canal
-      try {
-        for (const c of channels) {
-          const normalized = String(c.name || '').toLowerCase().replace(/\s+/g, ' ').trim();
-          await kvDelete(`scrape:${normalized}`);
-          console.log(`[CONFIGURE] Caché scrape invalidada para canal: "${normalized}"`);
-        }
-      } catch (e) {
-        console.warn(`[CONFIGURE] Error al invalidar caché scrape por canal:`, e.message);
+    
+      // 🔄 Invalidar caché de scraping por canal SIEMPRE
+      for (const c of channels) {
+        const normalized = String(c.name || '').toLowerCase().replace(/\s+/g, ' ').trim();
+        await kvDelete(`scrape:${normalized}`);
+        console.log(`[CONFIGURE] Caché scrape invalidada para canal: "${normalized}"`);
       }
+    
       console.log(`[CONFIGURE] Canales cargados: ${channels.length}`);
-      await extractAndStoreGenresIfChanged(channels, configId);
-      console.log(`[CONFIGURE] Géneros generados y guardados para configId=${configId}`);
+    
+      // 🧠 Solo regenerar géneros si corresponde
+      if (action === 'update' || config.FORCE_REFRESH_GENRES) {
+        await extractAndStoreGenresIfChanged(channels, configId);
+        console.log(`[CONFIGURE] Géneros generados y guardados para configId=${configId}`);
+      }
     } catch (genreErr) {
-      console.error(`[CONFIGURE] Error al generar géneros para configId=${configId}:`, genreErr.message);
+      console.error(`[CONFIGURE] Error al generar canales/géneros para configId=${configId}:`, genreErr.message);
     }
+
 
     if (action === 'update') {
       const m3uHash = await getM3uHash(m3uUrl);
