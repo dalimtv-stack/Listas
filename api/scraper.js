@@ -43,7 +43,7 @@ function normalizeUrlForDisplay(url) {
     if (host === 'raw.githubusercontent.com') {
       const parts = parsed.pathname.split('/');
       const repo = parts[2] || 'github';
-      return `github:${repo}`;
+      return `Github:${repo}`;
     }
 
     // Si es IPFS, simplifica
