@@ -28,7 +28,7 @@ function getExtraGenres(name) {
   if (extraGenres.length === 0) {
     extraGenres.push('General');
   }
-  console.log(`[loadM3U] Extra géneros para "${name}": ${JSON.stringify(extraGenres)}`);
+  //console.log(`[loadM3U] Extra géneros para "${name}": ${JSON.stringify(extraGenres)}`);
   return extraGenres;
 }
 
@@ -111,7 +111,7 @@ async function loadM3U(args = {}) {
       };
 
       const extraGenres = getExtraGenres(name);
-      console.log(`[loadM3U] Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}, streamType=${streamType}, extra_genres=${JSON.stringify(extraGenres)}, behaviorHints=`, behaviorHints);
+      //console.log(`[loadM3U] Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}, streamType=${streamType}, extra_genres=${JSON.stringify(extraGenres)}, behaviorHints=`, behaviorHints);
 
       if (!channelMap[tvgId]) {
         channelMap[tvgId] = {
