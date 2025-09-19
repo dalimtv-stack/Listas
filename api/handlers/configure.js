@@ -297,7 +297,7 @@ async function configurePost(req, res) {
             <p>Click the buttons below to install the addon or copy the manifest URL:</p>
             <div class="button-group">
               <a href="${installUrl}">Install New Addon</a>
-              <a href="https://web.stremio.com/#/addons?addon=${installUrl}">Install New Addon (WEB)</a>
+              <a href="https://web.stremio.com/#/addons?addon=${manifestUrl}">Install New Addon (WEB)</a>
               <button onclick="copyManifest()">Copy New Manifest URL</button>
               <a href="/${configId}/configure">Edit Configuration</a>
             </div>
