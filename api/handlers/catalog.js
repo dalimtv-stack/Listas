@@ -51,22 +51,32 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
       .map(([g]) => g);
 
     const existingGenres = await kvGetJsonTTL(`genres:${configId}`) || [];
-    const obsoleteGenres = existingGenres.filter(g => !genreList.includes(g) && g !== 'General');
 
-    if (obsoleteGenres.length > 0) {
-      const updatedGenres = existingGenres.filter(g => genreList.includes(g) || g === 'General');
-      await kvSetJsonTTL(`genres:${configId}`, updatedGenres, 24 * 3600);
+    if (!genreList.length) {
+      console.warn(`[GENRES] Lista vacía detectada, se evita sobrescribir géneros existentes para ${configId}`);
+      return;
     }
 
-    if (genreList.length) {
-      const nowStr = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
-      if (!lastHash || lastHash !== currentHash || FORCE_REFRESH_GENRES) {
-        await kvSetJsonTTL(`genres:${configId}`, genreList, 24 * 3600);
-        await kvSet(lastHashKey, currentHash);
-        await kvSet(lastUpdateKey, nowStr);
-      } else if (!lastUpdate) {
-        await kvSet(lastUpdateKey, nowStr);
+    if (existingGenres.length) {
+      const obsoleteGenres = existingGenres.filter(g => !genreList.includes(g) && g !== 'General');
+      if (obsoleteGenres.length > 0) {
+        const updatedGenres = existingGenres.filter(g => genreList.includes(g) || g === 'General');
+        await kvSetJsonTTL(`genres:${configId}`, updatedGenres, 24 * 3600);
+        console.log('[GENRES] Géneros obsoletos eliminados, lista actualizada:', updatedGenres);
       }
+    }
+
+    const nowStr = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
+    if (!lastHash || lastHash !== currentHash || FORCE_REFRESH_GENRES) {
+      await kvSetJsonTTL(`genres:${configId}`, genreList, 24 * 3600);
+      await kvSet(lastHashKey, currentHash);
+      await kvSet(lastUpdateKey, nowStr);
+      console.log(`[GENRES] actualizados: ${genreList.length} géneros (Otros=${orphanCount})`);
+    } else if (!lastUpdate) {
+      await kvSet(lastUpdateKey, nowStr);
+      console.log(`[GENRES] timestamp inicial registrado: ${nowStr}`);
+    } else {
+      console.log(`[GENRES] géneros sin cambios, usando caché: ${genreList.length}`);
     }
   } catch (e) {
     console.error('[GENRES] error al extraer:', e.message);
@@ -119,6 +129,7 @@ async function handleCatalog(req) {
   if (extra.search) {
     const q = String(extra.search).toLowerCase();
     filtered = filtered.filter(c => normalizeCatalogName(c.name).toLowerCase().includes(q));
+    console.log(logPrefix, `aplicado search="${q}", tras filtro: ${filtered.length}`);
   }
 
   if (extra.genre) {
@@ -137,6 +148,7 @@ async function handleCatalog(req) {
         (Array.isArray(c.additional_streams) && c.additional_streams.some(s => s.group_title === g))
       );
     }
+    console.log(logPrefix, `aplicado genre="${g}", tras filtro: ${filtered.length}`);
   }
 
   const metas = filtered.map(c => ({
@@ -149,6 +161,7 @@ async function handleCatalog(req) {
   const resp = { metas };
   cache.set(cacheKey, resp);
   await kvSetJsonTTL(`catalog:${m3uHash}:${extra.genre || ''}:${extra.search || ''}`, resp);
+  console.log(logPrefix, `respuesta metas: ${metas.length}`);
   return resp;
 }
 
