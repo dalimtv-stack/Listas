@@ -13,6 +13,8 @@ acestream://56ac8e227d526e722624675ccdd91b0cc850582f
 
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="daddylivestream", Movistar LaLiga
 https://world-proxifier.xyz/ddy/p/XSQhJT0FNygtXl5RW08kNElTLF0gJCQvLygtXl5ROjgvX0hfIl8DBydSKUklOV8GIh4=/index.m3u8
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="vlc", Movistar LaLiga
+https://bit.ly/CanallaligadeDiego
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="daddylivestream", Movistar LaLiga (Browser)
 https://daddylivestream.com/embed/stream-436.php
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://i.imgur.com/26c7mQb.png" group-title="7pal.short.gy",Movistar LaLiga (UHD) 
