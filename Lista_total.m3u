@@ -2,6 +2,15 @@
 #EXTM3U url-tvg="https://raw.githubusercontent.com/davidmuma/EPG_dobleM/refs/heads/master/guiatv.xml, https://epgshare01.online/epgshare01/epg_ripper_NL1.xml.gz"
 #EXTVLCOPT:network-caching=1000
 
+#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Huhu.to", Hollywood (FHD)
+http://172.93.102.112:8989/278839_.m3u8
+#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Huhu.to", Hollywood (HD)
+https://www.huhu.to/play/4079560337/index.m3u8
+#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Huhu.to", Hollywood (HD) (Opcion 2)
+http://www.huhu.to/play/3288402534/index.m3u8
+#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Huhu.to", Hollywood (HD) (Opcion 3)
+http://www.huhu.to/play/4205258144/index.m3u8
+
 # https://i.ibb.co/VcRYc75W/M-plus.png
 # https://www.movistarplus.es/recorte/m-DP/modmarcas/MPLUHD
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://stremio.shickat.me/Images/Channels/PLUS.jpg" group-title="VLC", Movistar Plus
@@ -18,6 +27,8 @@ acestream://56ac8e227d526e722624675ccdd91b0cc850582f
 http://vlc.shickat.me:8000/pid/107c3ce5a5d2527c9f06e4eab87477201791f231/stream.mp4
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="daddylivestream", Movistar LaLiga
 https://world-proxifier.xyz/ddy/p/XSQhJT0FNygtXl5RW08kNElTLF0gJCQvLygtXl5ROjgvX0hfIl8DBydSKUklOV8GIh4=/index.m3u8
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://stremio.shickat.me/Images/Channels/LALIGA.jpg" group-title="Telegram", Movistar LaLiga
+http://172.93.102.112:8989/278844_.m3u8
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://i.imgur.com/26c7mQb.png" group-title="7pal.short.gy",Movistar LaLiga (UHD) 
 https://7pal.short.gy/mplusuhd
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="daddylivestream", Movistar LaLiga (Web)
@@ -89,6 +100,8 @@ acestream://51dbbfb42f8091e4ea7a2186b566a40e780953d9
 # https://comparaiso.es/sites/comparaiso.es/files/styles/_default/public/images/movistar-liga-campeones-200x300.png
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://stremio.shickat.me/Images/Channels/LIGADECAMPEONES.jpg" group-title="VLC", Movistar Liga de Campeones
 http://vlc.shickat.me:8000/pid/0f7842f8b6c26571e5a974407b61623e56e6a052/stream.mp4
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://stremio.shickat.me/Images/Channels/LIGADECAMPEONES.jpg" group-title="Telegram", Movistar Liga de Campeones
+http://172.93.102.112:8989/278845_.m3u8
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/MREALMP3352101" group-title="Elcano.top", Movistar Liga de Campeones (1080)
 acestream://97df5b7824948972d041d8ca2a4d29c90b641bc9
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" group-title="Elcano.top", Movistar Liga de Campeones (720)
@@ -142,9 +155,10 @@ acestream://77998f8161373611ff6b348e7eda5b4e97d3ec29
 acestream://f1219582a3059e7fff2db22e69475c45cbc84356
 
 # https://i.ibb.co/CV4CLjz/deportes.png
-#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://stremio.shickat.me/Images/Channels/DEPORTES.jpg" group-title="Telegram", Movistar Deportes
+
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://i.ibb.co/zVPpQrDD/Deportes-alt.png" group-title="VLC", Movistar Deportes
 http://vlc.shickat.me:8000/pid/5d3f582738467aaf213e408601aca5cc13fa9359/stream.mp4
-#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4265923" group-title="Telegram", Movistar Deportes
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://stremio.shickat.me/Images/Channels/DEPORTES.jpg" group-title="Telegram", Movistar Deportes
 http://195.66.210.10:80/Rtr6yAJJqg/mEAp9xefv6/203769
 #EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://i.imgur.com/movistar-deporte-logo.png" group-title="Telegram", Movistar Deportes (Opcion 2)
 http://179.51.136.19:8000/play/a0zj/index.m3u8
@@ -165,9 +179,9 @@ acestream://55d4602cb22b0d8a33c10c2c2f42dae64a9e8895
 #EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://i.ibb.co/CV4CLjz/deportes.png" group-title="ELCANO", Movistar Deportes (Opcion 2)
 acestream://3a74d9869b13e763476800740c6625e715a39879
 
-#EXTINF:-1 tvg-id="Movistar.Deportes.2.es" tvg-logo="https://stremio.shickat.me/Images/Channels/DEPORTES2.jpg" group-title="VLC", Movistar Deportes 2
+#EXTINF:-1 tvg-id="Movistar.Deportes.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4406652" group-title="VLC", Movistar Deportes 2
 http://vlc.shickat.me:8000/pid/73d38feaa770d788848ec098470e32670fe55a61/stream.mp4
-#EXTINF:-1 tvg-id="Movistar.Deportes.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4406652" group-title="Elcano.top", Movistar Deportes 2 (1080)
+#EXTINF:-1 tvg-id="Movistar.Deportes.2.es" tvg-logo="https://stremio.shickat.me/Images/Channels/DEPORTES2.jpg" group-title="Elcano.top", Movistar Deportes 2 (1080)
 acestream://f0ee7a2b43c1df5ea9e4fac5bf876d5bef4372b0
 #EXTINF:-1 tvg-id="Movistar.Deportes.2.es" group-title="Elcano.top", Movistar Deportes 2 (720)
 acestream://bfa01c11c5c6b7a616a516de4f2c769a89d26b25
@@ -183,6 +197,8 @@ acestream://2fd410c5d89e7a627cd3785685b7915b8e4bd534
 #EXTINF:-1 tvg-id="Movistar.Deportes.3.es" tvg-logo="https://i.ibb.co/jDg5qWD/deportes3.png" group-title="NEW ERA", Movistar Deportes 3 (FHD)
 acestream://753d4b1f7c4ef43238b5cf23b05572b550a44eee
 
+#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="Telegram", DAZN 1
+http://172.93.102.112:8989/278822_.m3u8
 #EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="daddylivestream", DAZN 1
 https://world-proxifier.xyz/ddy/p/XSQhJT0FNygtXl5RW08kNElTLF0gJCQvLygtXl5ROjgvX0hfIl8HBx0yVzZaJDxaBj8L/index.m3u8
 #EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="Elcano.top", DAZN 1
@@ -202,6 +218,8 @@ acestream://35c7f0c966ecde3390f4510bb4caded40018c07a
 #EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://i.ibb.co/FVzKq1y/dazn1.png" group-title="NEW LOOP",DAZN 1
 acestream://d5b2c6b940cf3df5e8f9dc6f000f0ea23a10b151
 
+#EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="Telegram", DAZN 2
+http://172.93.102.112:8989/278822_.m3u8
 #EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="daddylivestream", DAZN 2
 https://world-proxifier.xyz/ddy/p/XSQhJT0FNyguUl0kW08kNElTLF0gJCQvLyguUl0kOjgvX0hfIl8HBxwyVzZaJDxaBj8L/index.m3u8
 #EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="Elcano.top", DAZN 2
@@ -226,6 +244,8 @@ acestream://3785f04aa15a5e6ef1484f0bea7f4664f2c1a4ea
 #EXTINF:-1 tvg-id="DAZN.3.es" tvg-logo="https://i.ibb.co/2vkThM3/dazn3.png" group-title="NEW LOOP",DAZN 3
 acestream://d1d9ec2361a6ac8edc0b2841866383768cc28df9
 
+#EXTINF:-1 tvg-id="Movistar.Vamos.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F3829337" group-title="Telegram", Movistar Vamos
+http://172.93.102.112:8989/278843_.m3u8
 #EXTINF:-1 tvg-id="Movistar.Vamos.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F3829337" group-title="Elcano.top", Movistar Vamos (1080)
 acestream://c7c81acdd1a03ecc418c94c2f28e2adb0556c40b
 #EXTINF:-1 tvg-id="Movistar.Vamos.es" tvg-logo="https://stremio.shickat.me/Images/Channels/VAMOS.jpg" group-title="Elcano.top", Movistar Vamos (720)
@@ -341,13 +361,19 @@ acestream://1f092144252939810fd302cbd00d46de760b5dd7
 #EXTINF:-1 tvg-id="Movistar.Originales.es" tvg-logo="https://i.ibb.co/rGVmRcSH/hits.png" group-title="NEW ERA", Movistar Originales (FHD)
 acestream://2752dee68a7faa9c847216dc22a6821661db891a
 
-#EXTINF:-1 tvg-id="AXN.es" tvg-logo="http://vpns.universof.com:25461/images/7798388f9d79038c19aa53a7cfa79574.png" group-title="AXN", AXN
+#EXTINF:-1 tvg-id="AXN.es" tvg-logo="http://vpns.universof.com:25461/images/7798388f9d79038c19aa53a7cfa79574.png" group-title="Telegram", AXN
 http://172.93.102.112:8989/278814_.m3u8
-#EXTINF:-1 tvg-id="AXN.es" tvg-logo="http://vpns.universof.com:25461/images/55ba44c548d3ebafd9f70e64a7f232b0.png" group-title="AXN", AXN MOVIE 
+#EXTINF:-1 tvg-id="AXN.es" tvg-logo="http://vpns.universof.com:25461/images/55ba44c548d3ebafd9f70e64a7f232b0.png" group-title="Telegram", AXN MOVIE 
 http://172.93.102.112:8989/278815_.m3u8
 
-#EXTINF:-1 tvg-id="AXN.es" tvg-logo="https://otakukart.com/wp-content/uploads/2023/10/AMC.jpg" group-title="AMC", AMC
+#EXTINF:-1 tvg-id="AMC.es" tvg-logo="https://otakukart.com/wp-content/uploads/2023/10/AMC.jpg" group-title="Telegram", AMC
 http://172.93.102.112:8989/278811_.m3u8
+
+#EXTINF:-1 tvg-id="Calle.13.es" tvg-logo="https://i.ibb.co/mr0dvFN7/CAlle-trece.png" group-title="Telegram", Calle 13
+http://172.93.102.112:8989/278817_.m3u8
+
+#EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://i.ibb.co/mr0dvFN7/CAlle-trece.png" group-title="Telegram", Odisea
+http://172.93.102.112:8989/278818_.m3u8
 
 #EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://i.ibb.co/4wVnPgDk/Primera-RFEF-2021.png" group-title="NEW ERA", Canal 1 [1RFEF] (SOLO EVENTOS)
 acestream://c1ee6e1e0ef5928d8261f855c417de21794f437d
@@ -364,6 +390,8 @@ acestream://8546cff89e4ee8bf3ad31cf6457c3bc2c4341031
 #EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://i.ibb.co/Vp04N3pT/golf.png" group-title="NEW LOOP", Movistar Golf (HD)
 acestream://872608e734992db636eb79426802cd08f4029afb
 
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://cdn.sincroguia.tv/uploads/series/laliga-hypermotion-poster-1272157_V.jpg" group-title="Telegram", LaLiga Hypermotion (720)
+http://172.93.102.112:8989/278842_.m3u8
 #EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://cdn.sincroguia.tv/uploads/series/laliga-hypermotion-poster-1272157_V.jpg" group-title="Elcano.top", LaLiga Hypermotion (1080)
 acestream://87bb542f974b6b9e89d0f2e20ed6dc93426f4be0
 #EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" group-title="Elcano.top", LaLiga Hypermotion (720)
@@ -652,13 +680,6 @@ http://bantel-cdn4.iptvperu.tv:1935/e43Gyk/espn6.stream/playlist.m3u8
 
 #EXTINF:-1 group-title="Deportes" tvg-logo="https://i.postimg.cc/vTL0VL5X/800px-ESPN-7-logo-svg.png",ESPN 7
 http://bantel-cdn4.iptvperu.tv:1935/HiOmL1/espn7.stream/playlist.m3u8
-
-#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Huhu.to", Hollywood (HD)
-https://www.huhu.to/play/4079560337/index.m3u8
-#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Huhu.to", Hollywood (HD) (Opcion 2)
-http://www.huhu.to/play/3288402534/index.m3u8
-#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Huhu.to", Hollywood (HD) (Opcion 3)
-http://www.huhu.to/play/4205258144/index.m3u8
 
 #EXTINF:-1 group-title="DISNEY EVENTOS" tvg-logo="https://e-ce.americatv.com.pe/9-24-592x340-503196.jpg",Disney eventos 1
 https://la14hd.com:443/vivo/canales.php?stream=disney1
