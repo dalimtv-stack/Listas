@@ -31,7 +31,6 @@ function getSearchTerms(channelName) {
     .replace(/\[.*?\]/g, '');
   const aliases = channelAliases[normalized] || channelAliases[original] || [];
   const terms = [...new Set([normalized, original, ...aliases])];
-  // console.log('[SCRAPER] Términos de búsqueda generados para', channelName, ':', terms);
   return terms;
 }
 
@@ -39,17 +38,12 @@ function normalizeUrlForDisplay(url) {
   try {
     const parsed = new URL(url);
     const host = parsed.hostname.replace(/^www\./, '');
-
-    // Si es GitHub raw, simplifica
     if (host === 'raw.githubusercontent.com') {
       const parts = parsed.pathname.split('/');
       const repo = parts[2] || 'github';
       return `Github:${repo}`;
     }
-
-    // Si es IPFS, simplifica
     if (host.includes('ipfs.io')) return 'elcano.top';
-
     return host;
   } catch (e) {
     return String(url || '').replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '');
@@ -59,39 +53,16 @@ function normalizeUrlForDisplay(url) {
 function isNumberMismatch(streamName, channelName) {
   const streamNums = normalizeName(streamName).match(/\b\d+\b/g) || [];
   const channelNums = normalizeName(channelName).match(/\b\d+\b/g) || [];
-
-  console.log('[SCRAPER] isNumberMismatch:', {
-    streamName,
-    channelName,
-    streamNums,
-    channelNums
-  });
-
-  // Ignorar indicadores de calidad como 1080, 720, 2160
   const qualityIndicators = ['1080', '720', '2160'];
   const filteredStreamNums = streamNums.filter(n => !qualityIndicators.includes(n));
   const filteredChannelNums = channelNums.filter(n => !qualityIndicators.includes(n));
-
-  console.log('[SCRAPER] isNumberMismatch post-filter:', {
-    filteredStreamNums,
-    filteredChannelNums
-  });
-
-  // Si el canal tiene números (como "2", "3") y el stream no, es mismatch
-  if (filteredChannelNums.length > 0 && filteredStreamNums.length === 0) {
-    console.log('[SCRAPER] numberMismatch=true: canal tiene números pero el stream no');
-    return true;
-  }
-
-  // Si hay números en ambos pero no coinciden, también es mismatch
-  const mismatch = filteredStreamNums.some(n => !filteredChannelNums.includes(n));
-  console.log('[SCRAPER] isNumberMismatch result:', mismatch);
-  return mismatch;
+  if (filteredChannelNums.length > 0 && filteredStreamNums.length === 0) return true;
+  return filteredStreamNums.some(n => !filteredChannelNums.includes(n));
 }
 
 function isMatch(normalizedName, searchTerms, channelName) {
   const isChannel1 = normalizeName(channelName).includes('canal 1 [1rfef]');
-  const match = searchTerms.some(term => {
+  return searchTerms.some(term => {
     const baseTerm = normalizeName(term);
     const baseName = normalizeName(normalizedName);
     const baseMatch = baseName.includes(baseTerm) || baseTerm.includes(baseName);
@@ -100,16 +71,11 @@ function isMatch(normalizedName, searchTerms, channelName) {
     const movistarMatch = baseName.includes('movistarplus') && baseTerm.includes('movistar plus');
     return (baseMatch || rfefMatch || movistarMatch) && (isChannel1 ? rfefMatch : true);
   });
-  // console.log('[SCRAPER] isMatch:', { normalizedName, channelName, match });
-  return match;
 }
 
 async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) {
   const logPrefix = '[SCRAPER]';
-  if (!channelName || typeof channelName !== 'string') {
-    console.warn(logPrefix, 'Nombre de canal no definido o inválido');
-    return [];
-  }
+  if (!channelName || typeof channelName !== 'string') return [];
 
   const normalizedTarget = normalizeName(channelName);
   const cacheKey = `scrape:${normalizedTarget}`;
@@ -118,81 +84,49 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
   let cached = null;
   if (!forceScrape) {
     cached = await kvGetJsonTTL(cacheKey);
-    if (cached) {
-      console.log(logPrefix, `Usando cache (${cached.length} resultados) para "${normalizedTarget}"`);
-      return cached;
-    }
+    if (cached) return cached;
   } else {
-    console.log(logPrefix, `Forzando scrapeo para "${normalizedTarget}", limpiando caché`);
     await kvDelete(cacheKey);
   }
 
-  console.log(logPrefix, `Iniciado para canal: ${channelName}, forceScrape: ${forceScrape}`);
-  console.log(logPrefix, `Nombre normalizado: "${normalizedTarget}"`);
-  console.log(logPrefix, `Lista de webs a scrapear:`, extraWebsList);
-
   const results = [];
+  const vlcResults = []; // acumulamos VLC aquí
   const seenUrls = new Set();
   const searchTerms = getSearchTerms(channelName);
 
   for (const url of extraWebsList) {
+    let content;
     try {
-      // console.log(logPrefix, `Fetch -> ${url}`);
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 20000);
       try {
         const response = await fetch(url, { signal: controller.signal });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const content = await response.text();
-        console.log(logPrefix, `Contenido recibido de ${url}, longitud: ${content.length}`);
-        // ... resto del procesamiento ...
-      } catch (e) {
-        console.error(logPrefix, `Error en ${url}:`, e.message);
+        content = await response.text();
       } finally {
         clearTimeout(timeoutId);
       }
 
-      console.log(logPrefix, `Contenido recibido de ${url}, longitud: ${content.length}`);
-
-      // Procesar como M3U si la URL termina en .m3u o el contenido parece una lista M3U
       if (url.endsWith('.m3u') || content.startsWith('#EXTM3U')) {
-        // console.log(logPrefix, `Detectado contenido M3U en ${url}`);
         let playlist;
         try {
           playlist = parse(content);
-        } catch (err) {
-          console.error(logPrefix, `Error parseando M3U desde ${url}: ${err.message}`);
+        } catch {
           continue;
         }
-        // console.log(logPrefix, `M3U parseado, items: ${playlist.items.length}`);
-      
-        playlist.items.forEach((item, index) => {
+        playlist.items.forEach(item => {
           const rawName = item.name || '';
           const name = rawName.startsWith('#') ? rawName.slice(1).trim() : rawName.trim();
           const href = item.url;
           let groupTitle = item.tvg.group || '';
-      
-          // Extraer manualmente group-title si el parser no lo hizo
           if (!groupTitle && item.raw) {
             const match = item.raw.match(/group-title="([^"]+)"/);
             if (match) groupTitle = match[1];
           }
-      
           const normalizedName = normalizeName(name);
           const matchResult = isMatch(normalizedName, searchTerms, channelName);
           const numberMismatch = isNumberMismatch(name, channelName);
-      
-          // console.log(logPrefix, `Evaluando M3U: name="${name}", href="${href}", groupTitle="${groupTitle}", isMatch=${matchResult}, numberMismatch=${numberMismatch}`);
-      
-          if (
-            name &&
-            href &&
-            href.endsWith('.m3u8') &&
-            groupTitle === 'SPAIN' &&
-            matchResult &&
-            !numberMismatch &&
-            !seenUrls.has(href)
-          ) {
+          if (name && href && href.endsWith('.m3u8') && groupTitle === 'SPAIN' && matchResult && !numberMismatch && !seenUrls.has(href)) {
             const displayName = normalizeUrlForDisplay(url);
             const stream = {
               name: displayName,
@@ -203,15 +137,11 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
             };
             results.push(stream);
             seenUrls.add(href);
-            console.log(logPrefix, `Stream M3U8 añadido: ${JSON.stringify(stream)}`);
-          } else {
-            console.log(logPrefix, `Descartado M3U: name="${name}", href="${href}", groupTitle="${groupTitle}", isMatch=${matchResult}, numberMismatch=${numberMismatch}`);
           }
         });
         continue;
       }
-      
-      // Procesar HTML con Cheerio
+
       const $ = cheerio.load(content);
       let encontrados = 0;
 
@@ -238,10 +168,21 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
           };
           results.push(stream);
           seenUrls.add(href);
-          encontrados++;
-          console.log(logPrefix, `Stream añadido: ${JSON.stringify(stream)}`);
-        } else {
-          console.log(logPrefix, `Descartado shickat.me: name="${name}", href="${href}", isMatch=${isMatch(normalizedName, searchTerms, channelName)}, numberMismatch=${isNumberMismatch(name, channelName)}`);
+
+          // 🚀 Alternativa VLC
+          const aceId = href.replace('acestream://', '');
+          const vlcUrl = `http://vlc.shickat.me:8000/pid/${aceId}/stream.mp4`;
+          if (!seenUrls.has(vlcUrl)) {
+            const vlcStream = {
+              name: 'VLC',
+              title: `${name} (VLC)`,
+              url: vlcUrl,
+              group_title: 'VLC',
+              behaviorHints: { notWebReady: false, external: false }
+            };
+            vlcResults.push(vlcStream);
+            seenUrls.add(vlcUrl);
+          }
         }
       });
 
@@ -268,24 +209,32 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
           };
           results.push(stream);
           seenUrls.add(href);
-          encontrados++;
-          console.log(logPrefix, `Stream añadido: ${JSON.stringify(stream)}`);
-        } else {
-          console.log(logPrefix, `Descartado canal-card: name="${name}", href="${href}", isMatch=${isMatch(normalizedName, searchTerms, channelName)}, numberMismatch=${isNumberMismatch(name, channelName)}`);
+
+          // 🚀 Alternativa VLC
+          const aceId = href.replace('acestream://', '');
+          const vlcUrl = `http://vlc.shickat.me:8000/pid/${aceId}/stream.mp4`;
+          if (!seenUrls.has(vlcUrl)) {
+            const vlcStream = {
+              name: 'VLC',
+              title: `${name} (VLC)`,
+              url: vlcUrl,
+              group_title: 'VLC',
+              behaviorHints: { notWebReady: false, external: false }
+            };
+            vlcResults.push(vlcStream);
+            seenUrls.add(vlcUrl);
+          }
         }
       });
 
       // Selector para elcano.top - extrae JSON de linksData (solo acestream://)
       if (url.includes('elcano.top')) {
-        console.log(logPrefix, 'Detectado elcano.top, extrayendo JSON de linksData');
         const scriptText = $('script').filter((i, el) => $(el).html().includes('linksData')).html();
         if (scriptText) {
-          console.log(logPrefix, `Script encontrado, longitud: ${scriptText.length}`);
           const linksDataMatch = scriptText.match(/const linksData = ({.*?});/s);
           if (linksDataMatch) {
             try {
               const linksData = JSON.parse(linksDataMatch[1]);
-              console.log(logPrefix, `linksData parseado: ${JSON.stringify(linksData)}`);
               if (linksData.links && Array.isArray(linksData.links)) {
                 linksData.links.forEach(link => {
                   const name = link.name;
@@ -309,39 +258,41 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
                     };
                     results.push(stream);
                     seenUrls.add(href);
-                    encontrados++;
-                    console.log(logPrefix, `Stream añadido desde linksData (elcano): ${JSON.stringify(stream)}`);
-                  } else {
-                    console.log(logPrefix, `Descartado elcano.top: name="${name}", href="${href}", isMatch=${isMatch(normalizedName, searchTerms, channelName)}, numberMismatch=${isNumberMismatch(name, channelName)}`);
+
+                    // 🚀 Alternativa VLC
+                    const aceId = href.replace('acestream://', '');
+                    const vlcUrl = `http://vlc.shickat.me:8000/pid/${aceId}/stream.mp4`;
+                    if (!seenUrls.has(vlcUrl)) {
+                      const vlcStream = {
+                        name: 'VLC',
+                        title: `${name} (VLC)`,
+                        url: vlcUrl,
+                        group_title: 'VLC',
+                        behaviorHints: { notWebReady: false, external: false }
+                      };
+                      vlcResults.push(vlcStream);
+                      seenUrls.add(vlcUrl);
+                    }
                   }
                 });
-              } else {
-                console.log(logPrefix, 'linksData.links no es un array o no existe');
               }
-            } catch (parseErr) {
-              console.error(logPrefix, 'Error parseando linksData JSON:', parseErr.message);
-            }
-          } else {
-            console.log(logPrefix, 'No se encontró linksData en el script de elcano.top');
+            } catch {}
           }
-        } else {
-          console.log(logPrefix, 'No se encontró script con linksData en elcano.top');
         }
       }
-
-      console.log(logPrefix, `Coincidencias en ${url}: ${encontrados}`);
     } catch (e) {
       console.error(logPrefix, `Error en ${url}:`, e.message);
     }
   }
 
-  console.log(logPrefix, `Total streams extra encontrados: ${results.length}`);
-  if (results.length > 0) {
-    await kvSetJsonTTLIfChanged(cacheKey, results, ttlSeconds);
-    console.log(logPrefix, `Cache procesado para "${normalizedTarget}" con ${results.length} streams`);
+  // 🚀 Devolver primero VLC y luego el resto
+  const finalResults = [...vlcResults, ...results];
+
+  if (finalResults.length > 0) {
+    await kvSetJsonTTLIfChanged(cacheKey, finalResults, ttlSeconds);
   }
 
-  return results;
+  return finalResults;
 }
 
 module.exports = { scrapeExtraWebs };
