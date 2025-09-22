@@ -193,6 +193,15 @@ async function getChannel(id, args = {}) {
     throw new Error(`Channel with id ${id} not found`);
   }
   console.log(`[getChannel] Canal encontrado: ${channel.name}`);
+  if (channel.acestream_id) {
+    console.log('[AUDIT][DB] Canal con Ace detectado:', {
+      id: channel.tvg_id,
+      name: channel.name,
+      group_title: channel.group_title,
+      acestream_id: channel.acestream_id,
+      behaviorHints: channel.behaviorHints
+    });
+  }
   return channel;
 }
 
