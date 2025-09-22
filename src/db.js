@@ -120,6 +120,7 @@ async function loadM3U(args = {}) {
       }
       if (!groupTitle) groupTitle = 'General';
 
+      // Clave de deduplicación por URL dentro del canal
       const urlKey = isAce ? `acestream://${rawUrl.replace('acestream://', '')}` : rawUrl;
 
       const stream = {
@@ -134,12 +135,15 @@ async function loadM3U(args = {}) {
       const extraGenres = getExtraGenres(name);
 
       if (!channelMap[tvgId]) {
+        // Crear canal principal (no se sobrescriben estos metadatos después)
         channelMap[tvgId] = {
           id: tvgId,
           name: name || `Canal ${index + 1}`,
           logo_url: item.tvg.logo || '',
           group_title: groupTitle,
           acestream_id: stream.acestream_id || null,
+          // NUEVO: conservar el grupo del primer Ace que se promociona
+          acestream_group_title: stream.acestream_id ? stream.group_title : null,
           m3u8_url: stream.url || null,
           stream_url: (!isAce && !isM3u8 && !isWebPage) ? rawUrl : null,
           website_url: isWebPage ? rawUrl : null,
@@ -149,11 +153,14 @@ async function loadM3U(args = {}) {
         };
         channelSeenUrls[tvgId] = new Set();
       } else {
+        // Completar metadatos sin sobrescribir los principales
         if (!channelMap[tvgId].website_url && isWebPage) {
           channelMap[tvgId].website_url = rawUrl;
         }
         if (!channelMap[tvgId].acestream_id && stream.acestream_id) {
           channelMap[tvgId].acestream_id = stream.acestream_id;
+          // NUEVO: guardar el group_title del Ace principal
+          channelMap[tvgId].acestream_group_title = stream.group_title || channelMap[tvgId].acestream_group_title || null;
         }
         if (!channelMap[tvgId].m3u8_url && stream.url) {
           channelMap[tvgId].m3u8_url = stream.url;
@@ -163,6 +170,7 @@ async function loadM3U(args = {}) {
         }
       }
 
+      // Añadir stream adicional evitando duplicados por URL
       if (urlKey && !channelSeenUrls[tvgId].has(urlKey)) {
         channelMap[tvgId].additional_streams.push(stream);
         channelSeenUrls[tvgId].add(urlKey);
@@ -201,7 +209,8 @@ async function getChannel(id, args = {}) {
       name: channel.name,
       group_title: channel.group_title,
       acestream_id: channel.acestream_id,
-      behaviorHints: channel.behaviorHints
+      // NUEVO: auditar también el grupo del Ace principal
+      acestream_group_title: channel.acestream_group_title || null
     });
   }
   return channel;
