@@ -50,7 +50,7 @@ acestream://cc9b7f5fe416069a2110da0909b0f915043c468b
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://i.ibb.co/yfV1Q8n/liga.png" group-title="ELCANO", Movistar LaLiga
 acestream://1bc437bce57b4b0450f6d1f8d818b7e97000745e
 
-#https://i.ibb.co/7N4GLpJn/M-liga2.png
+# https://i.ibb.co/7N4GLpJn/M-liga2.png
 #EXTINF:-1 tvg-id="Movistar.LaLiga.2.es" tvg-logo="https://i.ibb.co/5gz8bD74/M-liga2-alt.png" group-title="Elcano.top", Movistar LaLiga 2 (1080)
 acestream://51b363b1c4d42724e05240ad068ad219df8042ec
 #EXTINF:-1 tvg-id="Movistar.LaLiga.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="Elcano.top", Movistar LaLiga 2 (720)
@@ -60,7 +60,8 @@ acestream://83c6c4942d69f4aa324aa746c5d7dbfd7d1572b3
 #EXTINF:-1 tvg-id="Movistar.LaLiga.2.es" tvg-logo="https://i.ibb.co/Tc97zSb/liga2.png" group-title="ELCANO", Movistar LaLiga 2 (SD)
 acestream://f31a586422c9244196c810c84b6c85da350318a5
 
-#EXTINF:-1 tvg-id="Movistar.LaLiga.3.es" tvg-logo="https://i.ibb.co/C5qm25Q6/M-liga3.png" group-title="Elcano.top", Movistar LaLiga 3 (1080)
+# https://i.ibb.co/C5qm25Q6/M-liga3.png
+#EXTINF:-1 tvg-id="Movistar.LaLiga.3.es" tvg-logo="https://i.ibb.co/KjQRg360/M-liga3-alt.png" group-title="Elcano.top", Movistar LaLiga 3 (1080)
 acestream://7ad14386deef2f45ffe17d30a631dbf79b6a1a87
 #EXTINF:-1 tvg-id="Movistar.LaLiga.3.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="Elcano.top", Movistar LaLiga 3 (720)
 acestream://382b14499e3d76e557d449d2e5bbc4e4bd63bd39
@@ -86,8 +87,8 @@ acestream://6de4794cd02f88f14354b5996823413a59a1de0f
 #EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/spain/dazn-laliga-es.png" group-title="NEW ERA II", DAZN LaLiga (SD)
 acestream://8c8c1e047a1c5ed213ba74722a5345dc55c3c0eb
 
-#https://i.ibb.co/nsyG7wRV/DAZN-x-LALIGA-2.png
-#https://i.ibb.co/tw7G81gf/dazn-laliga-2-es.png
+# https://i.ibb.co/nsyG7wRV/DAZN-x-LALIGA-2.png
+# https://i.ibb.co/tw7G81gf/dazn-laliga-2-es.png
 #EXTINF:-1 tvg-id="DAZN.LALIGA.2.es" tvg-logo="https://i.ibb.co/XxMT4qnN/DAZN-x-LALIGA-2.webp" group-title="daddylivestream", DAZN LaLiga 2
 https://world-proxifier.xyz/ddy/p/XSQhJT0FNygtXl5RW08kNElTLF0gJCQvLygtXl5ROjgvX0hfIl8HBidSKUklOV8GIh4=/index.m3u8
 #EXTINF:-1 tvg-id="DAZN.LALIGA.2.es" tvg-logo="https://i.ibb.co/XxMT4qnN/DAZN-x-LALIGA-2.webp" group-title="Elcano.top", DAZN LaLiga 2 (1080 MultiAudio)
@@ -367,7 +368,7 @@ http://172.93.102.112:8989/278817_.m3u8
 http://172.93.102.112:8989/278818_.m3u8
 
 #https://i.ibb.co/4wKt4tkT/NAT-GEO-WILD-alt.jpg
-#EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://i.ibb.co/Z1tY8bdP/NAT-GEO-WILD.png" group-title="Telegram", National Geographic Wild
+#EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://i.ibb.co/JF2dY3Gw/NAT-GEO-WILD.png" group-title="Telegram", National Geographic Wild
 http://172.93.102.112:8989/278852_.m3u8
 
 #EXTINF:-1 tvg-id="Crime.es" tvg-logo="http://imgfz.com/i/KIdubq4.jpeg" group-title="Telegram", Crime
