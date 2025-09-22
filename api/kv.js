@@ -70,6 +70,22 @@ async function kvSetJsonTTL(key, obj, ttlSeconds = 3600) {
   await kvSet(key, JSON.stringify(payload));
 }
 
+// 🚀 Nueva función: solo escribe si hay cambios
+async function kvSetJsonTTLIfChanged(key, obj, ttlSeconds = 3600) {
+  const existing = await kvGetJsonTTL(key);
+  if (!existing || JSON.stringify(existing) !== JSON.stringify(obj)) {
+    const payload = {
+      timestamp: Date.now(),
+      ttlMs: ttlSeconds * 1000,
+      data: obj
+    };
+    await kvSet(key, JSON.stringify(payload));
+    console.log(`[KV] Actualizado ${key} (cambios detectados)`);
+  } else {
+    console.log(`[KV] Sin cambios en ${key}, no se escribe`);
+  }
+}
+
 async function kvDelete(key) {
   try {
     const { CLOUDFLARE_KV_ACCOUNT_ID, CLOUDFLARE_KV_NAMESPACE_ID, CLOUDFLARE_KV_API_TOKEN } = process.env;
@@ -92,5 +108,6 @@ module.exports = {
   kvSetJson,
   kvGetJsonTTL,
   kvSetJsonTTL,
-  kvDelete  // Añade esto
+  kvSetJsonTTLIfChanged, // 👈 exportamos la nueva
+  kvDelete
 };
