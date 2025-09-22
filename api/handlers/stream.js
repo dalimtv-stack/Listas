@@ -88,10 +88,29 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
       behaviorHints = src.behaviorHints || { notWebReady: false, external: false };
     }
 
+    // Fix: si es el canal principal con Ace, usar su acestream_group_title para etiquetar correctamente
+    let name;
+    let title;
+    let group_title_for_audit;
+
+    if (src.acestream_id && src.id === ch.id) {
+      const aceGroup = src.acestream_group_title || src.group_title || 'Acestream';
+      name = aceGroup;
+      title = `${chName} (Acestream)`;
+      group_title_for_audit = aceGroup;
+    } else {
+      const grp = src.group_title || 'Stream';
+      name = src.group_title || src.name || chName;
+      title = src.title || `${chName} (${grp})`;
+      group_title_for_audit = src.group_title;
+    }
+
     const out = {
-      name: src.group_title || src.name || chName,
-      title: src.title || `${chName} (${src.group_title || 'Stream'})`,
-      behaviorHints
+      name,
+      title,
+      behaviorHints,
+      // solo para auditoría/depuración; Stremio lo ignora
+      group_title: group_title_for_audit
     };
 
     if (src.acestream_id) {
@@ -105,19 +124,23 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
     console.log(logPrefix, `Añadido stream: ${streamUrl}, behaviorHints=`, out.behaviorHints);
   };
 
+  // Añadir posibles principales: Ace/M3U8/Directo/url
   if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) {
     addStream(ch);
   }
 
+  // Añadir adicionales
   if (Array.isArray(ch.additional_streams)) {
     ch.additional_streams.forEach(addStream);
   }
 
+  // Añadir website si existe
   if (ch.website_url && !seenUrls.has(ch.website_url)) {
     streams.push({
       title: `${ch.name} - Website`,
       externalUrl: ch.website_url,
-      behaviorHints: { notWebReady: true, external: true }
+      behaviorHints: { notWebReady: true, external: true },
+      group_title: 'Website'
     });
     seenUrls.add(ch.website_url);
     console.log(logPrefix, `Añadido website_url: ${ch.website_url}`);
@@ -150,7 +173,7 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
       const extraStreams = await scrapeExtraWebs(chName, extraWebsList, forceScrape);
       console.log(logPrefix, 'Streams extra devueltos por scraper:', extraStreams);
       if (extraStreams.length > 0) {
-        // 🔧 Deduplicación reforzada: usar URL o AceID
+        // Deduplicación: por URL o AceID
         const existingKeys = new Set(
           baseObj.streams.map(s => {
             if (s.externalUrl && s.externalUrl.startsWith('acestream://')) {
