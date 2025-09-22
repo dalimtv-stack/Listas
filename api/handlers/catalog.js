@@ -165,9 +165,18 @@ async function handleCatalog(req) {
 
   const resp = { metas };
   cache.set(cacheKey, resp);
-  await kvSetJsonTTL(`catalog:${m3uHash}:${extra.genre || ''}:${extra.search || ''}`, resp);
-  console.log(logPrefix, `respuesta metas: ${metas.length}`);
+  
+  // 🔎 Evitar escrituras redundantes en KV
+  const kvKey = `catalog:${m3uHash}:${extra.genre || ''}:${extra.search || ''}`;
+  const existing = await kvGetJsonTTL(kvKey);
+  
+  if (!existing || JSON.stringify(existing) !== JSON.stringify(resp)) {
+    await kvSetJsonTTL(kvKey, resp);
+    console.log(logPrefix, `respuesta metas: ${metas.length} (KV actualizado)`);
+  } else {
+    console.log(logPrefix, `respuesta metas: ${metas.length} (sin cambios, no se escribe en KV)`);
+  }
+  
   return resp;
 }
-
 module.exports = { handleCatalog, extractAndStoreGenresIfChanged };
