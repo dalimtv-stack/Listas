@@ -128,7 +128,7 @@ async function loadM3U(args = {}) {
         group_title: groupTitle,
         url: isM3u8 ? rawUrl : null,
         acestream_id: isAce ? rawUrl.replace('acestream://', '') : null,
-        stream_url: (!isAce && !isM3u8 && !isWebPage) ? rawUrl : (isWebPage ? null : rawUrl), // mantiene valor si no es ace/m3u8; webpage no va en stream_url
+        stream_url: (!isAce && !isM3u8 && !isWebPage) ? rawUrl : null,
         behaviorHints
       };
 
