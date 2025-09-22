@@ -125,6 +125,18 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
 
   const resp = { streams, chName };
   console.log(logPrefix, `streams para ${channelId}: ${streams.length}`);
+  console.log('[AUDIT] Streams construidos en handleStreamInternal:');
+  streams.forEach(s => {
+    if (s.externalUrl && s.externalUrl.startsWith('acestream://')) {
+      console.log('[AUDIT] ACE', {
+        url: s.externalUrl,
+        name: s.name,
+        title: s.title,
+        group_title: s.group_title,
+        behaviorHints: s.behaviorHints
+      });
+    }
+  });
   return resp;
 }
 
@@ -172,6 +184,18 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
     }
   }
   console.log(logPrefix, 'Respuesta final con streams:', baseObj.streams);
+  console.log('[AUDIT] Streams antes de devolver en enrichWithExtra:');
+  baseObj.streams.forEach(s => {
+    if (s.externalUrl && s.externalUrl.startsWith('acestream://')) {
+      console.log('[AUDIT] ACE', {
+        url: s.externalUrl,
+        name: s.name,
+        title: s.title,
+        group_title: s.group_title,
+        behaviorHints: s.behaviorHints
+      });
+    }
+  });
   return baseObj;
 }
 
