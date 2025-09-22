@@ -4,7 +4,7 @@
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 const { parse } = require('iptv-playlist-parser');
-const { kvGetJsonTTL, kvSetJsonTTL, kvDelete } = require('./kv');
+const { kvGetJsonTTL, kvSetJsonTTLIfChanged, kvDelete } = require('./kv');
 
 const channelAliases = {
   'movistar plus': ['movistar plus', 'movistarplus', 'm. plus', 'm+ plus', 'm+plus', 'movistar plus fhd', 'movistar+', 'plus fhd', 'movistarplus 1080', 'movistar plus 1080'],
@@ -330,20 +330,11 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
 
   console.log(logPrefix, `Total streams extra encontrados: ${results.length}`);
   if (results.length > 0) {
-    const hasChanged = !cached || !arraysEqual(cached || [], results, (a, b) => a.url === b.url || a.externalUrl === b.externalUrl);
-    if (hasChanged) {
-      await kvSetJsonTTL(cacheKey, results, ttlSeconds);
-      console.log(logPrefix, `Cache actualizado para "${normalizedTarget}" con ${results.length} streams`);
-    } else {
-      console.log(logPrefix, `No hay cambios en los streams, cache no actualizado para "${normalizedTarget}"`);
-    }
+    await kvSetJsonTTLIfChanged(cacheKey, results, ttlSeconds);
+    console.log(logPrefix, `Cache procesado para "${normalizedTarget}" con ${results.length} streams`);
   }
-  return results;
-}
 
-function arraysEqual(arr1, arr2, compareFn) {
-  if (arr1.length !== arr2.length) return false;
-  return arr1.every((item, index) => compareFn(item, arr2[index]));
+  return results;
 }
 
 module.exports = { scrapeExtraWebs };
