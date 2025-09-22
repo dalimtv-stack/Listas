@@ -79,7 +79,7 @@ async function loadM3U(args = {}) {
     }
 
     const channelMap = {};
-    const channelSeenUrls = {}; // Evitar duplicados por canal
+    const channelSeenUrls = {};
     const webPageExtensions = /\.(html|htm|php|asp|aspx|jsp)$/i;
 
     playlist.items.forEach((item, index) => {
@@ -120,12 +120,11 @@ async function loadM3U(args = {}) {
       }
       if (!groupTitle) groupTitle = 'General';
 
-      // Clave de deduplicación por URL dentro del canal
       const urlKey = isAce ? `acestream://${rawUrl.replace('acestream://', '')}` : rawUrl;
 
       const stream = {
         title: `${name} (${streamType})`,
-        group_title: groupTitle,
+        group_title: groupTitle || 'General',
         url: isM3u8 ? rawUrl : null,
         acestream_id: isAce ? rawUrl.replace('acestream://', '') : null,
         stream_url: (!isAce && !isM3u8 && !isWebPage) ? rawUrl : null,
@@ -135,7 +134,6 @@ async function loadM3U(args = {}) {
       const extraGenres = getExtraGenres(name);
 
       if (!channelMap[tvgId]) {
-        // Crear canal principal (no se volverán a sobrescribir estos metadatos)
         channelMap[tvgId] = {
           id: tvgId,
           name: name || `Canal ${index + 1}`,
@@ -151,11 +149,9 @@ async function loadM3U(args = {}) {
         };
         channelSeenUrls[tvgId] = new Set();
       } else {
-        // No sobrescribir group_title, name, logo_url, title del canal principal
         if (!channelMap[tvgId].website_url && isWebPage) {
           channelMap[tvgId].website_url = rawUrl;
         }
-        // Completar principales SOLO si aún no están
         if (!channelMap[tvgId].acestream_id && stream.acestream_id) {
           channelMap[tvgId].acestream_id = stream.acestream_id;
         }
@@ -167,7 +163,6 @@ async function loadM3U(args = {}) {
         }
       }
 
-      // Añadir stream a la colección del canal si no está duplicado por URL
       if (urlKey && !channelSeenUrls[tvgId].has(urlKey)) {
         channelMap[tvgId].additional_streams.push(stream);
         channelSeenUrls[tvgId].add(urlKey);
