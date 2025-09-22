@@ -76,15 +76,24 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
 
   const addStream = (src) => {
     const streamUrl = src.acestream_id ? `acestream://${src.acestream_id}` : src.m3u8_url || src.stream_url || src.url;
+
     if (!streamUrl || seenUrls.has(streamUrl)) {
       console.log(logPrefix, `Descartado stream duplicado o sin URL: ${streamUrl}`);
       return;
     }
 
+    // 🔧 Parche: si es Ace, forzar behaviorHints correctos
+    let behaviorHints;
+    if (src.acestream_id) {
+      behaviorHints = { notWebReady: true, external: true };
+    } else {
+      behaviorHints = src.behaviorHints || { notWebReady: false, external: false };
+    }
+
     const out = {
       name: src.group_title || src.name || chName,
       title: src.title || `${chName} (${src.group_title || 'Stream'})`,
-      behaviorHints: src.behaviorHints || { notWebReady: false, external: false }
+      behaviorHints
     };
 
     if (src.acestream_id) {
