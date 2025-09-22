@@ -57,28 +57,31 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
       return;
     }
 
-    if (existingGenres.length) {
-      const obsoleteGenres = existingGenres.filter(g => !genreList.includes(g) && g !== 'General');
-      if (obsoleteGenres.length > 0) {
-        const updatedGenres = existingGenres.filter(g => genreList.includes(g) || g === 'General');
-        await kvSetJsonTTL(`genres:${configId}`, updatedGenres, 24 * 3600);
-        console.log('[GENRES] Géneros obsoletos eliminados, lista actualizada:', updatedGenres);
-      }
-    }
-
     const nowStr = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
+
     if (!lastHash || lastHash !== currentHash || FORCE_REFRESH_GENRES) {
+      // 🔄 Hash cambió o se forzó refresh → siempre recalcular y guardar
       await kvSetJsonTTL(`genres:${configId}`, genreList, 24 * 3600);
       await kvSet(lastHashKey, currentHash);
       await kvSet(lastUpdateKey, nowStr);
       console.log(`[GENRES] actualizados: ${genreList.length} géneros (Otros=${orphanCount})`);
       require('../../src/config').FORCE_REFRESH_GENRES = false;
       console.log(`[GENRES] Flag FORCE_REFRESH_GENRES desactivado tras actualización para ${configId}`);
-    } else if (!lastUpdate) {
-      await kvSet(lastUpdateKey, nowStr);
-      console.log(`[GENRES] timestamp inicial registrado: ${nowStr}`);
     } else {
-      console.log(`[GENRES] géneros sin cambios, usando caché: ${genreList.length}`);
+      // 🔎 Hash igual → solo guardar si la lista cambió
+      const sameList = existingGenres.length === genreList.length &&
+                       existingGenres.every((g, i) => g === genreList[i]);
+
+      if (!sameList) {
+        await kvSetJsonTTL(`genres:${configId}`, genreList, 24 * 3600);
+        await kvSet(lastUpdateKey, nowStr);
+        console.log(`[GENRES] lista de géneros actualizada sin cambio de hash`);
+      } else if (!lastUpdate) {
+        await kvSet(lastUpdateKey, nowStr);
+        console.log(`[GENRES] timestamp inicial registrado: ${nowStr}`);
+      } else {
+        console.log(`[GENRES] géneros sin cambios, usando caché: ${genreList.length}`);
+      }
     }
   } catch (e) {
     console.error('[GENRES] error al extraer:', e.message);
