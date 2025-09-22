@@ -1,10 +1,10 @@
-//api/handlers/stream.js
+// api/handlers/stream.js
 'use strict';
 
 const NodeCache = require('node-cache');
 const { getChannel } = require('../../src/db');
 const { scrapeExtraWebs } = require('../scraper');
-const { kvGet, kvSet, kvGetJsonTTL, kvSetJsonTTL, kvDelete } = require('../kv');
+const { kvGet, kvSet, kvGetJsonTTL, kvSetJsonTTLIfChanged, kvDelete } = require('../kv');
 const { getM3uHash, extractConfigIdFromUrl } = require('../utils');
 const { CACHE_TTL } = require('../../src/config');
 const { resolveM3uUrl, resolveExtraWebs } = require('../resolve');
@@ -51,7 +51,10 @@ async function handleStream(req) {
 
   let result = await handleStreamInternal({ id, m3uUrl, configId });
   const enriched = await enrichWithExtra(result, configId, m3uUrl, forceScrape);
-  await kvSetJsonTTL(kvKey, enriched);
+
+  // 🚀 Solo escribir en KV si hay cambios
+  await kvSetJsonTTLIfChanged(kvKey, enriched, 3600);
+
   console.log(logPrefix, 'Respuesta final con streams:', enriched.streams);
   return enriched;
 }
@@ -123,7 +126,7 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
 
 async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
   const logPrefix = '[STREAM]';
-  const chName = baseObj.chName || baseObj.id.split('_').slice(2).join(' ');
+  const chName = baseObj.chName || baseObj.id?.split('_').slice(2).join(' ') || '';
   const extraWebsList = await resolveExtraWebs(configId);
   if (extraWebsList.length) {
     try {
