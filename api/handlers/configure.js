@@ -200,25 +200,32 @@ async function configurePost(req, res) {
       if (!text.includes('#EXTINF')) throw new Error('No es un archivo M3U válido');
     }
 
-    await kvSetJson(configId, { m3uUrl, extraWebs: extraWebsList.join(';') });
-    console.log(`[CONFIGURE] Configuración ${action === 'update' ? 'actualizada' : 'guardada'} para configId=${configId}: m3uUrl=${m3uUrl}, extraWebs=${extraWebs}`);
+    // 🧠 Evitar escritura redundante en KV
+    const currentConfig = await kvGetJson(configId);
+    const newConfig = { m3uUrl, extraWebs: extraWebsList.join(';') };
+    if (JSON.stringify(currentConfig) !== JSON.stringify(newConfig)) {
+      await kvSetJson(configId, newConfig);
+      console.log(`[CONFIGURE] Configuración ${action === 'update' ? 'actualizada' : 'guardada'} para configId=${configId}: m3uUrl=${m3uUrl}, extraWebs=${extraWebs}`);
+    } else {
+      console.log(`[CONFIGURE] Configuración no modificada para configId=${configId}, se evita escritura en KV`);
+    }
 
     // Activar el flag global para forzar regeneración de géneros
     config.FORCE_REFRESH_GENRES = true;
-    
+
     try {
       console.log(`[CONFIGURE] Generando canales para configId=${configId}`);
       const channels = await getChannels({ m3uUrl });
-    
+
       // 🔄 Invalidar caché de scraping por canal SIEMPRE
       for (const c of channels) {
         const normalized = String(c.name || '').toLowerCase().replace(/\s+/g, ' ').trim();
         await kvDelete(`scrape:${normalized}`);
         console.log(`[CONFIGURE] Caché scrape invalidada para canal: "${normalized}"`);
       }
-    
+
       console.log(`[CONFIGURE] Canales cargados: ${channels.length}`);
-    
+
       // 🧠 Solo regenerar géneros si corresponde
       if (action === 'update' || config.FORCE_REFRESH_GENRES) {
         await extractAndStoreGenresIfChanged(channels, configId);
@@ -227,7 +234,6 @@ async function configurePost(req, res) {
     } catch (genreErr) {
       console.error(`[CONFIGURE] Error al generar canales/géneros para configId=${configId}:`, genreErr.message);
     }
-
 
     if (action === 'update') {
       const m3uHash = await getM3uHash(m3uUrl);
@@ -244,8 +250,8 @@ async function configurePost(req, res) {
 
     res.setHeader('Content-Type', 'text/html');
     if (action === 'update') {
-    res.end(`
-      <!DOCTYPE html>
+      res.end(`
+        <!DOCTYPE html>
         <html lang="en">
           <head>
             <meta charset="UTF-8">
