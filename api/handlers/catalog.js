@@ -4,7 +4,7 @@
 const NodeCache = require('node-cache');
 const crypto = require('crypto');
 const { getChannels } = require('../../src/db');
-const { kvGet, kvSet, kvGetJsonTTL, kvSetJsonTTL } = require('../kv');
+const { kvGet, kvSet, kvGetJsonTTL, kvSetJsonTTLIfChanged } = require('../kv');
 const { normalizeCatalogName, getM3uHash, parseCatalogRest, extractConfigIdFromUrl } = require('../utils');
 const { CACHE_TTL, ADDON_PREFIX, CATALOG_PREFIX, FORCE_REFRESH_GENRES } = require('../../src/config');
 const { resolveM3uUrl } = require('../resolve');
@@ -61,7 +61,7 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
 
     if (!lastHash || lastHash !== currentHash || FORCE_REFRESH_GENRES) {
       // 🔄 Hash cambió o se forzó refresh → siempre recalcular y guardar
-      await kvSetJsonTTL(`genres:${configId}`, genreList, 24 * 3600);
+      await kvSetJsonTTLIfChanged(`genres:${configId}`, genreList, 24 * 3600);
       await kvSet(lastHashKey, currentHash);
       await kvSet(lastUpdateKey, nowStr);
       console.log(`[GENRES] actualizados: ${genreList.length} géneros (Otros=${orphanCount})`);
@@ -73,7 +73,7 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
                        existingGenres.every((g, i) => g === genreList[i]);
 
       if (!sameList) {
-        await kvSetJsonTTL(`genres:${configId}`, genreList, 24 * 3600);
+        await kvSetJsonTTLIfChanged(`genres:${configId}`, genreList, 24 * 3600);
         await kvSet(lastUpdateKey, nowStr);
         console.log(`[GENRES] lista de géneros actualizada sin cambio de hash`);
       } else if (!lastUpdate) {
@@ -165,18 +165,13 @@ async function handleCatalog(req) {
 
   const resp = { metas };
   cache.set(cacheKey, resp);
-  
-  // 🔎 Evitar escrituras redundantes en KV
+
+  // 🚀 Usamos la nueva función centralizada
   const kvKey = `catalog:${m3uHash}:${extra.genre || ''}:${extra.search || ''}`;
-  const existing = await kvGetJsonTTL(kvKey);
-  
-  if (!existing || JSON.stringify(existing) !== JSON.stringify(resp)) {
-    await kvSetJsonTTL(kvKey, resp);
-    console.log(logPrefix, `respuesta metas: ${metas.length} (KV actualizado)`);
-  } else {
-    console.log(logPrefix, `respuesta metas: ${metas.length} (sin cambios, no se escribe en KV)`);
-  }
-  
+  await kvSetJsonTTLIfChanged(kvKey, resp, 24 * 3600);
+  console.log(logPrefix, `respuesta metas: ${metas.length}`);
+
   return resp;
 }
+
 module.exports = { handleCatalog, extractAndStoreGenresIfChanged };
