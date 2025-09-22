@@ -140,10 +140,17 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
       // console.log(logPrefix, `Fetch -> ${url}`);
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 20000);
-      const response = await fetch(url, { signal: controller.signal });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const content = await response.text();
-      clearTimeout(timeoutId);
+      try {
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const content = await response.text();
+        console.log(logPrefix, `Contenido recibido de ${url}, longitud: ${content.length}`);
+        // ... resto del procesamiento ...
+      } catch (e) {
+        console.error(logPrefix, `Error en ${url}:`, e.message);
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       console.log(logPrefix, `Contenido recibido de ${url}, longitud: ${content.length}`);
 
