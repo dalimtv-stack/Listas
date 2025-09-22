@@ -8,9 +8,21 @@ let cachedChannels = [];
 const DEFAULT_M3U_URL = 'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u';
 
 function getExtraGenres(name) {
-  const lowerName = name.toLowerCase();
+  const lowerName = String(name || '').toLowerCase();
   const extraGenres = [];
-  if (lowerName.includes('deporte') || lowerName.includes('formula 1') || lowerName.includes('bein') || lowerName.includes('f1') || lowerName.includes('dazn') || lowerName.includes('nba') || lowerName.includes('espn') || lowerName.includes('liga') || lowerName.includes('futbol') || lowerName.includes('football') || lowerName.includes('sport')) {
+  if (
+    lowerName.includes('deporte') ||
+    lowerName.includes('formula 1') ||
+    lowerName.includes('bein') ||
+    lowerName.includes('f1') ||
+    lowerName.includes('dazn') ||
+    lowerName.includes('nba') ||
+    lowerName.includes('espn') ||
+    lowerName.includes('liga') ||
+    lowerName.includes('futbol') ||
+    lowerName.includes('football') ||
+    lowerName.includes('sport')
+  ) {
     extraGenres.push('Deportes');
   }
   if (lowerName.includes('movistar')) {
@@ -28,7 +40,6 @@ function getExtraGenres(name) {
   if (extraGenres.length === 0) {
     extraGenres.push('General');
   }
-  //console.log(`[loadM3U] Extra géneros para "${name}": ${JSON.stringify(extraGenres)}`);
   return extraGenres;
 }
 
@@ -38,16 +49,19 @@ async function loadM3U(args = {}) {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
-    console.log(`[loadM3U] Enviando solicitud HTTP a: ${m3uUrl}`);
-    const res = await fetch(m3uUrl, { signal: controller.signal });
-    clearTimeout(timeoutId);
-
-    console.log(`[loadM3U] Respuesta HTTP: status=${res.status}, statusText=${res.statusText}`);
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}, statusText: ${res.statusText}`);
+    let content;
+    try {
+      console.log(`[loadM3U] Enviando solicitud HTTP a: ${m3uUrl}`);
+      const res = await fetch(m3uUrl, { signal: controller.signal });
+      console.log(`[loadM3U] Respuesta HTTP: status=${res.status}, statusText=${res.statusText}`);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}, statusText: ${res.statusText}`);
+      }
+      content = await res.text();
+      console.log(`[loadM3U] Contenido M3U descargado, longitud: ${content.length}, primeros 100 caracteres: ${content.slice(0, 100)}`);
+    } finally {
+      clearTimeout(timeoutId);
     }
-    const content = await res.text();
-    console.log(`[loadM3U] Contenido M3U descargado, longitud: ${content.length}, primeros 100 caracteres: ${content.slice(0, 100)}`);
 
     if (!content || content.trim() === '') {
       throw new Error('Contenido M3U vacío');
@@ -65,13 +79,17 @@ async function loadM3U(args = {}) {
     }
 
     const channelMap = {};
+    const channelSeenUrls = {}; // Evitar duplicados por canal
     const webPageExtensions = /\.(html|htm|php|asp|aspx|jsp)$/i;
 
     playlist.items.forEach((item, index) => {
-      const tvgId = item.tvg.id || item.name.toLowerCase().replace(/[^a-z0-9]+/g, '_') || `channel_${index}`;
-      const isAce = item.url.startsWith('acestream://');
-      const isM3u8 = item.url.endsWith('.m3u8');
-      const isWebPage = webPageExtensions.test(item.url);
+      const rawUrl = String(item.url || '').trim();
+      const nameFromId = item.name ? item.name.toLowerCase().replace(/[^a-z0-9]+/g, '_') : '';
+      const tvgId = item.tvg.id || nameFromId || `channel_${index}`;
+
+      const isAce = rawUrl.startsWith('acestream://');
+      const isM3u8 = rawUrl.toLowerCase().includes('.m3u8'); // más robusto que endsWith
+      const isWebPage = webPageExtensions.test(rawUrl);
 
       let streamType;
       let behaviorHints = {};
@@ -100,18 +118,21 @@ async function loadM3U(args = {}) {
         const groupMatch = item.raw.match(/group-title="([^"]+)"/);
         groupTitle = groupMatch ? groupMatch[1] : 'General';
       }
+      if (!groupTitle) groupTitle = 'General';
+
+      // Clave única para detectar duplicados dentro del canal
+      const urlKey = isAce ? `acestream://${rawUrl.replace('acestream://', '')}` : rawUrl;
 
       const stream = {
         title: `${name} (${streamType})`,
         group_title: groupTitle,
-        url: isM3u8 ? item.url : null,
-        acestream_id: isAce ? item.url.replace('acestream://', '') : null,
-        stream_url: (!isAce && !isM3u8) ? item.url : null,
+        url: isM3u8 ? rawUrl : null,
+        acestream_id: isAce ? rawUrl.replace('acestream://', '') : null,
+        stream_url: (!isAce && !isM3u8 && !isWebPage) ? rawUrl : (isWebPage ? null : rawUrl), // mantiene valor si no es ace/m3u8; webpage no va en stream_url
         behaviorHints
       };
 
       const extraGenres = getExtraGenres(name);
-      //console.log(`[loadM3U] Procesando stream: tvg-id=${tvgId}, name=${name}, group_title=${groupTitle}, url=${item.url}, streamType=${streamType}, extra_genres=${JSON.stringify(extraGenres)}, behaviorHints=`, behaviorHints);
 
       if (!channelMap[tvgId]) {
         channelMap[tvgId] = {
@@ -119,16 +140,30 @@ async function loadM3U(args = {}) {
           name: name || `Canal ${index + 1}`,
           logo_url: item.tvg.logo || '',
           group_title: groupTitle,
-          acestream_id: stream.acestream_id,
-          m3u8_url: stream.url,
-          stream_url: stream.stream_url,
-          website_url: null,
+          acestream_id: stream.acestream_id || null,
+          m3u8_url: stream.url || null,
+          stream_url: (!isAce && !isM3u8 && !isWebPage) ? rawUrl : null,
+          website_url: isWebPage ? rawUrl : null,
           title: stream.title,
-          additional_streams: [stream],
+          additional_streams: [],
           extra_genres: extraGenres
         };
+        channelSeenUrls[tvgId] = new Set();
       } else {
+        // Completar website_url si aún no está y el item actual es webpage
+        if (!channelMap[tvgId].website_url && isWebPage) {
+          channelMap[tvgId].website_url = rawUrl;
+        }
+        // Completar principales si aún no están
+        if (!channelMap[tvgId].acestream_id && stream.acestream_id) channelMap[tvgId].acestream_id = stream.acestream_id;
+        if (!channelMap[tvgId].m3u8_url && stream.url) channelMap[tvgId].m3u8_url = stream.url;
+        if (!channelMap[tvgId].stream_url && (!isAce && !isM3u8 && !isWebPage)) channelMap[tvgId].stream_url = rawUrl;
+      }
+
+      // Evitar duplicados exactos por URL en additional_streams
+      if (urlKey && !channelSeenUrls[tvgId].has(urlKey)) {
         channelMap[tvgId].additional_streams.push(stream);
+        channelSeenUrls[tvgId].add(urlKey);
       }
     });
 
