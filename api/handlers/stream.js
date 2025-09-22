@@ -35,7 +35,7 @@ async function handleStream(req) {
     const streamKvKey = `stream:${currentM3uHash}:${id}`;
     await kvDelete(streamKvKey);
     console.log(logPrefix, `Caché de streams limpiado: ${streamKvKey}`);
-    await kvDelete(`scrape:${id.split('_').slice(2).join('_').toLowerCase()}`); // Limpiar caché de scraper
+    await kvDelete(`scrape:${id.split('_').slice(2).join('_').toLowerCase()}`);
     console.log(logPrefix, `Caché de scraper limpiado para ${id}`);
   }
 
@@ -52,7 +52,6 @@ async function handleStream(req) {
   let result = await handleStreamInternal({ id, m3uUrl, configId });
   const enriched = await enrichWithExtra(result, configId, m3uUrl, forceScrape);
 
-  // 🚀 Solo escribir en KV si hay cambios
   await kvSetJsonTTLIfChanged(kvKey, enriched, 3600);
 
   console.log(logPrefix, 'Respuesta final con streams:', enriched.streams);
@@ -72,7 +71,7 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
 
   const chName = ch.name;
   const streams = [];
-  const seenUrls = new Set(); // Para evitar duplicados
+  const seenUrls = new Set();
 
   const addStream = (src) => {
     const streamUrl = src.acestream_id ? `acestream://${src.acestream_id}` : src.m3u8_url || src.stream_url || src.url;
@@ -82,7 +81,6 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
       return;
     }
 
-    // 🔧 Parche: si es Ace, forzar behaviorHints correctos
     let behaviorHints;
     if (src.acestream_id) {
       behaviorHints = { notWebReady: true, external: true };
@@ -107,17 +105,14 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
     console.log(logPrefix, `Añadido stream: ${streamUrl}, behaviorHints=`, out.behaviorHints);
   };
 
-  // Añadir el stream principal del canal
   if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) {
     addStream(ch);
   }
 
-  // Añadir streams adicionales, evitando duplicados
   if (Array.isArray(ch.additional_streams)) {
     ch.additional_streams.forEach(addStream);
   }
 
-  // Añadir website_url si existe
   if (ch.website_url && !seenUrls.has(ch.website_url)) {
     streams.push({
       title: `${ch.name} - Website`,
@@ -143,7 +138,7 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
       const extraStreams = await scrapeExtraWebs(chName, extraWebsList, forceScrape);
       console.log(logPrefix, 'Streams extra devueltos por scraper:', extraStreams);
       if (extraStreams.length > 0) {
-        // 🔧 Deduplicación reforzada: usar URL o acestream_id
+        // 🔧 Deduplicación reforzada: usar URL o AceID
         const existingKeys = new Set(
           baseObj.streams.map(s => {
             if (s.externalUrl && s.externalUrl.startsWith('acestream://')) {
