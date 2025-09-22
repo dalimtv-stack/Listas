@@ -88,7 +88,7 @@ async function loadM3U(args = {}) {
       const tvgId = item.tvg.id || nameFromId || `channel_${index}`;
 
       const isAce = rawUrl.startsWith('acestream://');
-      const isM3u8 = rawUrl.toLowerCase().includes('.m3u8'); // más robusto que endsWith
+      const isM3u8 = rawUrl.toLowerCase().includes('.m3u8');
       const isWebPage = webPageExtensions.test(rawUrl);
 
       let streamType;
@@ -120,7 +120,7 @@ async function loadM3U(args = {}) {
       }
       if (!groupTitle) groupTitle = 'General';
 
-      // Clave única para detectar duplicados dentro del canal
+      // Clave de deduplicación por URL dentro del canal
       const urlKey = isAce ? `acestream://${rawUrl.replace('acestream://', '')}` : rawUrl;
 
       const stream = {
@@ -135,6 +135,7 @@ async function loadM3U(args = {}) {
       const extraGenres = getExtraGenres(name);
 
       if (!channelMap[tvgId]) {
+        // Crear canal principal (no se volverán a sobrescribir estos metadatos)
         channelMap[tvgId] = {
           id: tvgId,
           name: name || `Canal ${index + 1}`,
@@ -150,17 +151,23 @@ async function loadM3U(args = {}) {
         };
         channelSeenUrls[tvgId] = new Set();
       } else {
-        // Completar website_url si aún no está y el item actual es webpage
+        // No sobrescribir group_title, name, logo_url, title del canal principal
         if (!channelMap[tvgId].website_url && isWebPage) {
           channelMap[tvgId].website_url = rawUrl;
         }
-        // Completar principales si aún no están
-        if (!channelMap[tvgId].acestream_id && stream.acestream_id) channelMap[tvgId].acestream_id = stream.acestream_id;
-        if (!channelMap[tvgId].m3u8_url && stream.url) channelMap[tvgId].m3u8_url = stream.url;
-        if (!channelMap[tvgId].stream_url && (!isAce && !isM3u8 && !isWebPage)) channelMap[tvgId].stream_url = rawUrl;
+        // Completar principales SOLO si aún no están
+        if (!channelMap[tvgId].acestream_id && stream.acestream_id) {
+          channelMap[tvgId].acestream_id = stream.acestream_id;
+        }
+        if (!channelMap[tvgId].m3u8_url && stream.url) {
+          channelMap[tvgId].m3u8_url = stream.url;
+        }
+        if (!channelMap[tvgId].stream_url && (!isAce && !isM3u8 && !isWebPage)) {
+          channelMap[tvgId].stream_url = rawUrl;
+        }
       }
 
-      // Evitar duplicados exactos por URL en additional_streams
+      // Añadir stream a la colección del canal si no está duplicado por URL
       if (urlKey && !channelSeenUrls[tvgId].has(urlKey)) {
         channelMap[tvgId].additional_streams.push(stream);
         channelSeenUrls[tvgId].add(urlKey);
@@ -195,7 +202,7 @@ async function getChannel(id, args = {}) {
   console.log(`[getChannel] Canal encontrado: ${channel.name}`);
   if (channel.acestream_id) {
     console.log('[AUDIT][DB] Canal con Ace detectado:', {
-      id: channel.tvg_id,
+      id: channel.id,
       name: channel.name,
       group_title: channel.group_title,
       acestream_id: channel.acestream_id,
