@@ -180,6 +180,14 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
               group_title: 'VLC',
               behaviorHints: { notWebReady: false, external: false }
             };
+            // Guardas de integridad (diagnóstico)
+            if (vlcStream.externalUrl || vlcStream.acestream_id) {
+              console.warn('[SCRAPER] [ALERTA] vlcStream trae campos de Ace (NO DEBE):', vlcStream);
+            }
+            // Normaliza explícitamente por si alguna mutación externa lo ensucia
+            delete vlcStream.externalUrl;
+            delete vlcStream.acestream_id;
+            
             vlcResults.push(vlcStream);
             seenUrls.add(vlcUrl);
           }
@@ -221,6 +229,14 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
               group_title: 'VLC',
               behaviorHints: { notWebReady: false, external: false }
             };
+            // Guardas de integridad (diagnóstico)
+            if (vlcStream.externalUrl || vlcStream.acestream_id) {
+              console.warn('[SCRAPER] [ALERTA] vlcStream trae campos de Ace (NO DEBE):', vlcStream);
+            }
+            // Normaliza explícitamente por si alguna mutación externa lo ensucia
+            delete vlcStream.externalUrl;
+            delete vlcStream.acestream_id;
+            
             vlcResults.push(vlcStream);
             seenUrls.add(vlcUrl);
           }
@@ -270,6 +286,14 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
                         group_title: 'VLC',
                         behaviorHints: { notWebReady: false, external: false }
                       };
+                      // Guardas de integridad (diagnóstico)
+                      if (vlcStream.externalUrl || vlcStream.acestream_id) {
+                        console.warn('[SCRAPER] [ALERTA] vlcStream trae campos de Ace (NO DEBE):', vlcStream);
+                      }
+                      // Normaliza explícitamente por si alguna mutación externa lo ensucia
+                      delete vlcStream.externalUrl;
+                      delete vlcStream.acestream_id;
+                      
                       vlcResults.push(vlcStream);
                       seenUrls.add(vlcUrl);
                     }
