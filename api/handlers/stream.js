@@ -143,11 +143,26 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
       const extraStreams = await scrapeExtraWebs(chName, extraWebsList, forceScrape);
       console.log(logPrefix, 'Streams extra devueltos por scraper:', extraStreams);
       if (extraStreams.length > 0) {
-        const existingUrls = new Set(baseObj.streams.map(s => s.url || s.externalUrl));
+        // 🔧 Deduplicación reforzada: usar URL o acestream_id
+        const existingKeys = new Set(
+          baseObj.streams.map(s => {
+            if (s.externalUrl && s.externalUrl.startsWith('acestream://')) {
+              return 'ace:' + s.externalUrl.replace('acestream://', '');
+            }
+            return 'url:' + (s.url || s.externalUrl);
+          })
+        );
+
         const nuevos = extraStreams.filter(s => {
-          const url = s.url || s.externalUrl;
-          return url && !existingUrls.has(url);
+          let key;
+          if (s.externalUrl && s.externalUrl.startsWith('acestream://')) {
+            key = 'ace:' + s.externalUrl.replace('acestream://', '');
+          } else {
+            key = 'url:' + (s.url || s.externalUrl);
+          }
+          return key && !existingKeys.has(key);
         });
+
         if (nuevos.length) {
           baseObj.streams = [...nuevos, ...baseObj.streams];
           console.log(logPrefix, `Añadidos ${nuevos.length} streams extra para ${chName}`);
