@@ -165,7 +165,8 @@ async function handleCatalog(req) {
     id: `${ADDON_PREFIX}_${configId}_${c.id}`,
     type: 'tv',
     name: normalizeCatalogName(c.name),
-    poster: c.logo_url
+    poster: c.logo_url,
+    description: `Prueba description:`
   }));
 
   const resp = { metas };
