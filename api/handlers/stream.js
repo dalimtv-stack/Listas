@@ -8,6 +8,7 @@ const { kvGet, kvSet, kvGetJsonTTL, kvSetJsonTTLIfChanged, kvDelete } = require(
 const { getM3uHash, extractConfigIdFromUrl } = require('../utils');
 const { CACHE_TTL } = require('../../src/config');
 const { resolveM3uUrl, resolveExtraWebs } = require('../resolve');
+const { getStreams: getEventosStreams } = require('../../src/eventos/stream-events');
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
@@ -18,7 +19,7 @@ async function handleStream(req) {
   const m3uUrl = await resolveM3uUrl(configId);
   console.log('[ROUTE] STREAM', { url: req.originalUrl, id, configId, m3uUrl: m3uUrl ? '[ok]' : null });
 
-  if (!m3uUrl) {
+  if (!m3uUrl && !id.startsWith('eventos_')) {
     console.log(logPrefix, 'm3uUrl no resuelta');
     return { streams: [], chName: '' };
   }
@@ -49,7 +50,7 @@ async function handleStream(req) {
     return enriched;
   }
 
-  let result = await handleStreamInternal({ id, m3uUrl, configId });
+  const result = await handleStreamInternal({ id, m3uUrl, configId });
   const enriched = await enrichWithExtra(result, configId, m3uUrl, forceScrape);
 
   await kvSetJsonTTLIfChanged(kvKey, enriched, 3600);
@@ -60,6 +61,13 @@ async function handleStream(req) {
 
 async function handleStreamInternal({ id, m3uUrl, configId }) {
   const logPrefix = '[STREAM]';
+
+  if (id.startsWith('eventos_')) {
+    const eventoStreams = await getEventosStreams(id, configId);
+    console.log(logPrefix, `Streams de evento ${id}: ${eventoStreams.streams.length}`);
+    return eventoStreams;
+  }
+
   const parts = id.split('_');
   const channelId = parts.slice(2).join('_');
 
@@ -88,7 +96,6 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
       behaviorHints = src.behaviorHints || { notWebReady: false, external: false };
     }
 
-    // Fix: si es el canal principal con Ace, usar su acestream_group_title para etiquetar correctamente
     let name;
     let title;
     let group_title_for_audit;
@@ -109,7 +116,6 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
       name,
       title,
       behaviorHints,
-      // solo para auditoría/depuración; Stremio lo ignora
       group_title: group_title_for_audit
     };
 
@@ -124,17 +130,14 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
     console.log(logPrefix, `Añadido stream: ${streamUrl}, behaviorHints=`, out.behaviorHints);
   };
 
-  // Añadir posibles principales: Ace/M3U8/Directo/url
   if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) {
     addStream(ch);
   }
 
-  // Añadir adicionales
   if (Array.isArray(ch.additional_streams)) {
     ch.additional_streams.forEach(addStream);
   }
 
-  // Añadir website si existe
   if (ch.website_url && !seenUrls.has(ch.website_url)) {
     streams.push({
       title: `${ch.name} - Website`,
@@ -173,7 +176,6 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
       const extraStreams = await scrapeExtraWebs(chName, extraWebsList, forceScrape);
       console.log(logPrefix, 'Streams extra devueltos por scraper:', extraStreams);
       if (extraStreams.length > 0) {
-        // Deduplicación: por URL o AceID
         const existingKeys = new Set(
           baseObj.streams.map(s => {
             if (s.externalUrl && s.externalUrl.startsWith('acestream://')) {
@@ -200,26 +202,4 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
           console.log(logPrefix, `No se añadieron streams extra para ${chName} (sin coincidencias)`);
         }
       } else {
-        console.log(logPrefix, `No se añadieron streams extra para ${chName} (sin coincidencias)`);
-      }
-    } catch (e) {
-      console.error(logPrefix, `Error en scrapeExtraWebs para ${chName}:`, e.message);
-    }
-  }
-  console.log(logPrefix, 'Respuesta final con streams:', baseObj.streams);
-  console.log('[AUDIT] Streams antes de devolver en enrichWithExtra:');
-  baseObj.streams.forEach(s => {
-    if (s.externalUrl && s.externalUrl.startsWith('acestream://')) {
-      console.log('[AUDIT] ACE', {
-        url: s.externalUrl,
-        name: s.name,
-        title: s.title,
-        group_title: s.group_title,
-        behaviorHints: s.behaviorHints
-      });
-    }
-  });
-  return baseObj;
-}
-
-module.exports = { handleStream, handleStreamInternal, enrichWithExtra };
+        console.log(logPrefix, `No se añadieron streams extra para ${chName} (sin coincidencias)
