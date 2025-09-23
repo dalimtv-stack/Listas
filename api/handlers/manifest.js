@@ -81,6 +81,7 @@ async function buildManifest(configId) {
         name: 'Heimdallr Eventos',
         description: 'Eventos deportivos en directo',
         extra: []
+        idPrefixes: [`Heimdallr_evt_${configId}_`]
       }
     ]
   };
