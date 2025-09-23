@@ -3,12 +3,11 @@
 
 const { fetchEventos } = require('./scraper-events');
 const { normalizeId } = require('./utils-events');
-const { getConfig } = require('../configStore'); // para leer la config guardada en KV
+const { kvGetJson } = require('../../api/kv'); // leer config desde KV
 
 async function getCatalog(configId) {
-  // Recuperamos la URL de eventos desde la configuración
-  const config = getConfig(configId) || {};
-  const url = config.eventosUrl;
+  const configData = await kvGetJson(configId);
+  const url = configData?.eventosUrl;
 
   if (!url) {
     console.warn(`[EVENTOS] No se encontró eventosUrl en la configuración para configId=${configId}`);
