@@ -2,7 +2,7 @@
 
 const { fetchEventos } = require('./scraper-events');
 const { normalizeId } = require('./utils-events');
-const { getConfig } = require('../../api/config');
+const { ADDON_PREFIX } = require('../config');
 
 async function getCatalog(configId) {
   const config = await getConfig(configId);
