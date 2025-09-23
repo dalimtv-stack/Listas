@@ -17,7 +17,7 @@ async function getCatalog(configId) {
   const eventos = await fetchEventos(url);
 
   return eventos.map(ev => ({
-    id: `Heimdallr_eventos_${configId}_${normalizeId(ev)}`,
+    id: `Heimdallr_evento_${configId}_${normalizeId(ev)}`, // singular
     type: 'tv',
     name: `${ev.partido} (${ev.deporte})`,
     poster: `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(ev.deporte)}`,
