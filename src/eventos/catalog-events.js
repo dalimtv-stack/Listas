@@ -1,12 +1,19 @@
+// src/eventos/catalog-events.js
 'use strict';
 
 const { fetchEventos } = require('./scraper-events');
 const { normalizeId } = require('./utils-events');
-const { resolveM3uUrl } = require('../../api/resolve');
+const { getConfig } = require('../configStore'); // para leer la config guardada en KV
 
 async function getCatalog(configId) {
-  const url = await resolveM3uUrl(configId);
-  if (!url) return [];
+  // Recuperamos la URL de eventos desde la configuración
+  const config = getConfig(configId) || {};
+  const url = config.eventosUrl;
+
+  if (!url) {
+    console.warn(`[EVENTOS] No se encontró eventosUrl en la configuración para configId=${configId}`);
+    return [];
+  }
 
   const eventos = await fetchEventos(url);
 
