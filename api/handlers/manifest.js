@@ -57,7 +57,11 @@ async function buildManifest(configId) {
     types: ['tv'],
     logo: 'https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960',
     resources: ['catalog', 'meta', 'stream'],
-    idPrefixes: [`${ADDON_PREFIX}_`],
+    // 👇 Aquí está la corrección: prefijos globales para canales y eventos
+    idPrefixes: [
+      `${CATALOG_PREFIX}_${configId}_`,
+      `Heimdallr_evt_${configId}_`
+    ],
     behaviorHints: { configurable: true },
     config: [
       { name: 'm3uUrl', label: 'URL de la lista M3U', type: 'text', required: true, value: currentM3u },
@@ -80,8 +84,7 @@ async function buildManifest(configId) {
         id: `${CATALOG_PREFIX}_eventos_${configId}`,
         name: 'Heimdallr Eventos',
         description: 'Eventos deportivos en directo',
-        extra: [],
-        idPrefixes: [`Heimdallr_evt_${configId}_`]
+        extra: []
       }
     ]
   };
