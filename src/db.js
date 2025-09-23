@@ -21,12 +21,34 @@ function getExtraGenres(name) {
     lowerName.includes('liga') ||
     lowerName.includes('futbol') ||
     lowerName.includes('football') ||
+    lowerName.includes('1rfef') ||
+    lowerName.includes('copa') ||
+    lowerName.includes('gol') ||
     lowerName.includes('sport')
   ) {
     extraGenres.push('Deportes');
   }
   if (lowerName.includes('movistar')) {
     extraGenres.push('Movistar');
+  }
+  if (
+    lowerName.includes('hollywood')||
+    lowerName.includes('amc') ||
+    lowerName.includes('axn') ||
+    lowerName.includes('calle') ||
+    lowerName.includes('cosmo') ||
+    lowerName.includes('estrenos') ||
+    lowerName.includes('hits') ||
+    lowerName.includes('comedia') ||
+    lowerName.includes('acción') ||
+    lowerName.includes('drama') ||
+    lowerName.includes('indie') ||
+    lowerName.includes('cine') ||
+    lowerName.includes('estrenos') ||
+    lowerName.includes('estrenos') ||
+    lowerName.includes('sport')
+  ) {
+    extraGenres.push('Cine');
   }
   if (lowerName.includes('dazn')) {
     extraGenres.push('Dazn');
