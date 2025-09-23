@@ -20,7 +20,7 @@ async function handleStream(req) {
   const configId = req.params.configId || extractConfigIdFromUrl(req);
 
   // --- Rama de eventos ---
-  if (id.startsWith('eventos_')) {
+  if (id.startsWith('Heimdallr_eventos') || id.includes('eventos_')) {
     const { streams, chName } = await getEventosStreams(id, configId);
     console.log(logPrefix, `streams de evento generados: ${streams.length}`);
     return { streams, chName };
