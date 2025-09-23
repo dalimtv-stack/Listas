@@ -32,7 +32,7 @@ async function getCatalog(configId) {
           `${ev.hora}\n \n${ev.deporte}`
         )}&font=poppins&png`
       : `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(
-          `${ev.hora} ${ev.deporte})
+          `${ev.hora} ${ev.deporte}`)
         )}`;
 
     return {
