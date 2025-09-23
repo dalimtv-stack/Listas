@@ -365,6 +365,9 @@ http://172.93.102.112:8989/278811_.m3u8
 #EXTINF:-1 tvg-id="Calle.13.es" tvg-logo="https://i.ibb.co/VpgH9FJF/CAlle-trece.png" group-title="Telegram", Calle 13
 http://172.93.102.112:8989/278817_.m3u8
 
+#EXTINF:-1 tvg-id="Cosmo.es" tvg-logo="https://i.ibb.co/7mC1gSZ/Cosmo.png" group-title="Telegram", Cosmo
+http://172.93.102.112:8989/278821_.m3u8
+
 #EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://i.ibb.co/FLdc03Rq/OD-SEA.png" group-title="Telegram", Odisea
 http://172.93.102.112:8989/278818_.m3u8
 
