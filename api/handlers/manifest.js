@@ -80,7 +80,7 @@ async function buildManifest(configId) {
         id: `${CATALOG_PREFIX}_eventos_${configId}`,
         name: 'Heimdallr Eventos',
         description: 'Eventos deportivos en directo',
-        extra: []
+        extra: [],
         idPrefixes: [`Heimdallr_evt_${configId}_`]
       }
     ]
