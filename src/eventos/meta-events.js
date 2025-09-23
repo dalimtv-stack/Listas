@@ -23,7 +23,12 @@ async function getMeta(id, configId) {
     }
 
     const eventos = await fetchEventos(url);
-    const evento = eventos.find(ev => normalizeId(ev) === id);
+
+    // --- Ajuste clave: limpiar el prefijo antes de comparar ---
+    const prefix = `Heimdallr_eventos_${configId}_`;
+    const cleanId = id.startsWith(prefix) ? id.slice(prefix.length) : id;
+
+    const evento = eventos.find(ev => normalizeId(ev) === cleanId);
 
     if (!evento) {
       console.warn(`[EVENTOS] Evento no encontrado para id=${id}`);
@@ -46,7 +51,7 @@ async function getMeta(id, configId) {
       id,
       type: 'tv',
       name: `${nombre}${deporte}`,
-      poster: null,        // si más adelante tienes poster en el scraper, ponlo aquí
+      poster: null,
       background: null,
       description: `${fechaHora}${competicion}`.trim() || nombre
     };
