@@ -19,7 +19,7 @@ async function handleMeta(req) {
   const configId = req.params.configId || extractConfigIdFromUrl(req);
 
   // --- Rama de eventos ---
-  if (id.startsWith('Heimdallr_eventos') || id.includes('eventos_')) {
+  if (id.startsWith('Heimdallr_eventos')) {
     const meta = await getEventosMeta(id, configId);
     console.log(logPrefix, `meta de evento generado: ${meta ? meta.name : 'null'}`);
     return { meta };
