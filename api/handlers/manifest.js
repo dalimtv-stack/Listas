@@ -59,8 +59,8 @@ async function buildManifest(configId) {
     resources: ['catalog', 'meta', 'stream'],
     // 👇 Aquí está la corrección: prefijos globales para canales y eventos
     idPrefixes: [
-      `${ADDON_PREFIX}_,
-      `heimdallr_evt_${configId}_`
+      `${ADDON_PREFIX}_${configId}_,
+      `Heimdallr_evt_${configId}_`
     ],
     behaviorHints: { configurable: true },
     config: [
