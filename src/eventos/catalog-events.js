@@ -40,7 +40,7 @@ async function getCatalog(configId) {
       type: 'tv',
       name: `${ev.partido} (${ev.deporte})`,
       poster: posterUrl,
-      description: `${ev.dia} ${ev.hora} - ${ev.competicion}\nCanales: ${ev.canales.map(c => c.label).join(', ')}`,
+      description: `${ev.dia} ${ev.hora} - ${ev.competicion}`,
       background: null
     };
   });
