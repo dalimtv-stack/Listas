@@ -20,7 +20,8 @@ async function configureGet(req, res) {
       if (configData) {
         m3uUrl = configData.m3uUrl || '';
         extraWebs = configData.extraWebs || '';
-        console.log(`[CONFIGURE] Cargada configuración para configId=${configId}: m3uUrl=${m3uUrl}, extraWebs=${extraWebs}`);
+        const eventosUrl = configData.eventosUrl || '';
+        console.log(`[CONFIGURE] Cargada configuración para configId=${configId}: m3uUrl=${m3uUrl}, extraWebs=${extraWebs}, eventosUrl=${eventosUrl}`);
       } else {
         console.warn(`[CONFIGURE] No se encontró configuración para configId=${configId}`);
       }
@@ -202,7 +203,14 @@ async function configurePost(req, res) {
 
     // 🧠 Evitar escritura redundante en KV
     const currentConfig = await kvGetJson(configId);
-    const newConfig = { m3uUrl, extraWebs: extraWebsList.join(';') };
+    // 👇 Añadimos eventosUrl fijo de momento
+    const eventosUrl = 'https://eventos-uvl7.vercel.app';
+    //
+    const newConfig = { 
+      m3uUrl, 
+      extraWebs: extraWebsList.join(';'),
+      eventosUrl   // <-- ya queda guardado en KV junto al resto
+    };
     if (JSON.stringify(currentConfig) !== JSON.stringify(newConfig)) {
       await kvSetJson(configId, newConfig);
       console.log(`[CONFIGURE] Configuración ${action === 'update' ? 'actualizada' : 'guardada'} para configId=${configId}: m3uUrl=${m3uUrl}, extraWebs=${extraWebs}`);
