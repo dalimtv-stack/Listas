@@ -8,12 +8,24 @@ const { getM3uHash, extractConfigIdFromUrl } = require('../utils');
 const { CACHE_TTL } = require('../../src/config');
 const { resolveM3uUrl } = require('../resolve');
 
+// --- Import de eventos ---
+const { getMeta: getEventosMeta } = require('../../src/eventos/meta-events');
+
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 async function handleMeta(req) {
   const logPrefix = '[META]';
   const { id } = req.params;
   const configId = req.params.configId || extractConfigIdFromUrl(req);
+
+  // --- Rama de eventos ---
+  if (id.startsWith('Heimdallr_eventos') || id.includes('eventos_')) {
+    const meta = await getEventosMeta(id, configId);
+    console.log(logPrefix, `meta de evento generado: ${meta ? meta.name : 'null'}`);
+    return { meta };
+  }
+
+  // --- Resto: canales IPTV ---
   const m3uUrl = await resolveM3uUrl(configId);
   console.log('[ROUTE] META', { url: req.originalUrl, id, configId, m3uUrl: m3uUrl ? '[ok]' : null });
 
