@@ -25,6 +25,12 @@ router.use((req, res, next) => {
   next();
 });
 
+// --- Global route logging ---
+router.use((req, res, next) => {
+  console.log('[ROUTE]', req.method, req.originalUrl);
+  next();
+});
+
 // Manifest routes
 router.get('/manifest.json', async (req, res) => {
   try {
@@ -90,5 +96,7 @@ module.exports = app;
 
 if (require.main === module) {
   const { DEFAULT_PORT } = require('../src/config');
-  app.listen(DEFAULT_PORT, () => console.log(`Heimdallr listening on http://localhost:${DEFAULT_PORT}`));
+  app.listen(DEFAULT_PORT, () => {
+    console.log(`Heimdallr listening on http://localhost:${DEFAULT_PORT}`);
+  });
 }
