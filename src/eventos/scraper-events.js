@@ -4,12 +4,10 @@ const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 
 async function fetchEventos(url) {
-  console.log('[EVENTOS] Scrapeando:', url);
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const html = await res.text();
-
     const $ = cheerio.load(html);
     const eventos = [];
 
@@ -23,25 +21,15 @@ async function fetchEventos(url) {
 
       const canales = [];
       $(tds[5]).find('a').each((_, a) => {
-        const href = $(a).attr('href');
-        const label = $(a).text().trim();
         canales.push({
-          label,
-          url: href
+          label: $(a).text().trim(),
+          url: $(a).attr('href')
         });
       });
 
-      eventos.push({
-        dia,
-        hora,
-        deporte,
-        competicion,
-        partido,
-        canales
-      });
+      eventos.push({ dia, hora, deporte, competicion, partido, canales });
     });
 
-    console.log(`[EVENTOS] Extraídos ${eventos.length} eventos`);
     return eventos;
   } catch (err) {
     console.error('[EVENTOS] Error al scrapear:', err.message);
