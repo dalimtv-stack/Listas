@@ -283,7 +283,7 @@ acestream://dc4ccb9e72550bc72be9360aa7d77e337ad11ecc
 #EXTINF:-1 tvg-id="Eurosport.2.es" tvg-logo="https://i.ibb.co/M6h4Qyd/euro2.png" group-title="NEW ERA II", Eurosport 2 (FHD)
 acestream://4b87a5b67f39dfc151a163ec8c08039520f0a372
 
-#EXTINF:-1 tvg-id="LaligaInside.es" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLDpV4QUeZOXm02CMRuM0U6fGDh1MbO5XObQ&s" group-title="Telegram", Laliga Inside
+#EXTINF:-1 tvg-id="LaligaInside.es" tvg-logo="https://i.ibb.co/99kQsDHs/Laliga-Inside.png" group-title="Telegram", Laliga Inside
 https://is.gd/P9HFAg?LaligaInside.m3u8
 
 # Cine/Series
@@ -361,7 +361,8 @@ http://172.93.102.112:8989/278815_.m3u8
 #EXTINF:-1 tvg-id="AMC.es" tvg-logo="https://otakukart.com/wp-content/uploads/2023/10/AMC.jpg" group-title="Telegram", AMC
 http://172.93.102.112:8989/278811_.m3u8
 
-#EXTINF:-1 tvg-id="Calle.13.es" tvg-logo="https://i.ibb.co/mr0dvFN7/CAlle-trece.png" group-title="Telegram", Calle 13
+# https://i.ibb.co/mr0dvFN7/CAlle-trece.png
+#EXTINF:-1 tvg-id="Calle.13.es" tvg-logo="https://i.ibb.co/VpgH9FJF/CAlle-trece.png" group-title="Telegram", Calle 13
 http://172.93.102.112:8989/278817_.m3u8
 
 #EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://i.ibb.co/FLdc03Rq/OD-SEA.png" group-title="Telegram", Odisea
