@@ -24,12 +24,14 @@ async function buildManifest(configId) {
   const lastUpdateStr = await getLastUpdateString(configId);
   let currentM3u = '';
   let currentExtraWebs = '';
+  let currentEventosUrl = '';
 
   try {
     const cfg = await kvGetJson(configId);
     if (cfg) {
       currentM3u = cfg.m3uUrl || '';
       currentExtraWebs = cfg.extraWebs || '';
+      currentEventosUrl = cfg.eventosUrl || '';
     }
   } catch {}
 
@@ -59,7 +61,8 @@ async function buildManifest(configId) {
     behaviorHints: { configurable: true },
     config: [
       { name: 'm3uUrl', label: 'URL de la lista M3U', type: 'text', required: true, value: currentM3u },
-      { name: 'extraWebs', label: 'Webs adicionales', type: 'text', required: false, value: currentExtraWebs }
+      { name: 'extraWebs', label: 'Webs adicionales', type: 'text', required: false, value: currentExtraWebs },
+      { name: 'eventosUrl', label: 'URL de eventos', type: 'text', required: false, value: currentEventosUrl }
     ],
     catalogs: [
       {
@@ -71,6 +74,13 @@ async function buildManifest(configId) {
           { name: 'search', isRequired: false },
           { name: 'genre', isRequired: false, options: genreOptions }
         ]
+      },
+      {
+        type: 'tv',
+        id: `${CATALOG_PREFIX}_eventos_${configId}`,
+        name: 'Heimdallr Eventos',
+        description: 'Eventos deportivos en directo',
+        extra: []
       }
     ]
   };
