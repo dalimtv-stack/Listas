@@ -1,24 +1,50 @@
 'use strict';
 
-const { fetchEventos } = require('./scraper-events');
-const { normalizeId } = require('./utils-events');
-const { ADDON_PREFIX } = require('../config');
+const fetch = require('node-fetch');
+const cheerio = require('cheerio');
+const { resolveM3uUrl } = require('../../api/resolve');
 
 async function getCatalog(configId) {
-  const config = await getConfig(configId);
-  const url = config?.dailyUrl?.trim();
+  const url = await resolveM3uUrl(configId);
   if (!url) return [];
 
-  const eventos = await fetchEventos(url);
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const html = await res.text();
+    const $ = cheerio.load(html);
+    const eventos = [];
 
-  return eventos.map(ev => ({
-    id: normalizeId(ev),
-    type: 'tv',
-    name: `${ev.partido} (${ev.deporte})`,
-    poster: `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(ev.deporte)}`,
-    description: `${ev.dia} ${ev.hora} - ${ev.competicion}\nCanales: ${ev.canales.map(c => c.label).join(', ')}`,
-    background: null
-  }));
+    $('table tbody tr').each((_, tr) => {
+      const tds = $(tr).find('td');
+      const dia = $(tds[0]).text().trim();
+      const hora = $(tds[1]).text().trim();
+      const deporte = $(tds[2]).text().trim();
+      const competicion = $(tds[3]).text().trim();
+      const partido = $(tds[4]).text().trim();
+
+      const canales = [];
+      $(tds[5]).find('a').each((_, a) => {
+        const href = $(a).attr('href');
+        const label = $(a).text().trim();
+        canales.push({ label, url: href });
+      });
+
+      eventos.push({ dia, hora, deporte, competicion, partido, canales });
+    });
+
+    return eventos.map(ev => ({
+      id: `eventos_${ev.dia}_${ev.hora}_${ev.deporte}_${ev.partido}`.replace(/\s+/g, '_').replace(/[^\w]/g, ''),
+      type: 'tv',
+      name: `${ev.partido} (${ev.deporte})`,
+      poster: `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(ev.deporte)}`,
+      description: `${ev.dia} ${ev.hora} - ${ev.competicion}\nCanales: ${ev.canales.map(c => c.label).join(', ')}`,
+      background: null
+    }));
+  } catch (err) {
+    console.error('[EVENTOS] Error al scrapear catálogo:', err.message);
+    return [];
+  }
 }
 
 module.exports = { getCatalog };
