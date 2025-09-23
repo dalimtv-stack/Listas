@@ -19,12 +19,12 @@ async function getStreams(id, configId) {
   const seen = new Set();
   const streams = [];
   for (const canal of evento.canales) {
-    const label = (canal.label || '').split('-->').pop().trim();
+    const label = canal.label || evento.deporte; // Usar label completo
     const url = canal.url;
     if (!url || seen.has(url)) continue;
 
     streams.push({
-      name: label || evento.deporte,
+      name: label, // Usar el label completo (ej. "DAZN 1 FHD --> NEW ERA")
       title: `${evento.partido} (${evento.deporte})`,
       externalUrl: url,
       behaviorHints: { notWebReady: true, external: true }
