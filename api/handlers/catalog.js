@@ -99,7 +99,7 @@ async function handleCatalog(req) {
 
   console.log('[CATALOG] parsed', { type, id, configId, extra });
 
-  if (type === 'tv' && id.startsWith('eventos_')) {
+  if (type === 'tv' && id.startsWith('Heimdallr_eventos')) {
     const metas = await getEventosCatalog(configId);
     console.log(logPrefix, `catálogo de eventos generado: ${metas.length}`);
     return { metas };
