@@ -6,8 +6,9 @@ const crypto = require('crypto');
 const { getChannels } = require('../../src/db');
 const { kvGet, kvSet, kvGetJsonTTL, kvSetJsonTTLIfChanged } = require('../kv');
 const { normalizeCatalogName, getM3uHash, parseCatalogRest, extractConfigIdFromUrl } = require('../utils');
-const { CACHE_TTL, ADDON_PREFIX, CATALOG_PREFIX, FORCE_REFRESH_GENRES } = require('../../src/config');
+const { CACHE_TTL, ADDON_PREFIX, FORCE_REFRESH_GENRES } = require('../../src/config');
 const { resolveM3uUrl } = require('../resolve');
+const { getCatalog: getEventosCatalog } = require('../../src/eventos/catalog-events');
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
@@ -60,7 +61,6 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
     const nowStr = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
 
     if (!lastHash || lastHash !== currentHash || FORCE_REFRESH_GENRES) {
-      // 🔄 Hash cambió o se forzó refresh → siempre recalcular y guardar
       await kvSetJsonTTLIfChanged(`genres:${configId}`, genreList, 24 * 3600);
       await kvSet(lastHashKey, currentHash);
       await kvSet(lastUpdateKey, nowStr);
@@ -68,7 +68,6 @@ async function extractAndStoreGenresIfChanged(channels, configId) {
       require('../../src/config').FORCE_REFRESH_GENRES = false;
       console.log(`[GENRES] Flag FORCE_REFRESH_GENRES desactivado tras actualización para ${configId}`);
     } else {
-      // 🔎 Hash igual → solo guardar si la lista cambió
       const sameList = existingGenres.length === genreList.length &&
                        existingGenres.every((g, i) => g === genreList[i]);
 
@@ -93,14 +92,20 @@ async function handleCatalog(req) {
   const { type, rest } = req.params;
   const { id, extra: extraFromRest } = parseCatalogRest(rest || '');
   const configId = req.params.configId || extractConfigIdFromUrl(req);
-  const m3uUrl = await resolveM3uUrl(configId);
   const extra = {
     search: req.query.search || extraFromRest.search || '',
     genre: req.query.genre || extraFromRest.genre || ''
   };
 
-  console.log('[CATALOG] parsed', { type, id, configId, extra, m3uUrl: m3uUrl ? '[ok]' : null });
+  console.log('[CATALOG] parsed', { type, id, configId, extra });
 
+  if (type === 'tv' && id.startsWith('eventos_')) {
+    const metas = await getEventosCatalog(configId);
+    console.log(logPrefix, `catálogo de eventos generado: ${metas.length}`);
+    return { metas };
+  }
+
+  const m3uUrl = await resolveM3uUrl(configId);
   if (type !== 'tv' || !m3uUrl) {
     console.log(logPrefix, type !== 'tv' ? `type no soportado: ${type}` : 'm3uUrl no resuelta');
     return { metas: [] };
@@ -166,7 +171,6 @@ async function handleCatalog(req) {
   const resp = { metas };
   cache.set(cacheKey, resp);
 
-  // 🚀 Usamos la nueva función centralizada
   const kvKey = `catalog:${m3uHash}:${extra.genre || ''}:${extra.search || ''}`;
   await kvSetJsonTTLIfChanged(kvKey, resp, 24 * 3600);
   console.log(logPrefix, `respuesta metas: ${metas.length}`);
