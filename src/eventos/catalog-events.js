@@ -29,10 +29,10 @@ async function getCatalog(configId) {
     // Definir la URL del póster según la disponibilidad
     const posterUrl = usePlacehold
       ? `https://placehold.co/938x1406@3x/999999/80f4eb?text=${encodeURIComponent(
-          `${ev.hora}\n \n${ev.deporte}`
+          `${ev.hora}\n\n${ev.deporte}\n\n${ev.competicion}\n\n${ev.partido}`
         )}&font=poppins&png`
       : `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(
-          `${ev.hora} ${ev.deporte}`)
+          `${ev.hora} ${ev.deporte}`
         )}`;
 
     return {
