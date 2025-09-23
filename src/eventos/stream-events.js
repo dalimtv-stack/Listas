@@ -3,7 +3,7 @@
 
 const { fetchEventos } = require('./scraper-events');
 const { normalizeId } = require('./utils-events');
-const { kvGetJson } = require('../../api/kv'); // leer config desde KV
+const { kvGetJson } = require('../../api/kv');
 
 async function getStreams(id, configId) {
   try {
@@ -11,14 +11,17 @@ async function getStreams(id, configId) {
     const url = configData?.eventosUrl;
 
     if (!url) {
-      console.warn(`[EVENTOS] No se encontró eventosUrl en la configuración para configId=${configId}`);
       return { streams: [], chName: '' };
     }
 
     const eventos = await fetchEventos(url);
-    const evento = eventos.find(ev => normalizeId(ev) === id);
+
+    // limpiar prefijo Heimdallr_evento_<configId>_
+    const prefix = `Heimdallr_evento_${configId}_`;
+    const cleanId = id.startsWith(prefix) ? id.slice(prefix.length) : id;
+
+    const evento = eventos.find(ev => normalizeId(ev) === cleanId);
     if (!evento) {
-      console.warn(`[EVENTOS] Evento no encontrado para id=${id}`);
       return { streams: [], chName: '' };
     }
 
@@ -28,15 +31,7 @@ async function getStreams(id, configId) {
     for (const canal of evento.canales) {
       const label = (canal.label || '').split('-->').pop().trim();
       const url = canal.url;
-
-      if (!url) {
-        console.warn(`[EVENTOS] Canal sin URL descartado: ${label}`);
-        continue;
-      }
-      if (seen.has(url)) {
-        console.log(`[EVENTOS] URL duplicada descartada: ${url}`);
-        continue;
-      }
+      if (!url || seen.has(url)) continue;
 
       streams.push({
         name: label || evento.deporte,
@@ -49,7 +44,6 @@ async function getStreams(id, configId) {
 
     return { streams, chName: evento.partido };
   } catch (e) {
-    console.error(`[EVENTOS] Error en getStreams para id=${id}:`, e.message);
     return { streams: [], chName: '' };
   }
 }
