@@ -39,11 +39,24 @@ async function scrapePosterForMatch(partido) {
     await browser.close();
 
     if (posterUrl && posterUrl.startsWith('http')) {
-      console.log(`[POSTER] Encontrado póster para ${partido}: ${posterUrl}`);
+      console.log(JSON.stringify({
+        level: 'info',
+        scope: 'poster-events',
+        match: partido,
+        poster: posterUrl,
+        status: 'found'
+      }));
       return posterUrl;
     } else {
-      console.log(`[POSTER] No se encontró póster para ${partido}, usando fallback`);
-      return generatePlaceholdPoster(partido);
+      const fallback = generatePlaceholdPoster(partido);
+      console.log(JSON.stringify({
+        level: 'warn',
+        scope: 'poster-events',
+        match: partido,
+        poster: fallback,
+        status: 'fallback'
+      }));
+      return fallback;
     }
   } catch (err) {
     console.error(`[POSTER] Error al scrapear póster para ${partido}:`, err.stack || err.message);
