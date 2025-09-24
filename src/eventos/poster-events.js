@@ -14,30 +14,27 @@ function normalizeMatchName(matchName) {
 }
 
 // Genera un póster de fallback con placehold.co
-function generatePlaceholdPoster(partido, competicion) {
-  const text = `${competicion}\n\n${partido}`;
-  return `https://placehold.co/938x1406@3x/999999/80f4eb?text=${encodeURIComponent(text)}&font=poppins&png`;
+function generatePlaceholdPoster(partido) {
+  return `https://placehold.co/938x1406@3x/999999/80f4eb?text=${encodeURIComponent(partido)}&font=poppins&png`;
 }
 
 // Scrapea póster para un partido desde Movistar Plus+
-async function scrapePosterForMatch(partido, competicion) {
+async function scrapePosterForMatch(partido) {
   try {
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
     const page = await browser.newPage();
     await page.goto('https://www.movistarplus.es/el-partido-movistarplus', { waitUntil: 'networkidle2', timeout: 30000 });
 
     const normalizedPartido = normalizeMatchName(partido);
-    const normalizedCompeticion = normalizeMatchName(competicion);
 
-    const posterUrl = await page.evaluate((matchName, league) => {
-      const images = Array.from(document.querySelectorAll('img[alt*="LaLiga"], img[src*="banner"], img[src*="poster"], img[src*="match"]'));
-      return images
-        .find(img => {
-          const alt = img.alt?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
-          const src = img.src?.toLowerCase() || '';
-          return alt.includes(matchName) || src.includes(matchName) || alt.includes(league) || src.includes(league);
-        })?.src || null;
-    }, normalizedPartido, normalizedCompeticion);
+    const posterUrl = await page.evaluate(matchName => {
+      const images = Array.from(document.querySelectorAll('img'));
+      return images.find(img => {
+        const alt = img.alt?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+        const src = img.src?.toLowerCase() || '';
+        return alt.includes(matchName) || src.includes(matchName);
+      })?.src || null;
+    }, normalizedPartido);
 
     await browser.close();
 
@@ -46,11 +43,11 @@ async function scrapePosterForMatch(partido, competicion) {
       return posterUrl;
     } else {
       console.log(`[POSTER] No se encontró póster para ${partido}, usando fallback`);
-      return generatePlaceholdPoster(partido, competicion);
+      return generatePlaceholdPoster(partido);
     }
   } catch (err) {
-    console.error(`[POSTER] Error al scrapear póster para ${partido}:`, err.message);
-    return generatePlaceholdPoster(partido, competicion);
+    console.error(`[POSTER] Error al scrapear póster para ${partido}:`, err.stack || err.message);
+    return generatePlaceholdPoster(partido);
   }
 }
 
