@@ -1,7 +1,9 @@
+// src/eventos/scraper-events.js
 'use strict';
 
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
+const { scrapePosterForMatch } = require('./poster-events');
 
 async function fetchEventos(url) {
   try {
@@ -21,14 +23,18 @@ async function fetchEventos(url) {
 
       const canales = [];
       $(tds[5]).find('a').each((_, a) => {
-        canales.push({
-          label: $(a).text().trim(),
-          url: $(a).attr('href')
-        });
+        const label = $(a).text().trim();
+        const urlCanal = $(a).attr('href');
+        canales.push({ label, url: urlCanal });
       });
 
       eventos.push({ dia, hora, deporte, competicion, partido, canales });
     });
+
+    // Añadir pósters a los eventos
+    for (const evento of eventos) {
+      evento.poster = await scrapePosterForMatch(evento.partido, evento.competicion);
+    }
 
     return eventos;
   } catch (err) {
