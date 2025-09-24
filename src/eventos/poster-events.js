@@ -13,14 +13,14 @@ function normalizeMatchName(matchName) {
     .trim();
 }
 
-// Genera un póster de fallback con placehold.co
+// Genera un póster de fallback con hora, deporte y competición
 function generatePlaceholdPoster({ hora, deporte, competicion }) {
   const text = `${hora}\n \n${deporte}\n \n${competicion}`;
   return `https://placehold.co/938x1406@3x/999999/80f4eb?text=${encodeURIComponent(text)}&font=poppins&png`;
 }
 
 // Scrapea póster para un partido desde Movistar Plus+
-async function scrapePosterForMatch(partido) {
+async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   try {
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
     const page = await browser.newPage();
@@ -49,7 +49,7 @@ async function scrapePosterForMatch(partido) {
       }));
       return posterUrl;
     } else {
-      const fallback = generatePlaceholdPoster(partido);
+      const fallback = generatePlaceholdPoster({ hora, deporte, competicion });
       console.log(JSON.stringify({
         level: 'warn',
         scope: 'poster-events',
@@ -60,9 +60,16 @@ async function scrapePosterForMatch(partido) {
       return fallback;
     }
   } catch (err) {
-    console.error(`[POSTER] Error al scrapear póster para ${partido}:`, err.stack || err.message);
-    return generatePlaceholdPoster({ hora, deporte, competicion });
-
+    const fallback = generatePlaceholdPoster({ hora, deporte, competicion });
+    console.error(JSON.stringify({
+      level: 'error',
+      scope: 'poster-events',
+      match: partido,
+      error: err.stack || err.message,
+      poster: fallback,
+      status: 'error-fallback'
+    }));
+    return fallback;
   }
 }
 
