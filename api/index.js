@@ -31,6 +31,11 @@ router.use((req, res, next) => {
   next();
 });
 
+// Redirect root to /configure
+router.get('/', (req, res) => {
+  res.redirect(302, '/configure');
+});
+
 // Manifest routes
 router.get('/manifest.json', async (req, res) => {
   try {
@@ -87,7 +92,7 @@ router.get('/:configId/stream/:type/:id.json', async (req, res) => {
 
 // Configuration routes
 router.get('/configure', configureGet);
-router.get('/:configId/configure', configureGet); // Nueva ruta
+router.get('/:configId/configure', configureGet);
 router.post('/generate-url', configurePost);
 
 // Mount and export
