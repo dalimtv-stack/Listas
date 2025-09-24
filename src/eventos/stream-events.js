@@ -23,9 +23,11 @@ async function getStreams(id, configId) {
     const url = canal.url;
     if (!url || seen.has(url)) continue;
 
+    const temporal = (canal.label || '').split('-->').pop().trim()
+
     streams.push({
       name: label, // Usar el label completo (ej. "DAZN 1 FHD --> NEW ERA")
-      title: `${evento.partido} (${evento.deporte}) (Acestream) \n ${canal.label}`,
+      title: `${evento.partido} (${evento.deporte}) (Acestream) \n ${temporal}`,
       externalUrl: url,
       behaviorHints: { notWebReady: true, external: true }
     });
