@@ -1,7 +1,7 @@
 // api/poster-con-hora.js
 'use strict';
 
-const sharp = require('sharp');
+const Jimp = require('jimp');
 const fetch = require('node-fetch');
 
 module.exports = async (req, res) => {
@@ -17,39 +17,25 @@ module.exports = async (req, res) => {
     if (!response.ok) throw new Error(`No se pudo obtener la imagen: ${response.status}`);
     const buffer = await response.buffer();
 
-    // Crear imagen con fondo y texto renderizado como imagen
-    const horaImage = await sharp({
-      create: {
-        width: 300,
-        height: 80,
-        channels: 4,
-        background: { r: 0, g: 0, b: 0, alpha: 0.6 }
-      }
-    })
-      .png()
-      .composite([
-        {
-          input: {
-            text: {
-              text: hora,
-              font: 'sans',
-              fontSize: 36,
-              rgba: true
-            }
-          },
-          top: 20,
-          left: 60
-        }
-      ])
-      .toBuffer();
+    const image = await Jimp.read(buffer);
+    const font = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE);
 
-    const composed = await sharp(buffer)
-      .composite([{ input: horaImage, top: 10, left: 10 }])
-      .jpeg()
-      .toBuffer();
+    // Fondo semitransparente
+    const overlay = new Jimp(300, 80, (err, ovr) => {
+      ovr.opacity(0.6).background(0x000000FF);
+    });
 
+    overlay.print(font, 0, 20, {
+      text: hora,
+      alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+      alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE
+    }, 300, 80);
+
+    image.composite(overlay, 10, 10);
+
+    const finalBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
     res.setHeader('Content-Type', 'image/jpeg');
-    res.end(composed);
+    res.end(finalBuffer);
   } catch (err) {
     console.error('[Poster con hora] Error:', err.message);
     res.statusCode = 500;
