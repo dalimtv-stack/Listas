@@ -42,33 +42,33 @@ async function configureGet(req, res) {
         <style>
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            max-width: 600px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-            line-height: 1.6;
+            max-width: 90%; /* Más flexible para móviles */
+            margin: 1rem auto; /* Reducir márgenes */
+            padding: 0 0.5rem; /* Reducir padding */
+            line-height: 1.5; /* Más compacto */
             color: #333;
           }
           h1 {
-            font-size: 2rem;
+            font-size: 1.8rem; /* Más pequeño en general */
             text-align: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
           }
           p {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
+            font-size: 1rem;
+            margin-bottom: 0.8rem;
           }
           form {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.8rem; /* Reducir espacio entre elementos */
           }
           label {
             font-weight: 600;
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.2rem; /* Menos espacio */
           }
           input, textarea {
-            padding: 0.8rem;
-            font-size: 1rem;
+            padding: 0.6rem; /* Reducir padding */
+            font-size: 0.95rem; /* Más pequeño */
             border: 1px solid #ccc;
             border-radius: 5px;
             width: 100%;
@@ -80,21 +80,21 @@ async function configureGet(req, res) {
           #m3uUrl {
             min-height: 50px; /* ~2 líneas */
           }
-          #extraWebs {
-            min-height: 100px; /* ~4 líneas */
-          }
           #eventosUrl {
-            min-height: 25px; /* ~1 líneas */
+            min-height: 25px; /* ~1 línea */
+          }
+          #extraWebs {
+            min-height: 75px; /* ~3 líneas, reducido para móviles */
           }
           button {
             background: #4CAF50;
             color: white;
-            padding: 0.8rem 1.5rem;
-            font-size: 1rem;
+            padding: 0.6rem 1.2rem; /* Más compacto */
+            font-size: 0.95rem;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            min-height: 44px;
+            min-height: 40px; /* Más pequeño */
             transition: background 0.2s;
           }
           button:hover {
@@ -103,41 +103,41 @@ async function configureGet(req, res) {
           .button-group {
             display: flex;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: 0.8rem;
             justify-content: center;
           }
           a {
             display: inline-block;
-            margin-top: 1rem;
+            margin-top: 0.8rem;
             text-decoration: none;
             color: #4CAF50;
-            font-size: 1rem;
+            font-size: 0.95rem;
           }
           pre {
             background: #f4f4f4;
-            padding: 1rem;
+            padding: 0.8rem;
             border-radius: 5px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             overflow-x: auto;
-            margin: 1rem 0;
+            margin: 0.8rem 0;
           }
           @media (min-width: 600px) {
             body {
-              max-width: 800px;
+              max-width: 600px; /* Reducido de 800px */
             }
             h1 {
-              font-size: 2.5rem;
+              font-size: 2rem;
             }
             p {
-              font-size: 1.2rem;
+              font-size: 1.1rem;
             }
             input, textarea {
-              font-size: 1.1rem;
-              padding: 1rem;
+              font-size: 1rem;
+              padding: 0.8rem;
             }
             button {
-              font-size: 1.1rem;
-              padding: 1rem 2rem;
+              font-size: 1rem;
+              padding: 0.8rem 1.5rem;
             }
             .button-group {
               justify-content: flex-start;
@@ -145,14 +145,20 @@ async function configureGet(req, res) {
           }
           @media (max-width: 600px) {
             h1 {
-              font-size: 1.5rem;
+              font-size: 1.4rem;
             }
             p, input, textarea, button, a {
-              font-size: 0.95rem;
+              font-size: 0.9rem;
             }
             button, a {
               width: 100%;
               text-align: center;
+            }
+            #extraWebs {
+              min-height: 60px; /* ~2 líneas en móviles */
+            }
+            #eventosUrl {
+              min-height: 25px; /* Asegurar 1 línea */
             }
           }
         </style>
@@ -168,7 +174,7 @@ async function configureGet(req, res) {
           <textarea name="extraWebs" id="extraWebs" placeholder="https://web1.com;https://web2.com">${extraWebs}</textarea>
 
           <label for="eventosUrl">Events Website URL:</label>
-          <textarea name="eventosUrl" id="eventosUrl" placeholder="https://www.marca.com/programacion-tv.html">${eventosUrl}</textarea>
+          <textarea name="eventosUrl" id="eventosUrl" placeholder="https://eventos-uvl7.vercel.app">${eventosUrl}</textarea>
 
           ${configId ? `<input type="hidden" name="configId" value="${configId}">` : ''}
           <div class="button-group">
