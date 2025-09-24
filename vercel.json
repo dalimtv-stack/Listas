@@ -54,6 +54,9 @@
     {
       "src": "/(.*)",
       "dest": "/api/index.js"
+    },{
+      "src": "/cleanup",
+      "dest": "/api/cleanup.js"
     }
   ]
 }
