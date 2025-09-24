@@ -5,8 +5,7 @@
   "main": "api/index.js",
   "scripts": {
     "start": "node api/index.js",
-    "dev": "nodemon api/index.js",
-    "vercel-build": "npm install --legacy-peer-deps && npm run build"
+    "dev": "nodemon api/index.js"
   },
   "dependencies": {
     "stremio-addon-sdk": "^1.6.10",
@@ -17,8 +16,6 @@
     "body-parser": "^1.20.2",
     "uuid": "^9.0.1",
     "cheerio": "^1.0.0-rc.12",
-    "puppeteer-core": "^21.3.8",
-    "chrome-aws-lambda": "^10.1.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
