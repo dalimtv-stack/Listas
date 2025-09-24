@@ -1,7 +1,7 @@
 // src/cron/cleanup-posters.js
 'use strict';
 
-const { kvListKeys, kvGetJson, kvDelete } = require('../../api/kv');
+const { kvListKeys, kvGetJson, kvDelete, kvSetJson } = require('../../api/kv');
 
 async function cleanupOldPosters({ maxAgeDays = 3 } = {}) {
   const now = Date.now();
@@ -29,13 +29,17 @@ async function cleanupOldPosters({ maxAgeDays = 3 } = {}) {
     }
   }
 
-  return {
+  const summary = {
     deleted,
     fallbackCount,
     expiredCount,
     total: keys.length,
-    status: 'done'
+    timestamp: now
   };
+
+  await kvSetJson('poster:cleanup:last', summary);
+
+  return { ...summary, status: 'done' };
 }
 
 module.exports = { cleanupOldPosters };
