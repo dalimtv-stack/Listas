@@ -120,7 +120,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     }
 
     if (posterUrl && posterUrl.startsWith('http')) {
-      await kvSetJson(cacheKey, posterUrl, { ttl: 24 * 60 * 60 });
+      await kvSetJson(cacheKey, { url: posterUrl, createdAt: Date.now() }, { ttl: 24 * 60 * 60 });
       console.log(JSON.stringify({
         level: 'info',
         scope: 'poster-events',
