@@ -89,11 +89,11 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
       level: 'info',
       scope: 'poster-events',
       match: partido,
-      poster: cached,
+      poster: cached.url,
       cached: true,
       status: 'cached'
     }));
-    return cached;
+    return cached.url; // ✅ devolvemos solo la URL
   }
 
   try {
