@@ -55,4 +55,3 @@ async function scrapePosterForMatch(partido, competicion) {
 }
 
 module.exports = { scrapePosterForMatch };
-```
