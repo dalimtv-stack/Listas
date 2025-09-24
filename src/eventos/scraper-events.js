@@ -33,7 +33,12 @@ async function fetchEventos(url) {
 
     // Añadir pósters a los eventos
     for (const evento of eventos) {
-      evento.poster = await scrapePosterForMatch(evento.partido, evento.competicion);
+      evento.poster = await scrapePosterForMatch({
+        partido: evento.partido,
+        hora: evento.hora,
+        deporte: evento.deporte,
+        competicion: evento.competicion
+      });
     }
 
     return eventos;
