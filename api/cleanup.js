@@ -77,6 +77,7 @@ module.exports = async (req, res) => {
       </style>
     </head>
     <body>
+      <h1>Heimdallr Channels</h1>
       <h1>Limpieza de Pósters en KV</h1>
       <p>Última limpieza: <strong>${lastDate}</strong></p>
       <button onclick="runCleanup()">Ejecutar limpieza</button>
