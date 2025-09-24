@@ -16,21 +16,32 @@ function normalizeMatchName(matchName) {
 
 // Genera variantes abreviadas para fallback
 function generateFallbackNames(original) {
-  const variants = [];
-
-  // Ejemplo: "Atletico De Madrid VS Rayo Vallecano"
   const normalized = normalizeMatchName(original);
-  variants.push(normalized);
+  const variants = [normalized];
 
-  // Reemplazos comunes
-  const fallback = normalized
-    .replace(/\batletico\b/g, 'at') // Atletico → At
-    .replace(/\bde madrid\b/g, 'madrid') // De Madrid → Madrid
-    .replace(/\brayo vallecano\b/g, 'rayo'); // Rayo Vallecano → Rayo
+  const teamAliases = {
+    'atletico de madrid': 'at. madrid',
+    'real sociedad': 'r. sociedad',
+    'rayo vallecano': 'rayo',
+    'deportivo alaves': 'alaves',
+    'real madrid': 'r. madrid',
+    'fc barcelona': 'barça',
+    'girona': 'girona',
+    'getafe': 'getafe',
+    'mallorca': 'mallorca',
+    'sevilla': 'sevilla',
+    'valencia': 'valencia'
+  };
 
-  if (fallback !== normalized) variants.push(fallback);
+  let aliasVersion = normalized;
+  for (const [full, alias] of Object.entries(teamAliases)) {
+    const regex = new RegExp(`\\b${full}\\b`, 'gi');
+    aliasVersion = aliasVersion.replace(regex, alias);
+  }
 
-  return [...new Set(variants)]; // Elimina duplicados
+  if (aliasVersion !== normalized) variants.push(aliasVersion);
+
+  return [...new Set(variants)];
 }
 
 // Genera un póster de fallback con hora, deporte y competición
@@ -49,6 +60,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
 
     const candidates = generateFallbackNames(partido);
     let posterUrl = null;
+    let matchedVariant = null;
 
     for (const name of candidates) {
       $('img').each((_, img) => {
@@ -56,6 +68,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
         const src = $(img).attr('src')?.toLowerCase() || '';
         if (alt.includes(name) || src.includes(name)) {
           posterUrl = $(img).attr('src');
+          matchedVariant = name;
           return false; // break loop
         }
       });
@@ -67,6 +80,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
         level: 'info',
         scope: 'poster-events',
         match: partido,
+        variant: matchedVariant,
         poster: posterUrl,
         status: 'found'
       }));
@@ -77,6 +91,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
         level: 'warn',
         scope: 'poster-events',
         match: partido,
+        tried: candidates,
         poster: fallback,
         status: 'fallback'
       }));
