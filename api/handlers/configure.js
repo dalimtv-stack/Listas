@@ -84,7 +84,7 @@ async function configureGet(req, res) {
             min-height: 25px; /* ~1 línea */
           }
           #extraWebs {
-            min-height: 75px; /* ~3 líneas, reducido para móviles */
+            min-height: 80px; /* ~3 líneas, reducido para móviles */
           }
           button {
             background: #4CAF50;
