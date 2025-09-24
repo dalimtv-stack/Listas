@@ -17,21 +17,33 @@ module.exports = async (req, res) => {
     if (!response.ok) throw new Error(`No se pudo obtener la imagen: ${response.status}`);
     const buffer = await response.buffer();
 
-    // SVG con texto plano (sin emoji) para evitar Fontconfig error
-    const overlaySvg = `
-      <svg width="300" height="80">
-        <rect x="0" y="0" width="300" height="80" rx="8" ry="8" fill="rgba(0,0,0,0.6)" />
-        <text x="150" y="50" font-size="36" fill="white" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold">
-          ${hora}
-        </text>
-      </svg>
-    `;
-
-    const overlayBuffer = Buffer.from(overlaySvg);
-    const overlayImage = await sharp(overlayBuffer).png().toBuffer();
+    // Generar imagen con la hora como texto
+    const horaImage = await sharp({
+      create: {
+        width: 300,
+        height: 80,
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0.6 }
+      }
+    })
+      .png()
+      .composite([
+        {
+          input: Buffer.from(
+            `<svg width="300" height="80">
+              <text x="150" y="55" font-size="36" fill="white" text-anchor="middle" font-family="Arial" font-weight="bold">
+                ${hora}
+              </text>
+            </svg>`
+          ),
+          top: 0,
+          left: 0
+        }
+      ])
+      .toBuffer();
 
     const composed = await sharp(buffer)
-      .composite([{ input: overlayImage, top: 10, left: 10 }])
+      .composite([{ input: horaImage, top: 10, left: 10 }])
       .jpeg()
       .toBuffer();
 
