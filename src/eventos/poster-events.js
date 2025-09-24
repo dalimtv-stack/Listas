@@ -14,6 +14,25 @@ function normalizeMatchName(matchName) {
     .trim();
 }
 
+// Genera variantes abreviadas para fallback
+function generateFallbackNames(original) {
+  const variants = [];
+
+  // Ejemplo: "Atletico De Madrid VS Rayo Vallecano"
+  const normalized = normalizeMatchName(original);
+  variants.push(normalized);
+
+  // Reemplazos comunes
+  const fallback = normalized
+    .replace(/\batletico\b/g, 'at') // Atletico → At
+    .replace(/\bde madrid\b/g, 'madrid') // De Madrid → Madrid
+    .replace(/\brayo vallecano\b/g, 'rayo'); // Rayo Vallecano → Rayo
+
+  if (fallback !== normalized) variants.push(fallback);
+
+  return [...new Set(variants)]; // Elimina duplicados
+}
+
 // Genera un póster de fallback con hora, deporte y competición
 function generatePlaceholdPoster({ hora, deporte, competicion }) {
   const text = `${hora}\n \n${deporte}\n \n${competicion}`;
@@ -28,17 +47,20 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     const html = await res.text();
     const $ = cheerio.load(html);
 
-    const normalizedPartido = normalizeMatchName(partido);
+    const candidates = generateFallbackNames(partido);
     let posterUrl = null;
 
-    $('img').each((_, img) => {
-      const alt = $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
-      const src = $(img).attr('src')?.toLowerCase() || '';
-      if (alt.includes(normalizedPartido) || src.includes(normalizedPartido)) {
-        posterUrl = $(img).attr('src');
-        return false; // break loop
-      }
-    });
+    for (const name of candidates) {
+      $('img').each((_, img) => {
+        const alt = $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+        const src = $(img).attr('src')?.toLowerCase() || '';
+        if (alt.includes(name) || src.includes(name)) {
+          posterUrl = $(img).attr('src');
+          return false; // break loop
+        }
+      });
+      if (posterUrl) break;
+    }
 
     if (posterUrl && posterUrl.startsWith('http')) {
       console.log(JSON.stringify({
