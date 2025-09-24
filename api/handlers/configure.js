@@ -174,7 +174,7 @@ async function configureGet(req, res) {
           <textarea name="extraWebs" id="extraWebs" placeholder="https://web1.com;https://web2.com">${extraWebs}</textarea>
 
           <label for="eventosUrl">Events Website URL:</label>
-          <textarea name="eventosUrl" id="eventosUrl" placeholder="https://eventos-uvl7.vercel.app">${eventosUrl}</textarea>
+          <input type="text" name="eventosUrl" id="eventosUrl" placeholder="https://www.marca.com/programacion-tv.html" value="${eventosUrl}">
 
           ${configId ? `<input type="hidden" name="configId" value="${configId}">` : ''}
           <div class="button-group">
