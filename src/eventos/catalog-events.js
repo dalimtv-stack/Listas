@@ -15,7 +15,7 @@ async function getCatalog(configId) {
     id: `Heimdallr_evt_${configId}_${normalizeId(ev)}`,
     type: 'tv',
     name: `${ev.partido} (${ev.deporte})`,
-    poster: ev.poster || `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(ev.partido)}`.
+    poster: ev.poster || `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(ev.partido)}`,
     description: `${ev.dia} ${ev.hora} - ${ev.competicion}`,
     background: null
   }));
