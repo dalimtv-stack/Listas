@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
     if (!response.ok) throw new Error(`No se pudo obtener la imagen: ${response.status}`);
     const buffer = await response.buffer();
 
-    // Generar imagen con la hora como texto
+    // Crear imagen con fondo y texto renderizado como imagen
     const horaImage = await sharp({
       create: {
         width: 300,
@@ -29,15 +29,16 @@ module.exports = async (req, res) => {
       .png()
       .composite([
         {
-          input: Buffer.from(
-            `<svg width="300" height="80">
-              <text x="150" y="55" font-size="36" fill="white" text-anchor="middle" font-family="Arial" font-weight="bold">
-                ${hora}
-              </text>
-            </svg>`
-          ),
-          top: 0,
-          left: 0
+          input: {
+            text: {
+              text: hora,
+              font: 'sans',
+              fontSize: 36,
+              rgba: true
+            }
+          },
+          top: 20,
+          left: 60
         }
       ])
       .toBuffer();
