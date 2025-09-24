@@ -1,8 +1,8 @@
 // src/eventos/poster-events.js
 'use strict';
 
-const chromium = require('chrome-aws-lambda');
-const puppeteer = require('puppeteer-core');
+const fetch = require('node-fetch');
+const cheerio = require('cheerio');
 
 // Normaliza nombres de partidos para matching
 function normalizeMatchName(matchName) {
@@ -20,29 +20,25 @@ function generatePlaceholdPoster({ hora, deporte, competicion }) {
   return `https://placehold.co/938x1406@3x/999999/80f4eb?text=${encodeURIComponent(text)}&font=poppins&png`;
 }
 
-// Scrapea póster para un partido desde Movistar Plus+
+// Scrapea póster para un partido desde Movistar Plus+ (sin Puppeteer)
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   try {
-    const browser = await puppeteer.launch({
-      args: chromium.args,
-      executablePath: await chromium.executablePath,
-      headless: chromium.headless,
-    });
-    const page = await browser.newPage();
-    await page.goto('https://www.movistarplus.es/el-partido-movistarplus', { waitUntil: 'networkidle2', timeout: 30000 });
+    const res = await fetch('https://www.movistarplus.es/el-partido-movistarplus');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const html = await res.text();
+    const $ = cheerio.load(html);
 
     const normalizedPartido = normalizeMatchName(partido);
+    let posterUrl = null;
 
-    const posterUrl = await page.evaluate(matchName => {
-      const images = Array.from(document.querySelectorAll('img'));
-      return images.find(img => {
-        const alt = img.alt?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
-        const src = img.src?.toLowerCase() || '';
-        return alt.includes(matchName) || src.includes(matchName);
-      })?.src || null;
-    }, normalizedPartido);
-
-    await browser.close();
+    $('img').each((_, img) => {
+      const alt = $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+      const src = $(img).attr('src')?.toLowerCase() || '';
+      if (alt.includes(normalizedPartido) || src.includes(normalizedPartido)) {
+        posterUrl = $(img).attr('src');
+        return false; // break loop
+      }
+    });
 
     if (posterUrl && posterUrl.startsWith('http')) {
       console.log(JSON.stringify({
