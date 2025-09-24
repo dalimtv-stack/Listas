@@ -20,7 +20,7 @@ function detectarCalidad(label = '') {
 // Limpia y transforma texto
 function transformarTexto(texto = '') {
   return texto
-    .replace(/\bVS\b|\bvs\b|\bVs\b/g, '🆚')
+    .replace(/\bVS\b|\bvs\b|\bVs\b/g, ' 🆚 ')
     .replace(/\bFútbol\b|\bFutbol\b|\(Fútbol\)|\(Futbol\)/gi, '⚽')
     .replace(/\bBaloncesto\b|\(Baloncesto\)/gi, '🏀');
 }
