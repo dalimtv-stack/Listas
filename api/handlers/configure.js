@@ -80,8 +80,11 @@ async function configureGet(req, res) {
           #m3uUrl {
             min-height: 50px; /* ~2 líneas */
           }
-          #extraWebs, #eventosUrl {
+          #extraWebs {
             min-height: 100px; /* ~4 líneas */
+          }
+          #eventosUrl {
+            min-height: 25px; /* ~1 líneas */
           }
           button {
             background: #4CAF50;
@@ -161,11 +164,11 @@ async function configureGet(req, res) {
           <label for="m3uUrl">M3U Playlist URL:</label>
           <textarea name="m3uUrl" id="m3uUrl" placeholder="https://example.com/list.m3u" required>${m3uUrl}</textarea>
 
-          <label for="eventosUrl">Events Website URL:</label>
-          <textarea name="eventosUrl" id="eventosUrl" placeholder="https://www.marca.com/programacion-tv.html">${eventosUrl}</textarea>
-
           <label for="extraWebs">Extra Websites:</label>
           <textarea name="extraWebs" id="extraWebs" placeholder="https://web1.com;https://web2.com">${extraWebs}</textarea>
+
+          <label for="eventosUrl">Events Website URL:</label>
+          <textarea name="eventosUrl" id="eventosUrl" placeholder="https://www.marca.com/programacion-tv.html">${eventosUrl}</textarea>
 
           ${configId ? `<input type="hidden" name="configId" value="${configId}">` : ''}
           <div class="button-group">
