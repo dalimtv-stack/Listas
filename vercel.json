@@ -19,7 +19,7 @@
     { "src": "/debug-kv/([0-9a-f-]+)", "dest": "/api/index.js" },
 
     { "src": "/cleanup", "dest": "/api/cleanup.js" },
-    { "src": "/poster-con-hora", "dest": "/api/poster-con-hora.js" },
+    { "src": "/poster-con-hora", "dest": "/src/eventos/poster-con-hora.js" },
 
     { "src": "/(.*)", "dest": "/api/index.js" }
   ]
