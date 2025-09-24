@@ -3,57 +3,25 @@
   "builds": [
     {
       "src": "api/index.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["src/**"]
+      }
     }
   ],
   "routes": [
-    {
-      "src": "/manifest.json",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/([0-9a-f-]+)/manifest.json",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/([0-9a-f-]+)/catalog/:type/:id.json",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/catalog/:type/:id.json",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/([0-9a-f-]+)/meta/:type/:id.json",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/meta/:type/:id.json",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/([0-9a-f-]+)/stream/:type/:id.json",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/stream/:type/:id.json",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/configure",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/generate-url",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/debug-kv/([0-9a-f-]+)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/index.js"
-    }
-  ]
+    { "src": "/manifest.json", "dest": "/api/index.js" },
+    { "src": "/([0-9a-f-]+)/manifest.json", "dest": "/api/index.js" },
+    { "src": "/([0-9a-f-]+)/catalog/:type/:id.json", "dest": "/api/index.js" },
+    { "src": "/catalog/:type/:id.json", "dest": "/api/index.js" },
+    { "src": "/([0-9a-f-]+)/meta/:type/:id.json", "dest": "/api/index.js" },
+    { "src": "/meta/:type/:id.json", "dest": "/api/index.js" },
+    { "src": "/([0-9a-f-]+)/stream/:type/:id.json", "dest": "/api/index.js" },
+    { "src": "/stream/:type/:id.json", "dest": "/api/index.js" },
+    { "src": "/configure", "dest": "/api/index.js" },
+    { "src": "/generate-url", "dest": "/api/index.js" },
+    { "src": "/debug-kv/([0-9a-f-]+)", "dest": "/api/index.js" },
+    { "src": "/(.*)", "dest": "/api/index.js" }
+  ],
+  "buildCommand": "npm run vercel-build"
 }
