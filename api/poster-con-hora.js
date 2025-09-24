@@ -16,14 +16,14 @@ module.exports = async (req, res) => {
     const response = await fetch(url);
     const buffer = await response.buffer();
 
-    const overlay = Buffer.from(`
-      <svg width="300" height="80">
-        <rect x="0" y="0" width="300" height="80" rx="8" ry="8" fill="rgba(0,0,0,0.6)" />
-        <text x="150" y="50" font-size="36" fill="white" text-anchor="middle" font-family="sans-serif" font-weight="bold">
-          🕒 ${hora}
-        </text>
-      </svg>
-    `);
+  const overlay = Buffer.from(`
+    <svg width="300" height="80">
+      <rect x="0" y="0" width="300" height="80" rx="8" ry="8" fill="rgba(0,0,0,0.6)" />
+      <text x="150" y="50" font-size="36" fill="white" text-anchor="middle" font-family="sans-serif" font-weight="bold">
+        Hora: ${hora}
+      </text>
+    </svg>
+  `);
 
     const composed = await sharp(buffer)
       .composite([{ input: overlay, top: 10, left: 10 }])
