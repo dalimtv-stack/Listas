@@ -20,16 +20,21 @@ module.exports = async (req, res) => {
     const image = await Jimp.read(buffer);
     const font = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE);
 
-    // Fondo semitransparente
-    const overlay = new Jimp(300, 80, (err, ovr) => {
-      ovr.opacity(0.6).background(0x000000FF);
-    });
+    // Crear fondo semitransparente
+    const overlay = new Jimp(300, 80, 0x00000099); // negro con alpha
 
-    overlay.print(font, 0, 20, {
-      text: hora,
-      alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
-      alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE
-    }, 300, 80);
+    overlay.print(
+      font,
+      0,
+      20,
+      {
+        text: hora,
+        alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+        alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE
+      },
+      300,
+      80
+    );
 
     image.composite(overlay, 10, 10);
 
