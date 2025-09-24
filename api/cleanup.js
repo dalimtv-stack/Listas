@@ -5,8 +5,8 @@ const { cleanupOldPosters } = require('../src/cron/cleanup-posters');
 
 module.exports = async (req, res) => {
   if (req.method === 'POST') {
-    await cleanupOldPosters();
-    return res.status(200).json({ status: 'ok', message: 'Limpieza completada' });
+    const result = await cleanupOldPosters();
+    return res.status(200).json(result);
   }
 
   // Renderiza HTML con botón
@@ -37,9 +37,9 @@ module.exports = async (req, res) => {
           try {
             const res = await fetch('/cleanup', { method: 'POST' });
             const json = await res.json();
-            status.textContent = json.message || 'Limpieza completada';
+            status.textContent = \`✅ Eliminados: \${json.deleted} (\${json.fallbackCount} fallback, \${json.expiredCount} expirados)\`;
           } catch (err) {
-            status.textContent = 'Error al ejecutar limpieza';
+            status.textContent = '❌ Error al ejecutar limpieza';
           }
         }
       </script>
