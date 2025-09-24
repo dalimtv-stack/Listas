@@ -2,6 +2,7 @@
 'use strict';
 
 const { cleanupOldPosters } = require('../src/cron/cleanup-posters');
+const { kvGetJson } = require('../api/kv');
 
 module.exports = async (req, res) => {
   if (req.method === 'POST') {
@@ -9,7 +10,11 @@ module.exports = async (req, res) => {
     return res.status(200).json(result);
   }
 
-  // Renderiza HTML con botón
+  const last = await kvGetJson('poster:cleanup:last');
+  const lastDate = last?.timestamp
+    ? new Date(last.timestamp).toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })
+    : 'Nunca';
+
   res.setHeader('Content-Type', 'text/html');
   res.end(`
     <!DOCTYPE html>
@@ -26,7 +31,7 @@ module.exports = async (req, res) => {
     </head>
     <body>
       <h1>Limpieza de Pósters en KV</h1>
-      <p>Este botón ejecuta la limpieza de pósters antiguos o de fallback.</p>
+      <p>Última limpieza: <strong>${lastDate}</strong></p>
       <button onclick="runCleanup()">Ejecutar limpieza</button>
       <div id="status"></div>
 
@@ -37,7 +42,8 @@ module.exports = async (req, res) => {
           try {
             const res = await fetch('/cleanup', { method: 'POST' });
             const json = await res.json();
-            status.textContent = \`✅ Eliminados: \${json.deleted} (\${json.fallbackCount} fallback, \${json.expiredCount} expirados)\`;
+            const fecha = new Date(json.timestamp).toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
+            status.textContent = \`✅ Eliminados: \${json.deleted} (\${json.fallbackCount} fallback, \${json.expiredCount} expirados) — \${fecha}\`;
           } catch (err) {
             status.textContent = '❌ Error al ejecutar limpieza';
           }
