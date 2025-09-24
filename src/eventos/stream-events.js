@@ -25,7 +25,7 @@ async function getStreams(id, configId) {
 
     streams.push({
       name: label, // Usar el label completo (ej. "DAZN 1 FHD --> NEW ERA")
-      title: `${evento.partido} (${evento.deporte}) (Acestream)`,
+      title: `${evento.partido} (${evento.deporte}) (Acestream) \n ${canal.label}`,
       externalUrl: url,
       behaviorHints: { notWebReady: true, external: true }
     });
