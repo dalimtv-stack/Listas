@@ -84,7 +84,7 @@ function generatePlaceholdPoster({ hora, deporte, competicion }) {
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   const cacheKey = `poster:${normalizeMatchName(partido)}`;
   const cached = await kvGetJson(cacheKey);
-  if (cached && typeof cached === 'string' && cached.startsWith('http')) {
+  if (cached?.url && cached.url.startsWith('http')) {
     console.log(JSON.stringify({
       level: 'info',
       scope: 'poster-events',
