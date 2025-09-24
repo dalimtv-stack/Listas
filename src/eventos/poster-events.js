@@ -1,7 +1,8 @@
 // src/eventos/poster-events.js
 'use strict';
 
-const puppeteer = require('puppeteer');
+const chromium = require('chrome-aws-lambda');
+const puppeteer = require('puppeteer-core');
 
 // Normaliza nombres de partidos para matching
 function normalizeMatchName(matchName) {
@@ -22,7 +23,11 @@ function generatePlaceholdPoster({ hora, deporte, competicion }) {
 // Scrapea póster para un partido desde Movistar Plus+
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   try {
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless,
+    });
     const page = await browser.newPage();
     await page.goto('https://www.movistarplus.es/el-partido-movistarplus', { waitUntil: 'networkidle2', timeout: 30000 });
 
