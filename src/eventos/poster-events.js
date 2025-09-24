@@ -14,8 +14,9 @@ function normalizeMatchName(matchName) {
 }
 
 // Genera un póster de fallback con placehold.co
-function generatePlaceholdPoster(partido) {
-  return `https://placehold.co/938x1406@3x/999999/80f4eb?text=${encodeURIComponent(partido)}&font=poppins&png`;
+function generatePlaceholdPoster({ hora, deporte, competicion }) {
+  const text = `${hora}\n \n${deporte}\n \n${competicion}`;
+  return `https://placehold.co/938x1406@3x/999999/80f4eb?text=${encodeURIComponent(text)}&font=poppins&png`;
 }
 
 // Scrapea póster para un partido desde Movistar Plus+
@@ -60,7 +61,8 @@ async function scrapePosterForMatch(partido) {
     }
   } catch (err) {
     console.error(`[POSTER] Error al scrapear póster para ${partido}:`, err.stack || err.message);
-    return generatePlaceholdPoster(partido);
+    return generatePlaceholdPoster({ hora, deporte, competicion });
+
   }
 }
 
