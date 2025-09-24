@@ -3,6 +3,7 @@
 
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
+const { kvGetJson, kvSetJson } = require('../../api/kv');
 
 // Normaliza nombres de partidos para matching
 function normalizeMatchName(matchName) {
@@ -29,7 +30,6 @@ function generateFallbackNames(original) {
     'cadiz': 'cádiz',
     'celta de vigo': 'celta',
     'athletic club': 'athletic',
-    'athletic club': 'athletic club',
     'manchester united': 'man united',
     'manchester city': 'man city',
     'tottenham hotspur': 'spurs',
@@ -82,6 +82,20 @@ function generatePlaceholdPoster({ hora, deporte, competicion }) {
 
 // Scrapea póster para un partido desde Movistar Plus+ (sin Puppeteer)
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
+  const cacheKey = `poster:${normalizeMatchName(partido)}`;
+  const cached = await kvGetJson(cacheKey);
+  if (cached && typeof cached === 'string' && cached.startsWith('http')) {
+    console.log(JSON.stringify({
+      level: 'info',
+      scope: 'poster-events',
+      match: partido,
+      poster: cached,
+      cached: true,
+      status: 'cached'
+    }));
+    return cached;
+  }
+
   try {
     const res = await fetch('https://www.movistarplus.es/el-partido-movistarplus');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -106,12 +120,14 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     }
 
     if (posterUrl && posterUrl.startsWith('http')) {
+      await kvSetJson(cacheKey, posterUrl, { ttl: 24 * 60 * 60 });
       console.log(JSON.stringify({
         level: 'info',
         scope: 'poster-events',
         match: partido,
         variant: matchedVariant,
         poster: posterUrl,
+        cached: cacheKey,
         status: 'found'
       }));
       return posterUrl;
