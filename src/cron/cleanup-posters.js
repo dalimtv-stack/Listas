@@ -14,13 +14,10 @@ async function cleanupOldPosters({ maxAgeDays = 3 } = {}) {
 
   for (const key of keys) {
     const value = await kvGetJson(key);
-
-    // Detecta si es fallback
     const isFallback = typeof value === 'string'
       ? value.includes('placehold.co')
       : value?.url?.includes('placehold.co');
 
-    // Detecta si está vencido
     const createdAt = value?.createdAt || 0;
     const isExpired = createdAt < cutoff;
 
@@ -32,15 +29,13 @@ async function cleanupOldPosters({ maxAgeDays = 3 } = {}) {
     }
   }
 
-  console.log(JSON.stringify({
-    level: 'info',
-    scope: 'cleanup-posters',
+  return {
     deleted,
     fallbackCount,
     expiredCount,
     total: keys.length,
     status: 'done'
-  }));
+  };
 }
 
 module.exports = { cleanupOldPosters };
