@@ -37,7 +37,7 @@ function extraerYLimpiarCalidad(label = '') {
 // Reemplaza términos en partido y deporte
 function transformarTexto(texto = '') {
   return texto
-    .replace(/\bVS\b|\bvs\b|\bVs\b/g, '🆚')
+    .replace(/\bVS\b|\bvs\b|\bVs\b/g, ' 🆚 ')
     .replace(/\bFútbol\b|\bFutbol\b|\(Fútbol\)|\(Futbol\)/gi, '⚽')
     .replace(/\bBaloncesto\b|\(Baloncesto\)/gi, '🏀');
 }
@@ -79,7 +79,7 @@ async function getStreams(id, configId) {
     const formato = detectarFormatoDesdeUrl(url);
 
     // Añadir paréntesis en name si no los tiene
-    const nameFinal = /\(.*\)/.test(canalName) ? canalName : `${canalName} (${calidadDetectada})`;
+    const nameFinal = /\(.*\)/.test(canalName) ? canalName : `${canalName}`;
 
     streams.push({
       name: nameFinal,
