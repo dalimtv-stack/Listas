@@ -7,12 +7,13 @@ const { kvSetJson, kvGetJson, kvDelete } = require('../kv');
 const { getM3uHash } = require('../utils');
 const { getChannels } = require('../../src/db');
 const { extractAndStoreGenresIfChanged } = require('../handlers/catalog');
-const config = require('../../src/config'); // Importamos el módulo completo para mutar el flag
+const config = require('../../src/config');
 
 async function configureGet(req, res) {
   const configId = req.params.configId || null;
   let m3uUrl = '';
   let extraWebs = '';
+  let eventosUrl = '';
 
   if (configId) {
     try {
@@ -20,7 +21,7 @@ async function configureGet(req, res) {
       if (configData) {
         m3uUrl = configData.m3uUrl || '';
         extraWebs = configData.extraWebs || '';
-        const eventosUrl = configData.eventosUrl || '';
+        eventosUrl = configData.eventosUrl || '';
         console.log(`[CONFIGURE] Cargada configuración para configId=${configId}: m3uUrl=${m3uUrl}, extraWebs=${extraWebs}, eventosUrl=${eventosUrl}`);
       } else {
         console.warn(`[CONFIGURE] No se encontró configuración para configId=${configId}`);
@@ -79,7 +80,7 @@ async function configureGet(req, res) {
           #m3uUrl {
             min-height: 50px; /* ~2 líneas */
           }
-          #extraWebs {
+          #extraWebs, #eventosUrl {
             min-height: 100px; /* ~4 líneas */
           }
           button {
@@ -155,10 +156,13 @@ async function configureGet(req, res) {
       </head>
       <body>
         <h1>Configure Heimdallr Channels</h1>
-        <p>Enter the URL of your M3U playlist and optionally extra websites separated by ; or |:</p>
+        <p>Enter the URL of your M3U playlist, the URL for events, and optionally extra websites separated by ; or |:</p>
         <form action="/generate-url" method="post">
           <label for="m3uUrl">M3U Playlist URL:</label>
           <textarea name="m3uUrl" id="m3uUrl" placeholder="https://example.com/list.m3u" required>${m3uUrl}</textarea>
+
+          <label for="eventosUrl">Events Website URL:</label>
+          <textarea name="eventosUrl" id="eventosUrl" placeholder="https://www.marca.com/programacion-tv.html">${eventosUrl}</textarea>
 
           <label for="extraWebs">Extra Websites:</label>
           <textarea name="extraWebs" id="extraWebs" placeholder="https://web1.com;https://web2.com">${extraWebs}</textarea>
@@ -179,6 +183,7 @@ async function configurePost(req, res) {
   try {
     const m3uUrl = String(req.body?.m3uUrl || '').trim();
     const extraWebs = String(req.body?.extraWebs || '').trim();
+    const eventosUrl = String(req.body?.eventosUrl || '').trim();
     const action = req.body?.action || 'generate';
     const configId = action === 'update' && req.body.configId ? req.body.configId : uuidv4();
     if (!m3uUrl) throw new Error('URL M3U requerida');
@@ -187,6 +192,7 @@ async function configurePost(req, res) {
     const extraWebsList = extraWebs
       ? extraWebs.split(/[;|,\n]+/).map(s => s.trim()).filter(s => urlRegex.test(s))
       : [];
+    const validatedEventosUrl = eventosUrl && urlRegex.test(eventosUrl) ? eventosUrl : '';
 
     try {
       const controller = new AbortController();
@@ -203,17 +209,14 @@ async function configurePost(req, res) {
 
     // 🧠 Evitar escritura redundante en KV
     const currentConfig = await kvGetJson(configId);
-    // 👇 Añadimos eventosUrl fijo de momento
-    const eventosUrl = 'https://eventos-uvl7.vercel.app';
-    //
     const newConfig = { 
       m3uUrl, 
       extraWebs: extraWebsList.join(';'),
-      eventosUrl   // <-- ya queda guardado en KV junto al resto
+      eventosUrl: validatedEventosUrl
     };
     if (JSON.stringify(currentConfig) !== JSON.stringify(newConfig)) {
       await kvSetJson(configId, newConfig);
-      console.log(`[CONFIGURE] Configuración ${action === 'update' ? 'actualizada' : 'guardada'} para configId=${configId}: m3uUrl=${m3uUrl}, extraWebs=${extraWebs}`);
+      console.log(`[CONFIGURE] Configuración ${action === 'update' ? 'actualizada' : 'guardada'} para configId=${configId}: m3uUrl=${m3uUrl}, extraWebs=${extraWebs}, eventosUrl=${validatedEventosUrl}`);
     } else {
       console.log(`[CONFIGURE] Configuración no modificada para configId=${configId}, se evita escritura en KV`);
     }
