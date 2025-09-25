@@ -69,204 +69,92 @@ function generatePlaceholdPoster({ hora, deporte, competicion }) {
   return `https://placehold.co/938x1406@3x/999999/80f4eb?text=${encodeURIComponent(text)}&font=poppins&png`;
 }
 
-async function scrapePostersForMatches(matches) {
-  const results = [];
-  const urlToMatches = new Map();
+const posterCache = new Map();
 
-  for (const match of matches) {
-    const { partido, hora, deporte, competicion } = match;
-    const finalCacheKey = `posterFinal:${normalizeMatchName(partido)}:${hora}`;
-    const finalCached = await kvGetJson(finalCacheKey);
-
-    if (finalCached?.finalUrl?.startsWith('data:image')) {
-      results.push({ partido, posterUrl: finalCached.finalUrl });
-      console.log(JSON.stringify({
-        level: 'info',
-        scope: 'poster-events',
-        match: partido,
-        hora,
-        poster: finalCached.finalUrl,
-        cached: true,
-        status: 'cached-final'
-      }));
-      continue;
-    }
-
-    const movistarCacheKey = `poster:${normalizeMatchName(partido)}`;
-    let posterUrl = (await kvGetJson(movistarCacheKey))?.posterUrl;
-
-    if (!posterUrl) {
-      try {
-        const isTenis = deporte?.toLowerCase() === 'tenis';
-        const sourceUrl = isTenis
-          ? 'https://www.movistarplus.es/deportes/tenis/donde-ver'
-          : 'https://www.movistarplus.es/el-partido-movistarplus';
-
-        const htmlCacheKey = isTenis ? 'movistar_tenis_html' : 'movistar_general_html';
-        let htmlCached = await kvGetJson(htmlCacheKey);
-
-        let html;
-        if (htmlCached?.html && (Date.now() - htmlCached.createdAt) < 3600 * 1000) {
-          html = htmlCached.html;
-          console.log(JSON.stringify({
-            level: 'info',
-            scope: 'poster-events',
-            match: partido,
-            status: 'html-cached'
-          }));
-        } else {
-          const res = await fetch(sourceUrl, { signal: AbortSignal.timeout(3000) });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          html = await res.text();
-          await kvSetJson(htmlCacheKey, { html, createdAt: Date.now() }, { ttl: 3600 });
-          console.log(JSON.stringify({
-            level: 'info',
-            scope: 'poster-events',
-            match: partido,
-            status: 'html-fetched'
-          }));
-        }
-
-        const $ = cheerio.load(html);
-        const candidates = generateFallbackNames(partido, competicion);
-
-        for (const name of candidates) {
-          $('img').each((_, img) => {
-            const alt = $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
-            const src = $(img).attr('src')?.toLowerCase() || '';
-            if (alt.includes(name) || src.includes(name)) {
-              posterUrl = $(img).attr('src');
-              return false;
-            }
-          });
-          if (posterUrl) break;
-        }
-
-        if (posterUrl?.startsWith('http')) {
-          await kvSetJson(movistarCacheKey, { posterUrl, createdAt: Date.now() }, { ttl: 86400 });
-          console.log(JSON.stringify({
-            level: 'info',
-            scope: 'poster-events',
-            match: partido,
-            poster: posterUrl,
-            cached: movistarCacheKey,
-            status: 'poster-found'
-          }));
-        }
-      } catch (err) {
-        console.error(JSON.stringify({
-          level: 'error',
-          scope: 'poster-events',
-          match: partido,
-          error: err.message,
-          status: 'scrape-error'
-        }));
-      }
-    }
-
-    if (posterUrl?.startsWith('http')) {
-      urlToMatches.set(posterUrl, [
-        ...(urlToMatches.get(posterUrl) || []),
-        { partido, hora, deporte, competicion }
-      ]);
-    } else {
-      const fallback = generatePlaceholdPoster({ hora, deporte, competicion });
-      results.push({ partido, posterUrl: fallback });
-      console.log(JSON.stringify({
-        level: 'warn',
-        scope: 'poster-events',
-        match: partido,
-        tried: generateFallbackNames(partido, competicion),
-        poster: fallback,
-        status: 'fallback'
-      }));
-    }
+async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
+  const finalCacheKey = `posterFinal:${normalizeMatchName(partido)}:${hora}`;
+  const finalCached = await kvGetJson(finalCacheKey);
+  if (finalCached?.finalUrl?.startsWith('data:image')) {
+    return finalCached.finalUrl;
   }
 
-  if (urlToMatches.size > 0) {
-    const posterRequests = Array.from(urlToMatches.entries()).map(([url, matches]) => ({
-      url: url + '.png',
-      horas: matches.map(m => m.hora)
-    }));
+  const movistarCacheKey = `poster:${normalizeMatchName(partido)}`;
+  const cachedMovistar = await kvGetJson(movistarCacheKey);
 
+  let posterUrl = cachedMovistar?.posterUrl;
+  if (!posterUrl) {
     try {
-      console.log(JSON.stringify({
-        level: 'info',
-        scope: 'poster-events',
-        message: 'Enviando solicitud a poster-con-hora',
-        requests: posterRequests.length
-      }));
+      const isTenis = deporte?.toLowerCase() === 'tenis';
+      const sourceUrl = isTenis
+        ? 'https://www.movistarplus.es/deportes/tenis/donde-ver'
+        : 'https://www.movistarplus.es/el-partido-movistarplus';
 
-      const response = await fetch('https://listas-sand.vercel.app/poster-con-hora', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ posters: posterRequests }),
-        signal: AbortSignal.timeout(5000)
-      });
+      const res = await fetch(sourceUrl);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const html = await res.text();
+      const $ = cheerio.load(html);
 
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const candidates = generateFallbackNames(partido, competicion);
+      for (const name of candidates) {
+        $('img').each((_, img) => {
+          const alt = $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+          const src = $(img).attr('src')?.toLowerCase() || '';
+          if (alt.includes(name) || src.includes(name)) {
+            posterUrl = $(img).attr('src');
+            return false;
+          }
+        });
+        if (posterUrl) break;
+      }
 
-      const transformedPosters = await response.json();
-
-      for (const [url, matches] of urlToMatches) {
-        const transformed = transformedPosters.find(p => p.originalUrl === url + '.png');
-        if (transformed?.urls) {
-          matches.forEach((match, index) => {
-            const finalUrl = transformed.urls.find(u => u.hora === match.hora)?.url ||
-                             generatePlaceholdPoster({ hora: match.hora, deporte: match.deporte, competicion: match.competicion });
-            const finalCacheKey = `posterFinal:${normalizeMatchName(match.partido)}:${match.hora}`;
-            // Solo guardar en KV si no es un fallback
-            if (finalUrl.startsWith('data:image')) {
-              kvSetJson(finalCacheKey, { finalUrl, createdAt: Date.now() }, { ttl: 86400 });
-            }
-            results.push({ partido: match.partido, posterUrl: finalUrl });
-            console.log(JSON.stringify({
-              level: 'info',
-              scope: 'poster-events',
-              match: match.partido,
-              hora: match.hora,
-              poster: finalUrl,
-              status: finalUrl.startsWith('data:image') ? 'transformed' : 'transformed-fallback'
-            }));
-          });
-        } else {
-          matches.forEach(match => {
-            const fallback = generatePlaceholdPoster({ hora: match.hora, deporte: match.deporte, competicion: match.competicion });
-            results.push({ partido: match.partido, posterUrl: fallback });
-            console.log(JSON.stringify({
-              level: 'warn',
-              scope: 'poster-events',
-              match: match.partido,
-              poster: fallback,
-              status: 'transformed-fallback'
-            }));
-          });
-        }
+      if (posterUrl?.startsWith('http')) {
+        await kvSetJson(movistarCacheKey, { posterUrl, createdAt: Date.now() }, { ttl: 86400 });
       }
     } catch (err) {
-      console.error(JSON.stringify({
-        level: 'error',
-        scope: 'poster-events',
-        error: err.message,
-        status: 'poster-con-hora-error'
-      }));
-      for (const [, matches] of urlToMatches) {
-        matches.forEach(match => {
-          const fallback = generatePlaceholdPoster({ hora: match.hora, deporte: match.deporte, competicion: match.competicion });
-          results.push({ partido: match.partido, posterUrl: fallback });
-          console.log(JSON.stringify({
-            level: 'warn',
-            scope: 'poster-events',
-            match: match.partido,
-            poster: fallback,
-            status: 'error-fallback'
-          }));
-        });
-      }
+      console.error('[Poster] Error scraping:', err.message);
     }
   }
 
-  return results;
+  if (!posterUrl || !posterUrl.startsWith('http')) {
+    return generatePlaceholdPoster({ hora, deporte, competicion });
+  }
+
+  if (!posterCache.has(posterUrl)) {
+    posterCache.set(posterUrl, new Map());
+  }
+
+  const horaMap = posterCache.get(posterUrl);
+  if (horaMap.has(hora)) {
+    return horaMap.get(hora);
+  }
+
+  const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl + '.png')}`;
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ horas: [hora] })
+  });
+
+  let generados;
+  try {
+    generados = await res.json();
+  } catch (err) {
+    console.error('[Poster] Error parsing JSON:', err.message);
+    return generatePlaceholdPoster({ hora, deporte, competicion });
+  }
+
+  if (!Array.isArray(generados)) {
+    console.error('[Poster] Respuesta inválida de poster-con-hora:', generados);
+    return generatePlaceholdPoster({ hora, deporte, competicion });
+  }
+
+  const generado = generados.find(p => p.hora === hora);
+  const finalUrl = generado?.url || generatePlaceholdPoster({ hora, deporte, competicion });
+
+  horaMap.set(hora, finalUrl);
+  await kvSetJson(finalCacheKey, { finalUrl, createdAt: Date.now() }, { ttl: 86400 });
+
+  return finalUrl;
 }
 
-module.exports = { scrapePostersForMatches };
+module.exports = { scrapePosterForMatch };
