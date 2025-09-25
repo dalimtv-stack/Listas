@@ -36,11 +36,11 @@ module.exports = async (req, res) => {
     overlay.print(
       font,
       0,
-      20,
+      10, // ← subimos el texto 10px más arriba
       {
         text: hora,
         alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
-        alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE
+        alignmentY: Jimp.VERTICAL_ALIGN_TOP
       },
       300,
       80
