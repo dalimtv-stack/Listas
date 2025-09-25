@@ -28,6 +28,7 @@ function generateFallbackNames(original) {
     'rayo vallecano': 'rayo',
     'deportivo alaves': 'alaves',
     'cadiz': 'cádiz',
+    'real oviedo': 'oviedo',
     'celta de vigo': 'celta',
     'athletic club': 'athletic',
     'manchester united': 'man united',
@@ -60,7 +61,9 @@ function generateFallbackNames(original) {
     'olympique lyonnais': 'lyon',
     'olympique de marseille': 'marseille',
     'as monaco': 'monaco',
-    'rc lens': 'lens'
+    'rc lens': 'lens',
+    'al ittihad': 'cádiz',
+    'al ittihad': 'cádiz'// - al nassr
   };
 
   let aliasVersion = normalized;
