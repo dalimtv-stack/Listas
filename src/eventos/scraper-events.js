@@ -7,7 +7,14 @@ const { scrapePostersForMatches } = require('./poster-events');
 
 async function fetchEventos(url) {
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    console.log(JSON.stringify({
+      level: 'info',
+      scope: 'scraper-events',
+      message: 'Iniciando scraping de eventos',
+      url
+    }));
+
+    const res = await fetch(url, { signal: AbortSignal.timeout(3000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const html = await res.text();
     const $ = cheerio.load(html);
@@ -30,6 +37,13 @@ async function fetchEventos(url) {
 
       eventos.push({ dia, hora, deporte, competicion, partido, canales });
     });
+
+    console.log(JSON.stringify({
+      level: 'info',
+      scope: 'scraper-events',
+      message: 'Eventos scrapeados',
+      count: eventos.length
+    }));
 
     // Añadir pósters a los eventos en lote
     const posterInputs = eventos.map(evento => ({
@@ -77,10 +91,9 @@ async function fetchEventos(url) {
   }
 }
 
-// Función auxiliar para generar pósters de fallback (copiada de poster-events.js para consistencia)
 function generatePlaceholdPoster({ hora, deporte, competicion }) {
   const text = `${hora}\n \n${deporte}\n \n${competicion}`;
   return `https://placehold.co/938x1406@3x/999999/80f4eb?text=${encodeURIComponent(text)}&font=poppins&png`;
 }
 
-module.exports = { fetchEventos }
+module.exports = { fetchEventos };
