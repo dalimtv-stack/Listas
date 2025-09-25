@@ -1,6 +1,9 @@
 // api/poster-con-hora.js'use strict';
 
-const Jimp = require('jimp');
+const Jimp = require('@jimp/custom')({
+  plugins: [require('@jimp/plugin-webp')],
+  types: [require('@jimp/types')]
+});
 const fetch = require('node-fetch');
 const path = require('path');
 const fs = require('fs');
