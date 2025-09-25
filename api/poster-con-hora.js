@@ -16,8 +16,8 @@ module.exports = async (req, res) => {
 
   try {
     const fontDir = path.join(__dirname, '..', 'fonts');
-    const fontPath = path.join(fontDir, 'open-sans-32-white.fnt');
-    const pngPath = path.join(fontDir, 'open-sans-32-white.png');
+    const fontPath = path.join(fontDir, 'open-sans-64-white.fnt');
+    const pngPath = path.join(fontDir, 'open-sans-64-white.png');
 
     if (!fs.existsSync(fontPath) || !fs.existsSync(pngPath)) {
       throw new Error('Font files not found en /fonts');
