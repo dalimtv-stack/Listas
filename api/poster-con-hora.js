@@ -41,8 +41,11 @@ module.exports = async (req, res) => {
     console.log('[Poster con hora] Content-Type:', contentType);
     console.log('[Poster con hora] Buffer size:', buffer.length);
 
-    const image = await Jimp.read(buffer);
+    const baseImage = await Jimp.read(buffer);
     const font = await Jimp.loadFont(fontPath);
+
+    // Clonar imagen para no mutar el original
+    const image = baseImage.clone();
 
     const textWidth = Jimp.measureText(font, hora);
     const textHeight = Jimp.measureTextHeight(font, hora, textWidth);
@@ -53,13 +56,10 @@ module.exports = async (req, res) => {
 
     const overlay = new Jimp(overlayWidth, overlayHeight, 0x00000099);
 
-    const xText = padding;
-    const yText = padding;
-
-    overlay.print(font, xText, yText, hora);
+    overlay.print(font, padding, padding, hora);
 
     const xOverlay = Math.floor((image.bitmap.width - overlayWidth) / 2);
-    const yOverlay = 10; // parte superior de la imagen
+    const yOverlay = 10;
 
     image.composite(overlay, xOverlay, yOverlay);
 
