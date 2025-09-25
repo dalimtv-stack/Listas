@@ -23,9 +23,23 @@ module.exports = async (req, res) => {
       throw new Error('Font files not found en /fonts');
     }
 
+    console.log('[Poster con hora] Fetching:', url);
     const response = await fetch(url);
-    if (!response.ok) throw new Error(`No se pudo obtener la imagen: ${response.status}`);
+    const contentType = response.headers.get('content-type');
+    const status = response.status;
+
+    if (!response.ok) throw new Error(`No se pudo obtener la imagen: ${status} ${response.statusText}`);
+    if (!contentType || !contentType.startsWith('image/')) {
+      throw new Error(`Tipo de contenido inválido: ${contentType}`);
+    }
+
     const buffer = await response.buffer();
+    if (!buffer || buffer.length === 0) {
+      throw new Error('Buffer vacío recibido desde la URL de imagen');
+    }
+
+    console.log('[Poster con hora] Content-Type:', contentType);
+    console.log('[Poster con hora] Buffer size:', buffer.length);
 
     const image = await Jimp.read(buffer);
     const font = await Jimp.loadFont(fontPath);
@@ -55,6 +69,6 @@ module.exports = async (req, res) => {
   } catch (err) {
     console.error('[Poster con hora] Error:', err.message);
     res.statusCode = 500;
-    res.end('Error generando póster');
+    res.end(`Error generando póster: ${err.message}`);
   }
 };
