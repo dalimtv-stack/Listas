@@ -1,4 +1,5 @@
 // src/eventos/poster-events.js
+// src/eventos/poster-events.js
 'use strict';
 
 const fetch = require('node-fetch');
@@ -94,7 +95,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
           const alt = $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
           const src = $(img).attr('src')?.toLowerCase() || '';
           if (alt.includes(name) || src.includes(name)) {
-            posterUrl = `${(img).attr('src')}.png`;
+            posterUrl = $(img).attr('src');
             return false;
           }
         });
@@ -125,7 +126,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   }
 
   const horasPendientes = [hora];
-  const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl)}`;
+  const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl + '.png')}`;
   const res = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
