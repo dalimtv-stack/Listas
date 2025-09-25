@@ -120,7 +120,6 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     return fallback;
   }
 
-  // Agrupación y generación por lote
   if (!posterCache.has(posterUrl)) {
     posterCache.set(posterUrl, new Map());
   }
@@ -137,7 +136,19 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     body: JSON.stringify({ horas: [hora] })
   });
 
-  const generados = await res.json(); // [{ hora, url }]
+  let generados;
+  try {
+    generados = await res.json();
+  } catch (err) {
+    console.error('[Poster] Error parsing JSON:', err.message);
+    return generatePlaceholdPoster({ hora, deporte, competicion });
+  }
+
+  if (!Array.isArray(generados)) {
+    console.error('[Poster] Respuesta inválida de poster-con-hora:', generados);
+    return generatePlaceholdPoster({ hora, deporte, competicion });
+  }
+
   const generado = generados.find(p => p.hora === hora);
   const finalUrl = generado?.url || generatePlaceholdPoster({ hora, deporte, competicion });
 
