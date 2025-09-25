@@ -64,7 +64,7 @@ function generateFallbackNames(original) {
     'rc lens': 'lens',
     'al akhdoud': 'al okhdood',
     'bologna': 'bolonia',
-    'simulcast': 'multicámara'
+    'simulcast': 'multieuropa'
   };
 
   let aliasVersion = normalized;
