@@ -94,7 +94,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
           const alt = $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
           const src = $(img).attr('src')?.toLowerCase() || '';
           if (alt.includes(name) || src.includes(name)) {
-            posterUrl = $(img).attr('src');
+            posterUrl = `${(img).attr('src')}.png`;
             return false;
           }
         });
