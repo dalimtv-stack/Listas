@@ -123,7 +123,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
 
     if (posterUrl && posterUrl.startsWith('http')) {
       await kvSetJson(cacheKey, { posterUrl, createdAt: Date.now() }, { ttl: 24 * 60 * 60 });
-      const finalUrl = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl)}&hora=${encodeURIComponent(hora)}`;
+      const finalUrl = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl)}.png&hora=${encodeURIComponent(hora)}`;
       console.log(JSON.stringify({
         level: 'info',
         scope: 'poster-events',
