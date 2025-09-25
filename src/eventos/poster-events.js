@@ -9,8 +9,8 @@ const { kvGetJson, kvSetJson } = require('../../api/kv');
 function normalizeMatchName(matchName) {
   return matchName
     .toLowerCase()
-    .replace(/\bvs\b/gi, '-') // Cambia "VS" por "-"
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Elimina acentos
+    .replace(/\bvs\b/gi, '-')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -84,7 +84,6 @@ function generateFallbackNames(original, context = '') {
     }
   }
 
-  // Añadir variantes basadas en la competición si existe
   if (context) {
     const contextNorm = normalizeMatchName(context);
     variants.push(contextNorm);
@@ -101,28 +100,17 @@ function generateFallbackNames(original, context = '') {
   return [...new Set(variants)];
 }
 
-// Genera un póster de fallback con hora, deporte y competición
 function generatePlaceholdPoster({ hora, deporte, competicion }) {
   const text = `${hora}\n \n${deporte}\n \n${competicion}`;
   return `https://placehold.co/938x1406@3x/999999/80f4eb?text=${encodeURIComponent(text)}&font=poppins&png`;
 }
 
-// Scrapea póster para un partido desde Movistar Plus+ (sin Puppeteer)
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   const cacheKey = `poster:${normalizeMatchName(partido)}`;
   const cached = await kvGetJson(cacheKey);
 
   if (cached?.posterUrl && cached.posterUrl.startsWith('http')) {
-    const finalUrl = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(cached.posterUrl)}.png&hora=${encodeURIComponent(hora)}`;
-    console.log(JSON.stringify({
-      level: 'info',
-      scope: 'poster-events',
-      match: partido,
-      poster: finalUrl,
-      cached: true,
-      status: 'cached-transformed'
-    }));
-    return finalUrl;
+    return { partido, hora, deporte, competicion, posterUrl: cached.posterUrl };
   }
 
   try {
@@ -138,7 +126,6 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
 
     const candidates = generateFallbackNames(partido, competicion);
     let posterUrl = null;
-    let matchedVariant = null;
 
     for (const name of candidates) {
       $('img').each((_, img) => {
@@ -146,7 +133,6 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
         const src = $(img).attr('src')?.toLowerCase() || '';
         if (alt.includes(name) || src.includes(name)) {
           posterUrl = $(img).attr('src');
-          matchedVariant = name;
           return false;
         }
       });
@@ -155,41 +141,50 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
 
     if (posterUrl && posterUrl.startsWith('http')) {
       await kvSetJson(cacheKey, { posterUrl, createdAt: Date.now() }, { ttl: 24 * 60 * 60 });
-      const finalUrl = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl)}.png&hora=${encodeURIComponent(hora)}`;
-      console.log(JSON.stringify({
-        level: 'info',
-        scope: 'poster-events',
-        match: partido,
-        variant: matchedVariant,
-        poster: finalUrl,
-        cached: cacheKey,
-        status: 'found'
-      }));
-      return finalUrl;
+      return { partido, hora, deporte, competicion, posterUrl };
     } else {
       const fallback = generatePlaceholdPoster({ hora, deporte, competicion });
-      console.log(JSON.stringify({
-        level: 'warn',
-        scope: 'poster-events',
-        match: partido,
-        tried: candidates,
-        poster: fallback,
-        status: 'fallback'
-      }));
-      return fallback;
+      return { partido, hora, deporte, competicion, posterUrl: fallback };
     }
   } catch (err) {
     const fallback = generatePlaceholdPoster({ hora, deporte, competicion });
-    console.error(JSON.stringify({
-      level: 'error',
-      scope: 'poster-events',
-      match: partido,
-      error: err.stack || err.message,
-      poster: fallback,
-      status: 'error-fallback'
-    }));
-    return fallback;
+    return { partido, hora, deporte, competicion, posterUrl: fallback };
   }
 }
 
-module.exports = { scrapePosterForMatch };
+// FIX APLICADO: agrupación y generación por lote
+async function generarPostersAgrupados(partidos) {
+  const agrupados = {};
+  for (const p of partidos) {
+    const { partido, hora, deporte, competicion } = p;
+    const resultado = await scrapePosterForMatch({ partido, hora, deporte, competicion });
+    const posterUrl = resultado.posterUrl;
+    if (!agrupados[posterUrl]) agrupados[posterUrl] = [];
+    agrupados[posterUrl].push({ partido, hora, deporte, competicion });
+  }
+
+  const resultadosFinales = [];
+
+  for (const [posterUrl, variantes] of Object.entries(agrupados)) {
+    const horas = variantes.map(v => v.hora);
+    const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl)}`;
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ horas })
+    });
+
+    const posters = await res.json(); // [{ hora, url }]
+    for (const { hora, url } of posters) {
+      const partido = variantes.find(v => v.hora === hora)?.partido;
+      const deporte = variantes.find(v => v.hora === hora)?.deporte;
+      const competicion = variantes.find(v => v.hora === hora)?.competicion;
+
+      resultadosFinales.push({ partido, hora, deporte, competicion, poster: url });
+    }
+  }
+
+  return resultadosFinales;
+}
+
+module.exports = { scrapePosterForMatch, generarPostersAgrupados };
