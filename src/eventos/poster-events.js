@@ -84,8 +84,6 @@ async function scrapePostersForMatches(matches) {
         level: 'info',
         scope: 'poster-events',
         match: partido,
-        hora,
-        poster: finalCached.finalUrl,
         cached: true,
         status: 'cached-final'
       }));
@@ -208,7 +206,6 @@ async function scrapePostersForMatches(matches) {
               scope: 'poster-events',
               match: match.partido,
               hora: match.hora,
-              poster: finalUrl,
               status: 'transformed'
             }));
           });
@@ -222,7 +219,6 @@ async function scrapePostersForMatches(matches) {
               level: 'warn',
               scope: 'poster-events',
               match: match.partido,
-              poster: fallback,
               status: 'transformed-fallback'
             }));
           });
