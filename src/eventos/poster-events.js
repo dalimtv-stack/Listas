@@ -16,7 +16,7 @@ function normalizeMatchName(matchName) {
 }
 
 // Genera variantes abreviadas para fallback
-function generateFallbackNames(original) {
+function generateFallbackNames(original, context = '') {
   const normalized = normalizeMatchName(original);
   const variants = [normalized];
 
@@ -84,6 +84,20 @@ function generateFallbackNames(original) {
     }
   }
 
+  // Añadir variantes basadas en la competición si existe
+  if (context) {
+    const contextNorm = normalizeMatchName(context);
+    variants.push(contextNorm);
+    if (teamAliases[contextNorm]) {
+      const alias = teamAliases[contextNorm];
+      if (Array.isArray(alias)) {
+        variants.push(...alias.map(normalizeMatchName));
+      } else {
+        variants.push(normalizeMatchName(alias));
+      }
+    }
+  }
+
   return [...new Set(variants)];
 }
 
@@ -122,7 +136,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     const html = await res.text();
     const $ = cheerio.load(html);
 
-    const candidates = generateFallbackNames(partido);
+    const candidates = generateFallbackNames(partido, competicion);
     let posterUrl = null;
     let matchedVariant = null;
 
