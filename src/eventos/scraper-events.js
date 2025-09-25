@@ -3,11 +3,11 @@
 
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
-const { scrapePosterForMatch } = require('./poster-events');
+const { scrapePostersForMatches } = require('./poster-events');
 
 async function fetchEventos(url) {
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const html = await res.text();
     const $ = cheerio.load(html);
@@ -31,21 +31,56 @@ async function fetchEventos(url) {
       eventos.push({ dia, hora, deporte, competicion, partido, canales });
     });
 
-    // Añadir pósters a los eventos
-    for (const evento of eventos) {
-      evento.poster = await scrapePosterForMatch({
-        partido: evento.partido,
+    // Añadir pósters a los eventos en lote
+    const posterInputs = eventos.map(evento => ({
+      partido: evento.partido,
+      hora: evento.hora,
+      deporte: evento.deporte,
+      competicion: evento.competicion
+    }));
+
+    console.log(JSON.stringify({
+      level: 'info',
+      scope: 'scraper-events',
+      message: 'Obteniendo pósters para eventos',
+      eventos: eventos.length
+    }));
+
+    const posters = await scrapePostersForMatches(posterInputs);
+
+    // Mapear pósters a los eventos
+    eventos.forEach(evento => {
+      const poster = posters.find(p => p.partido === evento.partido && p.posterUrl);
+      evento.poster = poster ? poster.posterUrl : generatePlaceholdPoster({
         hora: evento.hora,
         deporte: evento.deporte,
         competicion: evento.competicion
       });
-    }
+    });
+
+    console.log(JSON.stringify({
+      level: 'info',
+      scope: 'scraper-events',
+      message: 'Eventos con pósters generados',
+      eventos: eventos.length
+    }));
 
     return eventos;
   } catch (err) {
-    console.error('[EVENTOS] Error al scrapear:', err.message);
+    console.error(JSON.stringify({
+      level: 'error',
+      scope: 'scraper-events',
+      error: err.message,
+      stack: err.stack
+    }));
     return [];
   }
 }
 
-module.exports = { fetchEventos };
+// Función auxiliar para generar pósters de fallback (copiada de poster-events.js para consistencia)
+function generatePlaceholdPoster({ hora, deporte, competicion }) {
+  const text = `${hora}\n \n${deporte}\n \n${competicion}`;
+  return `https://placehold.co/938x1406@3x/999999/80f4eb?text=${encodeURIComponent(text)}&font=poppins&png`;
+}
+
+module.exports = { fetchEventos }
