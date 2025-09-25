@@ -23,47 +23,13 @@ function generateFallbackNames(original, context = '') {
   const teamAliases = {
     'atletico de madrid': 'at. madrid',
     'real madrid': 'r. madrid',
-    'real sociedad': 'r. sociedad',
     'fc barcelona': 'barça',
-    'rayo vallecano': 'rayo',
-    'deportivo alaves': 'alaves',
-    'cadiz': 'cádiz',
-    'real oviedo': 'oviedo',
-    'celta de vigo': 'celta',
-    'athletic club': 'athletic',
-    'manchester united': 'man united',
-    'manchester city': 'man city',
-    'tottenham hotspur': 'spurs',
-    'newcastle united': 'newcastle',
-    'west ham united': 'west ham',
-    'brighton & hove albion': 'brighton',
-    'aston villa': 'villa',
-    'crystal palace': 'palace',
-    'wolverhampton wanderers': 'wolves',
-    'nottingham forest': 'forest',
-    'sheffield united': 'sheffield',
-    'luton town': 'luton',
     'juventus': 'juve',
     'inter milan': 'inter',
     'ac milan': 'milan',
     'bayern munich': 'bayern',
     'borussia dortmund': 'dortmund',
-    'rb leipzig': 'leipzig',
-    'bayer leverkusen': 'leverkusen',
-    'borussia monchengladbach': 'gladbach',
-    'eintracht frankfurt': 'frankfurt',
-    'vfl wolfsburg': 'wolfsburg',
-    'fc koln': 'cologne',
-    'werder bremen': 'bremen',
-    'fc augsburg': 'augsburg',
-    'union berlin': 'union',
     'paris saint-germain': 'psg',
-    'olympique lyonnais': 'lyon',
-    'olympique de marseille': 'marseille',
-    'as monaco': 'monaco',
-    'rc lens': 'lens',
-    'al akhdoud': 'al okhdood',
-    'bologna': 'bolonia',
     'simulcast': ['multieuropa', 'multichampions'],
     'pekin tournament': 'torneo de pekin',
     'tokyo tournament': 'torneo de tokio'
@@ -105,13 +71,11 @@ function generatePlaceholdPoster({ hora, deporte, competicion }) {
   return `https://placehold.co/938x1406@3x/999999/80f4eb?text=${encodeURIComponent(text)}&font=poppins&png`;
 }
 
-async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
+// Scrapea póster desde Movistar Plus+ (sin Puppeteer)
+async function scrapePosterUrl({ partido, deporte, competicion }) {
   const cacheKey = `poster:${normalizeMatchName(partido)}`;
   const cached = await kvGetJson(cacheKey);
-
-  if (cached?.posterUrl && cached.posterUrl.startsWith('http')) {
-    return { partido, hora, deporte, competicion, posterUrl: cached.posterUrl };
-  }
+  if (cached?.posterUrl?.startsWith('http')) return cached.posterUrl;
 
   try {
     const isTenis = deporte?.toLowerCase() === 'tenis';
@@ -139,34 +103,33 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
       if (posterUrl) break;
     }
 
-    if (posterUrl && posterUrl.startsWith('http')) {
-      await kvSetJson(cacheKey, { posterUrl, createdAt: Date.now() }, { ttl: 24 * 60 * 60 });
-      return { partido, hora, deporte, competicion, posterUrl };
-    } else {
-      const fallback = generatePlaceholdPoster({ hora, deporte, competicion });
-      return { partido, hora, deporte, competicion, posterUrl: fallback };
+    if (posterUrl?.startsWith('http')) {
+      await kvSetJson(cacheKey, { posterUrl, createdAt: Date.now() }, { ttl: 86400 });
+      return posterUrl;
     }
-  } catch (err) {
-    const fallback = generatePlaceholdPoster({ hora, deporte, competicion });
-    return { partido, hora, deporte, competicion, posterUrl: fallback };
+
+    return null;
+  } catch {
+    return null;
   }
 }
 
-// FIX APLICADO: agrupación y generación por lote
-async function generarPostersAgrupados(partidos) {
+// FIX: Genera todos los pósters agrupando por posterUrl
+async function generarPostersConHora(partidos) {
   const agrupados = {};
-  for (const p of partidos) {
-    const { partido, hora, deporte, competicion } = p;
-    const resultado = await scrapePosterForMatch({ partido, hora, deporte, competicion });
-    const posterUrl = resultado.posterUrl;
-    if (!agrupados[posterUrl]) agrupados[posterUrl] = [];
-    agrupados[posterUrl].push({ partido, hora, deporte, competicion });
+
+  for (const { partido, hora, deporte, competicion } of partidos) {
+    const posterUrl = await scrapePosterUrl({ partido, deporte, competicion });
+    const key = posterUrl || generatePlaceholdPoster({ hora, deporte, competicion });
+
+    if (!agrupados[key]) agrupados[key] = [];
+    agrupados[key].push({ partido, hora, deporte, competicion });
   }
 
-  const resultadosFinales = [];
+  const resultados = [];
 
-  for (const [posterUrl, variantes] of Object.entries(agrupados)) {
-    const horas = variantes.map(v => v.hora);
+  for (const [posterUrl, grupo] of Object.entries(agrupados)) {
+    const horas = grupo.map(g => g.hora);
     const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl)}`;
     const res = await fetch(endpoint, {
       method: 'POST',
@@ -174,17 +137,24 @@ async function generarPostersAgrupados(partidos) {
       body: JSON.stringify({ horas })
     });
 
-    const posters = await res.json(); // [{ hora, url }]
-    for (const { hora, url } of posters) {
-      const partido = variantes.find(v => v.hora === hora)?.partido;
-      const deporte = variantes.find(v => v.hora === hora)?.deporte;
-      const competicion = variantes.find(v => v.hora === hora)?.competicion;
+    const generados = await res.json(); // [{ hora, url }]
+    for (const { hora, url } of generados) {
+      const partido = grupo.find(g => g.hora === hora)?.partido;
+      const deporte = grupo.find(g => g.hora === hora)?.deporte;
+      const competicion = grupo.find(g => g.hora === hora)?.competicion;
 
-      resultadosFinales.push({ partido, hora, deporte, competicion, poster: url });
+      resultados.push({
+        id: `poster:${normalizeMatchName(partido)}:${hora}`,
+        partido,
+        hora,
+        deporte,
+        competicion,
+        posterUrl: url
+      });
     }
   }
 
-  return resultadosFinales;
+  return resultados;
 }
 
-module.exports = { scrapePosterForMatch, generarPostersAgrupados };
+module.exports = { generarPostersConHora };
