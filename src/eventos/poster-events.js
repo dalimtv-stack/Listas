@@ -64,7 +64,9 @@ function generateFallbackNames(original) {
     'rc lens': 'lens',
     'al akhdoud': 'al okhdood',
     'bologna': 'bolonia',
-    'simulcast': ['multieuropa', 'multichampions']
+    'simulcast': ['multieuropa', 'multichampions'],
+    'pekin tournament': 'torneo de pekin',
+    'tokyo tournament': 'torneo de tokio'
   };
 
   let aliasVersion = normalized;
