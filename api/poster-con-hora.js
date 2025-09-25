@@ -1,9 +1,7 @@
 // api/poster-con-hora.js'use strict';
+'use strict';
 
-const Jimp = require('@jimp/custom')({
-  plugins: [require('@jimp/plugin-webp')],
-  types: [require('@jimp/types')]
-});
+const Jimp = require('jimp');
 const fetch = require('node-fetch');
 const path = require('path');
 const fs = require('fs');
@@ -32,9 +30,6 @@ module.exports = async (req, res) => {
     if (!response.ok || !contentType?.startsWith('image/')) {
       throw new Error(`No se pudo obtener imagen válida: ${response.status}`);
     }
-    if (contentType.includes('webp')) {
-      throw new Error(`Unsupported MIME type: ${contentType}`);
-    }
 
     const buffer = await response.buffer();
     if (!buffer || buffer.length === 0) {
@@ -56,9 +51,9 @@ module.exports = async (req, res) => {
       const xOverlay = Math.floor((image.bitmap.width - overlay.bitmap.width) / 2);
       image.composite(overlay, xOverlay, 10);
 
-      const finalBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+      const finalBuffer = await image.getBufferAsync(Jimp.MIME_WEBP);
       const base64 = finalBuffer.toString('base64');
-      const dataUrl = `data:image/jpeg;base64,${base64}`;
+      const dataUrl = `data:image/webp;base64,${base64}`;
       results.push({ hora, url: dataUrl });
     }
 
