@@ -93,7 +93,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
       cached: true,
       status: 'cached'
     }));
-    return cached.url; // ✅ devolvemos solo la URL
+    return cached.url;
   }
 
   try {
@@ -113,24 +113,25 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
         if (alt.includes(name) || src.includes(name)) {
           posterUrl = $(img).attr('src');
           matchedVariant = name;
-          return false; // break loop
+          return false;
         }
       });
       if (posterUrl) break;
     }
 
     if (posterUrl && posterUrl.startsWith('http')) {
-      await kvSetJson(cacheKey, { url: posterUrl, createdAt: Date.now() }, { ttl: 24 * 60 * 60 });
+      const finalUrl = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl)}&hora=${encodeURIComponent(hora)}`;
+      await kvSetJson(cacheKey, { url: finalUrl, createdAt: Date.now() }, { ttl: 24 * 60 * 60 });
       console.log(JSON.stringify({
         level: 'info',
         scope: 'poster-events',
         match: partido,
         variant: matchedVariant,
-        poster: posterUrl,
+        poster: finalUrl,
         cached: cacheKey,
         status: 'found'
       }));
-      return posterUrl;
+      return finalUrl;
     } else {
       const fallback = generatePlaceholdPoster({ hora, deporte, competicion });
       console.log(JSON.stringify({
