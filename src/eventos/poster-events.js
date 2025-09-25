@@ -110,7 +110,12 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   }
 
   try {
-    const res = await fetch('https://www.movistarplus.es/el-partido-movistarplus');
+    const isTenis = deporte?.toLowerCase() === 'tenis';
+    const sourceUrl = isTenis
+      ? 'https://www.movistarplus.es/deportes/tenis/donde-ver'
+      : 'https://www.movistarplus.es/el-partido-movistarplus';
+
+    const res = await fetch(sourceUrl);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const html = await res.text();
     const $ = cheerio.load(html);
