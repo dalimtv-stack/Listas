@@ -1,5 +1,4 @@
 // src/eventos/poster-events.js
-// src/eventos/poster-events.js
 'use strict';
 
 const fetch = require('node-fetch');
@@ -73,10 +72,16 @@ function generatePlaceholdPoster({ hora, deporte, competicion }) {
 const posterCache = new Map(); // clave: posterUrl → Map(hora → url)
 
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
-  const cacheKey = `poster:${normalizeMatchName(partido)}`;
-  const cached = await kvGetJson(cacheKey);
+  const finalCacheKey = `posterFinal:${normalizeMatchName(partido)}:${hora}`;
+  const finalCached = await kvGetJson(finalCacheKey);
+  if (finalCached?.finalUrl?.startsWith('data:image')) {
+    return finalCached.finalUrl;
+  }
 
-  let posterUrl = cached?.posterUrl;
+  const movistarCacheKey = `poster:${normalizeMatchName(partido)}`;
+  const cachedMovistar = await kvGetJson(movistarCacheKey);
+
+  let posterUrl = cachedMovistar?.posterUrl;
   if (!posterUrl) {
     try {
       const isTenis = deporte?.toLowerCase() === 'tenis';
@@ -103,7 +108,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
       }
 
       if (posterUrl?.startsWith('http')) {
-        await kvSetJson(cacheKey, { posterUrl, createdAt: Date.now() }, { ttl: 86400 });
+        await kvSetJson(movistarCacheKey, { posterUrl, createdAt: Date.now() }, { ttl: 86400 });
       }
     } catch (err) {
       console.error('[Poster] Error scraping:', err.message);
@@ -125,20 +130,21 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     return horaMap.get(hora);
   }
 
-  const horasPendientes = [hora];
   const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl + '.png')}`;
   const res = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ horas: horasPendientes })
+    body: JSON.stringify({ horas: [hora] })
   });
 
   const generados = await res.json(); // [{ hora, url }]
-  for (const { hora: h, url } of generados) {
-    horaMap.set(h, url);
-  }
+  const generado = generados.find(p => p.hora === hora);
+  const finalUrl = generado?.url || generatePlaceholdPoster({ hora, deporte, competicion });
 
-  return horaMap.get(hora);
+  horaMap.set(hora, finalUrl);
+  await kvSetJson(finalCacheKey, { finalUrl, createdAt: Date.now() }, { ttl: 86400 });
+
+  return finalUrl;
 }
 
 module.exports = { scrapePosterForMatch };
