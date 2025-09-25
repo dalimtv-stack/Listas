@@ -14,7 +14,7 @@ function extraerYLimpiarCalidad(label = '') {
     { match: ['1440p', '1440', '2k', 'qhd', 'quad hd'], nombre: 'Quad HD - 2K(1440p)' },
     { match: ['1080p', '1080', 'fhd'], nombre: 'Full HD (1080p)' },
     { match: ['720p', '720', 'hd'], nombre: 'HD (720p)' },
-    { match: ['540p', '540', '480p', '480', 'sd'], nombre: '(SD)' }
+    { match: ['540p', '540', '480p', '480', 'sd'], nombre: 'SD (480p/540p)' }
   ];
 
   let calidadDetectada = '';
@@ -39,7 +39,8 @@ function transformarTexto(texto = '') {
   return texto
     .replace(/\bVS\b|\bvs\b|\bVs\b/g, ' 🆚 ')
     .replace(/\bFútbol\b|\bFutbol\b|\(Fútbol\)|\(Futbol\)/gi, '⚽')
-    .replace(/\bBaloncesto\b|\(Baloncesto\)/gi, '🏀');
+    .replace(/\bBaloncesto\b|\(Baloncesto\)/gi, '🏀')
+    .replace(/\bTenis\b|\(Tenis\)/gi, '🎾');
 }
 
 // Detecta tipo de stream desde la URL
