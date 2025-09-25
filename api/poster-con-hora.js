@@ -19,9 +19,8 @@ module.exports = async (req, res) => {
     const fontPath = path.join(fontDir, 'open-sans-32-white.fnt');
     const pngPath = path.join(fontDir, 'open-sans-32-white.png');
 
-    // Verificar que ambos archivos existen
     if (!fs.existsSync(fontPath) || !fs.existsSync(pngPath)) {
-      throw new Error('Font files not found in /fonts');
+      throw new Error('Font files not found en /fonts');
     }
 
     const response = await fetch(url);
@@ -31,21 +30,15 @@ module.exports = async (req, res) => {
     const image = await Jimp.read(buffer);
     const font = await Jimp.loadFont(fontPath);
 
-    const overlay = new Jimp(300, 80, 0x00000099); // fondo negro con alpha
+    const overlayWidth = 300;
+    const overlayHeight = 80;
+    const overlay = new Jimp(overlayWidth, overlayHeight, 0x00000099);
 
-    overlay.print(
-      font,
-      0,
-      10, // ← subimos el texto 10px más arriba
-      {
-        text: hora,
-        alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
-        alignmentY: Jimp.VERTICAL_ALIGN_TOP
-      },
-      300,
-      80
-    );
+    const textWidth = Jimp.measureText(font, hora);
+    const x = Math.floor((overlayWidth - textWidth) / 2);
+    const y = 10; // más arriba para mejor estética
 
+    overlay.print(font, x, y, hora);
     image.composite(overlay, 10, 10);
 
     const finalBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
