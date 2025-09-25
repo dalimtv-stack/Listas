@@ -64,16 +64,23 @@ function generateFallbackNames(original) {
     'rc lens': 'lens',
     'al akhdoud': 'al okhdood',
     'bologna': 'bolonia',
-    'simulcast': 'multieuropa'
+    'simulcast': ['multieuropa', 'multichampions']
   };
 
   let aliasVersion = normalized;
+
   for (const [full, alias] of Object.entries(teamAliases)) {
     const regex = new RegExp(`\\b${full}\\b`, 'gi');
-    aliasVersion = aliasVersion.replace(regex, alias);
+    if (Array.isArray(alias)) {
+      alias.forEach(a => {
+        const replaced = aliasVersion.replace(regex, a);
+        if (replaced !== aliasVersion) variants.push(replaced);
+      });
+    } else {
+      const replaced = aliasVersion.replace(regex, alias);
+      if (replaced !== aliasVersion) variants.push(replaced);
+    }
   }
-
-  if (aliasVersion !== normalized) variants.push(aliasVersion);
 
   return [...new Set(variants)];
 }
