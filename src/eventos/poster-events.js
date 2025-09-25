@@ -84,16 +84,18 @@ function generatePlaceholdPoster({ hora, deporte, competicion }) {
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   const cacheKey = `poster:${normalizeMatchName(partido)}`;
   const cached = await kvGetJson(cacheKey);
-  if (cached?.url && cached.url.startsWith('http')) {
+
+  if (cached?.posterUrl && cached.posterUrl.startsWith('http')) {
+    const finalUrl = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(cached.posterUrl)}&hora=${encodeURIComponent(hora)}`;
     console.log(JSON.stringify({
       level: 'info',
       scope: 'poster-events',
       match: partido,
-      poster: cached.url,
+      poster: finalUrl,
       cached: true,
-      status: 'cached'
+      status: 'cached-transformed'
     }));
-    return cached.url;
+    return finalUrl;
   }
 
   try {
@@ -120,8 +122,8 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     }
 
     if (posterUrl && posterUrl.startsWith('http')) {
+      await kvSetJson(cacheKey, { posterUrl, createdAt: Date.now() }, { ttl: 24 * 60 * 60 });
       const finalUrl = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl)}&hora=${encodeURIComponent(hora)}`;
-      await kvSetJson(cacheKey, { url: finalUrl, createdAt: Date.now() }, { ttl: 24 * 60 * 60 });
       console.log(JSON.stringify({
         level: 'info',
         scope: 'poster-events',
