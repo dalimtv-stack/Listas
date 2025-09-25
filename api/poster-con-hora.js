@@ -49,13 +49,23 @@ module.exports = async (req, res) => {
           let contentType;
           const cached = await kvGetJson(cacheKey);
 
-          if (cached?.base64) {
+          if (cached?.base64 && (Date.now() - cached.createdAt) < 86400 * 1000) {
             buffer = Buffer.from(cached.base64, 'base64');
             contentType = cached.contentType || 'image/png';
-            console.log('[Poster con hora] Usando caché para:', url);
+            console.log(JSON.stringify({
+              level: 'info',
+              scope: 'poster-con-hora',
+              url,
+              status: 'cached'
+            }));
           } else {
-            console.log('[Poster con hora] Fetching:', url);
-            const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
+            console.log(JSON.stringify({
+              level: 'info',
+              scope: 'poster-con-hora',
+              url,
+              status: 'fetching'
+            }));
+            const response = await fetch(url, { signal: AbortSignal.timeout(3000) });
             if (!response.ok) throw new Error(`No se pudo obtener la imagen: ${response.status}`);
 
             contentType = response.headers.get('content-type');
@@ -72,7 +82,13 @@ module.exports = async (req, res) => {
               base64: buffer.toString('base64'),
               contentType,
               createdAt: Date.now()
-            }, { ttl: 86400 });
+            }, { ttl: 86400 * 2 }); // Aumentar TTL a 48 horas
+            console.log(JSON.stringify({
+              level: 'info',
+              scope: 'poster-con-hora',
+              url,
+              status: 'cached-saved'
+            }));
           }
 
           const baseImage = await Jimp.read(buffer);
@@ -95,7 +111,13 @@ module.exports = async (req, res) => {
 
           results.push({ originalUrl: url, urls: transformedUrls });
         } catch (err) {
-          console.error('[Poster con hora] Error procesando:', url, err.message);
+          console.error(JSON.stringify({
+            level: 'error',
+            scope: 'poster-con-hora',
+            url,
+            error: err.message,
+            status: 'error'
+          }));
           results.push({ originalUrl: url, urls: [], error: err.message });
         }
       }
@@ -103,7 +125,12 @@ module.exports = async (req, res) => {
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify(results));
     } catch (err) {
-      console.error('[Poster con hora] Error general:', err.message);
+      console.error(JSON.stringify({
+        level: 'error',
+        scope: 'poster-con-hora',
+        error: err.message,
+        status: 'general-error'
+      }));
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify({ error: `Error generando pósters: ${err.message}` }));
@@ -131,13 +158,23 @@ module.exports = async (req, res) => {
       let contentType;
       const cached = await kvGetJson(cacheKey);
 
-      if (cached?.base64) {
+      if (cached?.base64 && (Date.now() - cached.createdAt) < 86400 * 1000) {
         buffer = Buffer.from(cached.base64, 'base64');
         contentType = cached.contentType || 'image/png';
-        console.log('[Poster con hora] Usando caché para:', url);
+        console.log(JSON.stringify({
+          level: 'info',
+          scope: 'poster-con-hora',
+          url,
+          status: 'cached'
+        }));
       } else {
-        console.log('[Poster con hora] Fetching:', url);
-        const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
+        console.log(JSON.stringify({
+          level: 'info',
+          scope: 'poster-con-hora',
+          url,
+          status: 'fetching'
+        }));
+        const response = await fetch(url, { signal: AbortSignal.timeout(3000) });
         if (!response.ok) throw new Error(`No se pudo obtener la imagen: ${response.status}`);
 
         contentType = response.headers.get('content-type');
@@ -154,7 +191,13 @@ module.exports = async (req, res) => {
           base64: buffer.toString('base64'),
           contentType,
           createdAt: Date.now()
-        }, { ttl: 86400 });
+        }, { ttl: 86400 * 2 });
+        console.log(JSON.stringify({
+          level: 'info',
+          scope: 'poster-con-hora',
+          url,
+          status: 'cached-saved'
+        }));
       }
 
       const image = await Jimp.read(buffer);
@@ -171,7 +214,13 @@ module.exports = async (req, res) => {
       res.setHeader('Content-Type', 'image/jpeg');
       res.end(finalBuffer);
     } catch (err) {
-      console.error('[Poster con hora] Error:', err.message);
+      console.error(JSON.stringify({
+        level: 'error',
+        scope: 'poster-con-hora',
+        url,
+        error: err.message,
+        status: 'error'
+      }));
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify({ error: `Error generando póster: ${err.message}` }));
