@@ -9,7 +9,7 @@ module.exports = async (req, res) => {
 
   if (!url) {
     res.statusCode = 400;
-    return res.end('Falta el parámetro \"url\"");
+    return res.end('Falta el parámetro "url"');
   }
 
   try {
@@ -18,10 +18,10 @@ module.exports = async (req, res) => {
     const buffer = await response.buffer();
 
     const image = await Jimp.read(buffer);
-    const font = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK); // esta sí existe
+    const font = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK); // fuente embebida que sí existe
 
-    // Fondo semitransparente
-    const overlay = new Jimp(300, 80, 0x00000099); // negro con alpha
+    // Fondo semitransparente negro
+    const overlay = new Jimp(300, 80, 0x00000099);
 
     overlay.print(
       font,
