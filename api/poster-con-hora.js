@@ -12,7 +12,8 @@ module.exports = async (req, res) => {
 
   if (!url || !Array.isArray(horas) || horas.length === 0) {
     res.statusCode = 400;
-    return res.end('Faltan parámetros "url" y/o "horas[]"');
+    res.setHeader('Content-Type', 'application/json');
+    return res.end(JSON.stringify({ error: 'Faltan parámetros "url" y/o "horas[]"' }));
   }
 
   try {
@@ -61,6 +62,7 @@ module.exports = async (req, res) => {
   } catch (err) {
     console.error('[Poster con hora] Error:', err.message);
     res.statusCode = 500;
-    res.end(`Error generando pósters: ${err.message}`);
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ error: `Error generando pósters: ${err.message}` }));
   }
 };
