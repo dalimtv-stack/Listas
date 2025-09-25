@@ -62,8 +62,9 @@ function generateFallbackNames(original) {
     'olympique de marseille': 'marseille',
     'as monaco': 'monaco',
     'rc lens': 'lens',
-    'al ittihad': 'cádiz',
-    'al ittihad': 'cádiz'// - al nassr
+    'al akhdoud': 'al okhdood',
+    'bologna': 'bolonia',
+    'simulcast': 'multicámara'
   };
 
   let aliasVersion = normalized;
