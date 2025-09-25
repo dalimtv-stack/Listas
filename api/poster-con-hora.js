@@ -30,16 +30,24 @@ module.exports = async (req, res) => {
     const image = await Jimp.read(buffer);
     const font = await Jimp.loadFont(fontPath);
 
-    const overlayWidth = 300;
-    const overlayHeight = 80;
+    const textWidth = Jimp.measureText(font, hora);
+    const textHeight = Jimp.measureTextHeight(font, hora, textWidth);
+
+    const padding = 20;
+    const overlayWidth = textWidth + padding * 2;
+    const overlayHeight = textHeight + padding * 2;
+
     const overlay = new Jimp(overlayWidth, overlayHeight, 0x00000099);
 
-    const textWidth = Jimp.measureText(font, hora);
-    const x = Math.floor((overlayWidth - textWidth) / 2);
-    const y = 10; // más arriba para mejor estética
+    const xText = padding;
+    const yText = padding;
 
-    overlay.print(font, x, y, hora);
-    image.composite(overlay, 10, 10);
+    overlay.print(font, xText, yText, hora);
+
+    const xOverlay = Math.floor((image.bitmap.width - overlayWidth) / 2);
+    const yOverlay = 10; // parte superior de la imagen
+
+    image.composite(overlay, xOverlay, yOverlay);
 
     const finalBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
     res.setHeader('Content-Type', 'image/jpeg');
