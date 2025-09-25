@@ -3,6 +3,7 @@
 
 const Jimp = require('jimp');
 const fetch = require('node-fetch');
+const path = require('path');
 
 module.exports = async (req, res) => {
   const { url, hora = '20:45' } = req.query;
@@ -18,10 +19,13 @@ module.exports = async (req, res) => {
     const buffer = await response.buffer();
 
     const image = await Jimp.read(buffer);
-    const font = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK); // fuente embebida que sí existe
 
-    // Fondo semitransparente negro
-    const overlay = new Jimp(300, 80, 0x00000099);
+    // Ruta absoluta a la fuente bitmap
+    const fontPath = path.join(__dirname, '..', 'fonts', 'open-sans-32-white.fnt');
+    const font = await Jimp.loadFont(fontPath);
+
+    // Fondo semitransparente
+    const overlay = new Jimp(300, 80, 0x00000099); // negro con alpha
 
     overlay.print(
       font,
