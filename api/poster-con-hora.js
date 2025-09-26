@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const fontDir = path.join(__dirname, 'fonts'); // Ajustado para Vercel
+    const fontDir = path.join(__dirname, '..', 'fonts')
     const fontPath = path.join(fontDir, 'OpenSans-VariableFont_wdth,wght.ttf');
 
     if (!fs.existsSync(fontPath)) {
