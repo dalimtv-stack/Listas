@@ -31,17 +31,19 @@ function parseEventos(html, url) {
       eventos.push({ dia, hora, deporte, competicion, partido, canales });
     });
   } else if (encabezado.includes('hora del evento') && encabezado.includes('equipos')) {
-    // Estructura tipo "HTML" con fecha en el título
+    // Estructura tipo "HTML" con fecha en el título y partido dividido en dos celdas
     const fechaTexto = $('h1').text().match(/\d{2}-\d{2}-\d{4}/)?.[0] || '';
     $('table.styled-table tbody tr').each((_, tr) => {
       const tds = $(tr).find('td');
       const hora = $(tds[0]).text().trim();
       const deporte = $(tds[1]).text().trim();
-      const competicion = $(tds[2]).text().trim();
-      const partido = $(tds[3]).text().trim();
+      const equipo1 = $(tds[2]).text().trim();
+      const equipo2 = $(tds[3]).text().trim();
+      const partido = `${equipo1} vs ${equipo2}`;
+      const competicion = $(tds[4]).text().trim();
 
       const canales = [];
-      $(tds.slice(4)).find('a').each((_, a) => {
+      $(tds.slice(5)).find('a').each((_, a) => {
         const label = $(a).text().trim();
         const urlCanal = $(a).attr('href');
         canales.push({ label, url: urlCanal });
