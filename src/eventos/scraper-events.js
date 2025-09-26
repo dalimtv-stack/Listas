@@ -31,15 +31,17 @@ async function fetchEventos(url) {
       eventos.push({ dia, hora, deporte, competicion, partido, canales });
     });
 
-    // Añadir pósters a los eventos
-    for (const evento of eventos) {
+    // Añadir pósters en paralelo con trazas
+    await Promise.all(eventos.map(async evento => {
+      console.time(`Poster ${evento.partido}`);
       evento.poster = await scrapePosterForMatch({
         partido: evento.partido,
         hora: evento.hora,
         deporte: evento.deporte,
         competicion: evento.competicion
       });
-    }
+      console.timeEnd(`Poster ${evento.partido}`);
+    }));
 
     return eventos;
   } catch (err) {
