@@ -4,6 +4,7 @@
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 const { scrapePosterForMatch } = require('./poster-events');
+const { generatePlaceholdPoster } = require('./poster-events'); // asegúrate de exportarlo
 
 async function fetchEventos(url) {
   try {
@@ -30,6 +31,29 @@ async function fetchEventos(url) {
 
       eventos.push({ dia, hora, deporte, competicion, partido, canales });
     });
+
+    // Verificar si hay eventos del día actual
+    const hoy = new Date().toISOString().slice(0, 10); // formato YYYY-MM-DD
+    const eventosHoy = eventos.filter(e => e.dia.includes(hoy));
+    if (eventosHoy.length > 0) {
+      console.info(`[EVENTOS] Web actualizada: se detectaron ${eventosHoy.length} eventos para hoy (${hoy})`);
+    } else {
+      console.warn(`[EVENTOS] Web desactualizada: ningún evento con fecha ${hoy}`);
+      const fallback = {
+        dia: hoy,
+        hora: '',
+        deporte: '',
+        competicion: '',
+        partido: 'No hay eventos disponibles hoy',
+        canales: [],
+        poster: generatePlaceholdPoster({
+          hora: '',
+          deporte: '',
+          competicion: 'No hay eventos disponibles hoy'
+        })
+      };
+      return [fallback];
+    }
 
     // Añadir pósters en paralelo con trazas
     await Promise.all(eventos.map(async evento => {
