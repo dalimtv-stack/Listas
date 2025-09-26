@@ -5,6 +5,16 @@ const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 const { scrapePosterForMatch, generatePlaceholdPoster } = require('./poster-events');
 
+function inferirDeporte(competicion) {
+  const texto = competicion.toLowerCase();
+  if (texto.includes('liga') || texto.includes('champions') || texto.includes('fútbol')) return 'Fútbol';
+  if (texto.includes('nba') || texto.includes('baloncesto')) return 'Baloncesto';
+  if (texto.includes('tenis')) return 'Tenis';
+  if (texto.includes('f1') || texto.includes('formula')) return 'Fórmula 1';
+  if (texto.includes('motogp') || texto.includes('moto')) return 'Motociclismo';
+  return 'Deporte';
+}
+
 function parseEventos(html, url) {
   const $ = cheerio.load(html);
   const eventos = [];
@@ -40,6 +50,7 @@ function parseEventos(html, url) {
       const equipo1 = $(tds[2]).text().trim();
       const equipo2 = $(tds[3]).text().trim();
       const partido = `${equipo1} vs ${equipo2}`;
+      const deporte = inferirDeporte(competicion);
 
       const canales = [];
       $(tds.slice(4)).find('a').each((_, a) => {
@@ -48,7 +59,7 @@ function parseEventos(html, url) {
         canales.push({ label, url: urlCanal });
       });
 
-      eventos.push({ dia: fechaTexto, hora, deporte: '', competicion, partido, canales });
+      eventos.push({ dia: fechaTexto, hora, deporte, competicion, partido, canales });
     });
   } else {
     console.warn(`[EVENTOS] Estructura desconocida en ${url}`);
