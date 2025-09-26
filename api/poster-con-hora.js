@@ -2,6 +2,7 @@
 'use strict';
 
 const Jimp = require('jimp');
+const sharp = require('sharp');
 const fetch = require('node-fetch');
 const path = require('path');
 const fs = require('fs');
@@ -38,9 +39,14 @@ module.exports = async (req, res) => {
       throw new Error('Buffer vacío recibido desde la URL de imagen');
     }
 
+    let decodedBuffer = buffer;
+    if (contentType.includes('webp')) {
+      decodedBuffer = await sharp(buffer).png().toBuffer();
+    }
+
     let baseImage;
     try {
-      baseImage = await Jimp.read(buffer);
+      baseImage = await Jimp.read(decodedBuffer);
     } catch (err) {
       throw new Error(`Jimp no pudo procesar la imagen: ${err.message}`);
     }
