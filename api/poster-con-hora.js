@@ -25,10 +25,12 @@ module.exports = async (req, res) => {
       throw new Error('Font files not found en /fonts');
     }
 
+    console.info('[Poster con hora] URL de imagen de entrada:', url);
+
     const response = await fetch(url);
-    const contentType = response.headers.get('content-type');
-    if (!response.ok || !contentType?.startsWith('image/')) {
-      throw new Error(`No se pudo obtener imagen válida: ${response.status}`);
+    const contentType = response.headers.get('content-type') || '';
+    if (!response.ok) {
+      throw new Error(`No se pudo obtener imagen: ${response.status}`);
     }
 
     const buffer = await response.buffer();
@@ -36,9 +38,14 @@ module.exports = async (req, res) => {
       throw new Error('Buffer vacío recibido desde la URL de imagen');
     }
 
-    const baseImage = await Jimp.read(buffer);
-    const font = await Jimp.loadFont(fontPath);
+    let baseImage;
+    try {
+      baseImage = await Jimp.read(buffer);
+    } catch (err) {
+      throw new Error(`Jimp no pudo procesar la imagen: ${err.message}`);
+    }
 
+    const font = await Jimp.loadFont(fontPath);
     const results = [];
 
     for (const hora of horas) {
