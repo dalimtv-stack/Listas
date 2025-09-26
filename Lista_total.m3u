@@ -725,3 +725,8 @@ https://la14hd.com:443/vivo/canales.php?stream=disney13
 https://la14hd.com:443/vivo/canales.php?stream=disney14
 #EXTINF:-1 tvg-id="DISNEY EVENTOS" tvg-logo="https://e-ce.americatv.com.pe/9-24-592x340-503196.jpg",Disney eventos 15
 https://la14hd.com:443/vivo/canales.php?stream=disney15
+
+#EXTINF:-1 tvg-id="" tvg-logo="https://placehold.co/938x1406@3x/999999/80f4eb?text=XXX&font=poppins&png" group-title="XXX", Canal Premium 520
+#EXTVLCOPT:http-referrer=https://forcedtoplay.xyz/
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0
+https://zekonew.newkso.ru/zeko/premium520/mono.m3u8
