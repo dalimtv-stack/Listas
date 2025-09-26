@@ -36,20 +36,19 @@ function parseEventos(html, url) {
     $('table.styled-table tbody tr').each((_, tr) => {
       const tds = $(tr).find('td');
       const hora = $(tds[0]).text().trim();
-      const deporte = $(tds[1]).text().trim();
+      const competicion = $(tds[1]).text().trim();
       const equipo1 = $(tds[2]).text().trim();
       const equipo2 = $(tds[3]).text().trim();
       const partido = `${equipo1} vs ${equipo2}`;
-      const competicion = $(tds[4]).text().trim();
 
       const canales = [];
-      $(tds.slice(5)).find('a').each((_, a) => {
+      $(tds.slice(4)).find('a').each((_, a) => {
         const label = $(a).text().trim();
         const urlCanal = $(a).attr('href');
         canales.push({ label, url: urlCanal });
       });
 
-      eventos.push({ dia: fechaTexto, hora, deporte, competicion, partido, canales });
+      eventos.push({ dia: fechaTexto, hora, deporte: '', competicion, partido, canales });
     });
   } else {
     console.warn(`[EVENTOS] Estructura desconocida en ${url}`);
