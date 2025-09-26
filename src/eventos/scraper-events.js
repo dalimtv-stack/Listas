@@ -5,6 +5,57 @@ const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 const { scrapePosterForMatch, generatePlaceholdPoster } = require('./poster-events');
 
+function parseEventos(html, url) {
+  const $ = cheerio.load(html);
+  const eventos = [];
+
+  const encabezado = $('table thead tr').text().toLowerCase();
+
+  if (encabezado.includes('día') && encabezado.includes('hora') && encabezado.includes('deporte')) {
+    // Estructura tipo "Eventos Deportivos Acestream"
+    $('table tbody tr').each((_, tr) => {
+      const tds = $(tr).find('td');
+      const dia = $(tds[0]).text().trim();
+      const hora = $(tds[1]).text().trim();
+      const deporte = $(tds[2]).text().trim();
+      const competicion = $(tds[3]).text().trim();
+      const partido = $(tds[4]).text().trim();
+
+      const canales = [];
+      $(tds[5]).find('a').each((_, a) => {
+        const label = $(a).text().trim();
+        const urlCanal = $(a).attr('href');
+        canales.push({ label, url: urlCanal });
+      });
+
+      eventos.push({ dia, hora, deporte, competicion, partido, canales });
+    });
+  } else if (encabezado.includes('hora del evento') && encabezado.includes('equipos')) {
+    // Estructura tipo "HTML" con fecha en el título
+    const fechaTexto = $('h1').text().match(/\d{2}-\d{2}-\d{4}/)?.[0] || '';
+    $('table.styled-table tbody tr').each((_, tr) => {
+      const tds = $(tr).find('td');
+      const hora = $(tds[0]).text().trim();
+      const deporte = $(tds[1]).text().trim();
+      const competicion = $(tds[2]).text().trim();
+      const partido = $(tds[3]).text().trim();
+
+      const canales = [];
+      $(tds.slice(4)).find('a').each((_, a) => {
+        const label = $(a).text().trim();
+        const urlCanal = $(a).attr('href');
+        canales.push({ label, url: urlCanal });
+      });
+
+      eventos.push({ dia: fechaTexto, hora, deporte, competicion, partido, canales });
+    });
+  } else {
+    console.warn(`[EVENTOS] Estructura desconocida en ${url}`);
+  }
+
+  return eventos;
+}
+
 async function fetchEventos(configure) {
   const urls = configure.split(/;|\|/).map(u => u.trim()).filter(Boolean);
   const hoy = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
@@ -34,26 +85,9 @@ async function fetchEventos(configure) {
 
       console.info(`[EVENTOS] Fuente ${url} actualizada: ${fechaFuente}`);
 
-      // Extraer eventos
-      $('table tbody tr').each((_, tr) => {
-        const tds = $(tr).find('td');
-        const dia = $(tds[0]).text().trim();
-        const hora = $(tds[1]).text().trim();
-        const deporte = $(tds[2]).text().trim();
-        const competicion = $(tds[3]).text().trim();
-        const partido = $(tds[4]).text().trim();
-
-        const canales = [];
-        $(tds[5]).find('a').each((_, a) => {
-          const label = $(a).text().trim();
-          const urlCanal = $(a).attr('href');
-          canales.push({ label, url: urlCanal });
-        });
-
-        eventos.push({ dia, hora, deporte, competicion, partido, canales });
-      });
-
-      console.info(`[EVENTOS] Scrapeo exitoso desde ${url}`);
+      const eventosFuente = parseEventos(html, url);
+      eventos.push(...eventosFuente);
+      console.info(`[EVENTOS] Scrapeo exitoso desde ${url}: ${eventosFuente.length} eventos`);
     } catch (err) {
       console.warn(`[EVENTOS] Fallo al scrapear ${url}: ${err.message}`);
     }
