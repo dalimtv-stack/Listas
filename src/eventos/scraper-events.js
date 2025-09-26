@@ -41,7 +41,7 @@ async function fetchEventos(configure) {
     }
   }
 
-  const eventosHoy = `si` //eventos.filter(e => e.dia.includes(hoy));
+  const eventosHoy = eventos.filter(e => e.dia.includes(hoy));
   if (eventosHoy.length === 0) {
     console.warn(`[EVENTOS] Ninguna fuente contiene eventos para hoy (${hoy})`);
     const fallback = {
