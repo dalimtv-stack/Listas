@@ -17,6 +17,24 @@ async function fetchEventos(configure) {
       const html = await res.text();
       const $ = cheerio.load(html);
 
+      // Buscar fecha de actualización en el texto
+      const texto = $('body').text();
+      const match = texto.match(/(?:EVENTOS DEL|Última actualización:)\s*(\d{2})[\/\-](\d{2})[\/\-](\d{4})/i);
+      if (!match) {
+        console.warn(`[EVENTOS] Fuente ${url} sin fecha detectable, ignorada`);
+        continue;
+      }
+
+      const [_, dd, mm, yyyy] = match;
+      const fechaFuente = `${yyyy}-${mm}-${dd}`;
+      if (fechaFuente !== hoy) {
+        console.warn(`[EVENTOS] Fuente ${url} desactualizada: ${fechaFuente}`);
+        continue;
+      }
+
+      console.info(`[EVENTOS] Fuente ${url} actualizada: ${fechaFuente}`);
+
+      // Extraer eventos
       $('table tbody tr').each((_, tr) => {
         const tds = $(tr).find('td');
         const dia = $(tds[0]).text().trim();
@@ -41,9 +59,8 @@ async function fetchEventos(configure) {
     }
   }
 
-  const eventosHoy = eventos.filter(e => e.dia.includes(hoy));
-  if (eventosHoy.length === 0) {
-    console.warn(`[EVENTOS] Ninguna fuente contiene eventos para hoy (${hoy})`);
+  if (eventos.length === 0) {
+    console.warn(`[EVENTOS] Ninguna fuente válida contiene eventos para hoy (${hoy})`);
     const fallback = {
       dia: hoy,
       hora: '',
@@ -60,9 +77,9 @@ async function fetchEventos(configure) {
     return [fallback];
   }
 
-  console.info(`[EVENTOS] Se detectaron ${eventosHoy.length} eventos para hoy (${hoy})`);
+  console.info(`[EVENTOS] Se detectaron ${eventos.length} eventos para hoy (${hoy})`);
 
-  await Promise.all(eventosHoy.map(async evento => {
+  await Promise.all(eventos.map(async evento => {
     console.time(`Poster ${evento.partido}`);
     evento.poster = await scrapePosterForMatch({
       partido: evento.partido,
@@ -73,7 +90,7 @@ async function fetchEventos(configure) {
     console.timeEnd(`Poster ${evento.partido}`);
   }));
 
-  return eventosHoy;
+  return eventos;
 }
 
 module.exports = { fetchEventos };
