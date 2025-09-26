@@ -129,17 +129,21 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   }
 
   const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl + '.png')}`;
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ horas: [hora] })
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 1000);
 
   let generados;
   try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ horas: [hora] }),
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
     generados = await res.json();
   } catch (err) {
-    console.error('[Poster] Error parsing JSON:', err.message);
+    console.error('[Poster] Error al generar:', err.message);
     return generatePlaceholdPoster({ hora, deporte, competicion });
   }
 
