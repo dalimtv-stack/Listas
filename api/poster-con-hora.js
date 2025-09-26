@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
 
   try {
     const fontDir = path.join(__dirname, '..', 'fonts');
-    const fontPath = path.join(fontDir, 'OpenSans-VariableFont_wdth,wght.ttf'); // Asegúrate de que sea un archivo TTF
+    const fontPath = path.join(fontDir, 'OpenSans-VariableFont_wdth,wght.ttf');
 
     if (!fs.existsSync(fontPath)) {
       throw new Error('Font file not found en /fonts');
@@ -38,20 +38,24 @@ module.exports = async (req, res) => {
 
     const results = [];
     for (const hora of horas) {
-      // Cargar la imagen con Sharp
       let image = sharp(buffer);
-
-      // Obtener dimensiones de la imagen
       const metadata = await image.metadata();
+
+      // Usar la ruta absoluta de la fuente en el SVG
       const textSvg = `
         <svg width="${metadata.width}" height="${metadata.height}">
-          <text x="50%" y="30" font-family="Open Sans" font-size="64" fill="white" text-anchor="middle" dy=".3em" style="opacity: 0.6; background-color: rgba(0,0,0,0.6); padding: 20px;">
+          <style>
+            @font-face {
+              font-family: "OpenSans";
+              src: url("file://${fontPath}") format("truetype");
+            }
+          </style>
+          <text x="50%" y="30" font-family="OpenSans" font-size="64" fill="white" text-anchor="middle" dy=".3em" style="background-color: rgba(0,0,0,0.6); padding: 20px;">
             ${hora}
           </text>
         </svg>
       `;
 
-      // Componer la imagen con el texto como overlay
       image = image.composite([
         {
           input: Buffer.from(textSvg),
@@ -59,7 +63,6 @@ module.exports = async (req, res) => {
         },
       ]);
 
-      // Convertir a WebP
       const finalBuffer = await image.webp({ quality: 80 }).toBuffer();
       const base64 = finalBuffer.toString('base64');
       const dataUrl = `data:image/webp;base64,${base64}`;
