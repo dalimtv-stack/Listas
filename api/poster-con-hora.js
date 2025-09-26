@@ -4,7 +4,6 @@
 const sharp = require('sharp');
 const fetch = require('node-fetch');
 const path = require('path');
-const fs = require('fs');
 const pLimit = require('p-limit');
 
 // Deshabilitar fontconfig explícitamente
@@ -21,14 +20,6 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const fontDir = path.join(__dirname, '..', 'fonts');
-    const fontPath = path.join(fontDir, 'OpenSans-VariableFont_wdth,wght.ttf');
-
-    console.info('[Poster con hora] Font path:', fontPath);
-    if (!fs.existsSync(fontPath)) {
-      throw new Error(`Font file not found at ${fontPath}`);
-    }
-
     console.info('[Poster con hora] URL de imagen de entrada:', url);
 
     // Fetch con reintentos y timeout
@@ -60,9 +51,6 @@ module.exports = async (req, res) => {
       .toBuffer();
     console.info('[Poster con hora] Optimized buffer length:', optimizedBuffer.length);
 
-    const fontBase64 = fs.readFileSync(fontPath).toString('base64');
-    console.info('[Poster con hora] Font base64 length:', fontBase64.length);
-
     // Limitar concurrencia para evitar sobrecarga en Vercel
     const limit = pLimit(2);
     const results = await Promise.all(
@@ -72,16 +60,11 @@ module.exports = async (req, res) => {
           const metadata = await image.metadata();
           console.info('[Poster con hora] Image metadata:', metadata);
 
+          // Usar fuente genérica sans-serif para evitar fontconfig
           const textSvg = `
             <svg width="${metadata.width}" height="${metadata.height}">
-              <style>
-                @font-face {
-                  font-family: "OpenSans";
-                  src: url("data:font/truetype;base64,${fontBase64}") format("truetype");
-                }
-              </style>
               <rect x="0" y="0" width="${metadata.width}" height="100" fill="rgba(0,0,0,0.6)" />
-              <text x="50%" y="50" font-family="OpenSans" font-size="64" fill="white" text-anchor="middle" dy=".3em">
+              <text x="50%" y="50" font-family="sans-serif" font-size="64" fill="white" text-anchor="middle" dy=".3em">
                 ${hora}
               </text>
             </svg>
