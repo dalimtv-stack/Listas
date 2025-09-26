@@ -5,10 +5,10 @@ const sharp = require('sharp');
 const fetch = require('node-fetch');
 const path = require('path');
 const fs = require('fs');
+const pLimit = require('p-limit'); // Para limitar concurrencia
 
 // Deshabilitar fontconfig explícitamente
-process.env.FONTCONFIG_PATH = '/dev/null';
-process.env.FONTCONFIG_FILE = '/dev/null';
+process.env.LIBVIPS_NO_FONTCONFIG = 'true'; // Desactiva fontconfig en libvips
 
 module.exports = async (req, res) => {
   const { url } = req.query;
@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
     const fetchWithRetry = async (url, retries = 3, delay = 1000) => {
       for (let i = 0; i < retries; i++) {
         try {
-          const response = await fetch(url, { timeout: 15000 }); // Aumentado a 15s
+          const response = await fetch(url, { timeout: 15000 });
           if (!response.ok) throw new Error(`No se pudo obtener imagen: ${response.status}`);
           const buffer = await response.buffer();
           console.info('[Poster con hora] Buffer length:', buffer.length);
@@ -48,47 +48,58 @@ module.exports = async (req, res) => {
       }
     };
 
+    // Optimizar la imagen de entrada
     const buffer = await fetchWithRetry(url);
     if (!buffer || buffer.length === 0) {
       throw new Error('Buffer vacío recibido desde la URL de imagen');
     }
 
+    // Redimensionar la imagen para reducir el tiempo de procesamiento
+    const optimizedBuffer = await sharp(buffer)
+      .resize({ width: 1920, withoutEnlargement: true }) // Reducir a 1920px de ancho
+      .toBuffer();
+
     const fontBase64 = fs.readFileSync(fontPath).toString('base64');
     console.info('[Poster con hora] Font base64 length:', fontBase64.length);
 
-    const results = [];
-    for (const hora of horas) {
-      let image = sharp(buffer);
-      const metadata = await image.metadata();
-      console.info('[Poster con hora] Image metadata:', metadata);
+    // Limitar concurrencia para evitar sobrecarga en Vercel
+    const limit = pLimit(2); // Máximo 2 tareas simultáneas
+    const results = await Promise.all(
+      horas.map(hora =>
+        limit(async () => {
+          let image = sharp(optimizedBuffer);
+          const metadata = await image.metadata();
+          console.info('[Poster con hora] Image metadata:', metadata);
 
-      const textSvg = `
-        <svg width="${metadata.width}" height="${metadata.height}">
-          <style>
-            @font-face {
-              font-family: "OpenSans";
-              src: url("data:font/truetype;base64,${fontBase64}") format("truetype");
-            }
-          </style>
-          <rect x="0" y="0" width="${metadata.width}" height="100" fill="rgba(0,0,0,0.6)" />
-          <text x="50%" y="50" font-family="OpenSans" font-size="64" fill="white" text-anchor="middle" dy=".3em">
-            ${hora}
-          </text>
-        </svg>
-      `;
+          const textSvg = `
+            <svg width="${metadata.width}" height="${metadata.height}">
+              <style>
+                @font-face {
+                  font-family: "OpenSans";
+                  src: url("data:font/truetype;base64,${fontBase64}") format("truetype");
+                }
+              </style>
+              <rect x="0" y="0" width="${metadata.width}" height="100" fill="rgba(0,0,0,0.6)" />
+              <text x="50%" y="50" font-family="OpenSans" font-size="64" fill="white" text-anchor="middle" dy=".3em">
+                ${hora}
+              </text>
+            </svg>
+          `;
 
-      image = image.composite([
-        {
-          input: Buffer.from(textSvg),
-          gravity: 'north',
-        },
-      ]);
+          image = image.composite([
+            {
+              input: Buffer.from(textSvg),
+              gravity: 'north',
+            },
+          ]);
 
-      const finalBuffer = await image.webp({ quality: 80 }).toBuffer();
-      const base64 = finalBuffer.toString('base64');
-      const dataUrl = `data:image/webp;base64,${base64}`;
-      results.push({ hora, url: dataUrl });
-    }
+          const finalBuffer = await image.webp({ quality: 80 }).toBuffer();
+          const base64 = finalBuffer.toString('base64');
+          const dataUrl = `data:image/webp;base64,${base64}`;
+          return { hora, url: dataUrl };
+        })
+      )
+    );
 
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(results));
