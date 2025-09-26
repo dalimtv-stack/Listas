@@ -8,7 +8,6 @@ const { kvGetJson, kvSetJson } = require('../../api/kv');
 function normalizeMatchName(matchName) {
   return matchName
     .toLowerCase()
-    .replace(/\bvs\b/gi, '-')
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
@@ -61,7 +60,17 @@ function generateFallbackNames(original, context = '') {
     }
   }
 
-  return [...new Set(variants)];
+  // Añadir variantes con prefijos comunes
+  const prefijos = ['jornada', 'jornada \\d+', 'fecha \\d+'];
+  const extendidas = [];
+  for (const base of variants) {
+    extendidas.push(base);
+    prefijos.forEach(p => {
+      extendidas.push(`${p}: ${base}`);
+    });
+  }
+
+  return [...new Set(extendidas)];
 }
 
 function generatePlaceholdPoster({ hora, deporte, competicion }) {
@@ -96,10 +105,11 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
 
       const candidates = generateFallbackNames(partido, competicion);
       for (const name of candidates) {
+        const nameRegex = new RegExp(name.replace(/[-]/g, '[ -]'), 'i');
         $('img').each((_, img) => {
-          const alt = $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+          const alt = $(img).attr('alt')?.normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
           const src = $(img).attr('src')?.toLowerCase() || '';
-          if (alt.includes(name) || src.includes(name)) {
+          if (nameRegex.test(alt) || nameRegex.test(src)) {
             posterUrl = $(img).attr('src');
             return false;
           }
