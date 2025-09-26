@@ -45,7 +45,7 @@ module.exports = async (req, res) => {
       try {
         decodedBuffer = await sharp(buffer).png().toBuffer();
         console.info('[Poster con hora] Conversión con sharp completada. Esperando confirmación...');
-        await new Promise(resolve => setTimeout(resolve, 50)); // pausa defensiva
+        //await new Promise(resolve => setTimeout(resolve, 50)); // pausa defensiva
       } catch (err) {
         throw new Error(`Sharp no pudo convertir .webp: ${err.message}`);
       }
