@@ -64,7 +64,7 @@ module.exports = async (req, res) => {
       const xOverlay = Math.floor((image.bitmap.width - overlay.bitmap.width) / 2);
       image.composite(overlay, xOverlay, 10);
 
-      const finalBuffer = await image.getBufferAsync(Jimp.MIME_WEBP);
+      const finalBuffer = await image.getBufferAsync('image/webp');
       const base64 = finalBuffer.toString('base64');
       const dataUrl = `data:image/webp;base64,${base64}`;
       results.push({ hora, url: dataUrl });
