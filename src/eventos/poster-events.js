@@ -161,4 +161,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   return finalUrl;
 }
 
-module.exports = { scrapePosterForMatch };
+module.exports = {
+  scrapePosterForMatch,
+  generatePlaceholdPoster
+};
