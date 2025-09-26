@@ -130,7 +130,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
 
   const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl)}`;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 1000);
+  const timeout = setTimeout(() => controller.abort(), 5000);
 
   let generados;
   try {
