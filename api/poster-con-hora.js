@@ -5,10 +5,10 @@ const sharp = require('sharp');
 const fetch = require('node-fetch');
 const path = require('path');
 const fs = require('fs');
-const pLimit = require('p-limit'); // Para limitar concurrencia
+const pLimit = require('p-limit');
 
 // Deshabilitar fontconfig explícitamente
-process.env.LIBVIPS_NO_FONTCONFIG = 'true'; // Desactiva fontconfig en libvips
+process.env.LIBVIPS_NO_FONTCONFIG = 'true';
 
 module.exports = async (req, res) => {
   const { url } = req.query;
@@ -56,14 +56,15 @@ module.exports = async (req, res) => {
 
     // Redimensionar la imagen para reducir el tiempo de procesamiento
     const optimizedBuffer = await sharp(buffer)
-      .resize({ width: 1920, withoutEnlargement: true }) // Reducir a 1920px de ancho
+      .resize({ width: 1920, withoutEnlargement: true })
       .toBuffer();
+    console.info('[Poster con hora] Optimized buffer length:', optimizedBuffer.length);
 
     const fontBase64 = fs.readFileSync(fontPath).toString('base64');
     console.info('[Poster con hora] Font base64 length:', fontBase64.length);
 
     // Limitar concurrencia para evitar sobrecarga en Vercel
-    const limit = pLimit(2); // Máximo 2 tareas simultáneas
+    const limit = pLimit(2);
     const results = await Promise.all(
       horas.map(hora =>
         limit(async () => {
@@ -94,6 +95,7 @@ module.exports = async (req, res) => {
           ]);
 
           const finalBuffer = await image.webp({ quality: 80 }).toBuffer();
+          console.info('[Poster con hora] Final buffer length:', finalBuffer.length);
           const base64 = finalBuffer.toString('base64');
           const dataUrl = `data:image/webp;base64,${base64}`;
           return { hora, url: dataUrl };
