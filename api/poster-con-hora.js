@@ -1,178 +1,89 @@
 // api/poster-con-hora.js
 'use strict';
 
+const { createCanvas, loadImage } = require('canvas');
 const fetch = require('node-fetch');
-const cheerio = require('cheerio');
-const { kvGetJson, kvSetJson } = require('../../api/kv');
+const pLimit = require('p-limit');
 
-function normalizeMatchName(matchName) {
-  return matchName
-    .toLowerCase()
-    .replace(/\bvs\b/gi, '-')
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+module.exports = async (req, res) => {
+  const { url } = req.query;
+  const horas = req.body?.horas;
 
-function generateFallbackNames(original, context = '') {
-  const normalized = normalizeMatchName(original);
-  const variants = [normalized];
-
-  const teamAliases = {
-    'atletico de madrid': 'at. madrid',
-    'real madrid': 'r. madrid',
-    'fc barcelona': 'barça',
-    'juventus': 'juve',
-    'inter milan': 'inter',
-    'ac milan': 'milan',
-    'bayern munich': 'bayern',
-    'borussia dortmund': 'dortmund',
-    'paris saint-germain': 'psg',
-    'simulcast': ['multieuropa', 'multichampions'],
-    'pekin tournament': 'torneo de pekin',
-    'tokyo tournament': 'torneo de tokio'
-  };
-
-  let aliasVersion = normalized;
-
-  for (const [full, alias] of Object.entries(teamAliases)) {
-    const regex = new RegExp(`\\b${full}\\b`, 'gi');
-    if (Array.isArray(alias)) {
-      alias.forEach(a => {
-        const replaced = aliasVersion.replace(regex, a);
-        if (replaced !== aliasVersion) variants.push(replaced);
-      });
-    } else {
-      const replaced = aliasVersion.replace(regex, alias);
-      if (replaced !== aliasVersion) variants.push(replaced);
-    }
+  if (!url || !Array.isArray(horas) || horas.length === 0) {
+    res.statusCode = 400;
+    res.setHeader('Content-Type', 'application/json');
+    return res.end(JSON.stringify({ error: 'Faltan parámetros "url" y/o "horas[]"' }));
   }
 
-  if (context) {
-    const contextNorm = normalizeMatchName(context);
-    variants.push(contextNorm);
-    if (teamAliases[contextNorm]) {
-      const alias = teamAliases[contextNorm];
-      if (Array.isArray(alias)) {
-        variants.push(...alias.map(normalizeMatchName));
-      } else {
-        variants.push(normalizeMatchName(alias));
-      }
-    }
-  }
-
-  return [...new Set(variants)];
-}
-
-function generatePlaceholdPoster({ hora, deporte, competicion }) {
-  const text = `${hora}\n \n${deporte}\n \n${competicion}`;
-  return `https://placehold.co/938x1406@3x/999999/80f4eb?text=${encodeURIComponent(text)}&font=poppins&png`;
-}
-
-const posterCache = new Map();
-
-async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
-  const finalCacheKey = `posterFinal:${normalizeMatchName(partido)}:${hora}`;
-  const finalCached = await kvGetJson(finalCacheKey);
-  if (finalCached?.finalUrl?.startsWith('data:image')) {
-    return finalCached.finalUrl;
-  }
-
-  const movistarCacheKey = `poster:${normalizeMatchName(partido)}`;
-  const cachedMovistar = await kvGetJson(movistarCacheKey);
-
-  let posterUrl = cachedMovistar?.posterUrl;
-  if (!posterUrl) {
-    try {
-      const isTenis = deporte?.toLowerCase() === 'tenis';
-      const sourceUrl = isTenis
-        ? 'https://www.movistarplus.es/deportes/tenis/donde-ver'
-        : 'https://www.movistarplus.es/el-partido-movistarplus';
-
-      const res = await fetch(sourceUrl);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const html = await res.text();
-      const $ = cheerio.load(html);
-
-      const candidates = generateFallbackNames(partido, competicion);
-      for (const name of candidates) {
-        $('img').each((_, img) => {
-          const alt = $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
-          const src = $(img).attr('src')?.toLowerCase() || '';
-          if (alt.includes(name) || src.includes(name)) {
-            posterUrl = $(img).attr('src');
-            return false;
-          }
-        });
-        if (posterUrl) break;
-      }
-
-      if (posterUrl?.startsWith('http')) {
-        await kvSetJson(movistarCacheKey, { posterUrl, createdAt: Date.now() }, { ttl: 86400 });
-      }
-    } catch (err) {
-      console.error('[Poster] Error scraping:', err.message);
-    }
-  }
-
-  if (!posterUrl || !posterUrl.startsWith('http')) {
-    return generatePlaceholdPoster({ hora, deporte, competicion });
-  }
-
-  if (!posterCache.has(posterUrl)) {
-    posterCache.set(posterUrl, new Map());
-  }
-
-  const horaMap = posterCache.get(posterUrl);
-  if (horaMap.has(hora)) {
-    return horaMap.get(hora);
-  }
-
-  const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl)}`;
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 4000);
-
-  let generados;
   try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ horas: [hora] }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
+    console.info('[Poster con hora] URL de imagen de entrada:', url);
 
-    const contentType = res.headers.get('content-type') || '';
-    if (!res.ok || !contentType.includes('application/json')) {
-      const text = await res.text();
-      console.error('[Poster] Respuesta no JSON:', text.slice(0, 200));
-      return generatePlaceholdPoster({ hora, deporte, competicion });
+    // Fetch con reintentos y timeout
+    const fetchWithRetry = async (url, retries = 3, delay = 1000) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const response = await fetch(url, { timeout: 15000 });
+          if (!response.ok) throw new Error(`No se pudo obtener imagen: ${response.status}`);
+          const buffer = await response.buffer();
+          console.info('[Poster con hora] Buffer length:', buffer.length);
+          return buffer;
+        } catch (err) {
+          console.warn(`[Poster con hora] Reintentando fetch (${i + 1}/${retries}): ${err.message}`);
+          if (i === retries - 1) throw err;
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    };
+
+    // Descargar y optimizar la imagen
+    const buffer = await fetchWithRetry(url);
+    if (!buffer || buffer.length === 0) {
+      throw new Error('Buffer vacío recibido desde la URL de imagen');
     }
 
-    generados = await res.json();
-    console.info('[Poster] Respuesta recibida de poster-con-hora:', generados);
+    // Limitar concurrencia para evitar sobrecarga en Vercel
+    const limit = pLimit(1); // Reducido a 1 para minimizar sobrecarga
+    const results = await Promise.all(
+      horas.map(hora =>
+        limit(async () => {
+          // Cargar la imagen
+          const image = await loadImage(buffer);
+          const canvas = createCanvas(image.width > 1920 ? 1920 : image.width, image.height > 1080 ? 1080 : image.height);
+          const ctx = canvas.getContext('2d');
+
+          // Redimensionar la imagen si es necesario
+          if (image.width > 1920 || image.height > 1080) {
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+          } else {
+            ctx.drawImage(image, 0, 0);
+          }
+
+          // Dibujar el rectángulo semi-transparente
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+          ctx.fillRect(0, 0, canvas.width, 100);
+
+          // Dibujar el texto
+          ctx.font = '64px Arial';
+          ctx.fillStyle = 'white';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(hora, canvas.width / 2, 50);
+
+          const finalBuffer = canvas.toBuffer('image/webp', { quality: 0.8 });
+          console.info('[Poster con hora] Final buffer length:', finalBuffer.length);
+          const base64 = finalBuffer.toString('base64');
+          const dataUrl = `data:image/webp;base64,${base64}`;
+          return { hora, url: dataUrl };
+        })
+      )
+    );
+
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(results));
   } catch (err) {
-    console.error('[Poster] Error al generar:', err.message);
-    return generatePlaceholdPoster({ hora, deporte, competicion });
+    console.error('[Poster con hora] Error:', err.message, err.stack);
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ error: `Error generando pósters: ${err.message}` }));
   }
-
-  if (!Array.isArray(generados)) {
-    console.error('[Poster] Respuesta inválida de poster-con-hora:', generados);
-    return generatePlaceholdPoster({ hora, deporte, competicion });
-  }
-
-  const generado = generados.find(p => p.hora === hora);
-  const finalUrl = generado?.url;
-
-  if (!finalUrl || !finalUrl.startsWith('data:image')) {
-    console.warn('[Poster] No se recibió imagen válida, usando fallback');
-    return generatePlaceholdPoster({ hora, deporte, competicion });
-  }
-
-  horaMap.set(hora, finalUrl);
-  await kvSetJson(finalCacheKey, { finalUrl, createdAt: Date.now() }, { ttl: 86400 });
-
-  return finalUrl;
-}
-
-module.exports = { scrapePosterForMatch };
+};
