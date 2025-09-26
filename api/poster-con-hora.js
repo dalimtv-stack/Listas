@@ -1,9 +1,11 @@
 // api/poster-con-hora.js
 'use strict';
 
-const { createCanvas, loadImage } = require('canvas');
+const Jimp = require('jimp');
+const sharp = require('sharp');
 const fetch = require('node-fetch');
-const pLimit = require('p-limit');
+const path = require('path');
+const fs = require('fs');
 
 module.exports = async (req, res) => {
   const { url } = req.query;
@@ -16,72 +18,71 @@ module.exports = async (req, res) => {
   }
 
   try {
+    const fontDir = path.join(__dirname, '..', 'fonts');
+    const fontPath = path.join(fontDir, 'open-sans-64-white.fnt');
+    const pngPath = path.join(fontDir, 'open-sans-64-white.png');
+
+    if (!fs.existsSync(fontPath) || !fs.existsSync(pngPath)) {
+      throw new Error('Font files not found en /fonts');
+    }
+
     console.info('[Poster con hora] URL de imagen de entrada:', url);
 
-    // Fetch con reintentos y timeout
-    const fetchWithRetry = async (url, retries = 3, delay = 1000) => {
-      for (let i = 0; i < retries; i++) {
-        try {
-          const response = await fetch(url, { timeout: 15000 });
-          if (!response.ok) throw new Error(`No se pudo obtener imagen: ${response.status}`);
-          const buffer = await response.buffer();
-          console.info('[Poster con hora] Buffer length:', buffer.length);
-          return buffer;
-        } catch (err) {
-          console.warn(`[Poster con hora] Reintentando fetch (${i + 1}/${retries}): ${err.message}`);
-          if (i === retries - 1) throw err;
-          await new Promise(resolve => setTimeout(resolve, delay));
-        }
-      }
-    };
+    const response = await fetch(url);
+    const contentType = response.headers.get('content-type') || '';
+    if (!response.ok) {
+      throw new Error(`No se pudo obtener imagen: ${response.status}`);
+    }
 
-    // Descargar y optimizar la imagen
-    const buffer = await fetchWithRetry(url);
+    const buffer = await response.buffer();
     if (!buffer || buffer.length === 0) {
       throw new Error('Buffer vacío recibido desde la URL de imagen');
     }
 
-    // Limitar concurrencia para evitar sobrecarga en Vercel
-    const limit = pLimit(1); // Reducido a 1 para minimizar sobrecarga
-    const results = await Promise.all(
-      horas.map(hora =>
-        limit(async () => {
-          // Cargar la imagen
-          const image = await loadImage(buffer);
-          const canvas = createCanvas(image.width > 1920 ? 1920 : image.width, image.height > 1080 ? 1080 : image.height);
-          const ctx = canvas.getContext('2d');
+    let decodedBuffer = buffer;
+    if (contentType.includes('webp')) {
+      console.info('[Poster con hora] Detected .webp, intentando convertir con sharp...');
+      try {
+        decodedBuffer = await sharp(buffer).png().toBuffer();
+        console.info('[Poster con hora] Conversión con sharp completada. Esperando confirmación...');
+        await new Promise(resolve => setTimeout(resolve, 50)); // pausa defensiva
+      } catch (err) {
+        throw new Error(`Sharp no pudo convertir .webp: ${err.message}`);
+      }
+    }
 
-          // Redimensionar la imagen si es necesario
-          if (image.width > 1920 || image.height > 1080) {
-            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-          } else {
-            ctx.drawImage(image, 0, 0);
-          }
+    console.info('[Poster con hora] Buffer listo para Jimp. Tamaño:', decodedBuffer.length);
 
-          // Dibujar el rectángulo semi-transparente
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-          ctx.fillRect(0, 0, canvas.width, 100);
+    let baseImage;
+    try {
+      baseImage = await Jimp.read(decodedBuffer);
+    } catch (err) {
+      throw new Error(`Jimp no pudo procesar la imagen: ${err.message}`);
+    }
 
-          // Dibujar el texto
-          ctx.font = '64px Arial';
-          ctx.fillStyle = 'white';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(hora, canvas.width / 2, 50);
+    const font = await Jimp.loadFont(fontPath);
+    const results = [];
 
-          const finalBuffer = canvas.toBuffer('image/webp', { quality: 0.8 });
-          console.info('[Poster con hora] Final buffer length:', finalBuffer.length);
-          const base64 = finalBuffer.toString('base64');
-          const dataUrl = `data:image/webp;base64,${base64}`;
-          return { hora, url: dataUrl };
-        })
-      )
-    );
+    for (const hora of horas) {
+      const image = baseImage.clone();
+      const textWidth = Jimp.measureText(font, hora);
+      const textHeight = Jimp.measureTextHeight(font, hora, textWidth);
+      const padding = 20;
+      const overlay = new Jimp(textWidth + padding * 2, textHeight + padding * 2, 0x00000099);
+      overlay.print(font, padding, padding, hora);
+      const xOverlay = Math.floor((image.bitmap.width - overlay.bitmap.width) / 2);
+      image.composite(overlay, xOverlay, 10);
+
+      const finalBuffer = await image.getBufferAsync('image/png');
+      const base64 = finalBuffer.toString('base64');
+      const dataUrl = `data:image/png;base64,${base64}`;
+      results.push({ hora, url: dataUrl });
+    }
 
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(results));
   } catch (err) {
-    console.error('[Poster con hora] Error:', err.message, err.stack);
+    console.error('[Poster con hora] Error:', err.message);
     res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ error: `Error generando pósters: ${err.message}` }));
