@@ -30,6 +30,9 @@ module.exports = async (req, res) => {
     if (!response.ok || !contentType?.startsWith('image/')) {
       throw new Error(`No se pudo obtener imagen válida: ${response.status}`);
     }
+    if (contentType.includes('webp')) {
+      throw new Error(`Unsupported MIME type: ${contentType}`);
+    }
 
     const buffer = await response.buffer();
     if (!buffer || buffer.length === 0) {
