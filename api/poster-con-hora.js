@@ -1,7 +1,6 @@
-// api/poster-con-hora.js'use strict';
+// api/poster-con-hora.js
 'use strict';
 
-const Jimp = require('jimp');
 const sharp = require('sharp');
 const fetch = require('node-fetch');
 const path = require('path');
@@ -18,61 +17,65 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const fontDir = path.join(__dirname, '..', 'fonts');
-    const fontPath = path.join(fontDir, 'open-sans-64-white.fnt');
-    const pngPath = path.join(fontDir, 'open-sans-64-white.png');
+    const fontDir = path.join(__dirname, 'fonts'); // Ajustado para Vercel
+    const fontPath = path.join(fontDir, 'OpenSans-VariableFont_wdth,wght.ttf');
 
-    if (!fs.existsSync(fontPath) || !fs.existsSync(pngPath)) {
-      throw new Error('Font files not found en /fonts');
+    if (!fs.existsSync(fontPath)) {
+      throw new Error(`Font file not found at ${fontPath}`);
     }
 
     console.info('[Poster con hora] URL de imagen de entrada:', url);
 
-    const response = await fetch(url);
-    const contentType = response.headers.get('content-type') || '';
-    if (!response.ok) {
-      throw new Error(`No se pudo obtener imagen: ${response.status}`);
-    }
+    // Fetch con reintentos y timeout
+    const fetchWithRetry = async (url, retries = 3, delay = 1000) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const response = await fetch(url, { timeout: 10000 }); // 10s timeout
+          if (!response.ok) throw new Error(`No se pudo obtener imagen: ${response.status}`);
+          return await response.buffer();
+        } catch (err) {
+          if (i === retries - 1) throw err;
+          console.warn(`Reintentando fetch (${i + 1}/${retries}): ${err.message}`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    };
 
-    const buffer = await response.buffer();
+    const buffer = await fetchWithRetry(url);
     if (!buffer || buffer.length === 0) {
       throw new Error('Buffer vacío recibido desde la URL de imagen');
     }
 
-    let decodedBuffer = buffer;
-    if (contentType.includes('webp')) {
-      console.info('[Poster con hora] Detected .webp, intentando convertir con sharp...');
-      try {
-        decodedBuffer = await sharp(buffer).png().toBuffer();
-        console.info('[Poster con hora] Conversión con sharp completada.');
-      } catch (err) {
-        throw new Error(`Sharp no pudo convertir .webp: ${err.message}`);
-      }
-    }
-
-    console.info('[Poster con hora] Buffer listo para Jimp. Tamaño:', decodedBuffer.length);
-
-    let baseImage;
-    try {
-      baseImage = await Jimp.read(decodedBuffer);
-    } catch (err) {
-      throw new Error(`Jimp no pudo procesar la imagen: ${err.message}`);
-    }
-
-    const font = await Jimp.loadFont(fontPath);
     const results = [];
-
     for (const hora of horas) {
-      const image = baseImage.clone();
-      const textWidth = Jimp.measureText(font, hora);
-      const textHeight = Jimp.measureTextHeight(font, hora, textWidth);
-      const padding = 20;
-      const overlay = new Jimp(textWidth + padding * 2, textHeight + padding * 2, 0x00000099);
-      overlay.print(font, padding, padding, hora);
-      const xOverlay = Math.floor((image.bitmap.width - overlay.bitmap.width) / 2);
-      image.composite(overlay, xOverlay, 10);
+      let image = sharp(buffer);
+      const metadata = await image.metadata();
 
-      const finalBuffer = await image.getBufferAsync('image/webp');
+      // Convertir la fuente TTF a base64 para incrustarla directamente
+      const fontBase64 = fs.readFileSync(fontPath).toString('base64');
+      const textSvg = `
+        <svg width="${metadata.width}" height="${metadata.height}">
+          <style>
+            @font-face {
+              font-family: "OpenSans";
+              src: url("data:font/truetype;base64,${fontBase64}") format("truetype");
+            }
+          </style>
+          <rect x="0" y="0" width="${metadata.width}" height="100" fill="rgba(0,0,0,0.6)" />
+          <text x="50%" y="50" font-family="OpenSans" font-size="64" fill="white" text-anchor="middle" dy=".3em">
+            ${hora}
+          </text>
+        </svg>
+      `;
+
+      image = image.composite([
+        {
+          input: Buffer.from(textSvg),
+          gravity: 'north',
+        },
+      ]);
+
+      const finalBuffer = await image.webp({ quality: 80 }).toBuffer();
       const base64 = finalBuffer.toString('base64');
       const dataUrl = `data:image/webp;base64,${base64}`;
       results.push({ hora, url: dataUrl });
