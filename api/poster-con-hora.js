@@ -41,7 +41,11 @@ module.exports = async (req, res) => {
 
     let decodedBuffer = buffer;
     if (contentType.includes('webp')) {
-      decodedBuffer = await sharp(buffer).png().toBuffer();
+      try {
+        decodedBuffer = await sharp(buffer).png().toBuffer();
+      } catch (err) {
+        throw new Error(`Sharp no pudo convertir .webp: ${err.message}`);
+      }
     }
 
     let baseImage;
