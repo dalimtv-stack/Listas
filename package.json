@@ -10,16 +10,15 @@
   "dependencies": {
     "stremio-addon-sdk": "^1.6.10",
     "node-cache": "^5.1.2",
-    "node-fetch": "^3.3.2",
-    "dotenv": "^17.2.1",
-    "sharp": "^0.34.3",
-    "iconv-lite": "^0.6.3",
-    "p-limit": "^6.2.0",
+    "node-fetch": "^2.6.7",
+    "dotenv": "^16.3.1",
+    "sharp": "^0.32.5",
+    "p-limit": "^3.1.0",
     "jimp": "^1.6.0",
-    "iptv-playlist-parser": "^0.15.0",
-    "body-parser": "^2.2.0",
-    "uuid": "^11.1.0",
-    "cheerio": "^1.1.2"
+    "iptv-playlist-parser": "^0.11.0",
+    "body-parser": "^1.20.2",
+    "uuid": "^9.0.1",
+    "cheerio": "^1.0.0-rc.12"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
