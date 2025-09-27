@@ -32,8 +32,18 @@ function formatoFechaES(fecha) {
   return new Intl.DateTimeFormat('es-ES', opciones).format(fecha);
 }
 
+function eventoEsReciente(dia, hora) {
+  const [dd, mm, yyyy] = dia.split('/');
+  const [hh, min] = hora.split(':');
+  const eventoDate = new Date(`${yyyy}-${mm}-${dd}T${hh.padStart(2, '0')}:${min.padStart(2, '0')}:00`);
+  const ahoraMadrid = new Date(new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' }));
+  const diffMs = ahoraMadrid - eventoDate;
+  return diffMs <= 4 * 60 * 60 * 1000; // 4 horas en milisegundos
+}
+
 async function fetchEventos(url) {
   const eventos = [];
+  const generos = [];
   const ahora = new Date();
   const hoyISO = ahora.toISOString().slice(0, 10);
   const fechaFormateada = formatoFechaES(ahora);
@@ -64,6 +74,10 @@ async function fetchEventos(url) {
       const competicion = $(li).find('.dailycompetition').text().trim();
       const partido = $(li).find('.dailyteams').text().trim();
       const canal = $(li).find('.dailychannel').text().replace(/^\s*[\w\s]+/i, '').trim();
+
+      if (!eventoEsReciente(fechaFormateadaMarca, hora)) return;
+
+      if (deporte && !generos.includes(deporte)) generos.push(deporte);
 
       eventos.push({
         dia: fechaFormateadaMarca,
