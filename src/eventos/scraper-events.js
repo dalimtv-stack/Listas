@@ -14,7 +14,10 @@ function parseFechaMarca(texto) {
     septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12'
   };
   const match = texto.toLowerCase().match(/(\d{1,2}) de (\w+) de (\d{4})/);
-  if (!match) return '';
+  if (!match) {
+    console.warn(`[EVENTOS] Fecha no válida en texto: "${texto}"`);
+    return '';
+  }
   const [_, dd, mes, yyyy] = match;
   const mm = meses[mes] || '01';
   return `${yyyy}-${mm}-${dd.padStart(2, '0')}`;
@@ -40,24 +43,27 @@ function eventoEsReciente(dia, hora, deporte, partido) {
     year: parseInt(yyyy),
     month: parseInt(mm),
     day: parseInt(dd),
-    hour: parseInt(hh),
-    minute: parseInt(min)
+    hour: parseInt(hh) || 0,
+    minute: parseInt(min) || 0
   }, { zone: 'Europe/Madrid' });
 
   const ahora = DateTime.now().setZone('Europe/Madrid');
   const diffHoras = ahora.diff(evento, 'hours').hours;
 
-  if (deporte === 'Fútbol') {
-    if (partido.includes('Real Madrid')) return true;
-    return diffHoras <= 2;
+  console.info(`[EVENTOS] Evaluando evento: ${partido} a las ${hora} (${deporte}). Diff horas: ${diffHoras}`);
+
+  if (deporte === 'Fútbol' && partido.includes('Real Madrid')) {
+    console.info(`[EVENTOS] Incluyendo evento con Real Madrid: ${partido}`);
+    return true;
   }
 
-  return diffHoras <= 3;
+  return diffHoras <= (deporte === 'Fútbol' ? 2 : 3);
 }
 
 async function fetchEventos(url) {
   const eventos = [];
   const generos = [];
+  const eventosUnicos = new Set(); // Para evitar duplicados
   const ahora = new Date();
   const hoyISO = ahora.toISOString().slice(0, 10);
   const fechaFormateada = formatoFechaES(ahora);
@@ -72,10 +78,10 @@ async function fetchEventos(url) {
     const $ = cheerio.load(html);
 
     $('li.content-item').each((_, li) => {
-      const fechaTexto = $(li).find('span.title-section-widget').text().replace(/^[^\d]*(\d{1,2} de \w+ de \d{4})$/, '$1');
+      const fechaTexto = $(li).find('span.title-section-widget').text().trim();
+      console.info(`[EVENTOS] Texto de fecha encontrado: "${fechaTexto}"`);
       const fechaISO = parseFechaMarca(fechaTexto);
 
-      // Solo procesar eventos del día actual
       if (fechaISO !== hoyISO) {
         console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no coincide con ${hoyISO})`);
         return;
@@ -92,6 +98,14 @@ async function fetchEventos(url) {
         const competicion = $(eventoLi).find('.dailycompetition').text().trim();
         const partido = $(eventoLi).find('.dailyteams').text().trim();
         const canal = $(eventoLi).find('.dailychannel').text().replace(/^\s*[\w\s]+/i, '').trim();
+
+        // Crear un identificador único para el evento
+        const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
+        if (eventosUnicos.has(eventoId)) {
+          console.info(`[EVENTOS] Evento duplicado descartado: ${partido} a las ${hora}`);
+          return;
+        }
+        eventosUnicos.add(eventoId);
 
         if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido)) {
           console.info(`[EVENTOS] Evento ${partido} a las ${hora} descartado (no reciente)`);
@@ -133,15 +147,16 @@ async function fetchEventos(url) {
     return [fallback];
   }
 
-  await Promise.all(eventos.map(async evento => {
-    console.time(`Poster ${evento.partido}`);
+  await Promise.all(eventos.map(async (evento, index) => {
+    const posterLabel = `Poster ${evento.partido}-${index}`; // Añadir índice para evitar duplicados
+    console.time(posterLabel);
     evento.poster = await scrapePosterForMatch({
       partido: evento.partido,
       hora: evento.hora,
       deporte: evento.deporte,
       competicion: evento.competicion
     });
-    console.timeEnd(`Poster ${evento.partido}`);
+    console.timeEnd(posterLabel);
   }));
 
   return eventos;
