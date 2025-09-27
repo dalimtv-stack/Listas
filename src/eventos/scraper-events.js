@@ -5,6 +5,7 @@ const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 const iconv = require('iconv-lite');
 const { scrapePosterForMatch, generatePlaceholdPoster } = require('./poster-events');
+const { DateTime } = require('luxon');
 
 function parseFechaMarca(texto) {
   const meses = {
@@ -32,7 +33,6 @@ function formatoFechaES(fecha) {
   return new Intl.DateTimeFormat('es-ES', opciones).format(fecha);
 }
 
-const { DateTime } = require('luxon');
 function eventoEsReciente(dia, hora, deporte, partido) {
   const [dd, mm, yyyy] = dia.split('/');
   const [hh, min] = hora.split(':');
@@ -71,36 +71,39 @@ async function fetchEventos(url) {
     const html = iconv.decode(buffer, 'latin1');
     const $ = cheerio.load(html);
 
-    const fechaTexto = $('span.title-section-widget').text().match(/\d{1,2} de \w+ de \d{4}/)?.[0] || '';
-    const fechaMarcaISO = parseFechaMarca(fechaTexto);
+    let bloqueEncontrado = false;
 
-    if (fechaMarcaISO !== hoyISO) {
-      console.warn(`[EVENTOS] Marca muestra eventos para ${fechaMarcaISO}, no para hoy (${hoyISO})`);
-      return [];
-    }
+    $('span.title-section-widget').each((_, span) => {
+      const texto = $(span).text().trim();
+      const fechaTexto = texto.match(/\d{1,2} de \w+ de \d{4}/)?.[0] || '';
+      const fechaISO = parseFechaMarca(fechaTexto);
 
-    const [yyyy, mm, dd] = fechaMarcaISO.split('-');
-    const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
+      if (fechaISO === hoyISO && !bloqueEncontrado) {
+        bloqueEncontrado = true;
+        const [yyyy, mm, dd] = fechaISO.split('-');
+        const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
-    $('li.dailyevent').each((_, li) => {
-      const hora = $(li).find('.dailyhour').text().trim();
-      const deporte = $(li).find('.dailyday').text().trim();
-      const competicion = $(li).find('.dailycompetition').text().trim();
-      const partido = $(li).find('.dailyteams').text().trim();
-      const canal = $(li).find('.dailychannel').text().replace(/^\s*[\w\s]+/i, '').trim();
+        const ul = $(span).next('ul.dailylist');
+        ul.find('li.dailyevent').each((_, li) => {
+          const hora = $(li).find('.dailyhour').text().trim();
+          const deporte = $(li).find('.dailyday').text().trim();
+          const competicion = $(li).find('.dailycompetition').text().trim();
+          const partido = $(li).find('.dailyteams').text().trim();
+          const canal = $(li).find('.dailychannel').text().replace(/^\s*[\w\s]+/i, '').trim();
 
-      if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido)) return;
+          if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido)) return;
+          if (deporte && !generos.includes(deporte)) generos.push(deporte);
 
-      if (deporte && !generos.includes(deporte)) generos.push(deporte);
-
-      eventos.push({
-        dia: fechaFormateadaMarca,
-        hora,
-        deporte,
-        competicion,
-        partido,
-        canales: [{ label: canal, url: null }]
-      });
+          eventos.push({
+            dia: fechaFormateadaMarca,
+            hora,
+            deporte,
+            competicion,
+            partido,
+            canales: [{ label: canal, url: null }]
+          });
+        });
+      }
     });
 
     console.info(`[EVENTOS] Scrapeo exitoso desde Marca: ${eventos.length} eventos`);
