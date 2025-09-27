@@ -1,3 +1,4 @@
+// src/eventos/scraper-events.js
 'use strict';
 
 const fetch = require('node-fetch');
@@ -45,12 +46,15 @@ async function fetchEventos(url) {
     const $ = cheerio.load(html);
 
     const fechaTexto = $('span.title-section-widget').text().match(/\d{1,2} de \w+ de \d{4}/)?.[0] || '';
-    const fechaMarca = parseFechaMarca(fechaTexto);
+    const fechaMarcaISO = parseFechaMarca(fechaTexto);
 
-    if (fechaMarca !== hoyISO) {
-      console.warn(`[EVENTOS] Marca muestra eventos para ${fechaMarca}, no para hoy (${hoyISO})`);
+    if (fechaMarcaISO !== hoyISO) {
+      console.warn(`[EVENTOS] Marca muestra eventos para ${fechaMarcaISO}, no para hoy (${hoyISO})`);
       return [];
     }
+
+    const [yyyy, mm, dd] = fechaMarcaISO.split('-');
+    const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
     $('li.dailyevent').each((_, li) => {
       const hora = $(li).find('.dailyhour').text().trim();
@@ -60,7 +64,7 @@ async function fetchEventos(url) {
       const canal = $(li).find('.dailychannel').text().replace(/^\s*[\w\s]+/i, '').trim();
 
       eventos.push({
-        dia: fechaMarca,
+        dia: fechaFormateadaMarca,
         hora,
         deporte,
         competicion,
@@ -77,7 +81,7 @@ async function fetchEventos(url) {
   if (eventos.length === 0) {
     console.warn(`[EVENTOS] No se encontraron eventos para hoy (${hoyISO})`);
     const fallback = {
-      dia: hoyISO,
+      dia: `${hoyISO.slice(8, 10)}/${hoyISO.slice(5, 7)}/${hoyISO.slice(0, 4)}`,
       hora: '',
       deporte: '',
       competicion: '',
