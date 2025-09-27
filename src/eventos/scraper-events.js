@@ -71,39 +71,39 @@ async function fetchEventos(url) {
     const html = iconv.decode(buffer, 'latin1');
     const $ = cheerio.load(html);
 
-    let bloqueEncontrado = false;
+    let bloqueProcesado = false;
 
-    $('span.title-section-widget').each((_, span) => {
-      const texto = $(span).text().trim();
-      const fechaTexto = texto.replace(/^[^\d]*(\d{1,2} de \w+ de \d{4})$/, '$1');
+    $('li.content-item').each((_, li) => {
+      if (bloqueProcesado) return;
+
+      const fechaTexto = $(li).find('span.title-section-widget').text().replace(/^[^\d]*(\d{1,2} de \w+ de \d{4})$/, '$1');
       const fechaISO = parseFechaMarca(fechaTexto);
 
-      if (fechaISO === hoyISO && !bloqueEncontrado) {
-        bloqueEncontrado = true;
-        const [yyyy, mm, dd] = fechaISO.split('-');
-        const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
+      if (fechaISO !== hoyISO) return;
 
-        const ul = $(span).next('ul.dailylist');
-        ul.find('li.dailyevent').each((_, li) => {
-          const hora = $(li).find('.dailyhour').text().trim();
-          const deporte = $(li).find('.dailyday').text().trim();
-          const competicion = $(li).find('.dailycompetition').text().trim();
-          const partido = $(li).find('.dailyteams').text().trim();
-          const canal = $(li).find('.dailychannel').text().replace(/^\s*[\w\s]+/i, '').trim();
+      bloqueProcesado = true;
+      const [yyyy, mm, dd] = fechaISO.split('-');
+      const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
-          if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido)) return;
-          if (deporte && !generos.includes(deporte)) generos.push(deporte);
+      $(li).find('li.dailyevent').each((_, eventoLi) => {
+        const hora = $(eventoLi).find('.dailyhour').text().trim();
+        const deporte = $(eventoLi).find('.dailyday').text().trim();
+        const competicion = $(eventoLi).find('.dailycompetition').text().trim();
+        const partido = $(eventoLi).find('.dailyteams').text().trim();
+        const canal = $(eventoLi).find('.dailychannel').text().replace(/^\s*[\w\s]+/i, '').trim();
 
-          eventos.push({
-            dia: fechaFormateadaMarca,
-            hora,
-            deporte,
-            competicion,
-            partido,
-            canales: [{ label: canal, url: null }]
-          });
+        if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido)) return;
+        if (deporte && !generos.includes(deporte)) generos.push(deporte);
+
+        eventos.push({
+          dia: fechaFormateadaMarca,
+          hora,
+          deporte,
+          competicion,
+          partido,
+          canales: [{ label: canal, url: null }]
         });
-      }
+      });
     });
 
     console.info(`[EVENTOS] Scrapeo exitoso desde Marca: ${eventos.length} eventos`);
