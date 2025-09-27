@@ -75,7 +75,7 @@ async function fetchEventos(url) {
 
     $('span.title-section-widget').each((_, span) => {
       const texto = $(span).text().trim();
-      const fechaTexto = texto.match(/\d{1,2} de \w+ de \d{4}/)?.[0] || '';
+      const fechaTexto = texto.replace(/^[^\d]*(\d{1,2} de \w+ de \d{4})$/, '$1');
       const fechaISO = parseFechaMarca(fechaTexto);
 
       if (fechaISO === hoyISO && !bloqueEncontrado) {
