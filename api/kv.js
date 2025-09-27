@@ -40,7 +40,11 @@ async function kvGetJson(configId) {
 }
 
 async function kvSetJson(configId, obj) {
-  await kvSet(configId, JSON.stringify(obj));
+  try {
+    await kvSet(configId, JSON.stringify(obj));
+  } catch (e) {
+    console.error('[KV] setJson error:', e.message);
+  }
 }
 
 async function kvGetJsonTTL(key) {
@@ -67,22 +71,29 @@ async function kvSetJsonTTL(key, obj, ttlSeconds = 3600) {
     ttlMs: ttlSeconds * 1000,
     data: obj
   };
-  await kvSet(key, JSON.stringify(payload));
+  try {
+    await kvSet(key, JSON.stringify(payload));
+  } catch (e) {
+    console.error('[KV] setJsonTTL error:', e.message);
+  }
 }
 
-// 🚀 Nueva función: solo escribe si hay cambios
 async function kvSetJsonTTLIfChanged(key, obj, ttlSeconds = 3600) {
-  const existing = await kvGetJsonTTL(key);
-  if (!existing || JSON.stringify(existing) !== JSON.stringify(obj)) {
-    const payload = {
-      timestamp: Date.now(),
-      ttlMs: ttlSeconds * 1000,
-      data: obj
-    };
-    await kvSet(key, JSON.stringify(payload));
-    console.log(`[KV] Actualizado ${key} (cambios detectados)`);
-  } else {
-    console.log(`[KV] Sin cambios en ${key}, no se escribe`);
+  try {
+    const existing = await kvGetJsonTTL(key);
+    if (!existing || JSON.stringify(existing) !== JSON.stringify(obj)) {
+      const payload = {
+        timestamp: Date.now(),
+        ttlMs: ttlSeconds * 1000,
+        data: obj
+      };
+      await kvSet(key, JSON.stringify(payload));
+      console.log(`[KV] Actualizado ${key} (cambios detectados)`);
+    } else {
+      console.log(`[KV] Sin cambios en ${key}, no se escribe`);
+    }
+  } catch (e) {
+    console.error('[KV] setJsonTTLIfChanged error:', e.message);
   }
 }
 
@@ -100,17 +111,23 @@ async function kvDelete(key) {
     console.error('[KV] Error borrando clave:', e.message);
   }
 }
+
 async function kvListKeys(prefix = '') {
-  const { CLOUDFLARE_KV_ACCOUNT_ID, CLOUDFLARE_KV_NAMESPACE_ID, CLOUDFLARE_KV_API_TOKEN } = process.env;
-  const url = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/keys?prefix=${encodeURIComponent(prefix)}&limit=1000`;
+  try {
+    const { CLOUDFLARE_KV_ACCOUNT_ID, CLOUDFLARE_KV_NAMESPACE_ID, CLOUDFLARE_KV_API_TOKEN } = process.env;
+    const url = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/keys?prefix=${encodeURIComponent(prefix)}&limit=1000`;
 
-  const r = await fetch(url, {
-    headers: { Authorization: `Bearer ${CLOUDFLARE_KV_API_TOKEN}` }
-  });
+    const r = await fetch(url, {
+      headers: { Authorization: `Bearer ${CLOUDFLARE_KV_API_TOKEN}` }
+    });
 
-  if (!r.ok) throw new Error(`KV list failed: ${r.status}`);
-  const json = await r.json();
-  return json.result.map(k => k.name);
+    if (!r.ok) throw new Error(`KV list failed: ${r.status}`);
+    const json = await r.json();
+    return json.result.map(k => k.name);
+  } catch (e) {
+    console.error('[KV] listKeys error:', e.message);
+    return [];
+  }
 }
 
 module.exports = {
@@ -122,5 +139,5 @@ module.exports = {
   kvSetJsonTTL,
   kvSetJsonTTLIfChanged,
   kvDelete,
-  kvListKeys // 👈 ahora sí
+  kvListKeys
 };
