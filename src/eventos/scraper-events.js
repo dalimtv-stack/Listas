@@ -33,9 +33,6 @@ function formatoFechaES(fecha) {
 }
 
 const { DateTime } = require('luxon');
-
-const { DateTime } = require('luxon');
-
 function eventoEsReciente(dia, hora, deporte, partido) {
   const [dd, mm, yyyy] = dia.split('/');
   const [hh, min] = hora.split(':');
