@@ -74,19 +74,19 @@ async function fetchEventos(url) {
     let bloqueProcesado = false;
 
     $('li.content-item').each((_, li) => {
+      if (bloqueProcesado) return false;
+
       const fechaTexto = $(li).find('span.title-section-widget').text().replace(/^[^\d]*(\d{1,2} de \w+ de \d{4})$/, '$1');
       const fechaISO = parseFechaMarca(fechaTexto);
 
-      if (fechaISO !== hoyISO) {
-        if (bloqueProcesado) return false; // cortar el scrapeo
-        return; // saltar bloque que no es de hoy
-      }
+      if (fechaISO !== hoyISO) return;
 
       bloqueProcesado = true;
       const [yyyy, mm, dd] = fechaISO.split('-');
       const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
-      $(li).find('li.dailyevent').each((_, eventoLi) => {
+      const ol = $(li).find('ol').first();
+      ol.find('li.dailyevent').each((_, eventoLi) => {
         const hora = $(eventoLi).find('.dailyhour').text().trim();
         const deporte = $(eventoLi).find('.dailyday').text().trim();
         const competicion = $(eventoLi).find('.dailycompetition').text().trim();
