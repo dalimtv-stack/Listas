@@ -15,7 +15,7 @@ function parseFechaMarca(texto) {
   if (!match) return '';
   const [_, dd, mes, yyyy] = match;
   const mm = meses[mes] || '01';
-  return `${yyyy}-${mm}-${dd.padStart(2, '0')}`;
+  return `${yyyy}/${mm}/${dd.padStart(2, '0')}`;
 }
 
 function formatoFechaES(fecha) {
