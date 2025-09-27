@@ -71,10 +71,10 @@ function generatePlaceholdPoster({ hora, deporte, competicion }) {
 const posterCache = new Map();
 
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
-  const finalCacheKey = `posterFinal:${normalizeMatchName(partido)}:${hora}`;
-  const finalCached = await kvGetJson(finalCacheKey);
-  if (finalCached?.finalUrl?.startsWith('data:image')) {
-    return finalCached.finalUrl;
+  const blobKey = `posterBlob:${normalizeMatchName(partido)}:${hora}`;
+  const blobCached = await kvGetJson(blobKey);
+  if (blobCached?.url?.startsWith('https://blob.vercel-storage.com')) {
+    return blobCached.url;
   }
 
   const movistarCacheKey = `poster:${normalizeMatchName(partido)}`;
@@ -94,8 +94,6 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
       const $ = cheerio.load(html);
 
       const candidates = generateFallbackNames(partido, competicion);
-      console.info(`[Poster] Probando variantes para "${partido}":`, candidates);
-
       for (const name of candidates) {
         const nameRegex = new RegExp(name.replace(/[-]/g, '[ -]'), 'i');
         $('img').each((_, img) => {
@@ -103,15 +101,10 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
           const src = $(img).attr('src')?.toLowerCase() || '';
           if (nameRegex.test(alt) || nameRegex.test(src)) {
             posterUrl = $(img).attr('src');
-            console.info(`[Poster] Coincidencia encontrada con "${name}" → ${posterUrl}`);
             return false;
           }
         });
         if (posterUrl) break;
-      }
-
-      if (!posterUrl) {
-        console.warn(`[Poster] No se encontró imagen para: ${partido} (${competicion})`);
       }
 
       if (posterUrl?.startsWith('http')) {
@@ -124,15 +117,6 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
 
   if (!posterUrl || !posterUrl.startsWith('http')) {
     return generatePlaceholdPoster({ hora, deporte, competicion });
-  }
-
-  if (!posterCache.has(posterUrl)) {
-    posterCache.set(posterUrl, new Map());
-  }
-
-  const horaMap = posterCache.get(posterUrl);
-  if (horaMap.has(hora)) {
-    return horaMap.get(hora);
   }
 
   const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl)}`;
@@ -162,10 +146,31 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   const generado = generados.find(p => p.hora === hora);
   const finalUrl = generado?.url || generatePlaceholdPoster({ hora, deporte, competicion });
 
-  horaMap.set(hora, finalUrl);
-  await kvSetJson(finalCacheKey, { finalUrl, createdAt: Date.now() }, { ttl: 86400 });
+  const esFallback = finalUrl.includes('dummyimage.com') || finalUrl.includes('placehold.co');
+  if (esFallback) return finalUrl;
 
-  return finalUrl;
+  try {
+    const imgRes = await fetch(finalUrl);
+    const buffer = await imgRes.arrayBuffer();
+
+    const blobUpload = await fetch('https://blob.vercel-storage.com/upload?filename=' +
+      encodeURIComponent(`${normalizeMatchName(partido)}_${hora}.jpg`), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'image/jpeg',
+        'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`
+      },
+      body: buffer
+    });
+
+    const blobUrl = await blobUpload.text();
+    console.info(`[Poster] Imagen subida a Blob: ${blobUrl}`);
+    await kvSetJson(blobKey, { url: blobUrl, createdAt: Date.now() }, { ttl: 86400 });
+    return blobUrl;
+  } catch (err) {
+    console.error('[Poster] Error al subir a Blob:', err.message);
+    return finalUrl;
+  }
 }
 
 module.exports = {
