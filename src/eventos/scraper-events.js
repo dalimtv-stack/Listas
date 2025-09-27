@@ -34,7 +34,9 @@ function formatoFechaES(fecha) {
 
 const { DateTime } = require('luxon');
 
-function eventoEsReciente(dia, hora) {
+const { DateTime } = require('luxon');
+
+function eventoEsReciente(dia, hora, deporte, partido) {
   const [dd, mm, yyyy] = dia.split('/');
   const [hh, min] = hora.split(':');
   const evento = DateTime.fromObject({
@@ -47,7 +49,13 @@ function eventoEsReciente(dia, hora) {
 
   const ahora = DateTime.now().setZone('Europe/Madrid');
   const diffHoras = ahora.diff(evento, 'hours').hours;
-  return diffHoras <= 4;
+
+  if (deporte === 'Fútbol') {
+    if (partido.includes('Real Madrid')) return true;
+    return diffHoras <= 2;
+  }
+
+  return diffHoras <= 3;
 }
 
 async function fetchEventos(url) {
