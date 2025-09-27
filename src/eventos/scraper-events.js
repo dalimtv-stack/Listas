@@ -35,10 +35,11 @@ function formatoFechaES(fecha) {
 function eventoEsReciente(dia, hora) {
   const [dd, mm, yyyy] = dia.split('/');
   const [hh, min] = hora.split(':');
-  const eventoDate = new Date(`${yyyy}-${mm}-${dd}T${hh.padStart(2, '0')}:${min.padStart(2, '0')}:00`);
+  const eventoLocal = new Date(`${yyyy}-${mm}-${dd}T${hh.padStart(2, '0')}:${min.padStart(2, '0')}:00`);
+  const eventoMadrid = new Date(eventoLocal.toLocaleString('es-ES', { timeZone: 'Europe/Madrid' }));
   const ahoraMadrid = new Date(new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' }));
-  const diffMs = ahoraMadrid - eventoDate;
-  return diffMs <= 4 * 60 * 60 * 1000; // 4 horas en milisegundos
+  const diffMs = ahoraMadrid - eventoMadrid;
+  return diffMs <= 4 * 60 * 60 * 1000;
 }
 
 async function fetchEventos(url) {
