@@ -32,14 +32,22 @@ function formatoFechaES(fecha) {
   return new Intl.DateTimeFormat('es-ES', opciones).format(fecha);
 }
 
+const { DateTime } = require('luxon');
+
 function eventoEsReciente(dia, hora) {
   const [dd, mm, yyyy] = dia.split('/');
   const [hh, min] = hora.split(':');
-  const eventoLocal = new Date(`${yyyy}-${mm}-${dd}T${hh.padStart(2, '0')}:${min.padStart(2, '0')}:00`);
-  const eventoMadrid = new Date(eventoLocal.toLocaleString('es-ES', { timeZone: 'Europe/Madrid' }));
-  const ahoraMadrid = new Date(new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' }));
-  const diffMs = ahoraMadrid - eventoMadrid;
-  return diffMs <= 4 * 60 * 60 * 1000;
+  const evento = DateTime.fromObject({
+    year: parseInt(yyyy),
+    month: parseInt(mm),
+    day: parseInt(dd),
+    hour: parseInt(hh),
+    minute: parseInt(min)
+  }, { zone: 'Europe/Madrid' });
+
+  const ahora = DateTime.now().setZone('Europe/Madrid');
+  const diffHoras = ahora.diff(evento, 'hours').hours;
+  return diffHoras <= 4;
 }
 
 async function fetchEventos(url) {
