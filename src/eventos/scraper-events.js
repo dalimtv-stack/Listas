@@ -74,12 +74,13 @@ async function fetchEventos(url) {
     let bloqueProcesado = false;
 
     $('li.content-item').each((_, li) => {
-      if (bloqueProcesado) return;
-
       const fechaTexto = $(li).find('span.title-section-widget').text().replace(/^[^\d]*(\d{1,2} de \w+ de \d{4})$/, '$1');
       const fechaISO = parseFechaMarca(fechaTexto);
 
-      if (fechaISO !== hoyISO) return;
+      if (fechaISO !== hoyISO) {
+        if (bloqueProcesado) return false; // cortar el scrapeo
+        return; // saltar bloque que no es de hoy
+      }
 
       bloqueProcesado = true;
       const [yyyy, mm, dd] = fechaISO.split('-');
