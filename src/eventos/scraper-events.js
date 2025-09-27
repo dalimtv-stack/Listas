@@ -5,110 +5,67 @@ const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 const { scrapePosterForMatch, generatePlaceholdPoster } = require('./poster-events');
 
-function inferirDeporte(competicion) {
-  const texto = competicion.toLowerCase();
-  if (texto.includes('liga') || texto.includes('champions') || texto.includes('fútbol')) return 'Fútbol';
-  if (texto.includes('nba') || texto.includes('baloncesto')) return 'Baloncesto';
-  if (texto.includes('tenis')) return 'Tenis';
-  if (texto.includes('f1') || texto.includes('formula')) return 'Fórmula 1';
-  if (texto.includes('motogp') || texto.includes('moto')) return 'Motociclismo';
-  return 'Deporte';
+function parseFechaMarca(texto) {
+  const meses = {
+    enero: '01', febrero: '02', marzo: '03', abril: '04',
+    mayo: '05', junio: '06', julio: '07', agosto: '08',
+    septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12'
+  };
+  const match = texto.toLowerCase().match(/(\d{1,2}) de (\w+) de (\d{4})/);
+  if (!match) return '';
+  const [_, dd, mes, yyyy] = match;
+  const mm = meses[mes] || '01';
+  return `${yyyy}-${mm}-${dd.padStart(2, '0')}`;
 }
 
-function parseEventos(html, url) {
-  const $ = cheerio.load(html);
+async function fetchEventos() {
+  const url = 'https://www.marca.com/programacion-tv.html';
   const eventos = [];
 
-  const encabezado = $('table thead tr').text().toLowerCase();
+  const ahora = new Date();
+  const hoyISO = ahora.toISOString().slice(0, 10);
+  console.info(`[EVENTOS] Fecha del sistema: ${ahora.toLocaleString('es-ES')} (${hoyISO})`);
 
-  if (encabezado.includes('día') && encabezado.includes('hora') && encabezado.includes('deporte')) {
-    // Estructura tipo "Eventos Deportivos Acestream"
-    $('table tbody tr').each((_, tr) => {
-      const tds = $(tr).find('td');
-      const dia = $(tds[0]).text().trim();
-      const hora = $(tds[1]).text().trim();
-      const deporte = $(tds[2]).text().trim();
-      const competicion = $(tds[3]).text().trim();
-      const partido = $(tds[4]).text().trim();
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status} en ${url}`);
+    const html = await res.text();
+    const $ = cheerio.load(html);
 
-      const canales = [];
-      $(tds[5]).find('a').each((_, a) => {
-        const label = $(a).text().trim();
-        const urlCanal = $(a).attr('href');
-        canales.push({ label, url: urlCanal });
-      });
+    const fechaTexto = $('span.title-section-widget').text().match(/\d{1,2} de \w+ de \d{4}/)?.[0] || '';
+    const fechaMarca = parseFechaMarca(fechaTexto);
 
-      eventos.push({ dia, hora, deporte, competicion, partido, canales });
-    });
-  } else if (encabezado.includes('hora del evento') && encabezado.includes('equipos')) {
-    // Estructura tipo "HTML" con fecha en el título y partido dividido en dos celdas
-    const fechaTexto = $('h1').text().match(/\d{2}-\d{2}-\d{4}/)?.[0] || '';
-    $('table.styled-table tbody tr').each((_, tr) => {
-      const tds = $(tr).find('td');
-      const hora = $(tds[0]).text().trim();
-      const competicion = $(tds[1]).text().trim();
-      const equipo1 = $(tds[2]).text().trim();
-      const equipo2 = $(tds[3]).text().trim();
-      const partido = `${equipo1} vs ${equipo2}`;
-      const deporte = inferirDeporte(competicion);
-
-      const canales = [];
-      $(tds.slice(4)).find('a').each((_, a) => {
-        const label = $(a).text().trim();
-        const urlCanal = $(a).attr('href');
-        canales.push({ label, url: urlCanal });
-      });
-
-      eventos.push({ dia: fechaTexto, hora, deporte, competicion, partido, canales });
-    });
-  } else {
-    console.warn(`[EVENTOS] Estructura desconocida en ${url}`);
-  }
-
-  return eventos;
-}
-
-async function fetchEventos(configure) {
-  const urls = configure.split(/;|\|/).map(u => u.trim()).filter(Boolean);
-  const hoy = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-  const eventos = [];
-
-  for (const url of urls) {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status} en ${url}`);
-      const html = await res.text();
-      const $ = cheerio.load(html);
-
-      // Buscar fecha de actualización en el texto
-      const texto = $('body').text();
-      const match = texto.match(/(?:EVENTOS DEL|Última actualización:)\s*(\d{2})[\/\-](\d{2})[\/\-](\d{4})/i);
-      if (!match) {
-        console.warn(`[EVENTOS] Fuente ${url} sin fecha detectable, ignorada`);
-        continue;
-      }
-
-      const [_, dd, mm, yyyy] = match;
-      const fechaFuente = `${yyyy}-${mm}-${dd}`;
-      if (fechaFuente !== hoy) {
-        console.warn(`[EVENTOS] Fuente ${url} desactualizada: ${fechaFuente}`);
-        continue;
-      }
-
-      console.info(`[EVENTOS] Fuente ${url} actualizada: ${fechaFuente}`);
-
-      const eventosFuente = parseEventos(html, url);
-      eventos.push(...eventosFuente);
-      console.info(`[EVENTOS] Scrapeo exitoso desde ${url}: ${eventosFuente.length} eventos`);
-    } catch (err) {
-      console.warn(`[EVENTOS] Fallo al scrapear ${url}: ${err.message}`);
+    if (fechaMarca !== hoyISO) {
+      console.warn(`[EVENTOS] Marca muestra eventos para ${fechaMarca}, no para hoy (${hoyISO})`);
+      return [];
     }
+
+    $('li.dailyevent').each((_, li) => {
+      const hora = $(li).find('.dailyhour').text().trim();
+      const deporte = $(li).find('.dailyday').text().trim();
+      const competicion = $(li).find('.dailycompetition').text().trim();
+      const partido = $(li).find('.dailyteams').text().trim();
+      const canal = $(li).find('.dailychannel').text().replace(/^\s*[\w\s]+/i, '').trim();
+
+      eventos.push({
+        dia: fechaMarca,
+        hora,
+        deporte,
+        competicion,
+        partido,
+        canales: [{ label: canal, url: null }]
+      });
+    });
+
+    console.info(`[EVENTOS] Scrapeo exitoso desde Marca: ${eventos.length} eventos`);
+  } catch (err) {
+    console.warn(`[EVENTOS] Fallo al scrapear Marca: ${err.message}`);
   }
 
   if (eventos.length === 0) {
-    console.warn(`[EVENTOS] Ninguna fuente válida contiene eventos para hoy (${hoy})`);
+    console.warn(`[EVENTOS] No se encontraron eventos para hoy (${hoyISO})`);
     const fallback = {
-      dia: hoy,
+      dia: hoyISO,
       hora: '',
       deporte: '',
       competicion: '',
@@ -122,8 +79,6 @@ async function fetchEventos(configure) {
     };
     return [fallback];
   }
-
-  console.info(`[EVENTOS] Se detectaron ${eventos.length} eventos para hoy (${hoy})`);
 
   await Promise.all(eventos.map(async evento => {
     console.time(`Poster ${evento.partido}`);
