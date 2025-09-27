@@ -3,6 +3,7 @@
 
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
+const iconv = require('iconv-lite');
 const { scrapePosterForMatch, generatePlaceholdPoster } = require('./poster-events');
 
 function parseFechaMarca(texto) {
@@ -42,7 +43,8 @@ async function fetchEventos(url) {
   try {
     const res = await fetch('https://www.marca.com/programacion-tv.html');
     if (!res.ok) throw new Error(`HTTP ${res.status} en Marca`);
-    const html = await res.text();
+    const buffer = await res.buffer();
+    const html = iconv.decode(buffer, 'latin1');
     const $ = cheerio.load(html);
 
     const fechaTexto = $('span.title-section-widget').text().match(/\d{1,2} de \w+ de \d{4}/)?.[0] || '';
