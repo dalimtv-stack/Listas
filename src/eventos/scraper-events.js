@@ -89,7 +89,7 @@ async function fetchEventos(url) {
       const partido = $(li).find('.dailyteams').text().trim();
       const canal = $(li).find('.dailychannel').text().replace(/^\s*[\w\s]+/i, '').trim();
 
-      if (!eventoEsReciente(fechaFormateadaMarca, hora)) return;
+      if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido)) return;
 
       if (deporte && !generos.includes(deporte)) generos.push(deporte);
 
