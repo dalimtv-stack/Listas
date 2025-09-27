@@ -18,17 +18,30 @@ function parseFechaMarca(texto) {
   return `${yyyy}-${mm}-${dd.padStart(2, '0')}`;
 }
 
-async function fetchEventos() {
-  const url = 'https://www.marca.com/programacion-tv.html';
-  const eventos = [];
+function formatoFechaES(fecha) {
+  const opciones = {
+    timeZone: 'Europe/Madrid',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  };
+  return new Intl.DateTimeFormat('es-ES', opciones).format(fecha);
+}
 
+async function fetchEventos(url) {
+  const eventos = [];
   const ahora = new Date();
   const hoyISO = ahora.toISOString().slice(0, 10);
-  console.info(`[EVENTOS] Fecha del sistema: ${ahora.toLocaleString('es-ES')} (${hoyISO})`);
+  const fechaFormateada = formatoFechaES(ahora);
+
+  console.info(`[EVENTOS] Fecha del sistema: ${fechaFormateada} (${hoyISO})`);
 
   try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status} en ${url}`);
+    const res = await fetch('https://www.marca.com/programacion-tv.html');
+    if (!res.ok) throw new Error(`HTTP ${res.status} en Marca`);
     const html = await res.text();
     const $ = cheerio.load(html);
 
