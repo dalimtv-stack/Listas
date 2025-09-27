@@ -107,7 +107,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
       for (const name of candidates) {
         const nameRegex = new RegExp(name.replace(/[-]/g, '[ -]'), 'i');
         $('img').each((_, img) => {
-          const alt = $(img).attr('alt')?.normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+          const alt = $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
           const src = $(img).attr('src')?.toLowerCase() || '';
           if (nameRegex.test(alt) || nameRegex.test(src)) {
             posterUrl = $(img).attr('src');
