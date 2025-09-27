@@ -71,17 +71,17 @@ async function fetchEventos(url) {
     const html = iconv.decode(buffer, 'latin1');
     const $ = cheerio.load(html);
 
-    let bloqueProcesado = false;
-
     $('li.content-item').each((_, li) => {
-      if (bloqueProcesado) return false;
-
       const fechaTexto = $(li).find('span.title-section-widget').text().replace(/^[^\d]*(\d{1,2} de \w+ de \d{4})$/, '$1');
       const fechaISO = parseFechaMarca(fechaTexto);
 
-      if (fechaISO !== hoyISO) return;
+      // Solo procesar eventos del día actual
+      if (fechaISO !== hoyISO) {
+        console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no coincide con ${hoyISO})`);
+        return;
+      }
 
-      bloqueProcesado = true;
+      console.info(`[EVENTOS] Procesando bloque con fecha ${fechaISO}`);
       const [yyyy, mm, dd] = fechaISO.split('-');
       const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
@@ -93,7 +93,10 @@ async function fetchEventos(url) {
         const partido = $(eventoLi).find('.dailyteams').text().trim();
         const canal = $(eventoLi).find('.dailychannel').text().replace(/^\s*[\w\s]+/i, '').trim();
 
-        if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido)) return;
+        if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido)) {
+          console.info(`[EVENTOS] Evento ${partido} a las ${hora} descartado (no reciente)`);
+          return;
+        }
         if (deporte && !generos.includes(deporte)) generos.push(deporte);
 
         eventos.push({
