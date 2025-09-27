@@ -60,22 +60,12 @@ function generateFallbackNames(original, context = '') {
     }
   }
 
-  // Añadir variantes con prefijos comunes
-  const prefijos = ['jornada', 'jornada \\d+', 'fecha \\d+'];
-  const extendidas = [];
-  for (const base of variants) {
-    extendidas.push(base);
-    prefijos.forEach(p => {
-      extendidas.push(`${p}: ${base}`);
-    });
-  }
-
-  return [...new Set(extendidas)];
+  return [...new Set(variants)];
 }
 
 function generatePlaceholdPoster({ hora, deporte, competicion }) {
-  const text = `${hora}\n \n${deporte}\n \n${competicion}`;
-  return `https://placehold.co/938x1406@3x/999999/80f4eb?text=${encodeURIComponent(text)}&font=poppins&png`;
+  const text = `${hora}`;
+  return `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(text)}`;
 }
 
 const posterCache = new Map();
@@ -104,6 +94,8 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
       const $ = cheerio.load(html);
 
       const candidates = generateFallbackNames(partido, competicion);
+      console.info(`[Poster] Probando variantes para "${partido}":`, candidates);
+
       for (const name of candidates) {
         const nameRegex = new RegExp(name.replace(/[-]/g, '[ -]'), 'i');
         $('img').each((_, img) => {
@@ -111,10 +103,15 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
           const src = $(img).attr('src')?.toLowerCase() || '';
           if (nameRegex.test(alt) || nameRegex.test(src)) {
             posterUrl = $(img).attr('src');
+            console.info(`[Poster] Coincidencia encontrada con "${name}" → ${posterUrl}`);
             return false;
           }
         });
         if (posterUrl) break;
+      }
+
+      if (!posterUrl) {
+        console.warn(`[Poster] No se encontró imagen para: ${partido} (${competicion})`);
       }
 
       if (posterUrl?.startsWith('http')) {
