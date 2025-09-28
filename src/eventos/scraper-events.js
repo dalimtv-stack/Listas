@@ -68,7 +68,7 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO) {
 
   // Incluir todos los eventos futuros del día y los pasados recientes
   const limite = deporte === 'Fútbol' ? 2 : 3;
-  return diffHoras <= limite;  // Positivo para pasados recientes, negativo para futuros
+  return diffHoras <= limite;  // Positivo para pasados, negativo para futuros
 }
 
 async function fetchEventos(url) {
@@ -90,7 +90,6 @@ async function fetchEventos(url) {
 
     $('h3').each((_, h3) => {
       const fechaTexto = $(h3).text().trim();
-      console.info(`[EVENTOS] Texto de fecha encontrado: "${fechaTexto}"`);
       const fechaISO = parseFechaMarca(fechaTexto);
 
       if (fechaISO !== hoyISO) {
@@ -103,12 +102,12 @@ async function fetchEventos(url) {
       const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
       const ol = $(h3).next('ol.events-list');
-      ol.find('li.dailyevent').each((_, eventoLi) => {
-        const hora = $(eventoLi).find('.event-time').text().trim();
-        const deporte = $(eventoLi).find('.event-sport').text().trim();
-        const competicion = $(eventoLi).find('.event-title').text().trim();
-        const partido = $(eventoLi).find('.event-detail').text().trim();
-        const canal = $(eventoLi).find('.event-channel').text().trim();
+      ol.find('li.event-item').each((_, eventoLi) => {
+        const hora = $(eventoLi).find('.hour').text().trim();
+        const deporte = $(eventoLi).find('.sport').text().trim();
+        const competicion = $(eventoLi).find('.competition').text().trim();
+        const partido = $(eventoLi).find('h4').text().trim();
+        const canal = $(eventoLi).find('.channel').text().trim();
 
         const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
         if (eventosUnicos.has(eventoId)) {
