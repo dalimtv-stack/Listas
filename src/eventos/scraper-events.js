@@ -1,5 +1,4 @@
 // src/eventos/scraper-events.js
-// src/eventos/scraper-events.js
 'use strict';
 
 const fetch = require('node-fetch');
@@ -68,7 +67,8 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO) {
   }
 
   // Incluir todos los eventos futuros del día y los pasados recientes
-  return diffHoras <= (deporte === 'Fútbol' ? 2 : 3);
+  const limite = deporte === 'Fútbol' ? 2 : 3;
+  return diffHoras <= limite;  // Positivo para pasados recientes, negativo para futuros
 }
 
 async function fetchEventos(url) {
@@ -88,8 +88,8 @@ async function fetchEventos(url) {
     const html = iconv.decode(buffer, 'latin1');
     const $ = cheerio.load(html);
 
-    $('ol > li').each((_, li) => {
-      const fechaTexto = $(li).contents().first().text().trim();
+    $('h3').each((_, h3) => {
+      const fechaTexto = $(h3).text().trim();
       console.info(`[EVENTOS] Texto de fecha encontrado: "${fechaTexto}"`);
       const fechaISO = parseFechaMarca(fechaTexto);
 
@@ -102,17 +102,13 @@ async function fetchEventos(url) {
       const [yyyy, mm, dd] = fechaISO.split('-');
       const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
-      const subOl = $(li).find('ol').first();
-      subOl.find('li').each((_, eventoLi) => {
-        const lines = $(eventoLi).text().trim().split('\n').map(line => line.trim()).filter(line => line);
-        if (lines.length < 4) return;
-
-        const deporteHora = lines[0].split(' ');
-        const deporte = deporteHora[0];
-        const hora = deporteHora[1];
-        const competicion = lines[1];
-        const partido = lines[2].replace(/#### /, ''); // Quitar #### si hay
-        const canal = lines[3];
+      const ol = $(h3).next('ol.events-list');
+      ol.find('li.dailyevent').each((_, eventoLi) => {
+        const hora = $(eventoLi).find('.event-time').text().trim();
+        const deporte = $(eventoLi).find('.event-sport').text().trim();
+        const competicion = $(eventoLi).find('.event-title').text().trim();
+        const partido = $(eventoLi).find('.event-detail').text().trim();
+        const canal = $(eventoLi).find('.event-channel').text().trim();
 
         const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
         if (eventosUnicos.has(eventoId)) {
