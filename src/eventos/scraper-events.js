@@ -56,7 +56,6 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO) {
 
     console.info(`[EVENTOS] Evaluando evento: ${partido} a las ${hora} (${deporte}). Fecha: ${eventoISO}, Diff horas: ${diffHoras}`);
 
-    // Verificar que el evento sea del día actual
     if (eventoISO !== hoyISO) {
       console.info(`[EVENTOS] Evento ${partido} descartado (fecha ${eventoISO} no coincide con ${hoyISO})`);
       return false;
@@ -67,9 +66,8 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO) {
       return true;
     }
 
-    // Incluir todos los eventos futuros del día y los pasados recientes
     const limite = deporte === 'Fútbol' ? 2 : 3;
-    return diffHoras <= limite;  // Positivo para pasados, negativo para futuros
+    return diffHoras <= limite;
   } catch (e) {
     console.warn('[EVENTOS] Error en eventoEsReciente, aceptando por seguridad', e);
     return true;
@@ -81,7 +79,6 @@ async function fetchEventos(url) {
   const generos = [];
   const eventosUnicos = new Set();
 
-  // Fecha local en Madrid (evita problemas de toISOString UTC)
   const ahoraDT = DateTime.now().setZone('Europe/Madrid');
   const hoyISO = ahoraDT.toISODate();
   const fechaFormateada = formatoFechaES(ahoraDT.toJSDate());
@@ -89,42 +86,28 @@ async function fetchEventos(url) {
   console.info(`[EVENTOS] Fecha del sistema: ${fechaFormateada} (${hoyISO})`);
 
   try {
-    const MARCA_URL = 'https://www.marca.com/programacion-tv.html'; // tu URL original
+    const MARCA_URL = 'https://www.marca.com/programacion-tv.html';
     const res = await fetch(MARCA_URL, {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; scraper)' }
     });
     if (!res.ok) throw new Error(`HTTP ${res.status} en Marca`);
     const buffer = await res.buffer();
 
-    // Intentamos UTF-8 primero (muchas páginas vienen en UTF-8), si no hay estructura, probamos latin1
-    let html = buffer.toString('utf8');
-    let $ = cheerio.load(html);
+    // 🔧 FIX: decodificar SIEMPRE en latin1 (Marca usa ISO-8859-1)
+    const html = iconv.decode(buffer, 'latin1');
+    const $ = cheerio.load(html);
 
-    const looksLikeDaylist = ($('ol.auto-items.daylist').length > 0) || ($('li.dailyevent').length > 0) || ($('.title-section-widget').length > 0);
-    const looksLikeOld = ($('h3').length > 0 && $('ol.events-list').length > 0) || ($('li.event-item').length > 0);
-
-    if (!looksLikeDaylist && !looksLikeOld) {
-      // fallback a latin1 si no hemos detectado nada útil con utf8
-      html = iconv.decode(buffer, 'latin1');
-      $ = cheerio.load(html);
-    }
-
-    // Re-evaluar estructuras después del fallback
     const hasDaylist = ($('ol.auto-items.daylist').length > 0) || ($('li.dailyevent').length > 0) || ($('.title-section-widget').length > 0);
     const hasOldStructure = ($('h3').length > 0 && $('ol.events-list').length > 0) || ($('li.event-item').length > 0);
 
-    // --- 1) Si hay la estructura "daylist / dailyevent" (más moderna) ---
     if (hasDaylist) {
       console.info('[EVENTOS] Estructura detectada: daylist / dailyevent');
-
-      // Recorremos bloques tipo "content-item" que contienen .title-section-widget
       $('li.content-item').filter((i, el) => $(el).find('.title-section-widget').length > 0).each((_, li) => {
         const fechaTexto = $(li).find('.title-section-widget').text().trim();
         const fechaISO = parseFechaMarca(fechaTexto);
 
         console.info(`[EVENTOS] Bloque con fecha detectada: ${fechaISO} (texto: "${fechaTexto.replace(/\s+/g,' ').trim().slice(0,60)}")`);
 
-        // Si el bloque no es de hoy, saltamos (pero seguimos con los siguientes bloques)
         if (fechaISO !== hoyISO) {
           console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no coincide con ${hoyISO})`);
           return;
@@ -134,13 +117,12 @@ async function fetchEventos(url) {
         const [yyyy, mm, dd] = fechaISO.split('-');
         const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
-        // Encontrar cada evento dentro del bloque
         $(li).find('li.dailyevent').each((_, eventoLi) => {
-          const hora = $(eventoLi).find('.dailyhour').text().trim() || $(eventoLi).find('.hour').text().trim() || '';
-          const deporte = $(eventoLi).find('.dailyday').text().trim() || $(eventoLi).find('.sport').text().trim() || '';
-          const competicion = $(eventoLi).find('.dailycompetition').text().trim() || $(eventoLi).find('.competition').text().trim() || '';
-          const partido = $(eventoLi).find('.dailyteams').text().trim() || $(eventoLi).find('h4').text().trim() || '';
-          const canal = $(eventoLi).find('.dailychannel').text().trim() || $(eventoLi).find('.channel').text().trim() || '';
+          const hora = $(eventoLi).find('.dailyhour').text().trim() || '';
+          const deporte = $(eventoLi).find('.dailyday').text().trim() || '';
+          const competicion = $(eventoLi).find('.dailycompetition').text().trim() || '';
+          const partido = $(eventoLi).find('.dailyteams').text().trim() || '';
+          const canal = $(eventoLi).find('.dailychannel').text().trim() || '';
 
           const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
           if (eventosUnicos.has(eventoId)) {
@@ -167,7 +149,6 @@ async function fetchEventos(url) {
       });
     }
 
-    // --- 2) Si existe la estructura antigua h3 + ol.events-list ---
     if (hasOldStructure) {
       console.info('[EVENTOS] Estructura detectada: h3 + ol.events-list (antiguo)');
       $('h3').each((_, h3) => {
@@ -178,7 +159,7 @@ async function fetchEventos(url) {
 
         if (fechaISO !== hoyISO) {
           console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no coincide con ${hoyISO})`);
-          return; // sigue con siguiente h3
+          return;
         }
 
         console.info(`[EVENTOS] Procesando bloque con fecha ${fechaISO}`);
@@ -241,7 +222,6 @@ async function fetchEventos(url) {
     return [fallback];
   }
 
-  // Generar posters (igual que antes)
   await Promise.all(eventos.map(async (evento, index) => {
     const posterLabel = `Poster ${evento.partido}-${index}`;
     console.time(posterLabel);
