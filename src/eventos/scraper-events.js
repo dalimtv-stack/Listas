@@ -62,8 +62,9 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO, ayerISO, bloqueIS
     }
 
     if (bloqueISO === ayerISO) {
-      // mostrar eventos de última hora (23:00 a 23:59)
-      return diffHoras >= 23 && diffHoras <= 28;
+      const ahora = DateTime.now().setZone('Europe/Madrid');
+      const diffDesdeAhora = ahora.diff(evento, 'hours').hours;
+      return diffDesdeAhora >= 0 && diffDesdeAhora <= 2;
     }
 
     return false;
