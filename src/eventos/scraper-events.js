@@ -38,7 +38,7 @@ function formatoFechaES(fecha) {
   return new Intl.DateTimeFormat('es-ES', opciones).format(fecha);
 }
 
-function eventoEsReciente(dia, hora, deporte, partido, hoyISO, ayerISO) {
+function eventoEsReciente(dia, hora, deporte, partido, hoyISO, ayerISO, bloqueISO) {
   try {
     const [dd, mm, yyyy] = (dia || '').split('/');
     const [hh, min] = (hora || '').split(':');
@@ -51,18 +51,17 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO, ayerISO) {
     }, { zone: 'Europe/Madrid' });
 
     const ahora = DateTime.now().setZone('Europe/Madrid');
-    const eventoISO = evento.toISODate();
     const diffHoras = ahora.diff(evento, 'hours').hours;
+    const eventoISO = evento.toISODate();
 
-    console.info(`[EVENTOS] Evaluando evento: ${partido} a las ${hora} (${deporte}). Fecha: ${eventoISO}, Diff horas: ${diffHoras.toFixed(2)}`);
+    console.info(`[EVENTOS] Evaluando evento: ${partido} a las ${hora} (${deporte}). Fecha: ${eventoISO}, Diff horas: ${diffHoras.toFixed(2)}, bloque: ${bloqueISO}`);
 
-    if (eventoISO === hoyISO) {
+    if (bloqueISO === hoyISO) {
       const limite = deporte === 'Fútbol' ? 2 : 3;
       return diffHoras <= limite && diffHoras >= 0;
     }
 
-    if (eventoISO === ayerISO) {
-      console.info(`[EVENTOS] Evento de ayer detectado: ${partido} → diffHoras: ${diffHoras.toFixed(2)}`);
+    if (bloqueISO === ayerISO) {
       return diffHoras <= 4 && diffHoras >= 0;
     }
 
@@ -80,6 +79,7 @@ async function fetchEventos(url) {
 
   const ahoraDT = DateTime.now().setZone('Europe/Madrid');
   const hoyISO = ahoraDT.toISODate();
+  const ayerISO = ahoraDT.minus({ days: 1 }).toISODate();
   const fechaFormateada = formatoFechaES(ahoraDT.toJSDate());
 
   console.info(`[EVENTOS] Fecha del sistema: ${fechaFormateada} (${hoyISO})`);
@@ -91,8 +91,6 @@ async function fetchEventos(url) {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status} en Marca`);
     const buffer = await res.buffer();
-
-    // 🔧 FIX: decodificar SIEMPRE en latin1 (Marca usa ISO-8859-1)
     const html = iconv.decode(buffer, 'latin1');
     const $ = cheerio.load(html);
 
@@ -107,12 +105,12 @@ async function fetchEventos(url) {
 
         console.info(`[EVENTOS] Bloque con fecha detectada: ${fechaISO} (texto: "${fechaTexto.replace(/\s+/g,' ').trim().slice(0,60)}")`);
 
-        if (fechaISO !== hoyISO) {
-          console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no coincide con ${hoyISO})`);
+        if (fechaISO !== hoyISO && fechaISO !== ayerISO) {
+          console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no es hoy ni ayer)`);
           return;
         }
 
-        console.info(`[EVENTOS] Procesando bloque con fecha ${fechaISO}`);
+        const bloqueISO = fechaISO;
         const [yyyy, mm, dd] = fechaISO.split('-');
         const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
@@ -130,7 +128,7 @@ async function fetchEventos(url) {
           }
           eventosUnicos.add(eventoId);
 
-          if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido, hoyISO)) {
+          if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido, hoyISO, ayerISO, bloqueISO)) {
             console.info(`[EVENTOS] Evento ${partido} a las ${hora} descartado (no reciente)`);
             return;
           }
@@ -156,12 +154,12 @@ async function fetchEventos(url) {
 
         console.info(`[EVENTOS] Bloque con fecha detectada: ${fechaISO} (h3: "${fechaTexto.replace(/\s+/g,' ').trim().slice(0,60)}")`);
 
-        if (fechaISO !== hoyISO) {
-          console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no coincide con ${hoyISO})`);
+        if (fechaISO !== hoyISO && fechaISO !== ayerISO) {
+          console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no es hoy ni ayer)`);
           return;
         }
 
-        console.info(`[EVENTOS] Procesando bloque con fecha ${fechaISO}`);
+        const bloqueISO = fechaISO;
         const [yyyy, mm, dd] = fechaISO.split('-');
         const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
@@ -180,7 +178,7 @@ async function fetchEventos(url) {
           }
           eventosUnicos.add(eventoId);
 
-          if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido, hoyISO)) {
+          if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido, hoyISO, ayerISO, bloqueISO)) {
             console.info(`[EVENTOS] Evento ${partido} a las ${hora} descartado (no reciente)`);
             return;
           }
