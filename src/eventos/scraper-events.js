@@ -75,14 +75,11 @@ async function fetchEventos(url) {
   const eventos = [];
   const generos = [];
   const eventosUnicos = new Set();
-
-  const ahora = DateTime.now().setZone('Europe/Madrid');
-  const hoyISO = ahora.toISODate();
-  const ayerISO = ahora.minus({ days: 1 }).toISODate();
-  const permitirAyer = ahora.hour < 6; // tolerancia primeras 6h del día
+  const ahora = new Date();
+  const hoyISO = ahora.toISOString().slice(0, 10);
   const fechaFormateada = formatoFechaES(ahora);
 
-  console.info(`[EVENTOS] Fecha del sistema: ${fechaFormateada} (${hoyISO}), permitir bloques de ayer: ${permitirAyer}`);
+  console.info(`[EVENTOS] Fecha del sistema: ${fechaFormateada} (${hoyISO})`);
 
   try {
     const res = await fetch('https://www.marca.com/programacion-tv.html');
@@ -95,9 +92,9 @@ async function fetchEventos(url) {
       const fechaTexto = $(h3).text().trim();
       const fechaISO = parseFechaMarca(fechaTexto);
 
-      if (fechaISO !== hoyISO && !(permitirAyer && fechaISO === ayerISO)) {
-        console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no coincide con hoy ${hoyISO} ni con ayer ${ayerISO} en madrugada)`);
-        return;
+      if (fechaISO !== hoyISO) {
+        console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no coincide con ${hoyISO})`);
+        return; // <-- FIX: solo salta este bloque, pero sigue con el resto
       }
 
       console.info(`[EVENTOS] Procesando bloque con fecha ${fechaISO}`);
