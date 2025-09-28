@@ -62,8 +62,8 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO, ayerISO, bloqueIS
     }
 
     if (bloqueISO === ayerISO) {
-      // mostrar eventos de última hora (20:00 a 23:59)
-      return diffHoras >= 20 && diffHoras <= 28;
+      // mostrar eventos de última hora (23:00 a 23:59)
+      return diffHoras >= 23 && diffHoras <= 28;
     }
 
     return false;
