@@ -38,7 +38,7 @@ function formatoFechaES(fecha) {
   return new Intl.DateTimeFormat('es-ES', opciones).format(fecha);
 }
 
-function eventoEsReciente(dia, hora, deporte, partido, hoyISO) {
+function eventoEsReciente(dia, hora, deporte, partido, hoyISO, ayerISO) {
   try {
     const [dd, mm, yyyy] = (dia || '').split('/');
     const [hh, min] = (hora || '').split(':');
@@ -56,18 +56,18 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO) {
 
     console.info(`[EVENTOS] Evaluando evento: ${partido} a las ${hora} (${deporte}). Fecha: ${eventoISO}, Diff horas: ${diffHoras}`);
 
-    if (eventoISO !== hoyISO) {
-      console.info(`[EVENTOS] Evento ${partido} descartado (fecha ${eventoISO} no coincide con ${hoyISO})`);
-      return false;
+    if (eventoISO === hoyISO) {
+      // comportamiento normal
+      const limite = deporte === 'Fútbol' ? 2 : 3;
+      return diffHoras <= limite;
     }
 
-    if (deporte === 'Fútbol' && partido && partido.includes('Real Madrid')) {
-      console.info(`[EVENTOS] Incluyendo evento con Real Madrid: ${partido}`);
-      return true;
+    if (eventoISO === ayerISO) {
+      // solo permitir si hace < 3 horas
+      return diffHoras >= 0 && diffHoras <= 3;
     }
 
-    const limite = deporte === 'Fútbol' ? 2 : 3;
-    return diffHoras <= limite;
+    return false;
   } catch (e) {
     console.warn('[EVENTOS] Error en eventoEsReciente, aceptando por seguridad', e);
     return true;
