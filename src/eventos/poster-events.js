@@ -3,7 +3,7 @@
 
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
-const { kvGetJson, kvSetJson } = require('../../api/kv');
+const { kvGetJson, kvSetJsonTTLIfChanged } = require('../../api/kv');
 
 function normalizeMatchName(matchName) {
   return matchName
@@ -74,6 +74,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   const blobKey = `posterBlob:${normalizeMatchName(partido)}:${hora}`;
   const blobCached = await kvGetJson(blobKey);
   if (blobCached?.url?.startsWith('https://blob.vercel-storage.com')) {
+    console.info(`[Poster] Recuperado desde KV Blob: ${blobKey}`);
     return blobCached.url;
   }
 
@@ -108,7 +109,8 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
       }
 
       if (posterUrl?.startsWith('http')) {
-        await kvSetJson(movistarCacheKey, { posterUrl, createdAt: Date.now() }, { ttl: 86400 });
+        console.info(`[Poster] Guardando póster scrapeado en KV: ${movistarCacheKey}`);
+        await kvSetJsonTTLIfChanged(movistarCacheKey, { posterUrl, createdAt: Date.now() }, 86400);
       }
     } catch (err) {
       console.error('[Poster] Error scraping:', err.message);
@@ -116,6 +118,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   }
 
   if (!posterUrl || !posterUrl.startsWith('http')) {
+    console.warn(`[Poster] No se encontró póster válido, usando fallback`);
     return generatePlaceholdPoster({ hora, deporte, competicion });
   }
 
@@ -147,12 +150,21 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   const finalUrl = generado?.url || generatePlaceholdPoster({ hora, deporte, competicion });
 
   const esFallback = finalUrl.includes('dummyimage.com') || finalUrl.includes('placehold.co');
-  if (esFallback) return finalUrl;
+  if (esFallback) {
+    console.warn(`[Poster] Imagen generada es fallback, no se sube a Blob`);
+    return finalUrl;
+  }
+
+  if (!/^https?:\/\//.test(finalUrl)) {
+    console.error(`[Poster] URL inválida para subir a Blob: ${finalUrl}`);
+    return finalUrl;
+  }
 
   try {
     const imgRes = await fetch(finalUrl);
     const buffer = await imgRes.arrayBuffer();
 
+    console.info(`[Poster] Subiendo imagen a Blob: ${blobKey}`);
     const blobUpload = await fetch('https://blob.vercel-storage.com/upload?filename=' +
       encodeURIComponent(`${normalizeMatchName(partido)}_${hora}.jpg`), {
       method: 'PUT',
@@ -165,7 +177,9 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
 
     const blobUrl = await blobUpload.text();
     console.info(`[Poster] Imagen subida a Blob: ${blobUrl}`);
-    await kvSetJson(blobKey, { url: blobUrl, createdAt: Date.now() }, { ttl: 86400 });
+
+    console.info(`[Poster] Guardando en KV Blob: ${blobKey}`);
+    await kvSetJsonTTLIfChanged(blobKey, { url: blobUrl, createdAt: Date.now() }, 86400);
     return blobUrl;
   } catch (err) {
     console.error('[Poster] Error al subir a Blob:', err.message);
