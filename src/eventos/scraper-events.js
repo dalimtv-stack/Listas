@@ -13,7 +13,7 @@ function parseFechaMarca(texto) {
     mayo: '05', junio: '06', julio: '07', agosto: '08',
     septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12'
   };
-  const matches = texto.toLowerCase().match(/(\d{1,2} de \w+ de \d{4})/g) || [];
+  const matches = (texto || '').toLowerCase().match(/(\d{1,2} de \w+ de \d{4})/g) || [];
   if (matches.length !== 1) {
     console.warn(`[EVENTOS] Fecha no válida o contiene múltiples fechas: "${texto}" (encontradas: ${matches.length})`);
     return '';
@@ -39,34 +39,41 @@ function formatoFechaES(fecha) {
 }
 
 function eventoEsReciente(dia, hora, deporte, partido, hoyISO) {
-  const [dd, mm, yyyy] = dia.split('/');
-  const [hh, min] = hora.split(':');
-  const evento = DateTime.fromObject({
-    year: parseInt(yyyy),
-    month: parseInt(mm),
-    day: parseInt(dd),
-    hour: parseInt(hh) || 0,
-    minute: parseInt(min) || 0
-  }, { zone: 'Europe/Madrid' });
+  try {
+    const [dd, mm, yyyy] = dia.split('/');
+    const [hh, min] = (hora || '').split(':');
+    const evento = DateTime.fromObject({
+      year: parseInt(yyyy),
+      month: parseInt(mm),
+      day: parseInt(dd),
+      hour: parseInt(hh) || 0,
+      minute: parseInt(min) || 0
+    }, { zone: 'Europe/Madrid' });
 
-  const ahora = DateTime.now().setZone('Europe/Madrid');
-  const diffHoras = ahora.diff(evento, 'hours').hours;
-  const eventoISO = evento.toISODate();
+    const ahora = DateTime.now().setZone('Europe/Madrid');
+    const diffHoras = ahora.diff(evento, 'hours').hours;
+    const eventoISO = evento.toISODate();
 
-  console.info(`[EVENTOS] Evaluando evento: ${partido} a las ${hora} (${deporte}). Fecha: ${eventoISO}, Diff horas: ${diffHoras}`);
+    console.info(`[EVENTOS] Evaluando evento: ${partido} a las ${hora} (${deporte}). Fecha: ${eventoISO}, Diff horas: ${diffHoras}`);
 
-  if (eventoISO !== hoyISO) {
-    console.info(`[EVENTOS] Evento ${partido} descartado (fecha ${eventoISO} no coincide con ${hoyISO})`);
-    return false;
-  }
+    // Verificar que el evento sea del día actual
+    if (eventoISO !== hoyISO) {
+      console.info(`[EVENTOS] Evento ${partido} descartado (fecha ${eventoISO} no coincide con ${hoyISO})`);
+      return false;
+    }
 
-  if (deporte === 'Fútbol' && partido.includes('Real Madrid')) {
-    console.info(`[EVENTOS] Incluyendo evento con Real Madrid: ${partido}`);
+    if (deporte === 'Fútbol' && partido.includes('Real Madrid')) {
+      console.info(`[EVENTOS] Incluyendo evento con Real Madrid: ${partido}`);
+      return true;
+    }
+
+    // Incluir todos los eventos futuros del día y los pasados recientes
+    const limite = deporte === 'Fútbol' ? 2 : 3;
+    return diffHoras <= limite;  // Positivo para pasados, negativo para futuros
+  } catch (e) {
+    console.warn('[EVENTOS] Error en eventoEsReciente, devolviendo true por seguridad', e);
     return true;
   }
-
-  const limite = deporte === 'Fútbol' ? 2 : 3;
-  return diffHoras <= limite;
 }
 
 async function fetchEventos(url) {
@@ -80,59 +87,130 @@ async function fetchEventos(url) {
   console.info(`[EVENTOS] Fecha del sistema: ${fechaFormateada} (${hoyISO})`);
 
   try {
-    const res = await fetch('https://www.marca.com/programacion-tv.html'); // 🔄 cambio a la página correcta
+    // <-- URL ORIGINAL (no tocar)
+    const res = await fetch('https://www.marca.com/programacion-tv.html');
     if (!res.ok) throw new Error(`HTTP ${res.status} en Marca`);
     const buffer = await res.buffer();
-    const html = iconv.decode(buffer, 'latin1');
-    const $ = cheerio.load(html);
 
-    $('h3').each((_, h3) => {
-      const fechaTexto = $(h3).text().trim();
-      const fechaISO = parseFechaMarca(fechaTexto);
+    // Intentamos primero con la decodificación que tenías (latin1)
+    let html = iconv.decode(buffer, 'latin1');
+    let $ = cheerio.load(html);
 
-      if (fechaISO !== hoyISO) {
-        console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no coincide con ${hoyISO})`);
-        return;
-      }
+    // Detectores de estructura
+    let hasDaylist = ($('ol.auto-items.daylist').length > 0) || ($('li.dailyevent').length > 0) || ($('ol.daylist').length > 0);
+    let hasOldStructure = ($('h3').length > 0 && $('ol.events-list').length > 0);
 
-      console.info(`[EVENTOS] Procesando bloque con fecha ${fechaISO}`);
-      const [yyyy, mm, dd] = fechaISO.split('-');
-      const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
+    // Si no detectamos nada, probamos con UTF-8 (algunas páginas vienen en UTF-8)
+    if (!hasDaylist && !hasOldStructure) {
+      const htmlUtf8 = buffer.toString('utf8');
+      $ = cheerio.load(htmlUtf8);
+      hasDaylist = ($('ol.auto-items.daylist').length > 0) || ($('li.dailyevent').length > 0) || ($('ol.daylist').length > 0);
+      hasOldStructure = ($('h3').length > 0 && $('ol.events-list').length > 0);
+    }
 
-      // FIX: ahora los eventos van en ol.daylist > li.dailyevent
-      const ol = $(h3).next('ol.daylist');
-      ol.find('li.dailyevent').each((_, eventoLi) => {
-        const hora = $(eventoLi).find('.dailyhour').text().trim();
-        const deporte = $(eventoLi).find('.dailyday').text().trim();
-        const competicion = $(eventoLi).find('.dailycompetition').text().trim();
-        const partido = $(eventoLi).find('.dailyteams').text().trim();
-        const canal = $(eventoLi).find('.dailychannel').text().trim();
-
-        const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
-        if (eventosUnicos.has(eventoId)) {
-          console.info(`[EVENTOS] Evento duplicado descartado: ${partido} a las ${hora}`);
+    if (hasDaylist) {
+      console.info('[EVENTOS] Estructura detectada: daylist / dailyevent (nuevo formato)');
+      // Recorremos bloques de día (filtramos por los que tengan .title-section-widget)
+      $('li.content-item').filter((i, el) => $(el).find('.title-section-widget').length > 0).each((_, li) => {
+        const fechaTexto = $(li).find('.title-section-widget').text().trim();
+        const fechaISO = parseFechaMarca(fechaTexto);
+        if (!fechaISO) {
+          console.info('[EVENTOS] Fecha no parseable en bloque, saltando');
           return;
         }
-        eventosUnicos.add(eventoId);
-
-        if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido, hoyISO)) {
-          console.info(`[EVENTOS] Evento ${partido} a las ${hora} descartado (no reciente)`);
+        if (fechaISO !== hoyISO) {
+          console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no coincide con ${hoyISO})`);
           return;
         }
-        if (deporte && !generos.includes(deporte)) generos.push(deporte);
 
-        eventos.push({
-          dia: fechaFormateadaMarca,
-          hora,
-          deporte,
-          competicion,
-          partido,
-          canales: [{ label: canal, url: null }]
+        console.info(`[EVENTOS] Procesando bloque con fecha ${fechaISO}`);
+        const [yyyy, mm, dd] = fechaISO.split('-');
+        const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
+
+        // Buscamos events dentro de ese bloque
+        const eventLis = $(li).find('li.dailyevent');
+        eventLis.each((_, eventoLi) => {
+          // Usamos varios selectores de fallback para mantener compatibilidad
+          const hora = $(eventoLi).find('.dailyhour').text().trim() || $(eventoLi).find('.hour').text().trim() || '';
+          const deporte = $(eventoLi).find('.dailyday').text().trim() || $(eventoLi).find('.sport').text().trim() || '';
+          const competicion = $(eventoLi).find('.dailycompetition').text().trim() || $(eventoLi).find('.competition').text().trim() || '';
+          const partido = $(eventoLi).find('.dailyteams').text().trim() || $(eventoLi).find('h4').text().trim() || '';
+          const canal = $(eventoLi).find('.dailychannel').text().trim() || $(eventoLi).find('.channel').text().trim() || '';
+
+          const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
+          if (eventosUnicos.has(eventoId)) {
+            console.info(`[EVENTOS] Evento duplicado descartado: ${partido} a las ${hora}`);
+            return;
+          }
+          eventosUnicos.add(eventoId);
+
+          if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido, hoyISO)) {
+            console.info(`[EVENTOS] Evento ${partido} a las ${hora} descartado (no reciente)`);
+            return;
+          }
+          if (deporte && !generos.includes(deporte)) generos.push(deporte);
+
+          eventos.push({
+            dia: fechaFormateadaMarca,
+            hora,
+            deporte,
+            competicion,
+            partido,
+            canales: [{ label: canal, url: null }]
+          });
         });
       });
-    });
+    } else if (hasOldStructure) {
+      console.info('[EVENTOS] Estructura detectada: h3 + ol.events-list (formato antiguo)');
+      $('h3').each((_, h3) => {
+        const fechaTexto = $(h3).text().trim();
+        const fechaISO = parseFechaMarca(fechaTexto);
 
-    console.info(`[EVENTOS] Scrapeo exitoso desde Marca: ${eventos.length} eventos`);
+        if (fechaISO !== hoyISO) {
+          console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no coincide con ${hoyISO})`);
+          return;
+        }
+
+        console.info(`[EVENTOS] Procesando bloque con fecha ${fechaISO}`);
+        const [yyyy, mm, dd] = fechaISO.split('-');
+        const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
+
+        const ol = $(h3).next('ol.events-list');
+        ol.find('li.event-item').each((_, eventoLi) => {
+          const hora = $(eventoLi).find('.hour').text().trim();
+          const deporte = $(eventoLi).find('.sport').text().trim();
+          const competicion = $(eventoLi).find('.competition').text().trim();
+          const partido = $(eventoLi).find('h4').text().trim();
+          const canal = $(eventoLi).find('.channel').text().trim();
+
+          const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
+          if (eventosUnicos.has(eventoId)) {
+            console.info(`[EVENTOS] Evento duplicado descartado: ${partido} a las ${hora}`);
+            return;
+          }
+          eventosUnicos.add(eventoId);
+
+          if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido, hoyISO)) {
+            console.info(`[EVENTOS] Evento ${partido} a las ${hora} descartado (no reciente)`);
+            return;
+          }
+          if (deporte && !generos.includes(deporte)) generos.push(deporte);
+
+          eventos.push({
+            dia: fechaFormateadaMarca,
+            hora,
+            deporte,
+            competicion,
+            partido,
+            canales: [{ label: canal, url: null }]
+          });
+        });
+      });
+    } else {
+      console.warn('[EVENTOS] No se detectó estructura conocida en Marca (ni daylist ni h3+events-list).');
+    }
+
+    console.info(`[EVENTOS] Scrapeo finalizado desde Marca: ${eventos.length} eventos`);
   } catch (err) {
     console.warn(`[EVENTOS] Fallo al scrapear Marca: ${err.message}`);
   }
