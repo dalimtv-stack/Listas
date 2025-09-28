@@ -75,9 +75,12 @@ async function fetchEventos(url) {
   const eventos = [];
   const generos = [];
   const eventosUnicos = new Set();
-  const ahora = new Date();
-  const hoyISO = ahora.toISOString().slice(0, 10);
-  const fechaFormateada = formatoFechaES(ahora);
+
+  // --- FIX: usar luxon con zona Europe/Madrid para obtener la fecha local correcta ---
+  const ahoraDT = DateTime.now().setZone('Europe/Madrid');
+  const hoyISO = ahoraDT.toISODate();                 // fecha en zona Madrid, p.e. "2025-09-29"
+  const fechaFormateada = formatoFechaES(ahoraDT.toJSDate()); // formato legible en zona Madrid
+  // -------------------------------------------------------------------------------
 
   console.info(`[EVENTOS] Fecha del sistema: ${fechaFormateada} (${hoyISO})`);
 
@@ -94,7 +97,7 @@ async function fetchEventos(url) {
 
       if (fechaISO !== hoyISO) {
         console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no coincide con ${hoyISO})`);
-        return; // <-- FIX: solo salta este bloque, pero sigue con el resto
+        return; // <-- solo salta este bloque, sigue con el resto
       }
 
       console.info(`[EVENTOS] Procesando bloque con fecha ${fechaISO}`);
