@@ -1,4 +1,5 @@
 // src/eventos/scraper-events.js
+// src/eventos/scraper-events.js
 'use strict';
 
 const fetch = require('node-fetch');
@@ -13,12 +14,13 @@ function parseFechaMarca(texto) {
     mayo: '05', junio: '06', julio: '07', agosto: '08',
     septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12'
   };
-  // Capturar solo la primera fecha válida
-  const match = texto.toLowerCase().match(/(\d{1,2}) de (\w+) de (\d{4})/);
-  if (!match || texto.includes('Domingo')) {
-    console.warn(`[EVENTOS] Fecha no válida o contiene múltiples fechas: "${texto}"`);
+  const matches = texto.toLowerCase().match(/(\d{1,2} de \w+ de \d{4})/g) || [];
+  if (matches.length !== 1) {
+    console.warn(`[EVENTOS] Fecha no válida o contiene múltiples fechas: "${texto}" (encontradas: ${matches.length})`);
     return '';
   }
+  const match = texto.toLowerCase().match(/(\d{1,2}) de (\w+) de (\d{4})/);
+  if (!match) return '';
   const [_, dd, mes, yyyy] = match;
   const mm = meses[mes] || '01';
   return `${yyyy}-${mm}-${dd.padStart(2, '0')}`;
@@ -65,8 +67,8 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO) {
     return true;
   }
 
-  // Incluir eventos futuros o recientes (dentro de 2 horas para fútbol, 3 horas para otros deportes)
-  return diffHoras <= (deporte === 'Fútbol' ? 2 : 3) && diffHoras >= 0;
+  // Incluir todos los eventos futuros del día y los pasados recientes
+  return diffHoras <= (deporte === 'Fútbol' ? 2 : 3);
 }
 
 async function fetchEventos(url) {
@@ -86,8 +88,8 @@ async function fetchEventos(url) {
     const html = iconv.decode(buffer, 'latin1');
     const $ = cheerio.load(html);
 
-    $('li.content-item').each((_, li) => {
-      const fechaTexto = $(li).find('span.title-section-widget').text().trim();
+    $('ol > li').each((_, li) => {
+      const fechaTexto = $(li).contents().first().text().trim();
       console.info(`[EVENTOS] Texto de fecha encontrado: "${fechaTexto}"`);
       const fechaISO = parseFechaMarca(fechaTexto);
 
@@ -100,13 +102,17 @@ async function fetchEventos(url) {
       const [yyyy, mm, dd] = fechaISO.split('-');
       const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
-      const ol = $(li).find('ol').first();
-      ol.find('li.dailyevent').each((_, eventoLi) => {
-        const hora = $(eventoLi).find('.dailyhour').text().trim();
-        const deporte = $(eventoLi).find('.dailyday').text().trim();
-        const competicion = $(eventoLi).find('.dailycompetition').text().trim();
-        const partido = $(eventoLi).find('.dailyteams').text().trim();
-        const canal = $(eventoLi).find('.dailychannel').text().replace(/^\s*[\w\s]+/i, '').trim();
+      const subOl = $(li).find('ol').first();
+      subOl.find('li').each((_, eventoLi) => {
+        const lines = $(eventoLi).text().trim().split('\n').map(line => line.trim()).filter(line => line);
+        if (lines.length < 4) return;
+
+        const deporteHora = lines[0].split(' ');
+        const deporte = deporteHora[0];
+        const hora = deporteHora[1];
+        const competicion = lines[1];
+        const partido = lines[2].replace(/#### /, ''); // Quitar #### si hay
+        const canal = lines[3];
 
         const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
         if (eventosUnicos.has(eventoId)) {
