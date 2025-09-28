@@ -63,8 +63,8 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO, ayerISO) {
     }
 
     if (eventoISO === ayerISO) {
-      // solo permitir si hace < 3 horas
-      return diffHoras >= 0 && diffHoras <= 3;
+      // permitir si ocurrió hace menos de 3 horas
+      return Math.abs(diffHoras) <= 4;
     }
 
     return false;
