@@ -80,7 +80,7 @@ async function fetchEventos(url) {
   console.info(`[EVENTOS] Fecha del sistema: ${fechaFormateada} (${hoyISO})`);
 
   try {
-    const res = await fetch('https://www.marca.com/eventos.html'); // 🔄 cambio a la página correcta
+    const res = await fetch('https://www.marca.com/programacion-tv.html'); // 🔄 cambio a la página correcta
     if (!res.ok) throw new Error(`HTTP ${res.status} en Marca`);
     const buffer = await res.buffer();
     const html = iconv.decode(buffer, 'latin1');
