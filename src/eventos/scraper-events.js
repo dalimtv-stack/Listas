@@ -51,20 +51,19 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO, ayerISO) {
     }, { zone: 'Europe/Madrid' });
 
     const ahora = DateTime.now().setZone('Europe/Madrid');
-    const diffHoras = ahora.diff(evento, 'hours').hours;
     const eventoISO = evento.toISODate();
+    const diffHoras = evento.diff(ahora, 'hours').hours;
 
-    console.info(`[EVENTOS] Evaluando evento: ${partido} a las ${hora} (${deporte}). Fecha: ${eventoISO}, Diff horas: ${diffHoras}`);
+    console.info(`[EVENTOS] Evaluando evento: ${partido} a las ${hora} (${deporte}). Fecha: ${eventoISO}, Diff horas: ${diffHoras.toFixed(2)}`);
 
     if (eventoISO === hoyISO) {
-      // comportamiento normal
       const limite = deporte === 'Fútbol' ? 2 : 3;
-      return diffHoras <= limite;
+      return diffHoras >= -limite && diffHoras <= 0;
     }
 
     if (eventoISO === ayerISO) {
-      // permitir si ocurrió hace menos de 3 horas
-      return diffHoras <= 4 && diffHoras >= -4;
+      console.info(`[EVENTOS] Evento de ayer detectado: ${partido} → diffHoras: ${diffHoras.toFixed(2)}`);
+      return diffHoras >= -4 && diffHoras <= 0;
     }
 
     return false;
