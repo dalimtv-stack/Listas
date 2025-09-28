@@ -55,7 +55,6 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO) {
 
   console.info(`[EVENTOS] Evaluando evento: ${partido} a las ${hora} (${deporte}). Fecha: ${eventoISO}, Diff horas: ${diffHoras}`);
 
-  // Verificar que el evento sea del día actual
   if (eventoISO !== hoyISO) {
     console.info(`[EVENTOS] Evento ${partido} descartado (fecha ${eventoISO} no coincide con ${hoyISO})`);
     return false;
@@ -66,9 +65,8 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO) {
     return true;
   }
 
-  // Incluir todos los eventos futuros del día y los pasados recientes
   const limite = deporte === 'Fútbol' ? 2 : 3;
-  return diffHoras <= limite;  // Positivo para pasados, negativo para futuros
+  return diffHoras <= limite;
 }
 
 async function fetchEventos(url) {
@@ -82,7 +80,7 @@ async function fetchEventos(url) {
   console.info(`[EVENTOS] Fecha del sistema: ${fechaFormateada} (${hoyISO})`);
 
   try {
-    const res = await fetch('https://www.marca.com/programacion-tv.html');
+    const res = await fetch('https://www.marca.com/eventos.html'); // 🔄 cambio a la página correcta
     if (!res.ok) throw new Error(`HTTP ${res.status} en Marca`);
     const buffer = await res.buffer();
     const html = iconv.decode(buffer, 'latin1');
@@ -101,13 +99,14 @@ async function fetchEventos(url) {
       const [yyyy, mm, dd] = fechaISO.split('-');
       const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
-      const ol = $(h3).next('ol.events-list');
-      ol.find('li.event-item').each((_, eventoLi) => {
-        const hora = $(eventoLi).find('.hour').text().trim();
-        const deporte = $(eventoLi).find('.sport').text().trim();
-        const competicion = $(eventoLi).find('.competition').text().trim();
-        const partido = $(eventoLi).find('h4').text().trim();
-        const canal = $(eventoLi).find('.channel').text().trim();
+      // FIX: ahora los eventos van en ol.daylist > li.dailyevent
+      const ol = $(h3).next('ol.daylist');
+      ol.find('li.dailyevent').each((_, eventoLi) => {
+        const hora = $(eventoLi).find('.dailyhour').text().trim();
+        const deporte = $(eventoLi).find('.dailyday').text().trim();
+        const competicion = $(eventoLi).find('.dailycompetition').text().trim();
+        const partido = $(eventoLi).find('.dailyteams').text().trim();
+        const canal = $(eventoLi).find('.dailychannel').text().trim();
 
         const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
         if (eventosUnicos.has(eventoId)) {
