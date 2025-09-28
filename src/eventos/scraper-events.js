@@ -58,7 +58,7 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO, ayerISO, bloqueIS
 
     if (bloqueISO === hoyISO) {
       const limite = deporte === 'Fútbol' ? 2 : 3;
-      return diffHoras <= limite && diffHoras >= 0;
+      return diffHoras >= -limite && diffHoras <= limite;
     }
 
     if (bloqueISO === ayerISO) {
