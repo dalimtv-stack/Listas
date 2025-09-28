@@ -55,7 +55,6 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO) {
 
   console.info(`[EVENTOS] Evaluando evento: ${partido} a las ${hora} (${deporte}). Fecha: ${eventoISO}, Diff horas: ${diffHoras}`);
 
-  // Verificar que el evento sea del día actual
   if (eventoISO !== hoyISO) {
     console.info(`[EVENTOS] Evento ${partido} descartado (fecha ${eventoISO} no coincide con ${hoyISO})`);
     return false;
@@ -66,9 +65,8 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO) {
     return true;
   }
 
-  // Incluir todos los eventos futuros del día y los pasados recientes
   const limite = deporte === 'Fútbol' ? 2 : 3;
-  return diffHoras <= limite;  // Positivo para pasados, negativo para futuros
+  return diffHoras <= limite;
 }
 
 async function fetchEventos(url) {
@@ -76,11 +74,9 @@ async function fetchEventos(url) {
   const generos = [];
   const eventosUnicos = new Set();
 
-  // --- FIX: usar luxon con zona Europe/Madrid para obtener la fecha local correcta ---
   const ahoraDT = DateTime.now().setZone('Europe/Madrid');
-  const hoyISO = ahoraDT.toISODate();                 // fecha en zona Madrid, p.e. "2025-09-29"
-  const fechaFormateada = formatoFechaES(ahoraDT.toJSDate()); // formato legible en zona Madrid
-  // -------------------------------------------------------------------------------
+  const hoyISO = ahoraDT.toISODate();
+  const fechaFormateada = formatoFechaES(ahoraDT.toJSDate());
 
   console.info(`[EVENTOS] Fecha del sistema: ${fechaFormateada} (${hoyISO})`);
 
@@ -97,7 +93,7 @@ async function fetchEventos(url) {
 
       if (fechaISO !== hoyISO) {
         console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no coincide con ${hoyISO})`);
-        return; // <-- solo salta este bloque, sigue con el resto
+        return; // ⚠️ antes paraba el bucle entero, ahora solo este bloque
       }
 
       console.info(`[EVENTOS] Procesando bloque con fecha ${fechaISO}`);
