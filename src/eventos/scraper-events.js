@@ -64,7 +64,7 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO, ayerISO, bloqueIS
     if (bloqueISO === ayerISO) {
       const ahora = DateTime.now().setZone('Europe/Madrid');
       const diffDesdeAhora = ahora.diff(evento, 'hours').hours;
-      return diffDesdeAhora >= 0 && diffDesdeAhora <= 4;
+      return diffDesdeAhora >= 0 && diffDesdeAhora <= 2;
     }
 
     return false;
