@@ -145,7 +145,7 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion }) {
   return isCacheablePosterUrl(finalUrl) ? finalUrl : generatePlaceholdPoster({ hora });
 }
 
-// ✅ Reutilizable en lote o individual
+// ✅ Única función reutilizable
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }, cacheMap = null) {
   const partidoNorm = normalizeMatchName(partido);
   const postersMap = cacheMap || await kvReadPostersHoyMap();
@@ -153,11 +153,19 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }, cac
   if (typeof cached === 'string' && cached.length > 0) {
     return cached;
   }
+
   const url = await generatePosterWithHour({ partido, hora, deporte, competicion });
+
+  if (isCacheablePosterUrl(url) && !cacheMap) {
+    const latestMap = await kvReadPostersHoyMap();
+    const merged = { ...latestMap, [partidoNorm]: url };
+    await kvWritePostersHoyMap(merged);
+  }
+
   return url;
 }
 
-// ✅ Procesamiento en lote usando scrapePosterForMatch
+// ✅ Procesamiento en lote usando la misma función
 async function scrapePostersForEventos(eventos) {
   const postersMap = await kvReadPostersHoyMap();
   const updates = {};
