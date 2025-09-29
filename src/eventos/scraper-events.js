@@ -14,13 +14,13 @@ function parseFechaMarca(texto) {
     mayo: '05', junio: '06', julio: '07', agosto: '08',
     septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12'
   };
-  const matches = (texto || '').toLowerCase().match(/(\d{1,2} de \w+ de \d{4})/g) || [];
-  if (matches.length !== 1) {
-    console.warn(`[EVENTOS] Fecha no válida o contiene múltiples fechas: "${texto}" (encontradas: ${matches.length})`);
+
+  const match = (texto || '').toLowerCase().match(/(\d{1,2}) de (\w+) de (\d{4})/);
+  if (!match) {
+    console.warn(`[EVENTOS] No se encontró ninguna fecha válida en: "${texto}"`);
     return '';
   }
-  const match = (texto || '').toLowerCase().match(/(\d{1,2}) de (\w+) de (\d{4})/);
-  if (!match) return '';
+
   const [_, dd, mes, yyyy] = match;
   const mm = meses[mes] || '01';
   return `${yyyy}-${mm}-${dd.padStart(2, '0')}`;
