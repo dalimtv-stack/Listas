@@ -44,11 +44,6 @@ function parseFechaMarca(texto, añoPorDefecto) {
   return '';
 }
 
-  // Caso solo número: NO se acepta sin mes
-  console.warn(`[EVENTOS] Fecha sin mes/ano: "${texto}" → descartando bloque`);
-  return '';
-}
-
 function formatoFechaES(fecha) {
   return new Intl.DateTimeFormat('es-ES', {
     timeZone: 'Europe/Madrid',
