@@ -1,4 +1,5 @@
 // api/poster-con-hora.js
+// api/poster-con-hora.js
 'use strict';
 
 const Jimp = require('jimp');
@@ -37,35 +38,22 @@ module.exports = async (req, res) => {
 
     const response = await fetch(url);
     const contentType = response.headers.get('content-type') || '';
-    if (!response.ok) {
-      throw new Error(`No se pudo obtener imagen: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`No se pudo obtener imagen: ${response.status}`);
 
-    const buffer = await response.buffer();
-    if (!buffer || buffer.length === 0) {
-      throw new Error('Buffer vacío recibido desde la URL de imagen');
-    }
+    let buffer = await response.buffer();
+    if (!buffer || buffer.length === 0) throw new Error('Buffer vacío recibido desde la URL');
 
-    let decodedBuffer = buffer;
+    // Convertir webp a PNG si hace falta
     if (contentType.includes('webp')) {
-      console.info('[Poster con hora] Detected .webp, intentando convertir con sharp...');
       try {
-        decodedBuffer = await sharp(buffer).png().toBuffer();
-        console.info('[Poster con hora] Conversión con sharp completada.');
+        buffer = await sharp(buffer).png().toBuffer();
+        console.info('[Poster con hora] Conversión .webp -> PNG completada.');
       } catch (err) {
-        throw new Error(`Sharp no pudo convertir .webp: ${err.message}`);
+        console.warn('[Poster con hora] Fallo al convertir .webp, se usará buffer original:', err.message);
       }
     }
 
-    console.info('[Poster con hora] Buffer listo para Jimp. Tamaño:', decodedBuffer.length);
-
-    let baseImage;
-    try {
-      baseImage = await Jimp.read(decodedBuffer);
-    } catch (err) {
-      throw new Error(`Jimp no pudo procesar la imagen: ${err.message}`);
-    }
-
+    const baseImage = await Jimp.read(buffer);
     const font = await Jimp.loadFont(fontPath);
     const results = [];
 
@@ -81,34 +69,33 @@ module.exports = async (req, res) => {
         image.composite(overlay, xOverlay, 10);
 
         const finalBuffer = await image.getBufferAsync('image/png');
-
-        // Convertimos el buffer a Base64
         const base64 = finalBuffer.toString('base64');
-        
-        // Subida al Blob de Vercel usando su API oficial
-        const blobUpload = await fetch('https://api.vercel.com/v1/blob', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            name: `poster_${hora}.png`,
-            data: base64
-          })
-        });
-        
-        // Parseamos la respuesta JSON
-        const blobJson = await blobUpload.json();
-        if (!blobJson.url) throw new Error('No se recibió URL del blob');
-        
-        // Guardamos la URL pública
-        const blobUrl = blobJson.url;
+
+        // Intento de subir al Blob
+        let blobUrl = url; // fallback por defecto
+        try {
+          const blobUpload = await fetch('https://api.vercel.com/v1/blob', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              name: `poster_${hora}.png`,
+              data: base64
+            })
+          });
+          const blobJson = await blobUpload.json();
+          if (blobJson.url) blobUrl = blobJson.url;
+          else console.warn('[Poster con hora] No se recibió URL del blob, se usará fallback.');
+        } catch (err) {
+          console.warn(`[Poster con hora] Error subiendo a Blob para "${hora}":`, err.message);
+        }
 
         results.push({ hora, url: blobUrl });
       } catch (err) {
-        console.warn(`[Poster con hora] Fallo al generar o subir imagen con hora "${hora}": ${err.message}`);
-        results.push({ hora, url }); // fallback a imagen original sin hora
+        console.warn(`[Poster con hora] Error generando imagen con hora "${hora}", usando fallback:`, err.message);
+        results.push({ hora, url }); // fallback a imagen original
       }
     }
 
