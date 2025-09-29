@@ -4,7 +4,7 @@
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 const iconv = require('iconv-lite');
-const { scrapePosterForMatch, generatePlaceholdPoster } = require('./poster-events');
+const { scrapePosterForMatch, generatePlaceholdPoster, scrapePostersForEventos } = require('./poster-events');
 const { kvGetJsonTTL } = require('../../api/kv');
 const { DateTime } = require('luxon');
 
