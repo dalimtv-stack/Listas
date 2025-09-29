@@ -6,6 +6,7 @@ const sharp = require('sharp');
 const fetch = require('node-fetch');
 const path = require('path');
 const fs = require('fs');
+const { put } = require('@vercel/blob');
 
 module.exports = async (req, res) => {
   const { url } = req.query;
@@ -38,7 +39,6 @@ module.exports = async (req, res) => {
     }
   } catch (err) {
     console.error('[Poster con hora] No se pudo obtener la imagen original:', err.message);
-    // Si ni siquiera se puede obtener la original, devolvemos error 500
     res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json');
     return res.end(JSON.stringify({ error: 'No se pudo obtener la imagen original.' }));
@@ -72,25 +72,17 @@ module.exports = async (req, res) => {
       image.composite(overlay, xOverlay, 10);
 
       const finalBuffer = await image.getBufferAsync('image/png');
-      const base64 = finalBuffer.toString('base64');
 
-      // Intento de subir al Blob
+      // Subir al Blob con `put`
       if (process.env.BLOB_READ_WRITE_TOKEN) {
         try {
-          const blobUpload = await fetch('https://api.vercel.com/v1/blob', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              name: `poster_${hora}.png`,
-              data: base64
-            })
+          const { url: uploadedUrl } = await put(`posters/poster_${hora}.png`, finalBuffer, {
+            access: 'public',
+            token: process.env.BLOB_READ_WRITE_TOKEN,
+            contentType: 'image/png',
+            addRandomSuffix: true,
           });
-
-          const blobJson = await blobUpload.json();
-          if (blobJson.url) blobUrl = blobJson.url;
+          if (uploadedUrl) blobUrl = uploadedUrl;
           else console.warn(`[Poster con hora] No se recibió URL del blob para "${hora}", se usará fallback.`);
         } catch (err) {
           console.warn(`[Poster con hora] Error subiendo a Blob para "${hora}", se usará fallback:`, err.message);
@@ -100,7 +92,7 @@ module.exports = async (req, res) => {
       }
     } catch (err) {
       console.warn(`[Poster con hora] Error generando póster con hora "${hora}", se usará fallback:`, err.message);
-      blobUrl = url; // fallback explícito
+      blobUrl = url;
     }
 
     results.push({ hora, url: blobUrl });
