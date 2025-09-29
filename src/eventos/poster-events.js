@@ -110,16 +110,29 @@ async function buscarPosterEnFuente(url, candidates) {
 
 // Lee el wrapper y devuelve el mapa plano de posters
 async function kvReadPostersHoyMap() {
-  const wrapper = await kvGetJson('postersBlobHoy');
-  if (wrapper && typeof wrapper === 'object' && wrapper.data && typeof wrapper.data === 'object') {
-    return wrapper.data;
+  try {
+    const wrapper = await kvGetJson('postersBlobHoy');
+    if (wrapper && typeof wrapper === 'object' && wrapper.data && typeof wrapper.data === 'object') {
+      console.info(`[Poster] KV leído: postersBlobHoy con ${Object.keys(wrapper.data).length} entradas`);
+      return wrapper.data;
+    }
+    console.info('[Poster] KV vacío o sin datos válidos, devolviendo mapa vacío');
+    return {};
+  } catch (err) {
+    console.error('[Poster] Error al leer KV postersBlobHoy:', err.message);
+    return {};
   }
-  return {};
 }
 
-// Escribe el mapa plano fusionado en la clave (kvSetJsonTTLIfChanged envuelve correctamente)
+// Escribe el mapa plano fusionado en la clave
 async function kvWritePostersHoyMap(mergedMap) {
-  await kvSetJsonTTLIfChanged('postersBlobHoy', mergedMap, 86400);
+  try {
+    console.info(`[Poster] Intentando escribir en KV: ${Object.keys(mergedMap).length} entradas`);
+    await kvSetJsonTTLIfChanged('postersBlobHoy', mergedMap, 86400);
+    console.info(`[Poster] KV actualizado: postersBlobHoy (${Object.keys(mergedMap).length} entradas)`);
+  } catch (err) {
+    console.error('[Poster] Error al escribir en KV postersBlobHoy:', err.message);
+  }
 }
 
 // --- Generación por partido (sin escribir KV aquí) ---
@@ -163,6 +176,7 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ horas: [hora] })
     });
+    if (!res.ok) throw new Error(`HTTP ${res.status} en poster-con-hora`);
     generados = await res.json();
   } catch (err) {
     console.error('[Poster] Error al generar con hora:', err.message);
@@ -178,6 +192,7 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion }) {
   const finalUrl = generado?.url;
 
   if (isBlobPosterUrl(finalUrl)) {
+    console.info(`[Poster] Generada URL válida para ${partido}: ${finalUrl}`);
     return finalUrl;
   }
 
@@ -202,7 +217,7 @@ async function scrapePostersConcurrenciaLimitada(eventos, limite = 4) {
     const cached = postersMap[partidoNorm];
 
     if (isBlobPosterUrl(cached)) {
-      console.info(`[Poster] Usando KV existente: ${partidoNorm}`);
+      console.info(`[Poster] Usando KV existente: ${partidoNorm} → ${cached}`);
       evento.poster = cached;
       resultados.push(evento);
       return;
@@ -214,6 +229,7 @@ async function scrapePostersConcurrenciaLimitada(eventos, limite = 4) {
 
     // Agregar a updates solo Blob válido (nunca fallback)
     if (isBlobPosterUrl(url)) {
+      console.info(`[Poster] Agregando a updates: ${partidoNorm} → ${url}`);
       updates[partidoNorm] = url;
     }
   }
@@ -223,22 +239,21 @@ async function scrapePostersConcurrenciaLimitada(eventos, limite = 4) {
       const evento = cola.shift();
       const p = procesar(evento).catch(err => {
         console.error('[Poster] Error procesando evento:', err?.message || err);
-        // En caso de error, fallback sin cachear
         evento.poster = generatePlaceholdPoster({ hora: evento.hora });
         resultados.push(evento);
       });
       activos.push(p);
     }
-    await Promise.race(activos);
+    await Promise.any(activos).catch(() => {}); // Ignorar errores aquí, ya manejados en procesar
     // Limpiar promesas cumplidas
-    activos.splice(0, activos.length, ...activos.filter(pr => typeof pr.then === 'function'));
+    activos.splice(0, activos.length, ...activos.filter(pr => pr.status === 'pending'));
   }
 
-  // 3) Al final, fusionar y escribir UNA vez en KV (solo nuevos)
+  // 3) Al final, fusionar y escribir en KV
+  console.info(`[Poster] Updates generados: ${JSON.stringify(updates)}`);
   if (Object.keys(updates).length > 0) {
     const merged = { ...postersMap, ...updates };
     await kvWritePostersHoyMap(merged);
-    console.info(`[Poster] KV actualizado: postersBlobHoy (${Object.keys(merged).length} entradas)`);
   } else {
     console.info('[Poster] KV sin cambios (no hay nuevas entradas válidas)');
   }
@@ -248,17 +263,15 @@ async function scrapePostersConcurrenciaLimitada(eventos, limite = 4) {
 
 // También mantenemos la función individual por compatibilidad, pero SIN escritura a KV
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
-  // Leer KV por si ya existe
   const postersMap = await kvReadPostersHoyMap();
   const partidoNorm = normalizeMatchName(partido);
   const cached = postersMap[partidoNorm];
 
   if (isBlobPosterUrl(cached)) {
-    console.info(`[Poster] Recuperado desde postersBlobHoy: ${partidoNorm}`);
+    console.info(`[Poster] Recuperado desde postersBlobHoy: ${partidoNorm} → ${cached}`);
     return cached;
   }
 
-  // Generar bajo demanda (sin escribir KV aquí; la escritura la hace la función de orquestación)
   const url = await generatePosterWithHour({ partido, hora, deporte, competicion });
   return url;
 }
