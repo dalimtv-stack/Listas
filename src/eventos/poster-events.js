@@ -154,17 +154,25 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion }) {
 // --- API principal usada por scraper-events.js ---
 
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
-  const postersMap = await kvReadPostersHoyMap();
   const partidoNorm = normalizeMatchName(partido);
+
+  // Leer KV actual
+  let postersMap = await kvReadPostersHoyMap();
   const cached = postersMap[partidoNorm];
   if (typeof cached === 'string' && cached.length > 0) {
     return cached;
   }
+
+  // Generar nuevo póster
   const url = await generatePosterWithHour({ partido, hora, deporte, competicion });
+
   if (isCacheablePosterUrl(url)) {
+    // Releer KV justo antes de escribir para evitar pisar
+    postersMap = await kvReadPostersHoyMap();
     const merged = { ...postersMap, [partidoNorm]: url };
     await kvWritePostersHoyMap(merged);
   }
+
   return url;
 }
 
