@@ -146,26 +146,26 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion }) {
 }
 
 // ✅ Única función reutilizable
+const { kvGetJsonTTL, kvSetJsonTTL } = require('../../api/kv');
+
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }, cacheMap = null) {
   const partidoNorm = normalizeMatchName(partido);
   const postersMap = cacheMap || await kvGetJsonTTL('postersBlobHoy') || {};
-  const cached = postersMap[partidoNorm];
 
-  if (typeof cached === 'string' && cached.length > 0) {
-    return cached;
+  if (typeof postersMap[partidoNorm] === 'string' && postersMap[partidoNorm].length > 0) {
+    return postersMap[partidoNorm];
   }
 
   const url = await generatePosterWithHour({ partido, hora, deporte, competicion });
 
-  if (isCacheablePosterUrl(url) && !cacheMap) {
-    const latestMap = await kvGetJsonTTL('postersBlobHoy') || {};
-    const merged = { ...latestMap, [partidoNorm]: url };
-    await kvSetJsonTTL('postersBlobHoy', merged, 86400);
+  if (isCacheablePosterUrl(url)) {
+    const updatedMap = { ...postersMap, [partidoNorm]: url };
+    await kvSetJsonTTL('postersBlobHoy', updatedMap, 86400);
+    return url;
   }
 
-  return url;
+  return generatePlaceholdPoster({ hora });
 }
-
 
 // ✅ Procesamiento en lote usando la misma función
 async function scrapePostersForEventos(eventos) {
