@@ -82,40 +82,42 @@ async function fetchEventos(url) {
     const html = iconv.decode(buffer, 'latin1');
     const $ = cheerio.load(html);
 
-    const hasDaylist = $('li.content-item .title-section-widget').length > 0;
+    const bloques = $('li.content-item').filter((i, el) => $(el).find('.title-section-widget').length > 0);
+    if (bloques.length === 0) {
+      console.warn('[EVENTOS] No se encontraron bloques con fecha válida');
+      return [crearFallback(hoyISO)];
+    }
 
-    if (hasDaylist) {
-      console.info('[EVENTOS] Estructura detectada: daylist / dailyevent');
-      $('li.content-item').each((_, li) => {
-        const fechaTexto = $(li).find('.title-section-widget').text().trim();
-        const fechaISO = parseFechaMarca(fechaTexto);
-        const [yyyy, mm, dd] = fechaISO.split('-');
-        const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
+    console.info('[EVENTOS] Estructura detectada: daylist / dailyevent');
+    bloques.each((_, li) => {
+      const fechaTexto = $(li).find('.title-section-widget').text().trim();
+      const fechaISO = parseFechaMarca(fechaTexto);
+      const [yyyy, mm, dd] = fechaISO.split('-');
+      const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
-        $(li).find('li.dailyevent').each((_, eventoLi) => {
-          const hora = $(eventoLi).find('.dailyhour').text().trim() || '';
-          const deporte = $(eventoLi).find('.dailyday').text().trim() || '';
-          const competicion = $(eventoLi).find('.dailycompetition').text().trim() || '';
-          const partido = $(eventoLi).find('.dailyteams').text().trim() || '';
-          const canal = $(eventoLi).find('.dailychannel').text().trim() || '';
+      $(li).find('li.dailyevent').each((_, eventoLi) => {
+        const hora = $(eventoLi).find('.dailyhour').text().trim() || '';
+        const deporte = $(eventoLi).find('.dailyday').text().trim() || '';
+        const competicion = $(eventoLi).find('.dailycompetition').text().trim() || '';
+        const partido = $(eventoLi).find('.dailyteams').text().trim() || '';
+        const canal = $(eventoLi).find('.dailychannel').text().trim() || '';
 
-          const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
-          if (eventosUnicos.has(eventoId)) return;
-          eventosUnicos.add(eventoId);
+        const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
+        if (eventosUnicos.has(eventoId)) return;
+        eventosUnicos.add(eventoId);
 
-          if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido)) return;
+        if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido)) return;
 
-          eventos.push({
-            dia: fechaFormateadaMarca,
-            hora,
-            deporte,
-            competicion,
-            partido,
-            canales: [{ label: canal, url: null }]
-          });
+        eventos.push({
+          dia: fechaFormateadaMarca,
+          hora,
+          deporte,
+          competicion,
+          partido,
+          canales: [{ label: canal, url: null }]
         });
       });
-    }
+    });
 
     console.info(`[EVENTOS] Scrapeo finalizado desde Marca: ${eventos.length} eventos`);
   } catch (err) {
@@ -124,20 +126,7 @@ async function fetchEventos(url) {
 
   if (eventos.length === 0) {
     console.warn(`[EVENTOS] No se encontraron eventos para hoy (${hoyISO})`);
-    const fallback = {
-      dia: `${hoyISO.slice(8, 10)}/${hoyISO.slice(5, 7)}/${hoyISO.slice(0, 4)}`,
-      hora: '',
-      deporte: '',
-      competicion: '',
-      partido: 'No hay eventos disponibles hoy',
-      canales: [],
-      poster: generatePlaceholdPoster({
-        hora: '',
-        deporte: '',
-        competicion: 'No hay eventos disponibles hoy'
-      })
-    };
-    return [fallback];
+    return [crearFallback(hoyISO)];
   }
 
   const postersMap = await kvGetJsonTTL('postersBlobHoy') || {};
@@ -154,6 +143,24 @@ async function fetchEventos(url) {
   }));
 
   return eventos;
+}
+
+function crearFallback(hoyISO) {
+  const dia = `${hoyISO.slice(8, 10)}/${hoyISO.slice(5, 7)}/${hoyISO.slice(0, 4)}`;
+  return {
+    dia,
+    hora: '',
+    deporte: '',
+    competicion: 'No hay eventos disponibles hoy',
+    partido: 'No hay eventos disponibles hoy',
+    canales: [],
+    poster: generatePlaceholdPoster({
+      hora: '',
+      deporte: '',
+      competicion: 'No hay eventos disponibles hoy',
+      partido: 'No hay eventos disponibles hoy'
+    })
+  };
 }
 
 module.exports = { fetchEventos };
