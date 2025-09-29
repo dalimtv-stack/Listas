@@ -169,26 +169,43 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }, cac
 async function scrapePostersForEventos(eventos) {
   const postersMap = await kvReadPostersHoyMap();
   const updates = {};
+  const resultados = [];
 
-  await Promise.all(eventos.map(async (evento, index) => {
-    const posterLabel = `Poster ${evento.partido}-${index}`;
+  const eventosSinPoster = eventos.filter(ev => {
+    const partidoNorm = normalizeMatchName(ev.partido);
+    return !isCacheablePosterUrl(postersMap[partidoNorm]);
+  });
+
+  for (const evento of eventosSinPoster) {
+    const posterLabel = `Poster ${evento.partido}`;
     console.time(posterLabel);
-    const url = await scrapePosterForMatch(evento, postersMap);
+    const url = await generatePosterWithHour(evento);
     console.timeEnd(posterLabel);
-    evento.poster = url;
 
     const partidoNorm = normalizeMatchName(evento.partido);
     if (isCacheablePosterUrl(url)) {
       updates[partidoNorm] = url;
     }
-  }));
+
+    evento.poster = url;
+    resultados.push(evento);
+  }
 
   if (Object.keys(updates).length > 0) {
     const merged = { ...postersMap, ...updates };
     await kvWritePostersHoyMap(merged);
   }
 
-  return eventos;
+  // Añadir los eventos que ya tenían póster en KV
+  const eventosConPosterPrevio = eventos.filter(ev => {
+    const partidoNorm = normalizeMatchName(ev.partido);
+    return isCacheablePosterUrl(postersMap[partidoNorm]);
+  }).map(ev => ({
+    ...ev,
+    poster: postersMap[normalizeMatchName(ev.partido)]
+  }));
+
+  return [...eventosConPosterPrevio, ...resultados];
 }
 
 module.exports = {
