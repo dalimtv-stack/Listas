@@ -147,7 +147,7 @@ async function fetchEventos(url) {
     console.info('[EVENTOS] Estructura detectada: daylist / dailyevent');
     bloques.each((_, li) => {
       const fechaTexto = $(li).find('.title-section-widget').text().trim();
-      const fechaISO = parseFechaMarca(fechaTexto);
+      const fechaISO = parseFechaMarca(fechaTexto, ahora.year);
       const [yyyy, mm, dd] = fechaISO.split('-');
       const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
