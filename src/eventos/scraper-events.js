@@ -144,17 +144,7 @@ async function fetchEventos(url) {
   }
 
   const postersMap = await kvGetJsonTTL('postersBlobHoy') || {};
-  await Promise.all(eventos.map(async (evento, index) => {
-    const posterLabel = `Poster ${evento.partido}-${index}`;
-    console.time(posterLabel);
-    evento.poster = await scrapePosterForMatch({
-      partido: evento.partido,
-      hora: evento.hora,
-      deporte: evento.deporte,
-      competicion: evento.competicion
-    }, postersMap);
-    console.timeEnd(posterLabel);
-  }));
+  await scrapePostersForEventos(eventos);
 
   return eventos;
 }
