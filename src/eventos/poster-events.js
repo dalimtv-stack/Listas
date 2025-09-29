@@ -6,21 +6,22 @@ const cheerio = require('cheerio');
 const { kvGetJson, kvSetJsonTTLIfChanged } = require('../../api/kv');
 
 function normalizeMatchName(matchName) {
-  return matchName
+  return String(matchName)
     .toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-// Regex corregida: acepta IDs alfanuméricos con guiones/underscores antes de _HH_MM.png
-function isBlobPosterUrl(url) {
-  return typeof url === 'string' &&
-    /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\/posters\/[a-z0-9_-]+_[0-9]{2}_[0-9]{2}\.png$/i.test(url);
-}
-
 function generatePlaceholdPoster({ hora }) {
   return `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(String(hora))}`;
+}
+
+// Solo cacheamos si no es el placeholder y parece una imagen final
+function isCacheablePosterUrl(url) {
+  return typeof url === 'string'
+    && !url.includes('dummyimage.com')
+    && url.toLowerCase().endsWith('.png');
 }
 
 function generateFallbackNames(original, context = '') {
@@ -54,9 +55,7 @@ function generateFallbackNames(original, context = '') {
     }
   }
 
-  if (context) {
-    variants.push(normalizeMatchName(context));
-  }
+  if (context) variants.push(normalizeMatchName(context));
 
   return [...new Set(variants)];
 }
@@ -90,6 +89,13 @@ async function buscarPosterEnFuente(url, candidates) {
     console.warn(`[Poster] Fallo al buscar en ${url}: ${err.message}`);
   }
   return null;
+}
+
+function normalizeBlobUrl(url) {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+  // Si viene como "posters/xxx.png", anteponer host del bucket
+  return `https://kb24ncicobqdaseh.public.blob.vercel-storage.com/${url.replace(/^\/+/, '')}`;
 }
 
 // --- KV helpers ---
@@ -153,8 +159,8 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion }) {
   }
 
   const generado = generados.find(p => p.hora === hora);
-  const finalUrl = generado?.url;
-  return isBlobPosterUrl(finalUrl) ? finalUrl : generatePlaceholdPoster({ hora });
+  const finalUrl = normalizeBlobUrl(generado?.url);
+  return isCacheablePosterUrl(finalUrl) ? finalUrl : generatePlaceholdPoster({ hora });
 }
 
 // --- Concurrencia simple por lotes ---
@@ -179,7 +185,7 @@ async function scrapePostersConcurrenciaLimitada(eventos, limite = 4) {
     const partidoNorm = normalizeMatchName(evento.partido);
     const cached = postersMap[partidoNorm];
 
-    if (isBlobPosterUrl(cached)) {
+    if (typeof cached === 'string' && cached.length > 0) {
       evento.poster = cached;
       return evento;
     }
@@ -187,7 +193,8 @@ async function scrapePostersConcurrenciaLimitada(eventos, limite = 4) {
     const url = await generatePosterWithHour(evento);
     evento.poster = url;
 
-    if (isBlobPosterUrl(url)) {
+    // Cachear cualquier URL final válida (no placeholder), absoluta o relativa normalizada
+    if (isCacheablePosterUrl(url)) {
       updates[partidoNorm] = url;
     }
     return evento;
@@ -207,7 +214,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   const postersMap = await kvReadPostersHoyMap();
   const partidoNorm = normalizeMatchName(partido);
   const cached = postersMap[partidoNorm];
-  if (isBlobPosterUrl(cached)) {
+  if (typeof cached === 'string' && cached.length > 0) {
     return cached;
   }
   return await generatePosterWithHour({ partido, hora, deporte, competicion });
