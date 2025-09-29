@@ -39,63 +39,60 @@ function formatoFechaES(fecha) {
 function eventoEsReciente(dia, hora, deporte, partido) {
   try {
     const ahora = DateTime.now().setZone('Europe/Madrid');
-    const [dd, mm, yyyy] = (dia || '').split('/');
-    const [hh, min] = (hora || '').split(':');
 
-    const evento = DateTime.fromObject(
-      {
-        year: parseInt(yyyy || '0', 10),
-        month: parseInt(mm || '0', 10),
-        day: parseInt(dd || '0', 10),
-        hour: parseInt(hh || '0', 10),
-        minute: parseInt(min || '0', 10)
-      },
-      { zone: 'Europe/Madrid' }
-    );
+    // Parse robusto del día y la hora
+    const eventoFecha = DateTime.fromFormat(String(dia || ''), 'dd/MM/yyyy', { zone: 'Europe/Madrid' });
+    const [hh, min] = String(hora || '').split(':');
+    const evento = eventoFecha.set({
+      hour: parseInt(hh || '0', 10),
+      minute: parseInt(min || '0', 10)
+    });
 
+    if (!evento.isValid) {
+      console.warn('[EVENTOS] evento inválido, descartando:', { dia, hora });
+      return false;
+    }
+
+    // Fechas ISO de referencia
     const hoyISO = ahora.toISODate();
     const ayerISO = ahora.minus({ days: 1 }).toISODate();
     const mañanaISO = ahora.plus({ days: 1 }).toISODate();
-
     const eventoISODate = evento.toISODate();
-    const diffHorasPasado = ahora.diff(evento, 'hours').hours; // + si ya pasó
-    const diffHorasFuturo = evento.diff(ahora, 'hours').hours; // + si es futuro
 
-    // Bordes del día de hoy (corte estricto hasta 23:59:59)
-    const inicioHoy = ahora.startOf('day');
-    const finHoy = ahora.endOf('day');
-    const dentroDeHoy =
-      evento.toMillis() >= inicioHoy.toMillis() &&
-      evento.toMillis() <= finHoy.toMillis();
+    // 1) HOY
+    if (eventoISODate === hoyISO) {
+      // 00:00–02:59 → mostrar TODOS los eventos de hoy
+      if (ahora.hour < 3) return true;
 
-    // HOY
-    if (eventoISODate === hoyISO && dentroDeHoy) {
-      if (ahora.hour < 3) {
-        // 00:00–02:59 → mostrar todos los eventos de hoy
-        return true;
-      }
-      // Desde 03:00 → mostrar todos los eventos de hoy excepto los > 3h en el pasado
-      return diffHorasPasado <= 3;
+      // Desde 03:00 → mostrar todo el día salvo los de hace > 3h en el pasado
+      // Traducción directa: incluir si evento >= (ahora - 3h)
+      const umbralPasado3h = ahora.minus({ hours: 3 });
+      return evento.toMillis() >= umbralPasado3h.toMillis();
     }
 
-    // AYER: solo si fue hace ≤ 2 horas
+    // 2) AYER → solo si su hora está como mucho 2h en el pasado
     if (eventoISODate === ayerISO) {
-      return diffHorasPasado >= 0 && diffHorasPasado <= 2;
+      const umbralAyer2h = ahora.minus({ hours: 2 });
+      // Nota: seguimos mostrando solo eventos cuya fecha es AYER
+      return evento.toMillis() >= umbralAyer2h.toMillis();
     }
 
-    // MAÑANA: solo si ahora ≥ 22:00 y empieza en ≤ 3h
+    // 3) MAÑANA → solo a partir de las 22:00, y dentro de próximas 3 horas
     if (eventoISODate === mañanaISO) {
       if (ahora.hour < 22) return false;
-      return diffHorasFuturo >= 0 && diffHorasFuturo <= 3;
+      const umbralFuturo3h = ahora.plus({ hours: 3 });
+      // Incluir si evento ∈ [ahora, ahora+3h]
+      return evento.toMillis() >= ahora.toMillis() && evento.toMillis() <= umbralFuturo3h.toMillis();
     }
 
-    // El resto de días (Marca lista hasta el domingo) quedan fuera
+    // Cualquier otro día listado por Marca (semana entera) queda fuera
     return false;
   } catch (e) {
     console.warn('[EVENTOS] Error en eventoEsReciente, descartando evento corrupto', e);
     return false;
   }
 }
+
 
 async function fetchEventos(url) {
   const eventos = [];
