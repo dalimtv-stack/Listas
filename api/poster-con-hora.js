@@ -6,7 +6,7 @@ const sharp = require('sharp');
 const fetch = require('node-fetch');
 const path = require('path');
 const fs = require('fs');
-const { put } = require('@vercel/blob');
+const { put, head } = require('@vercel/blob');
 
 module.exports = async (req, res) => {
   const { url } = req.query;
@@ -59,9 +59,23 @@ module.exports = async (req, res) => {
   const font = await Jimp.loadFont(fontPath);
 
   for (const hora of horas) {
-    let blobUrl = url; // fallback inicial: URL original
+    const blobName = `posters/poster_${hora}.png`;
+    let blobUrl = url; // fallback por defecto
+
     try {
-      // Generar imagen con hora
+      // 1️⃣ comprobar si ya existe en Blob
+      try {
+        const exists = await head(blobName, { token: process.env.BLOB_READ_WRITE_TOKEN });
+        if (exists && exists.url) {
+          console.info(`[Poster con hora] Imagen ya existente para "${hora}"`);
+          results.push({ hora, url: exists.url });
+          continue;
+        }
+      } catch {
+        // no existe → seguimos para generarla
+      }
+
+      // 2️⃣ Generar imagen con hora
       const image = baseImage.clone();
       const textWidth = Jimp.measureText(font, hora);
       const textHeight = Jimp.measureTextHeight(font, hora, textWidth);
@@ -73,26 +87,20 @@ module.exports = async (req, res) => {
 
       const finalBuffer = await image.getBufferAsync('image/png');
 
-      // Subir al Blob con `put`
+      // 3️⃣ Subir a Blob
       if (process.env.BLOB_READ_WRITE_TOKEN) {
-        try {
-          const { url: uploadedUrl } = await put(`posters/poster_${hora}.png`, finalBuffer, {
-            access: 'public',
-            token: process.env.BLOB_READ_WRITE_TOKEN,
-            contentType: 'image/png',
-            addRandomSuffix: true,
-          });
-          if (uploadedUrl) blobUrl = uploadedUrl;
-          else console.warn(`[Poster con hora] No se recibió URL del blob para "${hora}", se usará fallback.`);
-        } catch (err) {
-          console.warn(`[Poster con hora] Error subiendo a Blob para "${hora}", se usará fallback:`, err.message);
-        }
+        const { url: uploadedUrl } = await put(blobName, finalBuffer, {
+          access: 'public',
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+          contentType: 'image/png',
+        });
+        blobUrl = uploadedUrl;
       } else {
         console.warn('[Poster con hora] BLOB_READ_WRITE_TOKEN no configurado, usando fallback.');
       }
     } catch (err) {
-      console.warn(`[Poster con hora] Error generando póster con hora "${hora}", se usará fallback:`, err.message);
-      blobUrl = url;
+      console.warn(`[Poster con hora] Error en "${hora}", se usará fallback:`, err.message);
+      blobUrl = url; // fallback explícito
     }
 
     results.push({ hora, url: blobUrl });
