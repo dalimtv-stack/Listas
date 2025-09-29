@@ -141,6 +141,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     return generatePlaceholdPoster({ hora, deporte, competicion });
   }
 
+  // Llamada a poster-con-hora
   const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl)}`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
@@ -168,41 +169,9 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   const generado = generados.find(p => p.hora === hora);
   const finalUrl = generado?.url || generatePlaceholdPoster({ hora, deporte, competicion });
 
-  const esFallback = finalUrl.includes('dummyimage.com') || finalUrl.includes('placehold.co');
-  if (esFallback) {
-    console.warn(`[Poster] Imagen generada es fallback, no se sube a Blob`);
-    return finalUrl;
-  }
-
-  if (!/^https?:\/\//.test(finalUrl)) {
-    console.error(`[Poster] URL inválida para subir a Blob: ${finalUrl}`);
-    return finalUrl;
-  }
-
-  try {
-    const imgRes = await fetch(finalUrl);
-    const buffer = await imgRes.arrayBuffer();
-
-    console.info(`[Poster] Subiendo imagen a Blob: ${blobKey}`);
-    const blobUpload = await fetch('https://blob.vercel-storage.com/upload?filename=' +
-      encodeURIComponent(`${normalizeMatchName(partido)}_${hora}.jpg`), {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'image/jpeg',
-        'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`
-      },
-      body: buffer
-    });
-
-    const blobUrl = await blobUpload.text();
-    console.info(`[Poster] Imagen subida a Blob: ${blobUrl}`);
-
-    await kvSetJsonTTLIfChanged(blobKey, { url: blobUrl, createdAt: Date.now() }, 86400);
-    return blobUrl;
-  } catch (err) {
-    console.error('[Poster] Error al subir a Blob:', err.message);
-    return finalUrl;
-  }
+  // Guardar directamente en KV y devolver la URL final
+  await kvSetJsonTTLIfChanged(blobKey, { url: finalUrl, createdAt: Date.now() }, 86400);
+  return finalUrl;
 }
 
 async function scrapePostersConcurrenciaLimitada(eventos, limite = 4) {
