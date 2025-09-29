@@ -221,14 +221,19 @@ async function fetchEventos(url) {
     return [fallback];
   }
 
-  const postersMap = {};
+  const postersMap = await kvGetJsonTTL('postersBlobHoy') || {};
   await Promise.all(eventos.map(async (evento, index) => {
-    const posterLabel = `Poster ${evento.partido}-${index}`;
-    console.time(posterLabel);
-    const url = await scrapePosterForMatch(evento, postersMap);
-    console.timeEnd(posterLabel);
-    evento.poster = url;
-  }));
+  const posterLabel = `Poster ${evento.partido}-${index}`;
+  console.time(posterLabel);
+  evento.poster = await scrapePosterForMatch({
+    partido: evento.partido,
+    hora: evento.hora,
+    deporte: evento.deporte,
+    competicion: evento.competicion
+  }, postersMap);
+  console.timeEnd(posterLabel);
+}));
+
 
 
   return eventos;
