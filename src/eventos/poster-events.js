@@ -15,8 +15,8 @@ function normalizeMatchName(matchName) {
 
 function isBlobPosterUrl(url) {
   if (typeof url !== 'string') return false;
-  // Acepta: https://<store>.public.blob.vercel-storage.com/posters/<file>.png
-  return /^https:\/\/[a-z0-9]+\.public\.blob\.vercel-storage\.com\/posters\/[A-Za-z0-9_]+\.(png|jpg|jpeg)$/i.test(url);
+  // Patrón: https://<store>.public.blob.vercel-storage.com/posters/<id>_<HH_MM>.png
+  return /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\/posters\/[a-z0-9]+_[0-9]{2}_[0-9]{2}\.png$/i.test(url);
 }
 
 function generatePlaceholdPoster({ hora }) {
@@ -116,7 +116,7 @@ async function kvMergePosterHoy(partidoNorm, blobUrl) {
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   const partidoNorm = normalizeMatchName(partido);
 
-  // 1) KV: si ya existe en postersBlobHoy, usarlo
+  // 1) KV: si ya existe en postersBlobHoy, usarlo y salir
   const postersHoy = (await kvGetJson('postersBlobHoy')) || {};
   const cached = postersHoy[partidoNorm];
   if (isBlobPosterUrl(cached)) {
@@ -143,12 +143,6 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     for (const fuente of fuentes) {
       posterSourceUrl = await buscarPosterEnFuente(fuente, candidates);
       if (posterSourceUrl) break;
-    }
-
-    // Cache auxiliar del scrapeo (no crítica)
-    if (posterSourceUrl?.startsWith('http')) {
-      const movistarCacheKey = `poster:${partidoNorm}`;
-      await kvSetJsonTTLIfChanged(movistarCacheKey, { posterUrl: posterSourceUrl, createdAt: Date.now() }, 86400);
     }
   } catch (err) {
     console.error('[Poster] Error scraping:', err.message);
