@@ -118,7 +118,6 @@ async function kvReadPostersHoyMap() {
 }
 
 // Escribe el mapa plano fusionado en la clave (kvSetJsonTTLIfChanged envuelve correctamente)
-// IMPORTANTE: pasar el mapa plano, no un wrapper, para evitar anidar "data"
 async function kvWritePostersHoyMap(mergedMap) {
   await kvSetJsonTTLIfChanged('postersBlobHoy', mergedMap, 86400);
 }
@@ -232,8 +231,7 @@ async function scrapePostersConcurrenciaLimitada(eventos, limite = 4) {
     }
     await Promise.race(activos);
     // Limpiar promesas cumplidas
-    activos.splice(0, activos.length, ...activos.filter(pr => typeof pr.then === 'function')); // noop simple
-    // Nota: si quieres un tracking más preciso, puedes usar una estructura con estados.
+    activos.splice(0, activos.length, ...activos.filter(pr => typeof pr.then === 'function'));
   }
 
   // 3) Al final, fusionar y escribir UNA vez en KV (solo nuevos)
