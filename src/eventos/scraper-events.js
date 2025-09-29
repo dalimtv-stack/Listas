@@ -8,21 +8,45 @@ const { scrapePosterForMatch, generatePlaceholdPoster, scrapePostersForEventos }
 const { kvGetJsonTTL } = require('../../api/kv');
 const { DateTime } = require('luxon');
 
-function parseFechaMarca(texto) {
+function parseFechaMarca(texto, añoPorDefecto) {
   const meses = {
     enero: '01', febrero: '02', marzo: '03', abril: '04',
     mayo: '05', junio: '06', julio: '07', agosto: '08',
     septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12'
   };
-  const match = (texto || '').toLowerCase().match(/(\d{1,2}) de (\w+) de (\d{4})/);
-  if (!match) {
-    console.warn(`[EVENTOS] No se encontró ninguna fecha válida en: "${texto}"`);
-    return '';
+
+  const lower = (texto || '').toLowerCase().trim();
+
+  // Caso completo: "30 de septiembre de 2025"
+  let match = lower.match(/(\d{1,2}) de (\w+) de (\d{4})/);
+  if (match) {
+    const [_, dd, mes, yyyy] = match;
+    const mm = meses[mes] || '01';
+    return `${yyyy}-${mm}-${dd.padStart(2, '0')}`;
   }
-  const [_, dd, mes, yyyy] = match;
-  const mm = meses[mes] || '01';
-  return `${yyyy}-${mm}-${dd.padStart(2, '0')}`;
+
+  // Caso sin año: "Martes 1 de octubre"
+  match = lower.match(/(\d{1,2}) de (\w+)/);
+  if (match) {
+    const [_, dd, mes] = match;
+    const mm = meses[mes] || '01';
+    const yyyy = añoPorDefecto || new Date().getFullYear();
+    return `${yyyy}-${mm}-${dd.padStart(2, '0')}`;
+  }
+
+  // Caso solo número: "Miércoles 2"
+  match = lower.match(/(\d{1,2})$/);
+  if (match) {
+    const dd = match[1].padStart(2, '0');
+    const yyyy = añoPorDefecto || new Date().getFullYear();
+    const mm = String(new Date().getMonth() + 1).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  console.warn(`[EVENTOS] No se pudo parsear fecha: "${texto}"`);
+  return '';
 }
+
 
 function formatoFechaES(fecha) {
   return new Intl.DateTimeFormat('es-ES', {
