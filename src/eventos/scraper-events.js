@@ -154,12 +154,7 @@ function crearFallback(hoyISO) {
     competicion: 'No hay eventos disponibles hoy',
     partido: 'No hay eventos disponibles hoy',
     canales: [],
-    poster: generatePlaceholdPoster({
-      hora: '',
-      deporte: '',
-      competicion: 'No hay eventos disponibles hoy',
-      partido: 'No hay eventos disponibles hoy'
-    })
+    poster: https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(partido)
   };
 }
 
