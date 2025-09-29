@@ -15,7 +15,12 @@ function parseFechaMarca(texto, añoPorDefecto) {
     septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12'
   };
 
-  const lower = (texto || '').toLowerCase().trim();
+  // Normalizar: quitar nombres de días y forzar espacios
+  let lower = (texto || '').toLowerCase().trim();
+  lower = lower.replace(/^(lunes|martes|miércoles|jueves|viernes|sábado|domingo)/, '').trim();
+
+  // Asegurar que haya un espacio entre el número y "de"
+  lower = lower.replace(/(\d)(de)/, '$1 de');
 
   // Caso completo: "30 de septiembre de 2025"
   let match = lower.match(/(\d{1,2}) de (\w+) de (\d{4})/);
@@ -25,7 +30,7 @@ function parseFechaMarca(texto, añoPorDefecto) {
     return `${yyyy}-${mm}-${dd.padStart(2, '0')}`;
   }
 
-  // Caso sin año: "Martes 1 de octubre"
+  // Caso sin año: "30 de septiembre"
   match = lower.match(/(\d{1,2}) de (\w+)/);
   if (match) {
     const [_, dd, mes] = match;
@@ -34,6 +39,10 @@ function parseFechaMarca(texto, añoPorDefecto) {
     const yyyy = añoPorDefecto || new Date().getFullYear();
     return `${yyyy}-${mm}-${dd.padStart(2, '0')}`;
   }
+
+  console.warn(`[EVENTOS] No se pudo parsear fecha: "${texto}" → "${lower}"`);
+  return '';
+}
 
   // Caso solo número: NO se acepta sin mes
   console.warn(`[EVENTOS] Fecha sin mes/ano: "${texto}" → descartando bloque`);
