@@ -29,24 +29,16 @@ function parseFechaMarca(texto, añoPorDefecto) {
   match = lower.match(/(\d{1,2}) de (\w+)/);
   if (match) {
     const [_, dd, mes] = match;
-    const mm = meses[mes] || '01';
+    const mm = meses[mes];
+    if (!mm) return '';
     const yyyy = añoPorDefecto || new Date().getFullYear();
     return `${yyyy}-${mm}-${dd.padStart(2, '0')}`;
   }
 
-  // Caso solo número: "Miércoles 2"
-  match = lower.match(/(\d{1,2})$/);
-  if (match) {
-    const dd = match[1].padStart(2, '0');
-    const yyyy = añoPorDefecto || new Date().getFullYear();
-    const mm = String(new Date().getMonth() + 1).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
-  }
-
-  console.warn(`[EVENTOS] No se pudo parsear fecha: "${texto}"`);
+  // Caso solo número: NO se acepta sin mes
+  console.warn(`[EVENTOS] Fecha sin mes/ano: "${texto}" → descartando bloque`);
   return '';
 }
-
 
 function formatoFechaES(fecha) {
   return new Intl.DateTimeFormat('es-ES', {
@@ -147,7 +139,11 @@ async function fetchEventos(url) {
     console.info('[EVENTOS] Estructura detectada: daylist / dailyevent');
     bloques.each((_, li) => {
       const fechaTexto = $(li).find('.title-section-widget').text().trim();
-      const fechaISO = parseFechaMarca(fechaTexto, ahora.year);
+      const fechaISO = parseFechaMarca(fechaTexto, ahoraDT.year);
+      if (!fechaISO) {
+        console.warn(`[EVENTOS] Fecha de bloque inválida: "${fechaTexto}"`);
+        return; // saltar este bloque
+      }
       const [yyyy, mm, dd] = fechaISO.split('-');
       const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
@@ -185,22 +181,21 @@ async function fetchEventos(url) {
     return [crearFallback(hoyISO)];
   }
 
-  const postersMap = await kvGetJsonTTL('postersBlobHoy') || {};
-  await scrapePostersForEventos(eventos);
-
-  return eventos;
+  const eventosConPoster = await scrapePostersForEventos(eventos);
+  return eventosConPoster;
 }
 
 function crearFallback(hoyISO) {
   const dia = `${hoyISO.slice(8, 10)}/${hoyISO.slice(5, 7)}/${hoyISO.slice(0, 4)}`;
+  const texto = 'No hay eventos disponibles hoy';
   return {
     dia,
     hora: '',
     deporte: '',
-    competicion: 'No hay eventos disponibles hoy',
-    partido: 'No hay eventos disponibles hoy',
+    competicion: texto,
+    partido: texto,
     canales: [],
-    poster: `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(partido)}`
+    poster: `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(texto)}`
   };
 }
 
