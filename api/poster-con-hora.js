@@ -17,6 +17,13 @@ module.exports = async (req, res) => {
     return res.end(JSON.stringify({ error: 'Faltan parámetros "url" y/o "horas[]"' }));
   }
 
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    console.error('[Poster con hora] Faltan credenciales BLOB_READ_WRITE_TOKEN');
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json');
+    return res.end(JSON.stringify({ error: 'Token de subida no configurado' }));
+  }
+
   try {
     const fontDir = path.join(__dirname, '..', 'fonts');
     const fontPath = path.join(fontDir, 'open-sans-64-white.fnt');
@@ -44,8 +51,7 @@ module.exports = async (req, res) => {
       console.info('[Poster con hora] Detected .webp, intentando convertir con sharp...');
       try {
         decodedBuffer = await sharp(buffer).png().toBuffer();
-        console.info('[Poster con hora] Conversión con sharp completada. Esperando confirmación...');
-        //await new Promise(resolve => setTimeout(resolve, 50)); // pausa defensiva
+        console.info('[Poster con hora] Conversión con sharp completada.');
       } catch (err) {
         throw new Error(`Sharp no pudo convertir .webp: ${err.message}`);
       }
@@ -64,35 +70,44 @@ module.exports = async (req, res) => {
     const results = [];
 
     for (const hora of horas) {
-      const image = baseImage.clone();
-      const textWidth = Jimp.measureText(font, hora);
-      const textHeight = Jimp.measureTextHeight(font, hora, textWidth);
-      const padding = 20;
-      const overlay = new Jimp(textWidth + padding * 2, textHeight + padding * 2, 0x00000099);
-      overlay.print(font, padding, padding, hora);
-      const xOverlay = Math.floor((image.bitmap.width - overlay.bitmap.width) / 2);
-      image.composite(overlay, xOverlay, 10);
+      try {
+        const image = baseImage.clone();
+        const textWidth = Jimp.measureText(font, hora);
+        const textHeight = Jimp.measureTextHeight(font, hora, textWidth);
+        const padding = 20;
+        const overlay = new Jimp(textWidth + padding * 2, textHeight + padding * 2, 0x00000099);
+        overlay.print(font, padding, padding, hora);
+        const xOverlay = Math.floor((image.bitmap.width - overlay.bitmap.width) / 2);
+        image.composite(overlay, xOverlay, 10);
 
-      const finalBuffer = await image.getBufferAsync('image/png');
-      
-      const blobUpload = await fetch('https://blob.vercel-storage.com/upload?filename=' +
-        encodeURIComponent(`poster_${hora}.png`), {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'image/png',
-          'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`
-        },
-        body: finalBuffer
-      });
-      
-      const blobUrl = await blobUpload.text();
-      results.push({ hora, url: blobUrl });
+        const finalBuffer = await image.getBufferAsync('image/png');
+
+        const blobUpload = await fetch('https://blob.vercel-storage.com/upload?filename=' +
+          encodeURIComponent(`poster_${hora}.png`), {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'image/png',
+            'Authorization': process.env.BLOB_READ_WRITE_TOKEN
+          },
+          body: finalBuffer
+        });
+
+        const blobUrl = await blobUpload.text();
+        if (!/^https?:\/\//.test(blobUrl)) {
+          throw new Error(`Respuesta inválida: ${blobUrl}`);
+        }
+
+        results.push({ hora, url: blobUrl });
+      } catch (err) {
+        console.warn(`[Poster con hora] Fallo al generar o subir imagen con hora "${hora}": ${err.message}`);
+        results.push({ hora, url }); // fallback a imagen original sin hora
+      }
     }
 
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(results));
   } catch (err) {
-    console.error('[Poster con hora] Error:', err.message);
+    console.error('[Poster con hora] Error global:', err.message);
     res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ error: `Error generando pósters: ${err.message}` }));
