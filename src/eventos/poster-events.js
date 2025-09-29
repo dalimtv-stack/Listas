@@ -13,9 +13,11 @@ function normalizeMatchName(matchName) {
     .trim();
 }
 
+// Acepta URLs tipo:
+// https://<store>.public.blob.vercel-storage.com/posters/<id>_<HH_MM>.png
+// donde <id> puede ser alfanumérico (incluye letras), y la hora siempre HH_MM
 function isBlobPosterUrl(url) {
   if (typeof url !== 'string') return false;
-  // Patrón: https://<store>.public.blob.vercel-storage.com/posters/<id>_<HH_MM>.png
   return /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\/posters\/[a-z0-9]+_[0-9]{2}_[0-9]{2}\.png$/i.test(url);
 }
 
@@ -122,6 +124,8 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   if (isBlobPosterUrl(cached)) {
     console.info(`[Poster] Recuperado desde postersBlobHoy: ${partidoNorm}`);
     return cached;
+  } else {
+    console.info(`[Poster] No encontrado en postersBlobHoy (clave: "${partidoNorm}"). Se genera bajo demanda.`);
   }
 
   // 2) Scrapeo fuente original (solo si no está en KV)
@@ -153,7 +157,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     return generatePlaceholdPoster({ hora });
   }
 
-  // 3) Generar con hora SOLO si no existe en KV
+  // 3) Generar con hora SOLO si no existe en KV (evitar llamadas innecesarias)
   const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterSourceUrl)}`;
   let generados;
   try {
