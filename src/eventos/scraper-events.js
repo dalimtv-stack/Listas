@@ -43,9 +43,9 @@ function eventoEsReciente(dia, hora, deporte, partido) {
     const [hh, min] = (hora || '').split(':');
     const evento = DateTime.fromObject(
       {
-        year: parseInt(yyyy, 10),
-        month: parseInt(mm, 10),
-        day: parseInt(dd, 10),
+        year: parseInt(yyyy || '0', 10),
+        month: parseInt(mm || '0', 10),
+        day: parseInt(dd || '0', 10),
         hour: parseInt(hh || '0', 10),
         minute: parseInt(min || '0', 10)
       },
@@ -57,23 +57,28 @@ function eventoEsReciente(dia, hora, deporte, partido) {
     const ayerISO = ahora.minus({ days: 1 }).toISODate();
     const mañanaISO = ahora.plus({ days: 1 }).toISODate();
 
+    const diffHorasPasado = ahora.diff(evento, 'hours').hours; // positivo si ya pasó
+    const diffHorasFuturo = evento.diff(ahora, 'hours').hours; // positivo si es futuro
+
+    // HOY
     if (eventoISODate === hoyISO) {
-      // Ventana estricta de ±3 horas
-      const diffHoras = evento.diff(ahora, 'hours').hours; // positivo si evento es futuro
-      return diffHoras >= -3 && diffHoras <= 3;
+      if (ahora.hour < 3) {
+        // Entre 00:00 y 02:59 → mostrar todos
+        return true;
+      }
+      // Desde las 03:00 → excluir los que empezaron hace más de 3h
+      return diffHorasPasado <= 3;
     }
 
+    // AYER
     if (eventoISODate === ayerISO) {
-      // Igual que antes: eventos de ayer solo si están dentro de 2 horas pasadas
-      const diffHorasDesdeAhora = ahora.diff(evento, 'hours').hours; // positivo si evento fue en el pasado
-      return diffHorasDesdeAhora >= 0 && diffHorasDesdeAhora <= 2;
+      return diffHorasPasado >= 0 && diffHorasPasado <= 2;
     }
 
+    // MAÑANA
     if (eventoISODate === mañanaISO) {
-      // Solo mostrar mañana a partir de las 22:00 y dentro de las próximas 3 horas
       if (ahora.hour < 22) return false;
-      const diffFuturo = evento.diff(ahora, 'hours').hours;
-      return diffFuturo >= 0 && diffFuturo <= 3;
+      return diffHorasFuturo >= 0 && diffHorasFuturo <= 3;
     }
 
     return false;
