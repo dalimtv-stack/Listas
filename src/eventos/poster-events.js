@@ -13,6 +13,13 @@ function normalizeMatchName(matchName) {
     .trim();
 }
 
+function isBlobPosterUrl(url) {
+  if (typeof url !== 'string') return false;
+  const startsOk = url.startsWith('https://') && url.includes('.public.blob.vercel-storage.com/posters/');
+  const endsOk = url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg');
+  return startsOk && endsOk;
+}
+
 function generateFallbackNames(original, context = '') {
   const normalized = normalizeMatchName(original);
   const variants = [normalized];
@@ -63,9 +70,8 @@ function generateFallbackNames(original, context = '') {
   return [...new Set(variants)];
 }
 
-function generatePlaceholdPoster({ hora, deporte, competicion }) {
-  const text = `${hora}`;
-  return `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(text)}`;
+function generatePlaceholdPoster({ hora }) {
+  return `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(hora)}`;
 }
 
 async function buscarPosterEnFuente(url, candidates) {
@@ -101,13 +107,17 @@ async function buscarPosterEnFuente(url, candidates) {
 }
 
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
-  const blobKey = `posterBlob:${normalizeMatchName(partido)}:${hora}`;
-  const blobCached = await kvGetJson(blobKey);
-  if (blobCached?.url?.startsWith('https://blob.vercel-storage.com')) {
-    console.info(`[Poster] Recuperado desde KV Blob: ${blobKey}`);
-    return blobCached.url;
+  const partidoNorm = normalizeMatchName(partido);
+
+  // 1) KV global del día
+  const postersHoy = (await kvGetJson('postersBlobHoy')) || {};
+  const yaGenerado = postersHoy[partidoNorm];
+  if (isBlobPosterUrl(yaGenerado)) {
+    console.info(`[Poster] Recuperado desde postersBlobHoy: ${partidoNorm}`);
+    return yaGenerado;
   }
 
+  // 2) Scraping de fuente original (solo si no existe en KV)
   let posterUrl;
   try {
     const isTenis = deporte?.toLowerCase() === 'tenis';
@@ -128,50 +138,53 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
       if (posterUrl) break;
     }
 
+    // Cache auxiliar del scrapeo (opcional y no crítico)
     if (posterUrl?.startsWith('http')) {
-      const movistarCacheKey = `poster:${normalizeMatchName(partido)}`;
+      const movistarCacheKey = `poster:${partidoNorm}`;
       await kvSetJsonTTLIfChanged(movistarCacheKey, { posterUrl, createdAt: Date.now() }, 86400);
     }
   } catch (err) {
     console.error('[Poster] Error scraping:', err.message);
   }
 
-  if (!posterUrl || !posterUrl.startsWith('http')) {
-    console.warn(`[Poster] No se encontró póster válido, usando fallback`);
-    return generatePlaceholdPoster({ hora, deporte, competicion });
+  if (!posterUrl?.startsWith('http')) {
+    console.warn('[Poster] No se encontró póster válido, devolviendo fallback (no se cachea)');
+    return generatePlaceholdPoster({ hora });
   }
 
-  // Llamada a poster-con-hora
+  // 3) Generación con hora (API interna)
   const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl)}`;
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
-
   let generados;
   try {
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ horas: [hora] }),
-      signal: controller.signal
+      body: JSON.stringify({ horas: [hora] })
     });
-    clearTimeout(timeout);
     generados = await res.json();
   } catch (err) {
-    console.error('[Poster] Error al generar:', err.message);
-    return generatePlaceholdPoster({ hora, deporte, competicion });
+    console.error('[Poster] Error al generar con hora:', err.message);
+    return generatePlaceholdPoster({ hora });
   }
 
   if (!Array.isArray(generados)) {
     console.error('[Poster] Respuesta inválida de poster-con-hora:', generados);
-    return generatePlaceholdPoster({ hora, deporte, competicion });
+    return generatePlaceholdPoster({ hora });
   }
 
   const generado = generados.find(p => p.hora === hora);
-  const finalUrl = generado?.url || generatePlaceholdPoster({ hora, deporte, competicion });
+  const finalUrl = generado?.url;
 
-  // Guardar directamente en KV y devolver la URL final
-  await kvSetJsonTTLIfChanged(blobKey, { url: finalUrl, createdAt: Date.now() }, 86400);
-  return finalUrl;
+  // 4) Guardar en KV solo si es URL válida de Blob público; nunca guardar fallback
+  if (isBlobPosterUrl(finalUrl)) {
+    const actualizado = { ...postersHoy, [partidoNorm]: finalUrl };
+    await kvSetJsonTTLIfChanged('postersBlobHoy', actualizado, 86400);
+    console.info(`[Poster] Guardado en postersBlobHoy: ${partidoNorm} → ${finalUrl}`);
+    return finalUrl;
+  }
+
+  console.warn('[Poster] URL generada no válida o fallback; devolviendo fallback sin cachear');
+  return generatePlaceholdPoster({ hora });
 }
 
 async function scrapePostersConcurrenciaLimitada(eventos, limite = 4) {
