@@ -6,7 +6,7 @@ const cheerio = require('cheerio');
 const { kvGetJson, kvSetJsonTTLIfChanged } = require('../../api/kv');
 
 function normalizeMatchName(matchName) {
-  return String(matchName)
+  return String(matchName || '')
     .toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/\s+/g, ' ')
@@ -14,13 +14,14 @@ function normalizeMatchName(matchName) {
 }
 
 function generatePlaceholdPoster({ hora }) {
-  return `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(String(hora))}`;
+  return 'https://dummyimage.com/300x450/000/fff&text=' + encodeURIComponent(String(hora || ''));
 }
 
-// Solo cacheamos si no es el placeholder y parece una imagen final
+// Solo cacheamos si no es el placeholder y parece una imagen final en formato PNG
 function isCacheablePosterUrl(url) {
   return typeof url === 'string'
-    && !url.includes('dummyimage.com')
+    && url.length > 0
+    && url.indexOf('dummyimage.com') === -1
     && url.toLowerCase().endsWith('.png');
 }
 
@@ -42,8 +43,10 @@ function generateFallbackNames(original, context = '') {
   };
 
   let aliasVersion = normalized;
-  for (const [full, alias] of Object.entries(teamAliases)) {
-    const regex = new RegExp(`\\b${full}\\b`, 'gi');
+  for (const entry of Object.entries(teamAliases)) {
+    const full = entry[0];
+    const alias = entry[1];
+    const regex = new RegExp('\\b' + full + '\\b', 'gi');
     if (Array.isArray(alias)) {
       alias.forEach(a => {
         const replaced = aliasVersion.replace(regex, a);
@@ -57,107 +60,121 @@ function generateFallbackNames(original, context = '') {
 
   if (context) variants.push(normalizeMatchName(context));
 
-  return [...new Set(variants)];
+  return Array.from(new Set(variants));
 }
 
 async function buscarPosterEnFuente(url, candidates) {
   try {
     const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const html = await res.text();
     const $ = cheerio.load(html);
 
-    for (const name of candidates) {
+    for (let i = 0; i < candidates.length; i++) {
+      const name = candidates[i];
       const nameRegex = new RegExp(name.replace(/[-]/g, '[ -]'), 'i');
       let encontrado = null;
 
-      $('img').each((_, img) => {
-        const alt = $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
-        const src = $(img).attr('src')?.toLowerCase() || '';
+      $('img').each(function () {
+        const altRaw = $(this).attr('alt') || '';
+        let alt = '';
+        try { alt = String(altRaw).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (e) { alt = String(altRaw).toLowerCase(); }
+
+        const srcRaw = $(this).attr('src') || '';
+        const src = String(srcRaw).toLowerCase();
+
         if (nameRegex.test(alt) || nameRegex.test(src)) {
-          encontrado = $(img).attr('src');
-          return false;
+          encontrado = $(this).attr('src');
+          return false; // break each
         }
+        return;
       });
 
-      if (encontrado?.startsWith('http')) {
-        console.info(`[Poster] Coincidencia encontrada en ${url} → ${encontrado}`);
+      if (encontrado && String(encontrado).indexOf('http') === 0) {
+        console.info('[Poster] Coincidencia encontrada en ' + url + ' → ' + encontrado);
         return encontrado;
       }
     }
   } catch (err) {
-    console.warn(`[Poster] Fallo al buscar en ${url}: ${err.message}`);
+    console.warn('[Poster] Fallo al buscar en ' + url + ': ' + (err && err.message ? err.message : err));
   }
   return null;
 }
 
 function normalizeBlobUrl(url) {
   if (!url) return null;
-  if (url.startsWith('http')) return url;
-  // Si viene como "posters/xxx.png", anteponer host del bucket
-  return `https://kb24ncicobqdaseh.public.blob.vercel-storage.com/${url.replace(/^\/+/, '')}`;
+  try {
+    if (String(url).indexOf('http') === 0) return url;
+    // Si viene como "posters/xxx.png" o "/posters/xxx.png", anteponer host del bucket
+    return 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/' + String(url).replace(/^\/+/, '');
+  } catch (e) {
+    return null;
+  }
 }
 
 // --- KV helpers ---
 
 async function kvReadPostersHoyMap() {
   try {
-    const wrapper = await kvGetJson('postersBlobHoy');
-    if (wrapper && typeof wrapper === 'object' && wrapper.data && typeof wrapper.data === 'object') {
-      console.info(`[Poster] KV leído: postersBlobHoy con ${Object.keys(wrapper.data).length} entradas`);
-      return wrapper.data;
+    const wrapper = await kvGetJson('postersBlobHoy'); // wrapper { timestamp, ttlMs, data }
+    const rawMap = wrapper && typeof wrapper === 'object' && wrapper.data ? wrapper.data : {};
+    // Normalizamos las URLs almacenadas para devolver siempre una URL absoluta si procede
+    const normalized = {};
+    for (const k of Object.keys(rawMap)) {
+      normalized[k] = normalizeBlobUrl(rawMap[k]) || rawMap[k];
     }
-    console.info('[Poster] KV vacío o sin datos válidos, devolviendo mapa vacío');
-    return {};
-  } catch (err) {
-    console.error('[Poster] Error al leer KV postersBlobHoy:', err.message);
+    return normalized;
+  } catch (e) {
+    console.error('[Poster] Error leyendo postersBlobHoy desde KV:', e && e.message ? e.message : e);
     return {};
   }
 }
 
 async function kvWritePostersHoyMap(mergedMap) {
   try {
-    console.info(`[Poster] Intentando escribir en KV: ${JSON.stringify(mergedMap)}`);
+    // mergedMap se asume con URLs absolutas o relativas; kvSetJsonTTLIfChanged aplicará el envoltorio TTL
     await kvSetJsonTTLIfChanged('postersBlobHoy', mergedMap, 86400);
-    console.info(`[Poster] KV actualizado con ${Object.keys(mergedMap).length} entradas`);
-  } catch (err) {
-    console.error('[Poster] Error al escribir en KV postersBlobHoy:', err.message);
+    console.info('[Poster] KV actualizado con ' + Object.keys(mergedMap).length + ' entradas');
+  } catch (e) {
+    console.error('[Poster] Error escribiendo postersBlobHoy en KV:', e && e.message ? e.message : e);
   }
 }
 
 // --- Generación de un póster con hora (sin escribir en KV aquí) ---
 
 async function generatePosterWithHour({ partido, hora, deporte, competicion }) {
-  console.info(`[Poster] Generando poster para ${partido} (${hora})`);
-  let posterSourceUrl;
+  let posterSourceUrl = null;
   try {
-    const isTenis = deporte?.toLowerCase() === 'tenis';
+    const isTenis = deporte && String(deporte).toLowerCase() === 'tenis';
     const candidates = generateFallbackNames(partido, competicion);
     const fuentes = isTenis
       ? [
-          'https://www.movistarplus.es/deportes/tenis/donde-ver',
-          'https://www.movistarplus.es/deportes?conf=iptv',
-          'https://www.movistarplus.es/el-partido-movistarplus'
-        ]
+        'https://www.movistarplus.es/deportes/tenis/donde-ver',
+        'https://www.movistarplus.es/deportes?conf=iptv',
+        'https://www.movistarplus.es/el-partido-movistarplus'
+      ]
       : [
-          'https://www.movistarplus.es/deportes?conf=iptv',
-          'https://www.movistarplus.es/el-partido-movistarplus'
-        ];
+        'https://www.movistarplus.es/deportes?conf=iptv',
+        'https://www.movistarplus.es/el-partido-movistarplus'
+      ];
 
-    for (const fuente of fuentes) {
-      posterSourceUrl = await buscarPosterEnFuente(fuente, candidates);
-      if (posterSourceUrl) break;
+    for (let i = 0; i < fuentes.length; i++) {
+      const fuente = fuentes[i];
+      const found = await buscarPosterEnFuente(fuente, candidates);
+      if (found) {
+        posterSourceUrl = found;
+        break;
+      }
     }
   } catch (err) {
-    console.error('[Poster] Error scraping:', err.message);
+    console.error('[Poster] Error scraping:', err && err.message ? err.message : err);
   }
 
-  if (!posterSourceUrl?.startsWith('http')) {
-    console.warn(`[Poster] No se encontró póster en fuente para ${partido}, devolviendo fallback`);
+  if (!posterSourceUrl || String(posterSourceUrl).indexOf('http') !== 0) {
     return generatePlaceholdPoster({ hora });
   }
 
-  const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterSourceUrl)}`;
+  const endpoint = 'https://listas-sand.vercel.app/poster-con-hora?url=' + encodeURIComponent(posterSourceUrl);
   let generados;
   try {
     const res = await fetch(endpoint, {
@@ -165,27 +182,22 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ horas: [hora] })
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status} en poster-con-hora`);
     generados = await res.json();
   } catch (err) {
-    console.error(`[Poster] Error al generar con hora para ${partido}:`, err.message);
+    console.error('[Poster] Error al generar con hora:', err && err.message ? err.message : err);
     return generatePlaceholdPoster({ hora });
   }
 
   if (!Array.isArray(generados)) {
-    console.error(`[Poster] Respuesta inválida de poster-con-hora para ${partido}:`, generados);
+    console.error('[Poster] Respuesta inválida de poster-con-hora:', generados);
     return generatePlaceholdPoster({ hora });
   }
 
-  const generado = generados.find(p => p.hora === hora);
-  const finalUrl = normalizeBlobUrl(generado?.url);
-  if (isCacheablePosterUrl(finalUrl)) {
-    console.info(`[Poster] URL válida generada para ${partido}: ${finalUrl}`);
-    return finalUrl;
-  }
+  const generado = generados.find(function (p) { return p && p.hora === hora; });
+  const finalUrlRaw = generado && generado.url ? generado.url : null;
+  const finalUrl = normalizeBlobUrl(finalUrlRaw);
 
-  console.warn(`[Poster] URL no válida para ${partido}: ${finalUrl}, devolviendo fallback`);
-  return generatePlaceholdPoster({ hora });
+  return isCacheablePosterUrl(finalUrl) ? finalUrl : generatePlaceholdPoster({ hora });
 }
 
 // --- Concurrencia simple por lotes ---
@@ -194,55 +206,50 @@ async function processInBatches(items, batchSize, fn) {
   const results = [];
   for (let i = 0; i < items.length; i += batchSize) {
     const batch = items.slice(i, i + batchSize);
-    const batchResults = await Promise.all(
-      batch.map(async (item, index) => {
-        try {
-          console.info(`[Poster] Procesando evento ${index + 1}/${batch.length} del lote: ${item.partido}`);
-          return await fn(item);
-        } catch (err) {
-          console.error(`[Poster] Error procesando evento ${item.partido}:`, err.message);
-          item.poster = generatePlaceholdPoster({ hora: item.hora });
-          return item;
-        }
-      })
-    );
-    results.push(...batchResults);
+    const res = await Promise.all(batch.map(fn));
+    results.push.apply(results, res);
   }
   return results;
 }
 
 // --- Orquestación ---
 
-async function scrapePostersConcurrenciaLimitada(eventos, limite = 4) {
-  console.info(`[Poster] Iniciando procesamiento de ${eventos.length} eventos`);
-  const postersMap = await kvReadPostersHoyMap();
+async function scrapePostersConcurrenciaLimitada(eventos, limite) {
+  limite = limite || 4;
+  const postersMap = await kvReadPostersHoyMap(); // mapa partidoNorm -> url (normalizado si procede)
   const updates = {};
 
-  await processInBatches(eventos, limite, async (evento) => {
+  // procesamos en lotes para no saturar la API de generación
+  await processInBatches(eventos, limite, async function (evento) {
     const partidoNorm = normalizeMatchName(evento.partido);
-    const cached = postersMap[partidoNorm];
+    const cachedRaw = postersMap[partidoNorm];
 
-    if (isCacheablePosterUrl(cached)) {
-      console.info(`[Poster] Usando KV existente para ${partidoNorm}: ${cached}`);
+    // si existe en KV, usamos esa URL (normalizada)
+    if (typeof cachedRaw === 'string' && cachedRaw.length > 0) {
+      const cached = normalizeBlobUrl(cachedRaw) || cachedRaw;
       evento.poster = cached;
       return evento;
     }
 
+    // no había en KV → generamos
     const url = await generatePosterWithHour(evento);
     evento.poster = url;
 
+    // solo añadimos a updates si es una URL válida para cachear (no placeholder)
     if (isCacheablePosterUrl(url)) {
-      console.info(`[Poster] Agregando a updates: ${partidoNorm} → ${url}`);
       updates[partidoNorm] = url;
-    } else {
-      console.info(`[Poster] No se agrega a updates (URL no válida): ${partidoNorm} → ${url}`);
     }
     return evento;
   });
 
-  console.info(`[Poster] Updates generados: ${JSON.stringify(updates)}`);
-  const merged = { ...postersMap, ...updates };
-  await kvWritePostersHoyMap(merged);
+  // si hay nuevas entradas válidas, las escribimos en KV (fusionando con lo existente)
+  const keys = Object.keys(updates);
+  if (keys.length > 0) {
+    const merged = Object.assign({}, postersMap, updates);
+    await kvWritePostersHoyMap(merged);
+  } else {
+    console.info('[Poster] KV sin cambios (no hay nuevas entradas válidas)');
+  }
 
   return eventos;
 }
@@ -250,12 +257,10 @@ async function scrapePostersConcurrenciaLimitada(eventos, limite = 4) {
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   const postersMap = await kvReadPostersHoyMap();
   const partidoNorm = normalizeMatchName(partido);
-  const cached = postersMap[partidoNorm];
-  if (isCacheablePosterUrl(cached)) {
-    console.info(`[Poster] Recuperado desde postersBlobHoy para ${partidoNorm}: ${cached}`);
-    return cached;
+  const cachedRaw = postersMap[partidoNorm];
+  if (typeof cachedRaw === 'string' && cachedRaw.length > 0) {
+    return normalizeBlobUrl(cachedRaw) || cachedRaw;
   }
-  console.info(`[Poster] Generando poster bajo demanda para ${partidoNorm}`);
   return await generatePosterWithHour({ partido, hora, deporte, competicion });
 }
 
