@@ -74,9 +74,19 @@ module.exports = async (req, res) => {
       image.composite(overlay, xOverlay, 10);
 
       const finalBuffer = await image.getBufferAsync('image/png');
-      const base64 = finalBuffer.toString('base64');
-      const dataUrl = `data:image/png;base64,${base64}`;
-      results.push({ hora, url: dataUrl });
+      
+      const blobUpload = await fetch('https://blob.vercel-storage.com/upload?filename=' +
+        encodeURIComponent(`poster_${hora}.png`), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'image/png',
+          'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`
+        },
+        body: finalBuffer
+      });
+      
+      const blobUrl = await blobUpload.text();
+      results.push({ hora, url: blobUrl });
     }
 
     res.setHeader('Content-Type', 'application/json');
