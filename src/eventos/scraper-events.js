@@ -4,7 +4,7 @@
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 const iconv = require('iconv-lite');
-const { scrapePosterForMatch, generatePlaceholdPoster, scrapePostersForEventos } = require('./poster-events');
+const { scrapePostersForEventos } = require('./poster-events');
 const { kvGetJsonTTL } = require('../../api/kv');
 const { DateTime } = require('luxon');
 
@@ -15,22 +15,22 @@ function parseFechaMarca(texto, añoPorDefecto) {
     septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12'
   };
 
-  // Normalizar: quitar nombres de días y forzar espacios
   let lower = (texto || '').toLowerCase().trim();
+  // quitar día de la semana
   lower = lower.replace(/^(lunes|martes|miércoles|jueves|viernes|sábado|domingo)/, '').trim();
-
-  // Asegurar que haya un espacio entre el número y "de"
+  // asegurar espacio antes de "de"
   lower = lower.replace(/(\d)(de)/, '$1 de');
 
-  // Caso completo: "30 de septiembre de 2025"
+  // "30 de septiembre de 2025"
   let match = lower.match(/(\d{1,2}) de (\w+) de (\d{4})/);
   if (match) {
     const [_, dd, mes, yyyy] = match;
-    const mm = meses[mes] || '01';
+    const mm = meses[mes];
+    if (!mm) return '';
     return `${yyyy}-${mm}-${dd.padStart(2, '0')}`;
   }
 
-  // Caso sin año: "30 de septiembre"
+  // "30 de septiembre" (sin año)
   match = lower.match(/(\d{1,2}) de (\w+)/);
   if (match) {
     const [_, dd, mes] = match;
@@ -56,11 +56,9 @@ function formatoFechaES(fecha) {
   }).format(fecha);
 }
 
-function eventoEsReciente(dia, hora, deporte, partido) {
+function eventoEsReciente(dia, hora) {
   try {
     const ahora = DateTime.now().setZone('Europe/Madrid');
-
-    // Parse robusto del día y la hora
     const eventoFecha = DateTime.fromFormat(String(dia || ''), 'dd/MM/yyyy', { zone: 'Europe/Madrid' });
     const [hh, min] = String(hora || '').split(':');
     const evento = eventoFecha.set({
@@ -68,51 +66,42 @@ function eventoEsReciente(dia, hora, deporte, partido) {
       minute: parseInt(min || '0', 10)
     });
 
-    if (!evento.isValid) {
-      console.warn('[EVENTOS] evento inválido, descartando:', { dia, hora });
-      return false;
-    }
+    if (!evento.isValid) return false;
 
-    // Fechas ISO de referencia
     const hoyISO = ahora.toISODate();
     const ayerISO = ahora.minus({ days: 1 }).toISODate();
     const mañanaISO = ahora.plus({ days: 1 }).toISODate();
     const eventoISODate = evento.toISODate();
 
-    // 1) HOY
-    if (eventoISODate === hoyISO) {
-      // 00:00–02:59 → mostrar TODOS los eventos de hoy
-      if (ahora.hour < 3) return true;
+    const diffHorasPasado = ahora.diff(evento, 'hours').hours;
+    const diffHorasFuturo = evento.diff(ahora, 'hours').hours;
 
-      // Desde 03:00 → mostrar todo el día salvo los de hace > 3h en el pasado
-      // Traducción directa: incluir si evento >= (ahora - 3h)
+    // HOY
+    if (eventoISODate === hoyISO) {
+      if (ahora.hour < 3) return true;
       const umbralPasado3h = ahora.minus({ hours: 3 });
       return evento.toMillis() >= umbralPasado3h.toMillis();
     }
 
-    // 2) AYER → solo si su hora está como mucho 2h en el pasado
+    // AYER
     if (eventoISODate === ayerISO) {
       const umbralAyer2h = ahora.minus({ hours: 2 });
-      // Nota: seguimos mostrando solo eventos cuya fecha es AYER
       return evento.toMillis() >= umbralAyer2h.toMillis();
     }
 
-    // 3) MAÑANA → solo a partir de las 22:00, y dentro de próximas 3 horas
+    // MAÑANA
     if (eventoISODate === mañanaISO) {
       if (ahora.hour < 22) return false;
       const umbralFuturo3h = ahora.plus({ hours: 3 });
-      // Incluir si evento ∈ [ahora, ahora+3h]
       return evento.toMillis() >= ahora.toMillis() && evento.toMillis() <= umbralFuturo3h.toMillis();
     }
 
-    // Cualquier otro día listado por Marca (semana entera) queda fuera
     return false;
   } catch (e) {
-    console.warn('[EVENTOS] Error en eventoEsReciente, descartando evento corrupto', e);
+    console.warn('[EVENTOS] Error en eventoEsReciente', e);
     return false;
   }
 }
-
 
 async function fetchEventos(url) {
   const eventos = [];
@@ -144,10 +133,13 @@ async function fetchEventos(url) {
     bloques.each((_, li) => {
       const fechaTexto = $(li).find('.title-section-widget').text().trim();
       const fechaISO = parseFechaMarca(fechaTexto, ahoraDT.year);
-      if (!fechaISO) {
-        console.warn(`[EVENTOS] Fecha de bloque inválida: "${fechaTexto}"`);
-        return; // saltar este bloque
-      }
+      if (!fechaISO) return;
+
+      // Corte duro: solo ayer, hoy, mañana
+      const fechaBloque = DateTime.fromISO(fechaISO, { zone: 'Europe/Madrid' });
+      const diffDias = fechaBloque.startOf('day').diff(ahoraDT.startOf('day'), 'days').days;
+      if (diffDias < -1 || diffDias > 1) return;
+
       const [yyyy, mm, dd] = fechaISO.split('-');
       const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
@@ -162,7 +154,7 @@ async function fetchEventos(url) {
         if (eventosUnicos.has(eventoId)) return;
         eventosUnicos.add(eventoId);
 
-        if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido)) return;
+        if (!eventoEsReciente(fechaFormateadaMarca, hora)) return;
 
         eventos.push({
           dia: fechaFormateadaMarca,
