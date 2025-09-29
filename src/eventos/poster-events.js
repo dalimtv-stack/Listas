@@ -13,6 +13,7 @@ function normalizeMatchName(matchName) {
     .trim();
 }
 
+// Acepta IDs alfanuméricos con guión/guión bajo antes del sufijo _HH_MM.png
 function isBlobPosterUrl(url) {
   return typeof url === 'string' &&
     /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\/posters\/[a-z0-9_-]+_[0-9]{2}_[0-9]{2}\.png$/i.test(url);
@@ -157,55 +158,52 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion }) {
   return isBlobPosterUrl(finalUrl) ? finalUrl : generatePlaceholdPoster({ hora });
 }
 
+// --- Concurrencia por lotes segura (sin tragarse promesas) ---
+
+async function processInBatches(items, batchSize, fn) {
+  const results = [];
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const res = await Promise.all(batch.map(fn));
+    results.push(...res);
+  }
+  return results;
+}
+
 // --- Orquestación ---
 
 async function scrapePostersConcurrenciaLimitada(eventos, limite = 4) {
   const postersMap = await kvReadPostersHoyMap();
   const updates = {};
-  const resultados = [];
 
-  const cola = [...eventos];
-  const activos = [];
-
-  async function procesar(evento) {
+  // Procesar eventos en lotes
+  await processInBatches(eventos, limite, async (evento) => {
     const partidoNorm = normalizeMatchName(evento.partido);
     const cached = postersMap[partidoNorm];
 
     if (isBlobPosterUrl(cached)) {
       evento.poster = cached;
-      resultados.push(evento);
-      return;
+      return evento;
     }
 
     const url = await generatePosterWithHour(evento);
     evento.poster = url;
-    resultados.push(evento);
 
     if (isBlobPosterUrl(url)) {
       updates[partidoNorm] = url;
     }
-  }
+    return evento;
+  });
 
-  while (cola.length > 0 || activos.length > 0) {
-    while (activos.length < limite && cola.length > 0) {
-      const evento = cola.shift();
-      const p = procesar(evento).catch(err => {
-        console.error('[Poster] Error procesando evento:', err?.message || err);
-        evento.poster = generatePlaceholdPoster({ hora: evento.hora });
-        resultados.push(evento);
-      });
-      activos.push(p);
-    }
-    await Promise.race(activos);
-    activos.splice(0, activos.length, ...activos.filter(pr => typeof pr.then === 'function'));
-  }
-
+  // Escritura única al final con mapa plano
   if (Object.keys(updates).length > 0) {
     const merged = { ...postersMap, ...updates };
     await kvWritePostersHoyMap(merged);
+  } else {
+    console.info('[Poster] KV sin cambios (no hay nuevas entradas válidas)');
   }
 
-  return resultados;
+  return eventos;
 }
 
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
