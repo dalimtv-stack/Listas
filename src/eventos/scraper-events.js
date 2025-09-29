@@ -49,11 +49,12 @@ function eventoEsReciente(dia, hora, deporte, partido) {
       minute: parseInt(min) || 0
     }, { zone: 'Europe/Madrid' });
 
+    const eventoISODate = evento.toISODate();
+    const hoyISO = ahora.toISODate();
+    const ayerISO = ahora.minus({ days: 1 }).toISODate();
+    if (eventoISODate !== hoyISO && eventoISODate !== ayerISO) return false;
+
     const diffDesdeAhora = ahora.diff(evento, 'hours').hours;
-    const eventoISO = evento.toISO();
-
-    console.info(`[EVENTOS] Evaluando evento: ${partido} a las ${hora} (${deporte}). Fecha: ${eventoISO}, diff: ${diffDesdeAhora.toFixed(2)}h`);
-
     return diffDesdeAhora >= -24 && diffDesdeAhora <= 3;
   } catch (e) {
     console.warn('[EVENTOS] Error en eventoEsReciente, aceptando por seguridad', e);
