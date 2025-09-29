@@ -15,7 +15,6 @@ function normalizeMatchName(matchName) {
 
 // Acepta URLs tipo:
 // https://<store>.public.blob.vercel-storage.com/posters/<id>_<HH_MM>.png
-// donde <id> puede ser alfanumérico (incluye letras), y la hora siempre HH_MM
 function isBlobPosterUrl(url) {
   if (typeof url !== 'string') return false;
   return /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\/posters\/[a-z0-9]+_[0-9]{2}_[0-9]{2}\.png$/i.test(url);
@@ -107,20 +106,32 @@ async function buscarPosterEnFuente(url, candidates) {
   return null;
 }
 
-// Merge defensivo: re-lee KV y fusiona, evitando perder entradas por concurrencia
-async function kvMergePosterHoy(partidoNorm, blobUrl) {
-  const current = (await kvGetJson('postersBlobHoy')) || {};
-  const updated = { ...current, [partidoNorm]: blobUrl };
-  await kvSetJsonTTLIfChanged('postersBlobHoy', updated, 86400);
+// Lectura de la clave global con envoltura { timestamp, ttlMs, data }
+async function kvReadPostersHoy() {
+  const wrapper = await kvGetJson('postersBlobHoy');
+  const data = wrapper && typeof wrapper === 'object' ? (wrapper.data || {}) : {};
+  return { wrapper, data };
+}
+
+// Escritura mergeando sobre data y manteniendo la envoltura
+async function kvWritePostersHoyMerge(partidoNorm, blobUrl) {
+  const { wrapper, data } = await kvReadPostersHoy();
+  const merged = { ...data, [partidoNorm]: blobUrl };
+  const newWrapper = {
+    timestamp: Date.now(),
+    ttlMs: 86400000,
+    data: merged
+  };
+  await kvSetJsonTTLIfChanged('postersBlobHoy', newWrapper, 86400);
   console.info(`[Poster] Guardado en postersBlobHoy: ${partidoNorm} → ${blobUrl}`);
 }
 
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   const partidoNorm = normalizeMatchName(partido);
 
-  // 1) KV: si ya existe en postersBlobHoy, usarlo y salir
-  const postersHoy = (await kvGetJson('postersBlobHoy')) || {};
-  const cached = postersHoy[partidoNorm];
+  // 1) KV: si ya existe en postersBlobHoy.data, usarlo y salir
+  const { data: postersHoyData } = await kvReadPostersHoy();
+  const cached = postersHoyData[partidoNorm];
   if (isBlobPosterUrl(cached)) {
     console.info(`[Poster] Recuperado desde postersBlobHoy: ${partidoNorm}`);
     return cached;
@@ -148,6 +159,12 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
       posterSourceUrl = await buscarPosterEnFuente(fuente, candidates);
       if (posterSourceUrl) break;
     }
+
+    // Cache auxiliar del scrapeo (opcional)
+    if (posterSourceUrl?.startsWith('http')) {
+      const movistarCacheKey = `poster:${partidoNorm}`;
+      await kvSetJsonTTLIfChanged(movistarCacheKey, { posterUrl: posterSourceUrl, createdAt: Date.now() }, 86400);
+    }
   } catch (err) {
     console.error('[Poster] Error scraping:', err.message);
   }
@@ -157,7 +174,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     return generatePlaceholdPoster({ hora });
   }
 
-  // 3) Generar con hora SOLO si no existe en KV (evitar llamadas innecesarias)
+  // 3) Generar con hora SOLO si no existe en KV
   const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterSourceUrl)}`;
   let generados;
   try {
@@ -182,7 +199,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
 
   // 4) Guardar en KV solo si es Blob público válido; nunca guardar fallback
   if (isBlobPosterUrl(finalUrl)) {
-    await kvMergePosterHoy(partidoNorm, finalUrl);
+    await kvWritePostersHoyMerge(partidoNorm, finalUrl);
     return finalUrl;
   }
 
