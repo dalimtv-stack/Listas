@@ -168,7 +168,7 @@ function crearFallback(hoyISO) {
     competicion: 'No hay eventos disponibles hoy',
     partido: 'No hay eventos disponibles hoy',
     canales: [],
-    poster: `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(partido)`
+    poster: `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(partido)}`
   };
 }
 
