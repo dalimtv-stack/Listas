@@ -151,50 +151,7 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion }) {
   return isCacheablePosterUrl(finalUrl) ? finalUrl : generatePlaceholdPoster({ hora });
 }
 
-// --- Concurrencia simple por lotes ---
-
-async function processInBatches(items, batchSize, fn) {
-  const results = [];
-  for (let i = 0; i < items.length; i += batchSize) {
-    const batch = items.slice(i, i + batchSize);
-    const res = await Promise.all(batch.map(fn));
-    results.push(...res);
-  }
-  return results;
-}
-
-// --- Orquestación ---
-
-async function scrapePostersConcurrenciaLimitada(eventos, limite = 4) {
-  const postersMap = await kvReadPostersHoyMap();
-  await processInBatches(eventos, limite, async (evento) => {
-    const partidoNorm = normalizeMatchName(evento.partido);
-    const cached = postersMap[partidoNorm];
-    if (typeof cached === 'string' && cached.length > 0) {
-      evento.poster = cached;
-      return evento;
-    }
-    const url = await generatePosterWithHour(evento);
-    evento.poster = url;
-    return evento;
-  });
-  const updates = {};
-  for (const ev of eventos) {
-    const partidoNorm = normalizeMatchName(ev.partido);
-    const poster = ev.poster;
-    if (isCacheablePosterUrl(poster)) {
-      updates[partidoNorm] = poster;
-    }
-  }
-  if (Object.keys(updates).length > 0) {
-    const merged = { ...postersMap, ...updates };
-    console.info(`[Poster] Persistiendo ${Object.keys(updates).length} nuevas entradas en KV...`);
-    await kvWritePostersHoyMap(merged);
-  } else {
-    console.warn('[Poster] KV sin cambios; ningún poster cacheable detectado.');
-  }
-  return eventos;
-}
+// --- API principal usada por scraper-events.js ---
 
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   const postersMap = await kvReadPostersHoyMap();
@@ -203,11 +160,15 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   if (typeof cached === 'string' && cached.length > 0) {
     return cached;
   }
-  return await generatePosterWithHour({ partido, hora, deporte, competicion });
+  const url = await generatePosterWithHour({ partido, hora, deporte, competicion });
+  if (isCacheablePosterUrl(url)) {
+    const merged = { ...postersMap, [partidoNorm]: url };
+    await kvWritePostersHoyMap(merged);
+  }
+  return url;
 }
 
 module.exports = {
   scrapePosterForMatch,
-  scrapePostersConcurrenciaLimitada,
   generatePlaceholdPoster
 };
