@@ -17,7 +17,9 @@ function normalizeMatchName(matchName) {
 // https://<store>.public.blob.vercel-storage.com/posters/<id>_<HH_MM>.png
 function isBlobPosterUrl(url) {
   if (typeof url !== 'string') return false;
-  return /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\/posters\/[a-z0-9]+_[0-9]{2}_[0-9]{2}\.png$/i.test(url);
+  return /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\/posters\/[a-z0-9]+_[0-9]{2}_[0-9]{2}\.png$/i.test(
+    url
+  );
 }
 
 function generatePlaceholdPoster({ hora }) {
@@ -86,7 +88,8 @@ async function buscarPosterEnFuente(url, candidates) {
       let encontrado = null;
 
       $('img').each((_, img) => {
-        const alt = $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+        const alt =
+          $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
         const src = $(img).attr('src')?.toLowerCase() || '';
         if (nameRegex.test(alt) || nameRegex.test(src)) {
           encontrado = $(img).attr('src');
@@ -106,31 +109,32 @@ async function buscarPosterEnFuente(url, candidates) {
   return null;
 }
 
-// Lectura de la clave global con envoltura { timestamp, ttlMs, data }
+// --- Helpers KV ---
+
+// Lectura: devuelve solo el objeto plano de partidos
 async function kvReadPostersHoy() {
   const wrapper = await kvGetJson('postersBlobHoy');
-  const data = wrapper && typeof wrapper === 'object' ? (wrapper.data || {}) : {};
-  return { wrapper, data };
+  if (wrapper && typeof wrapper === 'object' && wrapper.data) {
+    return wrapper.data;
+  }
+  return {};
 }
 
-// Escritura mergeando sobre data y manteniendo la envoltura
+// Escritura: mergea sobre el objeto plano y lo pasa a kvSetJsonTTLIfChanged
 async function kvWritePostersHoyMerge(partidoNorm, blobUrl) {
-  const { wrapper, data } = await kvReadPostersHoy();
-  const merged = { ...data, [partidoNorm]: blobUrl };
-  const newWrapper = {
-    timestamp: Date.now(),
-    ttlMs: 86400000,
-    data: merged
-  };
-  await kvSetJsonTTLIfChanged('postersBlobHoy', newWrapper, 86400);
+  const current = await kvReadPostersHoy();
+  const updated = { ...current, [partidoNorm]: blobUrl };
+  await kvSetJsonTTLIfChanged('postersBlobHoy', { data: updated }, 86400);
   console.info(`[Poster] Guardado en postersBlobHoy: ${partidoNorm} → ${blobUrl}`);
 }
+
+// --- Main ---
 
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   const partidoNorm = normalizeMatchName(partido);
 
   // 1) KV: si ya existe en postersBlobHoy.data, usarlo y salir
-  const { data: postersHoyData } = await kvReadPostersHoy();
+  const postersHoyData = await kvReadPostersHoy();
   const cached = postersHoyData[partidoNorm];
   if (isBlobPosterUrl(cached)) {
     console.info(`[Poster] Recuperado desde postersBlobHoy: ${partidoNorm}`);
@@ -139,7 +143,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     console.info(`[Poster] No encontrado en postersBlobHoy (clave: "${partidoNorm}"). Se genera bajo demanda.`);
   }
 
-  // 2) Scrapeo fuente original (solo si no está en KV)
+  // 2) Scrapeo fuente original
   let posterSourceUrl;
   try {
     const isTenis = deporte?.toLowerCase() === 'tenis';
@@ -159,12 +163,6 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
       posterSourceUrl = await buscarPosterEnFuente(fuente, candidates);
       if (posterSourceUrl) break;
     }
-
-    // Cache auxiliar del scrapeo (opcional)
-    if (posterSourceUrl?.startsWith('http')) {
-      const movistarCacheKey = `poster:${partidoNorm}`;
-      await kvSetJsonTTLIfChanged(movistarCacheKey, { posterUrl: posterSourceUrl, createdAt: Date.now() }, 86400);
-    }
   } catch (err) {
     console.error('[Poster] Error scraping:', err.message);
   }
@@ -174,8 +172,10 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     return generatePlaceholdPoster({ hora });
   }
 
-  // 3) Generar con hora SOLO si no existe en KV
-  const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterSourceUrl)}`;
+  // 3) Generar con hora
+  const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(
+    posterSourceUrl
+  )}`;
   let generados;
   try {
     const res = await fetch(endpoint, {
