@@ -82,30 +82,28 @@ module.exports = async (req, res) => {
 
         const finalBuffer = await image.getBufferAsync('image/png');
 
-        const blobUpload = await fetch('https://blob.vercel-storage.com/upload?filename=' +
-          encodeURIComponent(`poster_${hora}.png`), {
-          method: 'PUT',
+        // Convertimos el buffer a Base64
+        const base64 = finalBuffer.toString('base64');
+        
+        // Subida al Blob de Vercel usando su API oficial
+        const blobUpload = await fetch('https://api.vercel.com/v1/blob', {
+          method: 'POST',
           headers: {
-            'Content-Type': 'image/png',
-            'Authorization': process.env.BLOB_READ_WRITE_TOKEN
+            'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
+            'Content-Type': 'application/json'
           },
-          body: finalBuffer
+          body: JSON.stringify({
+            name: `poster_${hora}.png`,
+            data: base64
+          })
         });
-
-        const blobResponse = await blobUpload.text();
-        let blobUrl;
-
-        try {
-          const parsed = JSON.parse(blobResponse);
-          if (parsed?.error) throw new Error(parsed.error.message || 'Error desconocido');
-          blobUrl = typeof parsed === 'string' ? parsed : null;
-        } catch {
-          blobUrl = blobResponse;
-        }
-
-        if (!/^https?:\/\//.test(blobUrl)) {
-          throw new Error(`Respuesta inválida: ${blobResponse}`);
-        }
+        
+        // Parseamos la respuesta JSON
+        const blobJson = await blobUpload.json();
+        if (!blobJson.url) throw new Error('No se recibió URL del blob');
+        
+        // Guardamos la URL pública
+        const blobUrl = blobJson.url;
 
         results.push({ hora, url: blobUrl });
       } catch (err) {
