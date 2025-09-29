@@ -92,9 +92,19 @@ module.exports = async (req, res) => {
           body: finalBuffer
         });
 
-        const blobUrl = await blobUpload.text();
+        const blobResponse = await blobUpload.text();
+        let blobUrl;
+
+        try {
+          const parsed = JSON.parse(blobResponse);
+          if (parsed?.error) throw new Error(parsed.error.message || 'Error desconocido');
+          blobUrl = typeof parsed === 'string' ? parsed : null;
+        } catch {
+          blobUrl = blobResponse;
+        }
+
         if (!/^https?:\/\//.test(blobUrl)) {
-          throw new Error(`Respuesta inválida: ${blobUrl}`);
+          throw new Error(`Respuesta inválida: ${blobResponse}`);
         }
 
         results.push({ hora, url: blobUrl });
