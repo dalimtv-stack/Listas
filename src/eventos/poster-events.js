@@ -14,8 +14,8 @@ function normalizeMatchName(matchName) {
 }
 
 function isBlobPosterUrl(url) {
-  if (typeof url !== 'string') return false;
-  return /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\/posters\/[a-z0-9]+_[0-9]{2}_[0-9]{2}\.png$/i.test(url);
+  return typeof url === 'string' &&
+    /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\/posters\/[a-z0-9_-]+_[0-9]{2}_[0-9]{2}\.png$/i.test(url);
 }
 
 function generatePlaceholdPoster({ hora }) {
