@@ -113,7 +113,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   const postersHoy = (await kvGetJson('postersBlobHoy')) || {};
   const yaGenerado = postersHoy[partidoNorm];
   if (isBlobPosterUrl(yaGenerado)) {
-    console.info(`[Poster] Recuperado desde postersBlobHoy: ${partidoNorm}`);
+    console.info(`[Poster] Recuperado desde postersBlobHoy (sin regenerar): ${partidoNorm}`);
     return yaGenerado;
   }
 
@@ -147,12 +147,13 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     console.error('[Poster] Error scraping:', err.message);
   }
 
+  // 3) Si no se encontró, usar fallback
   if (!posterUrl?.startsWith('http')) {
     console.warn('[Poster] No se encontró póster válido, devolviendo fallback (no se cachea)');
     return generatePlaceholdPoster({ hora });
   }
 
-  // 3) Generación con hora (API interna)
+  // 4) Generación con hora (API interna)
   const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterUrl)}`;
   let generados;
   try {
@@ -175,15 +176,20 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   const generado = generados.find(p => p.hora === hora);
   const finalUrl = generado?.url;
 
-  // 4) Guardar en KV solo si es URL válida de Blob público; nunca guardar fallback
-  if (isBlobPosterUrl(finalUrl)) {
+  // 5) Guardar en KV solo si es URL válida y diferente a la existente
+  if (isBlobPosterUrl(finalUrl) && finalUrl !== yaGenerado) {
     const actualizado = { ...postersHoy, [partidoNorm]: finalUrl };
     await kvSetJsonTTLIfChanged('postersBlobHoy', actualizado, 86400);
     console.info(`[Poster] Guardado en postersBlobHoy: ${partidoNorm} → ${finalUrl}`);
     return finalUrl;
   }
 
-  console.warn('[Poster] URL generada no válida o fallback; devolviendo fallback sin cachear');
+  // 6) Si es el mismo que ya estaba, devolvemos directamente
+  if (isBlobPosterUrl(finalUrl)) {
+    return finalUrl;
+  }
+
+  // 7) Si no es válido, fallback
   return generatePlaceholdPoster({ hora });
 }
 
