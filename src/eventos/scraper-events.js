@@ -3,188 +3,237 @@
 
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
-const { kvGetJsonTTL, kvSetJsonTTL } = require('../../api/kv');
+const iconv = require('iconv-lite');
+const { scrapePosterForMatch, generatePlaceholdPoster } = require('./poster-events');
+const { DateTime } = require('luxon');
 
-function normalizeMatchName(matchName) {
-  return String(matchName)
-    .toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function generatePlaceholdPoster({ hora }) {
-  return `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(String(hora))}`;
-}
-
-function isCacheablePosterUrl(url) {
-  return typeof url === 'string'
-    && url.toLowerCase().endsWith('.png')
-    && !url.includes('dummyimage.com');
-}
-
-function normalizeBlobUrl(url) {
-  if (!url) return null;
-  if (url.startsWith('http')) return url;
-  return `https://kb24ncicobqdaseh.public.blob.vercel-storage.com/${url.replace(/^\/+/, '')}`;
-}
-
-function generateFallbackNames(original, context = '') {
-  const normalized = normalizeMatchName(original);
-  const variants = [normalized];
-  const teamAliases = {
-    'atletico de madrid': 'at. madrid',
-    'real madrid': 'r. madrid',
-    'fc barcelona': 'barça',
-    'juventus': 'juve',
-    'inter milan': 'inter',
-    'ac milan': 'milan',
-    'bayern munich': 'bayern',
-    'borussia dortmund': 'dortmund',
-    'paris saint-germain': 'psg',
-    'simulcast': ['multieuropa', 'multichampions']
+function parseFechaMarca(texto) {
+  const meses = {
+    enero: '01', febrero: '02', marzo: '03', abril: '04',
+    mayo: '05', junio: '06', julio: '07', agosto: '08',
+    septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12'
   };
-  let aliasVersion = normalized;
-  for (const [full, alias] of Object.entries(teamAliases)) {
-    const regex = new RegExp(`\\b${full}\\b`, 'gi');
-    if (Array.isArray(alias)) {
-      alias.forEach(a => {
-        const replaced = aliasVersion.replace(regex, a);
-        if (replaced !== aliasVersion) variants.push(replaced);
-      });
-    } else {
-      const replaced = aliasVersion.replace(regex, alias);
-      if (replaced !== aliasVersion) variants.push(replaced);
-    }
+  const matches = (texto || '').toLowerCase().match(/(\d{1,2} de \w+ de \d{4})/g) || [];
+  if (matches.length !== 1) {
+    console.warn(`[EVENTOS] Fecha no válida o contiene múltiples fechas: "${texto}" (encontradas: ${matches.length})`);
+    return '';
   }
-  if (context) variants.push(normalizeMatchName(context));
-  return [...new Set(variants)];
+  const match = (texto || '').toLowerCase().match(/(\d{1,2}) de (\w+) de (\d{4})/);
+  if (!match) return '';
+  const [_, dd, mes, yyyy] = match;
+  const mm = meses[mes] || '01';
+  return `${yyyy}-${mm}-${dd.padStart(2, '0')}`;
 }
 
-async function buscarPosterEnFuente(url, candidates) {
+function formatoFechaES(fecha) {
+  const opciones = {
+    timeZone: 'Europe/Madrid',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  };
+  return new Intl.DateTimeFormat('es-ES', opciones).format(fecha);
+}
+
+function eventoEsReciente(dia, hora, deporte, partido, hoyISO, ayerISO, bloqueISO) {
   try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const html = await res.text();
-    const $ = cheerio.load(html);
-    for (const name of candidates) {
-      const nameRegex = new RegExp(name.replace(/[-]/g, '[ -]'), 'i');
-      let encontrado = null;
-      $('img').each((_, img) => {
-        const alt = $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
-        const src = $(img).attr('src')?.toLowerCase() || '';
-        if (nameRegex.test(alt) || nameRegex.test(src)) {
-          encontrado = $(img).attr('src');
-          return false;
-        }
-      });
-      if (encontrado?.startsWith('http')) {
-        console.info(`[Poster] Coincidencia encontrada en ${url} → ${encontrado}`);
-        return encontrado;
-      }
+    const [dd, mm, yyyy] = (dia || '').split('/');
+    const [hh, min] = (hora || '').split(':');
+    const evento = DateTime.fromObject({
+      year: parseInt(yyyy),
+      month: parseInt(mm),
+      day: parseInt(dd),
+      hour: parseInt(hh) || 0,
+      minute: parseInt(min) || 0
+    }, { zone: 'Europe/Madrid' });
+
+    const referencia = DateTime.fromISO(bloqueISO, { zone: 'Europe/Madrid' }).startOf('day');
+    const diffHoras = evento.diff(referencia, 'hours').hours;
+    const eventoISO = evento.toISODate();
+
+    console.info(`[EVENTOS] Evaluando evento: ${partido} a las ${hora} (${deporte}). Fecha: ${eventoISO}, Diff desde bloque: ${diffHoras.toFixed(2)}, bloque: ${bloqueISO}`);
+
+    if (bloqueISO === hoyISO) {
+      // mostrar todos los eventos del día
+      return diffHoras >= 0 && diffHoras <= 24;
     }
-  } catch (err) {
-    console.warn(`[Poster] Fallo al buscar en ${url}: ${err.message}`);
-  }
-  return null;
-}
 
-async function kvReadPostersHoyMap() {
-  const data = await kvGetJsonTTL('postersBlobHoy');
-  return data && typeof data === 'object' ? data : {};
-}
-
-async function kvWritePostersHoyMap(mergedMap) {
-  await kvSetJsonTTL('postersBlobHoy', mergedMap, 86400);
-  console.info(`[Poster] KV actualizado con ${Object.keys(mergedMap).length} entradas`);
-}
-
-async function generatePosterWithHour({ partido, hora, deporte, competicion }) {
-  let posterSourceUrl;
-  try {
-    const isTenis = deporte?.toLowerCase() === 'tenis';
-    const candidates = generateFallbackNames(partido, competicion);
-    const fuentes = isTenis
-      ? [
-          'https://www.movistarplus.es/deportes/tenis/donde-ver',
-          'https://www.movistarplus.es/deportes?conf=iptv',
-          'https://www.movistarplus.es/el-partido-movistarplus'
-        ]
-      : [
-          'https://www.movistarplus.es/deportes?conf=iptv',
-          'https://www.movistarplus.es/el-partido-movistarplus'
-        ];
-    for (const fuente of fuentes) {
-      posterSourceUrl = await buscarPosterEnFuente(fuente, candidates);
-      if (posterSourceUrl) break;
+    if (bloqueISO === ayerISO) {
+      const ahora = DateTime.now().setZone('Europe/Madrid');
+      const diffDesdeAhora = ahora.diff(evento, 'hours').hours;
+      return diffDesdeAhora >= 0 && diffDesdeAhora <= 2;
     }
-  } catch (err) {
-    console.error('[Poster] Error scraping:', err.message);
+
+    return false;
+  } catch (e) {
+    console.warn('[EVENTOS] Error en eventoEsReciente, aceptando por seguridad', e);
+    return true;
   }
-  if (!posterSourceUrl?.startsWith('http')) {
-    return generatePlaceholdPoster({ hora });
-  }
-  const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterSourceUrl)}`;
-  let generados;
+}
+
+async function fetchEventos(url) {
+  const eventos = [];
+  const generos = [];
+  const eventosUnicos = new Set();
+
+  const ahoraDT = DateTime.now().setZone('Europe/Madrid');
+  const hoyISO = ahoraDT.toISODate();
+  const ayerISO = ahoraDT.minus({ days: 1 }).toISODate();
+  const fechaFormateada = formatoFechaES(ahoraDT.toJSDate());
+
+  console.info(`[EVENTOS] Fecha del sistema: ${fechaFormateada} (${hoyISO})`);
+
   try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ horas: [hora] })
+    const MARCA_URL = 'https://www.marca.com/programacion-tv.html';
+    const res = await fetch(MARCA_URL, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; scraper)' }
     });
-    generados = await res.json();
+    if (!res.ok) throw new Error(`HTTP ${res.status} en Marca`);
+    const buffer = await res.buffer();
+    const html = iconv.decode(buffer, 'latin1');
+    const $ = cheerio.load(html);
+
+    const hasDaylist = ($('ol.auto-items.daylist').length > 0) || ($('li.dailyevent').length > 0) || ($('.title-section-widget').length > 0);
+    const hasOldStructure = ($('h3').length > 0 && $('ol.events-list').length > 0) || ($('li.event-item').length > 0);
+
+    if (hasDaylist) {
+      console.info('[EVENTOS] Estructura detectada: daylist / dailyevent');
+      $('li.content-item').filter((i, el) => $(el).find('.title-section-widget').length > 0).each((_, li) => {
+        const fechaTexto = $(li).find('.title-section-widget').text().trim();
+        const fechaISO = parseFechaMarca(fechaTexto);
+
+        console.info(`[EVENTOS] Bloque con fecha detectada: ${fechaISO} (texto: "${fechaTexto.replace(/\s+/g,' ').trim().slice(0,60)}")`);
+
+        if (fechaISO !== hoyISO && fechaISO !== ayerISO) {
+          console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no es hoy ni ayer)`);
+          return;
+        }
+
+        const bloqueISO = fechaISO;
+        const [yyyy, mm, dd] = fechaISO.split('-');
+        const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
+
+        $(li).find('li.dailyevent').each((_, eventoLi) => {
+          const hora = $(eventoLi).find('.dailyhour').text().trim() || '';
+          const deporte = $(eventoLi).find('.dailyday').text().trim() || '';
+          const competicion = $(eventoLi).find('.dailycompetition').text().trim() || '';
+          const partido = $(eventoLi).find('.dailyteams').text().trim() || '';
+          const canal = $(eventoLi).find('.dailychannel').text().trim() || '';
+
+          const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
+          if (eventosUnicos.has(eventoId)) {
+            console.info(`[EVENTOS] Evento duplicado descartado: ${partido} a las ${hora}`);
+            return;
+          }
+          eventosUnicos.add(eventoId);
+
+          if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido, hoyISO, ayerISO, bloqueISO)) {
+            console.info(`[EVENTOS] Evento ${partido} a las ${hora} descartado (no reciente)`);
+            return;
+          }
+          if (deporte && !generos.includes(deporte)) generos.push(deporte);
+
+          eventos.push({
+            dia: fechaFormateadaMarca,
+            hora,
+            deporte,
+            competicion,
+            partido,
+            canales: [{ label: canal, url: null }]
+          });
+        });
+      });
+    }
+
+    if (hasOldStructure) {
+      console.info('[EVENTOS] Estructura detectada: h3 + ol.events-list (antiguo)');
+      $('h3').each((_, h3) => {
+        const fechaTexto = $(h3).text().trim();
+        const fechaISO = parseFechaMarca(fechaTexto);
+
+        console.info(`[EVENTOS] Bloque con fecha detectada: ${fechaISO} (h3: "${fechaTexto.replace(/\s+/g,' ').trim().slice(0,60)}")`);
+
+        if (fechaISO !== hoyISO && fechaISO !== ayerISO) {
+          console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no es hoy ni ayer)`);
+          return;
+        }
+
+        const bloqueISO = fechaISO;
+        const [yyyy, mm, dd] = fechaISO.split('-');
+        const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
+
+        const ol = $(h3).next('ol.events-list');
+        ol.find('li.event-item').each((_, eventoLi) => {
+          const hora = $(eventoLi).find('.hour').text().trim() || '';
+          const deporte = $(eventoLi).find('.sport').text().trim() || '';
+          const competicion = $(eventoLi).find('.competition').text().trim() || '';
+          const partido = $(eventoLi).find('h4').text().trim() || '';
+          const canal = $(eventoLi).find('.channel').text().trim() || '';
+
+          const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
+          if (eventosUnicos.has(eventoId)) {
+            console.info(`[EVENTOS] Evento duplicado descartado: ${partido} a las ${hora}`);
+            return;
+          }
+          eventosUnicos.add(eventoId);
+
+          if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido, hoyISO, ayerISO, bloqueISO)) {
+            console.info(`[EVENTOS] Evento ${partido} a las ${hora} descartado (no reciente)`);
+            return;
+          }
+          if (deporte && !generos.includes(deporte)) generos.push(deporte);
+
+          eventos.push({
+            dia: fechaFormateadaMarca,
+            hora,
+            deporte,
+            competicion,
+            partido,
+            canales: [{ label: canal, url: null }]
+          });
+        });
+      });
+    }
+
+    console.info(`[EVENTOS] Scrapeo finalizado desde Marca: ${eventos.length} eventos`);
   } catch (err) {
-    console.error('[Poster] Error al generar con hora:', err.message);
-    return generatePlaceholdPoster({ hora });
+    console.warn(`[EVENTOS] Fallo al scrapear Marca: ${err.message}`);
   }
-  if (!Array.isArray(generados)) {
-    return generatePlaceholdPoster({ hora });
-  }
-  const generado = generados.find(p => p.hora === hora);
-  const finalUrl = normalizeBlobUrl(generado?.url);
-  return isCacheablePosterUrl(finalUrl) ? finalUrl : generatePlaceholdPoster({ hora });
-}
 
-// ✅ Reutilizable en lote o individual
-async function scrapePosterForMatch({ partido, hora, deporte, competicion }, cacheMap = null) {
-  const partidoNorm = normalizeMatchName(partido);
-  const postersMap = cacheMap || await kvReadPostersHoyMap();
-  const cached = postersMap[partidoNorm];
-  if (typeof cached === 'string' && cached.length > 0) {
-    return cached;
+  if (eventos.length === 0) {
+    console.warn(`[EVENTOS] No se encontraron eventos para hoy (${hoyISO})`);
+    const fallback = {
+      dia: `${hoyISO.slice(8, 10)}/${hoyISO.slice(5, 7)}/${hoyISO.slice(0, 4)}`,
+      hora: '',
+      deporte: '',
+      competicion: '',
+      partido: 'No hay eventos disponibles hoy',
+      canales: [],
+      poster: generatePlaceholdPoster({
+        hora: '',
+        deporte: '',
+        competicion: 'No hay eventos disponibles hoy'
+      })
+    };
+    return [fallback];
   }
-  const url = await generatePosterWithHour({ partido, hora, deporte, competicion });
-  return url;
-}
-
-// ✅ Procesamiento en lote usando scrapePosterForMatch
-async function scrapePostersForEventos(eventos) {
-  const postersMap = await kvReadPostersHoyMap();
-  const updates = {};
 
   await Promise.all(eventos.map(async (evento, index) => {
     const posterLabel = `Poster ${evento.partido}-${index}`;
     console.time(posterLabel);
-    const url = await scrapePosterForMatch(evento, postersMap);
+    evento.poster = await scrapePosterForMatch({
+      partido: evento.partido,
+      hora: evento.hora,
+      deporte: evento.deporte,
+      competicion: evento.competicion
+    });
     console.timeEnd(posterLabel);
-    evento.poster = url;
-
-    const partidoNorm = normalizeMatchName(evento.partido);
-    if (isCacheablePosterUrl(url)) {
-      updates[partidoNorm] = url;
-    }
   }));
-
-  if (Object.keys(updates).length > 0) {
-    const merged = { ...postersMap, ...updates };
-    await kvWritePostersHoyMap(merged);
-  }
 
   return eventos;
 }
 
-module.exports = {
-  scrapePosterForMatch,
-  scrapePostersForEventos,
-  generatePlaceholdPoster
-};
+module.exports = { fetchEventos };
