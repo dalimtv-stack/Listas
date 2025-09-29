@@ -52,10 +52,24 @@ function eventoEsReciente(dia, hora, deporte, partido) {
     const eventoISODate = evento.toISODate();
     const hoyISO = ahora.toISODate();
     const ayerISO = ahora.minus({ days: 1 }).toISODate();
-    if (eventoISODate !== hoyISO && eventoISODate !== ayerISO) return false;
+    const mañanaISO = ahora.plus({ days: 1 }).toISODate();
 
-    const diffDesdeAhora = ahora.diff(evento, 'hours').hours;
-    return diffDesdeAhora >= -24 && diffDesdeAhora <= 3;
+    if (eventoISODate === hoyISO) {
+      const diffDesdeAhora = ahora.diff(evento, 'hours').hours;
+      return diffDesdeAhora >= -24 && diffDesdeAhora <= 3;
+    }
+
+    if (eventoISODate === ayerISO) {
+      const diffDesdeAhora = ahora.diff(evento, 'hours').hours;
+      return diffDesdeAhora >= 0 && diffDesdeAhora <= 2;
+    }
+
+    if (eventoISODate === mañanaISO) {
+      const diffDesdeAhora = evento.diff(ahora, 'hours').hours;
+      return diffDesdeAhora >= 0 && diffDesdeAhora <= 3;
+    }
+
+    return false;
   } catch (e) {
     console.warn('[EVENTOS] Error en eventoEsReciente, aceptando por seguridad', e);
     return true;
