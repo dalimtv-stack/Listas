@@ -146,8 +146,6 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion }) {
 }
 
 // ✅ Única función reutilizable
-const { kvGetJsonTTL, kvSetJsonTTL } = require('../../api/kv');
-
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }, cacheMap = null) {
   const partidoNorm = normalizeMatchName(partido);
   const postersMap = cacheMap || await kvGetJsonTTL('postersBlobHoy') || {};
