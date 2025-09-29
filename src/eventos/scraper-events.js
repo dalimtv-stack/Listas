@@ -1,6 +1,7 @@
 // src/eventos/scraper-events.js
 'use strict';
 
+const { kvGetJsonTTL } = require('../../api/kv');
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 const iconv = require('iconv-lite');
@@ -57,9 +58,10 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO, ayerISO, bloqueIS
     console.info(`[EVENTOS] Evaluando evento: ${partido} a las ${hora} (${deporte}). Fecha: ${eventoISO}, Diff desde bloque: ${diffHoras.toFixed(2)}, bloque: ${bloqueISO}`);
 
     if (bloqueISO === hoyISO) {
-      // mostrar todos los eventos del día
-      return diffHoras >= 0 && diffHoras <= 24;
-    }
+  const ahora = DateTime.now().setZone('Europe/Madrid');
+  const diffDesdeAhora = ahora.diff(evento, 'hours').hours;
+  return diffDesdeAhora >= -24 && diffDesdeAhora <= 3;
+}
 
     if (bloqueISO === ayerISO) {
       const ahora = DateTime.now().setZone('Europe/Madrid');
