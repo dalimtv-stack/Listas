@@ -4,7 +4,7 @@
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 const iconv = require('iconv-lite');
-const { scrapePostersForEventos, generatePlaceholdPoster } = require('./poster-events');
+const { scrapePosterForMatch, generatePlaceholdPoster } = require('./poster-events');
 const { DateTime } = require('luxon');
 
 function parseFechaMarca(texto) {
@@ -13,7 +13,12 @@ function parseFechaMarca(texto) {
     mayo: '05', junio: '06', julio: '07', agosto: '08',
     septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12'
   };
-  const match = texto.toLowerCase().match(/(\d{1,2}) de (\w+) de (\d{4})/);
+  const matches = (texto || '').toLowerCase().match(/(\d{1,2} de \w+ de \d{4})/g) || [];
+  if (matches.length !== 1) {
+    console.warn(`[EVENTOS] Fecha no válida o contiene múltiples fechas: "${texto}" (encontradas: ${matches.length})`);
+    return '';
+  }
+  const match = (texto || '').toLowerCase().match(/(\d{1,2}) de (\w+) de (\d{4})/);
   if (!match) return '';
   const [_, dd, mes, yyyy] = match;
   const mm = meses[mes] || '01';
@@ -21,7 +26,7 @@ function parseFechaMarca(texto) {
 }
 
 function formatoFechaES(fecha) {
-  return new Intl.DateTimeFormat('es-ES', {
+  const opciones = {
     timeZone: 'Europe/Madrid',
     year: 'numeric',
     month: '2-digit',
@@ -29,13 +34,14 @@ function formatoFechaES(fecha) {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit'
-  }).format(fecha);
+  };
+  return new Intl.DateTimeFormat('es-ES', opciones).format(fecha);
 }
 
 function eventoEsReciente(dia, hora, deporte, partido, hoyISO, ayerISO, bloqueISO) {
   try {
-    const [dd, mm, yyyy] = dia.split('/');
-    const [hh, min] = hora.split(':');
+    const [dd, mm, yyyy] = (dia || '').split('/');
+    const [hh, min] = (hora || '').split(':');
     const evento = DateTime.fromObject({
       year: parseInt(yyyy),
       month: parseInt(mm),
@@ -50,7 +56,11 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO, ayerISO, bloqueIS
 
     console.info(`[EVENTOS] Evaluando evento: ${partido} a las ${hora} (${deporte}). Fecha: ${eventoISO}, Diff desde bloque: ${diffHoras.toFixed(2)}, bloque: ${bloqueISO}`);
 
-    if (bloqueISO === hoyISO) return diffHoras >= 0 && diffHoras <= 24;
+    if (bloqueISO === hoyISO) {
+      // mostrar todos los eventos del día
+      return diffHoras >= 0 && diffHoras <= 24;
+    }
+
     if (bloqueISO === ayerISO) {
       const ahora = DateTime.now().setZone('Europe/Madrid');
       const diffDesdeAhora = ahora.diff(evento, 'hours').hours;
@@ -63,6 +73,7 @@ function eventoEsReciente(dia, hora, deporte, partido, hoyISO, ayerISO, bloqueIS
     return true;
   }
 }
+
 async function fetchEventos(url) {
   const eventos = [];
   const generos = [];
@@ -85,52 +96,55 @@ async function fetchEventos(url) {
     const html = iconv.decode(buffer, 'latin1');
     const $ = cheerio.load(html);
 
-    const hasDaylist = $('li.content-item .title-section-widget').length > 0;
-    const hasOldStructure = $('h3').length > 0 && $('ol.events-list').length > 0;
-
-    const procesarEvento = (eventoLi, fechaISO, bloqueISO) => {
-      const hora = $(eventoLi).find('.dailyhour, .hour').text().trim();
-      const deporte = $(eventoLi).find('.dailyday, .sport').text().trim();
-      const competicion = $(eventoLi).find('.dailycompetition, .competition').text().trim();
-      const partido = $(eventoLi).find('.dailyteams, h4').text().trim();
-      const canal = $(eventoLi).find('.dailychannel, .channel').text().trim();
-
-      const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
-      if (eventosUnicos.has(eventoId)) return;
-      eventosUnicos.add(eventoId);
-
-      const [yyyy, mm, dd] = fechaISO.split('-');
-      const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
-
-      if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido, hoyISO, ayerISO, bloqueISO)) return;
-
-      if (deporte && !generos.includes(deporte)) generos.push(deporte);
-
-      eventos.push({
-        dia: fechaFormateadaMarca,
-        hora,
-        deporte,
-        competicion,
-        partido,
-        canales: [{ label: canal, url: null }]
-      });
-    };
+    const hasDaylist = ($('ol.auto-items.daylist').length > 0) || ($('li.dailyevent').length > 0) || ($('.title-section-widget').length > 0);
+    const hasOldStructure = ($('h3').length > 0 && $('ol.events-list').length > 0) || ($('li.event-item').length > 0);
 
     if (hasDaylist) {
       console.info('[EVENTOS] Estructura detectada: daylist / dailyevent');
-      $('li.content-item').each((_, li) => {
+      $('li.content-item').filter((i, el) => $(el).find('.title-section-widget').length > 0).each((_, li) => {
         const fechaTexto = $(li).find('.title-section-widget').text().trim();
         const fechaISO = parseFechaMarca(fechaTexto);
-        if (!fechaISO) return;
 
-        console.info(`[EVENTOS] Bloque con fecha detectada: ${fechaISO} (texto: "${fechaTexto.slice(0, 60)}")`);
+        console.info(`[EVENTOS] Bloque con fecha detectada: ${fechaISO} (texto: "${fechaTexto.replace(/\s+/g,' ').trim().slice(0,60)}")`);
+
         if (fechaISO !== hoyISO && fechaISO !== ayerISO) {
           console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no es hoy ni ayer)`);
           return;
         }
 
         const bloqueISO = fechaISO;
-        $(li).find('li.dailyevent').each((_, eventoLi) => procesarEvento(eventoLi, fechaISO, bloqueISO));
+        const [yyyy, mm, dd] = fechaISO.split('-');
+        const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
+
+        $(li).find('li.dailyevent').each((_, eventoLi) => {
+          const hora = $(eventoLi).find('.dailyhour').text().trim() || '';
+          const deporte = $(eventoLi).find('.dailyday').text().trim() || '';
+          const competicion = $(eventoLi).find('.dailycompetition').text().trim() || '';
+          const partido = $(eventoLi).find('.dailyteams').text().trim() || '';
+          const canal = $(eventoLi).find('.dailychannel').text().trim() || '';
+
+          const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
+          if (eventosUnicos.has(eventoId)) {
+            console.info(`[EVENTOS] Evento duplicado descartado: ${partido} a las ${hora}`);
+            return;
+          }
+          eventosUnicos.add(eventoId);
+
+          if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido, hoyISO, ayerISO, bloqueISO)) {
+            console.info(`[EVENTOS] Evento ${partido} a las ${hora} descartado (no reciente)`);
+            return;
+          }
+          if (deporte && !generos.includes(deporte)) generos.push(deporte);
+
+          eventos.push({
+            dia: fechaFormateadaMarca,
+            hora,
+            deporte,
+            competicion,
+            partido,
+            canales: [{ label: canal, url: null }]
+          });
+        });
       });
     }
 
@@ -139,17 +153,48 @@ async function fetchEventos(url) {
       $('h3').each((_, h3) => {
         const fechaTexto = $(h3).text().trim();
         const fechaISO = parseFechaMarca(fechaTexto);
-        if (!fechaISO) return;
 
-        console.info(`[EVENTOS] Bloque con fecha detectada: ${fechaISO} (h3: "${fechaTexto.slice(0, 60)}")`);
+        console.info(`[EVENTOS] Bloque con fecha detectada: ${fechaISO} (h3: "${fechaTexto.replace(/\s+/g,' ').trim().slice(0,60)}")`);
+
         if (fechaISO !== hoyISO && fechaISO !== ayerISO) {
           console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (no es hoy ni ayer)`);
           return;
         }
 
         const bloqueISO = fechaISO;
+        const [yyyy, mm, dd] = fechaISO.split('-');
+        const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
+
         const ol = $(h3).next('ol.events-list');
-        ol.find('li.event-item').each((_, eventoLi) => procesarEvento(eventoLi, fechaISO, bloqueISO));
+        ol.find('li.event-item').each((_, eventoLi) => {
+          const hora = $(eventoLi).find('.hour').text().trim() || '';
+          const deporte = $(eventoLi).find('.sport').text().trim() || '';
+          const competicion = $(eventoLi).find('.competition').text().trim() || '';
+          const partido = $(eventoLi).find('h4').text().trim() || '';
+          const canal = $(eventoLi).find('.channel').text().trim() || '';
+
+          const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
+          if (eventosUnicos.has(eventoId)) {
+            console.info(`[EVENTOS] Evento duplicado descartado: ${partido} a las ${hora}`);
+            return;
+          }
+          eventosUnicos.add(eventoId);
+
+          if (!eventoEsReciente(fechaFormateadaMarca, hora, deporte, partido, hoyISO, ayerISO, bloqueISO)) {
+            console.info(`[EVENTOS] Evento ${partido} a las ${hora} descartado (no reciente)`);
+            return;
+          }
+          if (deporte && !generos.includes(deporte)) generos.push(deporte);
+
+          eventos.push({
+            dia: fechaFormateadaMarca,
+            hora,
+            deporte,
+            competicion,
+            partido,
+            canales: [{ label: canal, url: null }]
+          });
+        });
       });
     }
 
@@ -176,8 +221,17 @@ async function fetchEventos(url) {
     return [fallback];
   }
 
-  const eventosConPosters = await scrapePostersForEventos(eventos);
-  return eventosConPosters;
+  const postersMap = {};
+  await Promise.all(eventos.map(async (evento, index) => {
+    const posterLabel = `Poster ${evento.partido}-${index}`;
+    console.time(posterLabel);
+    const url = await scrapePosterForMatch(evento, postersMap);
+    console.timeEnd(posterLabel);
+    evento.poster = url;
+  }));
+
+
+  return eventos;
 }
 
 module.exports = { fetchEventos };
