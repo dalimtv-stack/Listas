@@ -1,5 +1,4 @@
 // api/poster-con-hora.js
-// api/poster-con-hora.js
 'use strict';
 
 const Jimp = require('jimp');
