@@ -134,28 +134,32 @@ async function fetchEventos(url) {
       const fechaTexto = $(li).find('.title-section-widget').text().trim();
       const fechaISO = parseFechaMarca(fechaTexto, ahoraDT.year);
       if (!fechaISO) return;
-
-      // Corte duro: solo ayer, hoy, mañana
+    
       const fechaBloque = DateTime.fromISO(fechaISO, { zone: 'Europe/Madrid' });
       const diffDias = fechaBloque.startOf('day').diff(ahoraDT.startOf('day'), 'days').days;
-      if (diffDias < -1 || diffDias > 1) return;
-
+    
+      // Corte duro: solo ayer (-1), hoy (0) y mañana (+1)
+      if (diffDias < -1 || diffDias > 1) {
+        console.info(`[EVENTOS] Bloque descartado (${fechaISO}), fuera de rango`);
+        return;
+      }
+    
       const [yyyy, mm, dd] = fechaISO.split('-');
       const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
-
+    
       $(li).find('li.dailyevent').each((_, eventoLi) => {
         const hora = $(eventoLi).find('.dailyhour').text().trim() || '';
         const deporte = $(eventoLi).find('.dailyday').text().trim() || '';
         const competicion = $(eventoLi).find('.dailycompetition').text().trim() || '';
         const partido = $(eventoLi).find('.dailyteams').text().trim() || '';
         const canal = $(eventoLi).find('.dailychannel').text().trim() || '';
-
+    
         const eventoId = `${fechaISO}|${hora}|${partido}|${competicion}`;
         if (eventosUnicos.has(eventoId)) return;
         eventosUnicos.add(eventoId);
-
+    
         if (!eventoEsReciente(fechaFormateadaMarca, hora)) return;
-
+    
         eventos.push({
           dia: fechaFormateadaMarca,
           hora,
