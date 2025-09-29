@@ -41,13 +41,16 @@ function eventoEsReciente(dia, hora, deporte, partido) {
     const ahora = DateTime.now().setZone('Europe/Madrid');
     const [dd, mm, yyyy] = (dia || '').split('/');
     const [hh, min] = (hora || '').split(':');
-    const evento = DateTime.fromObject({
-      year: parseInt(yyyy),
-      month: parseInt(mm),
-      day: parseInt(dd),
-      hour: parseInt(hh) || 0,
-      minute: parseInt(min) || 0
-    }, { zone: 'Europe/Madrid' });
+    const evento = DateTime.fromObject(
+      {
+        year: parseInt(yyyy, 10),
+        month: parseInt(mm, 10),
+        day: parseInt(dd, 10),
+        hour: parseInt(hh || '0', 10),
+        minute: parseInt(min || '0', 10)
+      },
+      { zone: 'Europe/Madrid' }
+    );
 
     const eventoISODate = evento.toISODate();
     const hoyISO = ahora.toISODate();
@@ -55,24 +58,28 @@ function eventoEsReciente(dia, hora, deporte, partido) {
     const mañanaISO = ahora.plus({ days: 1 }).toISODate();
 
     if (eventoISODate === hoyISO) {
-      const diffDesdeAhora = ahora.diff(evento, 'hours').hours;
-      return diffDesdeAhora >= -24 && diffDesdeAhora <= 3;
+      // Ventana estricta de ±3 horas
+      const diffHoras = evento.diff(ahora, 'hours').hours; // positivo si evento es futuro
+      return diffHoras >= -3 && diffHoras <= 3;
     }
 
     if (eventoISODate === ayerISO) {
-      const diffDesdeAhora = ahora.diff(evento, 'hours').hours;
-      return diffDesdeAhora >= 0 && diffDesdeAhora <= 2;
+      // Igual que antes: eventos de ayer solo si están dentro de 2 horas pasadas
+      const diffHorasDesdeAhora = ahora.diff(evento, 'hours').hours; // positivo si evento fue en el pasado
+      return diffHorasDesdeAhora >= 0 && diffHorasDesdeAhora <= 2;
     }
 
     if (eventoISODate === mañanaISO) {
-      const diffDesdeAhora = evento.diff(ahora, 'hours').hours;
-      return diffDesdeAhora >= 0 && diffDesdeAhora <= 3;
+      // Solo mostrar mañana a partir de las 22:00 y dentro de las próximas 3 horas
+      if (ahora.hour < 22) return false;
+      const diffFuturo = evento.diff(ahora, 'hours').hours;
+      return diffFuturo >= 0 && diffFuturo <= 3;
     }
 
     return false;
   } catch (e) {
-    console.warn('[EVENTOS] Error en eventoEsReciente, aceptando por seguridad', e);
-    return true;
+    console.warn('[EVENTOS] Error en eventoEsReciente, descartando evento corrupto', e);
+    return false;
   }
 }
 
