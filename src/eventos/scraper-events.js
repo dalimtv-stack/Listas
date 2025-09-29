@@ -4,7 +4,7 @@
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 const iconv = require('iconv-lite');
-const { scrapePostersConcurrenciaLimitada, generatePlaceholdPoster } = require('./poster-events');
+const { scrapePosterForMatch, generatePlaceholdPoster } = require('./poster-events');
 const { DateTime } = require('luxon');
 
 function parseFechaMarca(texto) {
@@ -224,7 +224,7 @@ async function fetchEventos(url) {
   await Promise.all(eventos.map(async (evento, index) => {
     const posterLabel = `Poster ${evento.partido}-${index}`;
     console.time(posterLabel);
-    evento.poster = await scrapePostersConcurrenciaLimitada({
+    evento.poster = await scrapePosterForMatch({
       partido: evento.partido,
       hora: evento.hora,
       deporte: evento.deporte,
