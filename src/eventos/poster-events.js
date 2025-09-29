@@ -68,7 +68,37 @@ function generatePlaceholdPoster({ hora, deporte, competicion }) {
   return `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(text)}`;
 }
 
-const posterCache = new Map();
+async function buscarPosterEnFuente(url, candidates) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const html = await res.text();
+    const $ = cheerio.load(html);
+
+    for (const name of candidates) {
+      const nameRegex = new RegExp(name.replace(/[-]/g, '[ -]'), 'i');
+      let encontrado = null;
+
+      $('img').each((_, img) => {
+        const alt = $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+        const src = $(img).attr('src')?.toLowerCase() || '';
+        if (nameRegex.test(alt) || nameRegex.test(src)) {
+          encontrado = $(img).attr('src');
+          return false;
+        }
+      });
+
+      if (encontrado?.startsWith('http')) {
+        console.info(`[Poster] Coincidencia encontrada en ${url} → ${encontrado}`);
+        return encontrado;
+      }
+    }
+  } catch (err) {
+    console.warn(`[Poster] Fallo al buscar en ${url}: ${err.message}`);
+  }
+
+  return null;
+}
 
 async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   const blobKey = `posterBlob:${normalizeMatchName(partido)}:${hora}`;
@@ -85,26 +115,20 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   if (!posterUrl) {
     try {
       const isTenis = deporte?.toLowerCase() === 'tenis';
-      const sourceUrl = isTenis
-        ? 'https://www.movistarplus.es/deportes/tenis/donde-ver'
-        : 'https://www.movistarplus.es/el-partido-movistarplus';
-
-      const res = await fetch(sourceUrl);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const html = await res.text();
-      const $ = cheerio.load(html);
-
       const candidates = generateFallbackNames(partido, competicion);
-      for (const name of candidates) {
-        const nameRegex = new RegExp(name.replace(/[-]/g, '[ -]'), 'i');
-        $('img').each((_, img) => {
-          const alt = $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
-          const src = $(img).attr('src')?.toLowerCase() || '';
-          if (nameRegex.test(alt) || nameRegex.test(src)) {
-            posterUrl = $(img).attr('src');
-            return false;
-          }
-        });
+      const fuentes = isTenis
+        ? [
+            'https://www.movistarplus.es/deportes/tenis/donde-ver',
+            'https://www.movistarplus.es/deportes?conf=iptv',
+            'https://www.movistarplus.es/el-partido-movistarplus'
+          ]
+        : [
+            'https://www.movistarplus.es/deportes?conf=iptv',
+            'https://www.movistarplus.es/el-partido-movistarplus'
+          ];
+
+      for (const fuente of fuentes) {
+        posterUrl = await buscarPosterEnFuente(fuente, candidates);
         if (posterUrl) break;
       }
 
