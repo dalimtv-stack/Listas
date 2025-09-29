@@ -41,6 +41,7 @@ function eventoEsReciente(dia, hora, deporte, partido) {
     const ahora = DateTime.now().setZone('Europe/Madrid');
     const [dd, mm, yyyy] = (dia || '').split('/');
     const [hh, min] = (hora || '').split(':');
+
     const evento = DateTime.fromObject(
       {
         year: parseInt(yyyy || '0', 10),
@@ -52,35 +53,43 @@ function eventoEsReciente(dia, hora, deporte, partido) {
       { zone: 'Europe/Madrid' }
     );
 
-    const eventoISODate = evento.toISODate();
     const hoyISO = ahora.toISODate();
     const ayerISO = ahora.minus({ days: 1 }).toISODate();
     const mañanaISO = ahora.plus({ days: 1 }).toISODate();
 
-    const diffHorasPasado = ahora.diff(evento, 'hours').hours; // positivo si ya pasó
-    const diffHorasFuturo = evento.diff(ahora, 'hours').hours; // positivo si es futuro
+    const eventoISODate = evento.toISODate();
+    const diffHorasPasado = ahora.diff(evento, 'hours').hours; // + si ya pasó
+    const diffHorasFuturo = evento.diff(ahora, 'hours').hours; // + si es futuro
+
+    // Bordes del día de hoy (corte estricto hasta 23:59:59)
+    const inicioHoy = ahora.startOf('day');
+    const finHoy = ahora.endOf('day');
+    const dentroDeHoy =
+      evento.toMillis() >= inicioHoy.toMillis() &&
+      evento.toMillis() <= finHoy.toMillis();
 
     // HOY
-    if (eventoISODate === hoyISO) {
+    if (eventoISODate === hoyISO && dentroDeHoy) {
       if (ahora.hour < 3) {
-        // Entre 00:00 y 02:59 → mostrar todos
+        // 00:00–02:59 → mostrar todos los eventos de hoy
         return true;
       }
-      // Desde las 03:00 → excluir los que empezaron hace más de 3h
+      // Desde 03:00 → mostrar todos los eventos de hoy excepto los > 3h en el pasado
       return diffHorasPasado <= 3;
     }
 
-    // AYER
+    // AYER: solo si fue hace ≤ 2 horas
     if (eventoISODate === ayerISO) {
       return diffHorasPasado >= 0 && diffHorasPasado <= 2;
     }
 
-    // MAÑANA
+    // MAÑANA: solo si ahora ≥ 22:00 y empieza en ≤ 3h
     if (eventoISODate === mañanaISO) {
       if (ahora.hour < 22) return false;
       return diffHorasFuturo >= 0 && diffHorasFuturo <= 3;
     }
 
+    // El resto de días (Marca lista hasta el domingo) quedan fuera
     return false;
   } catch (e) {
     console.warn('[EVENTOS] Error en eventoEsReciente, descartando evento corrupto', e);
