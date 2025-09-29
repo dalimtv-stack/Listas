@@ -108,37 +108,32 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     return blobCached.url;
   }
 
-  const movistarCacheKey = `poster:${normalizeMatchName(partido)}`;
-  const cachedMovistar = await kvGetJson(movistarCacheKey);
+  let posterUrl;
+  try {
+    const isTenis = deporte?.toLowerCase() === 'tenis';
+    const candidates = generateFallbackNames(partido, competicion);
+    const fuentes = isTenis
+      ? [
+          'https://www.movistarplus.es/deportes/tenis/donde-ver',
+          'https://www.movistarplus.es/deportes?conf=iptv',
+          'https://www.movistarplus.es/el-partido-movistarplus'
+        ]
+      : [
+          'https://www.movistarplus.es/deportes?conf=iptv',
+          'https://www.movistarplus.es/el-partido-movistarplus'
+        ];
 
-  let posterUrl = cachedMovistar?.posterUrl;
-  if (!posterUrl) {
-    try {
-      const isTenis = deporte?.toLowerCase() === 'tenis';
-      const candidates = generateFallbackNames(partido, competicion);
-      const fuentes = isTenis
-        ? [
-            'https://www.movistarplus.es/deportes/tenis/donde-ver',
-            'https://www.movistarplus.es/deportes?conf=iptv',
-            'https://www.movistarplus.es/el-partido-movistarplus'
-          ]
-        : [
-            'https://www.movistarplus.es/deportes?conf=iptv',
-            'https://www.movistarplus.es/el-partido-movistarplus'
-          ];
-
-      for (const fuente of fuentes) {
-        posterUrl = await buscarPosterEnFuente(fuente, candidates);
-        if (posterUrl) break;
-      }
-
-      if (posterUrl?.startsWith('http')) {
-        console.info(`[Poster] Guardando póster scrapeado en KV: ${movistarCacheKey}`);
-        await kvSetJsonTTLIfChanged(movistarCacheKey, { posterUrl, createdAt: Date.now() }, 86400);
-      }
-    } catch (err) {
-      console.error('[Poster] Error scraping:', err.message);
+    for (const fuente of fuentes) {
+      posterUrl = await buscarPosterEnFuente(fuente, candidates);
+      if (posterUrl) break;
     }
+
+    if (posterUrl?.startsWith('http')) {
+      const movistarCacheKey = `poster:${normalizeMatchName(partido)}`;
+      await kvSetJsonTTLIfChanged(movistarCacheKey, { posterUrl, createdAt: Date.now() }, 86400);
+    }
+  } catch (err) {
+    console.error('[Poster] Error scraping:', err.message);
   }
 
   if (!posterUrl || !posterUrl.startsWith('http')) {
@@ -202,7 +197,6 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
     const blobUrl = await blobUpload.text();
     console.info(`[Poster] Imagen subida a Blob: ${blobUrl}`);
 
-    console.info(`[Poster] Guardando en KV Blob: ${blobKey}`);
     await kvSetJsonTTLIfChanged(blobKey, { url: blobUrl, createdAt: Date.now() }, 86400);
     return blobUrl;
   } catch (err) {
@@ -211,7 +205,29 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
   }
 }
 
+async function scrapePostersConcurrenciaLimitada(eventos, limite = 4) {
+  const resultados = [];
+  const cola = [...eventos];
+  const activos = [];
+
+  while (cola.length > 0 || activos.length > 0) {
+    while (activos.length < limite && cola.length > 0) {
+      const evento = cola.shift();
+      const promesa = scrapePosterForMatch(evento).then(url => {
+        evento.poster = url;
+        resultados.push(evento);
+      });
+      activos.push(promesa);
+    }
+    await Promise.race(activos);
+    activos.splice(0, activos.length, ...activos.filter(p => !p.isFulfilled));
+  }
+
+  return resultados;
+}
+
 module.exports = {
   scrapePosterForMatch,
+  scrapePostersConcurrenciaLimitada,
   generatePlaceholdPoster
 };
