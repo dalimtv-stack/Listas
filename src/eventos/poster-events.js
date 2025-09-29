@@ -17,14 +17,12 @@ function generatePlaceholdPoster({ hora }) {
   return `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(String(hora))}`;
 }
 
-// Cacheamos cualquier PNG que no sea placeholder
 function isCacheablePosterUrl(url) {
   return typeof url === 'string'
     && url.toLowerCase().endsWith('.png')
     && !url.includes('dummyimage.com');
 }
 
-// Normalizar a URL absoluta si viene como "posters/xxx.png"
 function normalizeBlobUrl(url) {
   if (!url) return null;
   if (url.startsWith('http')) return url;
@@ -91,8 +89,6 @@ async function buscarPosterEnFuente(url, candidates) {
   return null;
 }
 
-// --- KV helpers ---
-
 async function kvReadPostersHoyMap() {
   const data = await kvGetJsonTTL('postersBlobHoy');
   return data && typeof data === 'object' ? data : {};
@@ -102,8 +98,6 @@ async function kvWritePostersHoyMap(mergedMap) {
   await kvSetJsonTTL('postersBlobHoy', mergedMap, 86400);
   console.info(`[Poster] KV actualizado con ${Object.keys(mergedMap).length} entradas`);
 }
-
-// --- Generación de un póster con hora ---
 
 async function generatePosterWithHour({ partido, hora, deporte, competicion }) {
   let posterSourceUrl;
@@ -151,32 +145,46 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion }) {
   return isCacheablePosterUrl(finalUrl) ? finalUrl : generatePlaceholdPoster({ hora });
 }
 
-// --- API principal usada por scraper-events.js ---
-
-async function scrapePosterForMatch({ partido, hora, deporte, competicion }) {
+// ✅ Reutilizable en lote o individual
+async function scrapePosterForMatch({ partido, hora, deporte, competicion }, cacheMap = null) {
   const partidoNorm = normalizeMatchName(partido);
-
-  // Leer KV actual
-  let postersMap = await kvReadPostersHoyMap();
+  const postersMap = cacheMap || await kvReadPostersHoyMap();
   const cached = postersMap[partidoNorm];
   if (typeof cached === 'string' && cached.length > 0) {
     return cached;
   }
-
-  // Generar nuevo póster
   const url = await generatePosterWithHour({ partido, hora, deporte, competicion });
+  return url;
+}
 
-  if (isCacheablePosterUrl(url)) {
-    // Releer KV justo antes de escribir para evitar sobrescribir entradas de otras llamadas concurrentes
-    postersMap = await kvReadPostersHoyMap();
-    const merged = { ...postersMap, [partidoNorm]: url };
+// ✅ Procesamiento en lote usando scrapePosterForMatch
+async function scrapePostersForEventos(eventos) {
+  const postersMap = await kvReadPostersHoyMap();
+  const updates = {};
+
+  await Promise.all(eventos.map(async (evento, index) => {
+    const posterLabel = `Poster ${evento.partido}-${index}`;
+    console.time(posterLabel);
+    const url = await scrapePosterForMatch(evento, postersMap);
+    console.timeEnd(posterLabel);
+    evento.poster = url;
+
+    const partidoNorm = normalizeMatchName(evento.partido);
+    if (isCacheablePosterUrl(url)) {
+      updates[partidoNorm] = url;
+    }
+  }));
+
+  if (Object.keys(updates).length > 0) {
+    const merged = { ...postersMap, ...updates };
     await kvWritePostersHoyMap(merged);
   }
 
-  return url;
+  return eventos;
 }
 
 module.exports = {
   scrapePosterForMatch,
+  scrapePostersForEventos,
   generatePlaceholdPoster
 };
