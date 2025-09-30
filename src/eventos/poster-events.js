@@ -252,12 +252,12 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion, dia }
 
   return generatePlaceholdPoster({ hora });
 }
-// NUEVA FUNCIÓN para gestión en paralelo
+
+// ✅ Procesamiento en paralelo usando 2 funciones
 function buildPosterKey(ev) {
   return normalizeMatchName(`${ev.partido} ${ev.hora} ${ev.dia} ${ev.competicion}`);
 }
 
-// ✅ Procesamiento en paralelo usando la misma función
 async function scrapePostersForEventos(eventos) {
   const kvPayload = {};
 
