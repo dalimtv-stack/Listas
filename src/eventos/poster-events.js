@@ -108,18 +108,19 @@ async function buscarPosterEnFuente(url, candidates, eventoFecha = null) {
       const fechaTexto = $li.find('.mplus-collection__date').text();
       const fecha = parseFechaMovistar(fechaTexto);
 
-      const titulo =
-        $li.find('.mplus-collection__title-seo').text().trim() ||
-        $li.find('.mplus-collection__title a').text().trim() ||
-        img.attr('alt')?.trim() || '';
+      const tituloSeo = $li.find('.mplus-collection__title-seo').text().trim();
+      if (!tituloSeo || !src) return;
 
-      posters.push({ titulo, src, fecha });
+      posters.push({ titulo: tituloSeo, src, fecha });
     });
 
     for (const name of candidates) {
-      const nameRegex = new RegExp(name.replace(/[-]/g, '[ -]'), 'i');
+      const nameNorm = normalizeMatchName(name);
+      const regex = new RegExp(`\\b${nameNorm}\\b`, 'i');
+
       for (const p of posters) {
-        if (nameRegex.test(normalizeMatchName(p.titulo))) {
+        const tituloNorm = normalizeMatchName(p.titulo);
+        if (regex.test(tituloNorm)) {
           if (eventoFecha && p.fecha) {
             const diff = Math.abs(p.fecha.diff(eventoFecha, 'minutes').minutes);
             if (diff <= 5 && p.src?.startsWith('http')) {
