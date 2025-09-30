@@ -145,8 +145,15 @@ async function buscarPosterEnFuente(url, candidates, eventoFecha = null) {
 async function kvReadPostersHoyMap() {
   try {
     const data = await kvGetJsonTTL('postersBlobHoy');
-    console.info(`[Poster] KV leído: postersBlobHoy con ${Object.keys(data?.data || {}).length} entradas`);
-    return data && typeof data === 'object' ? data : { data: {}, timestamp: 0 };
+    console.info(`[Poster] KV leído: postersBlobHoy con ${Object.keys(data?.data || data || {}).length} entradas`);
+    // Manejar casos donde data es directamente el objeto de pósters o tiene la estructura { data, timestamp }
+    if (data && typeof data === 'object') {
+      if (data.data && typeof data.data === 'object') {
+        return { data: data.data, timestamp: data.timestamp || 0 };
+      }
+      return { data, timestamp: data.timestamp || 0 }; // Si data es directamente { key: url }
+    }
+    return { data: {}, timestamp: 0 };
   } catch (err) {
     console.error('[Poster] Error al leer KV postersBlobHoy:', err.message);
     return { data: {}, timestamp: 0 };
@@ -156,7 +163,8 @@ async function kvReadPostersHoyMap() {
 async function kvWritePostersHoyMap(mergedMap) {
   try {
     console.info(`[Poster] Intentando escribir en KV: ${Object.keys(mergedMap).length} entradas`, JSON.stringify(Object.keys(mergedMap)));
-    await kvSetJsonTTL('postersBlobHoy', mergedMap, 86400);
+    const dataToWrite = { data: mergedMap, timestamp: DateTime.now().setZone('Europe/Madrid').toMillis() };
+    await kvSetJsonTTL('postersBlobHoy', dataToWrite, 86400);
     console.info(`[Poster] KV actualizado con ${Object.keys(mergedMap).length} entradas`);
   } catch (err) {
     console.error('[Poster] Error al escribir en KV postersBlobHoy:', err.message);
@@ -258,8 +266,13 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
   return finalUrl;
 }
 
-function buildPosterKey(ev) {
-  return normalizeMatchName(`${ev.partido} ${ev.hora} ${ev.dia} ${ev.competicion}`);
+function buildPosterKey({ partido, hora, dia, competicion }) {
+  const parts = [partido, hora, dia, competicion].filter(part => part != null && part !== '');
+  if (parts.length === 0) {
+    console.warn('[Poster] No se pudo generar clave de póster: todos los campos son inválidos');
+    return normalizeMatchName(`${partido || 'unknown'} ${hora || '00:00'}`);
+  }
+  return normalizeMatchName(parts.join(' '));
 }
 
 async function scrapePosterForMatch({ partido, hora, deporte, competicion, dia }, cacheMap = null) {
