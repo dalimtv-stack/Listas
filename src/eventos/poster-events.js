@@ -288,7 +288,7 @@ async function scrapePostersForEventos(eventos) {
 
   // Verificar si postersBlobHoy es de antes de las 6:00 AM del día actual
   const now = DateTime.now().setZone('Europe/Madrid');
-  const today6AM = now.startOf('day').set({ hour: 6, minute: 0 });
+  const today6AM = now.startOf('day').set({ hour: 14, minute: 48 });
   const kvTimestamp = postersMap.timestamp ? DateTime.fromMillis(postersMap.timestamp, { zone: 'Europe/Madrid' }) : null;
 
   if (!kvTimestamp || kvTimestamp < today6AM) {
