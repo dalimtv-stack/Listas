@@ -145,15 +145,18 @@ async function buscarPosterEnFuente(url, candidates, eventoFecha = null) {
 async function kvReadPostersHoyMap() {
   try {
     const data = await kvGetJsonTTL('postersBlobHoy');
-    console.info(`[Poster] KV leído: postersBlobHoy con ${Object.keys(data?.data || data || {}).length} entradas`);
-    // Manejar casos donde data es directamente el objeto de pósters o tiene la estructura { data, timestamp }
-    if (data && typeof data === 'object') {
-      if (data.data && typeof data.data === 'object') {
-        return { data: data.data, timestamp: data.timestamp || 0 };
-      }
-      return { data, timestamp: data.timestamp || 0 }; // Si data es directamente { key: url }
+    console.info('[Poster] Valor crudo de kvGetJsonTTL:', JSON.stringify(data));
+    if (!data || typeof data !== 'object') {
+      console.info('[Poster] KV vacío o inválido, devolviendo datos por defecto');
+      return { data: {}, timestamp: 0 };
     }
-    return { data: {}, timestamp: 0 };
+    // Manejar estructura { data: { ... }, timestamp: number } o { key: url, ... }
+    const result = {
+      data: data.data && typeof data.data === 'object' ? data.data : (Object.keys(data).length > 0 ? data : {}),
+      timestamp: typeof data.timestamp === 'number' ? data.timestamp : 0
+    };
+    console.info(`[Poster] KV leído: postersBlobHoy con ${Object.keys(result.data).length} entradas, timestamp: ${result.timestamp}`);
+    return result;
   } catch (err) {
     console.error('[Poster] Error al leer KV postersBlobHoy:', err.message);
     return { data: {}, timestamp: 0 };
@@ -305,9 +308,11 @@ async function scrapePostersForEventos(eventos) {
   const kvTimestamp = postersMap.timestamp ? DateTime.fromMillis(postersMap.timestamp, { zone: 'Europe/Madrid' }) : null;
 
   if (!kvTimestamp || kvTimestamp < today6AM) {
-    console.info(`[Poster] postersBlobHoy obsoleto (timestamp: ${kvTimestamp?.toISO() || 'ninguno'}). Limpiando y regenerando.`);
+    console.info(`[Poster] postersBlobHoy obsoleto (timestamp: ${kvTimestamp?.toISO() || 'ninguno'}, today6AM: ${today6AM.toISO()}). Limpiando y regenerando.`);
     postersMap = { data: {}, timestamp: now.toMillis() };
     await kvWritePostersHoyMap(postersMap.data); // Limpiar KV
+  } else {
+    console.info(`[Poster] postersBlobHoy actual (timestamp: ${kvTimestamp.toISO()})`);
   }
 
   const updates = {};
