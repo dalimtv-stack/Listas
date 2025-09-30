@@ -228,7 +228,7 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion }, cac
     return postersMap[partidoNorm];
   }
 
-  const url = await generatePosterWithHour({ partido, hora, deporte, competicion });
+  const url = await generatePosterWithHour({ partido, hora, deporte, competicion, dia });
 
   if (isCacheablePosterUrl(url)) {
     const updatedMap = { ...postersMap, [partidoNorm]: url };
@@ -253,7 +253,13 @@ async function scrapePostersForEventos(eventos) {
   for (const evento of eventosSinPoster) {
     const posterLabel = `Poster ${evento.partido}`;
     console.time(posterLabel);
-    const url = await generatePosterWithHour(evento);
+    const url = await generatePosterWithHour({
+      partido: evento.partido,
+      hora: evento.hora,
+      deporte: evento.deporte,
+      competicion: evento.competicion,
+      dia: evento.dia
+    });
     console.timeEnd(posterLabel);
 
     const partidoNorm = normalizeMatchName(evento.partido);
