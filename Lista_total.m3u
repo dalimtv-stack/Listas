@@ -25,16 +25,12 @@ acestream://b2a4d1eba9b46df5f52a87105df779f9d39abeb4
 acestream://56ac8e227d526e722624675ccdd91b0cc850582f
 
 # https://bit.ly/CanallaligadeDiego
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://stremio.shickat.me/Images/Channels/LALIGA.jpg" group-title="VLC", Movistar LaLiga
-http://vlc.shickat.me:8000/pid/107c3ce5a5d2527c9f06e4eab87477201791f231/stream.mp4
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="daddylivestream", Movistar LaLiga
-https://world-proxifier.xyz/ddy/p/XSQhJT0FNygtXl5RW08kNElTLF0gJCQvLygtXl5ROjgvX0hfIl8DBydSKUklOV8GIh4=/index.m3u8
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://stremio.shickat.me/Images/Channels/LALIGA.jpg" group-title="Telegram", Movistar LaLiga
 http://172.93.102.112:8989/278844_.m3u8
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="daddylivestream", Movistar LaLiga
+https://world-proxifier.xyz/ddy/p/XSQhJT0FNygtXl5RW08kNElTLF0gJCQvLygtXl5ROjgvX0hfIl8DBydSKUklOV8GIh4=/index.m3u8
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://i.imgur.com/26c7mQb.png" group-title="7pal.short.gy",Movistar LaLiga (UHD) 
 https://7pal.short.gy/mplusuhd
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="daddylivestream", Movistar LaLiga (Web)
-https://daddylivestream.com/embed/stream-436.php
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="Elcano.top", Movistar LaLiga (1080 MultiAudio)
 acestream://c9321006921967d6258df6945f1d598a5c0cbf1e
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" group-title="Elcano.top", Movistar LaLiga (1080 MultiAudio) (Opcion 2)
@@ -102,8 +98,6 @@ acestream://51dbbfb42f8091e4ea7a2186b566a40e780953d9
 
 # https://i.imgur.com/champions-league-logo.png
 # https://comparaiso.es/sites/comparaiso.es/files/styles/_default/public/images/movistar-liga-campeones-200x300.png
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://stremio.shickat.me/Images/Channels/LIGADECAMPEONES.jpg" group-title="VLC", Movistar Liga de Campeones
-http://vlc.shickat.me:8000/pid/0f7842f8b6c26571e5a974407b61623e56e6a052/stream.mp4
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://stremio.shickat.me/Images/Channels/LIGADECAMPEONES.jpg" group-title="Telegram", Movistar Liga de Campeones
 http://172.93.102.112:8989/278845_.m3u8
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/MREALMP3352101" group-title="Elcano.top", Movistar Liga de Campeones (1080)
@@ -191,6 +185,8 @@ acestream://753d4b1f7c4ef43238b5cf23b05572b550a44eee
 
 #EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="Telegram", DAZN 1
 http://172.93.102.112:8989/278822_.m3u8
+#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="Telegram", DAZN 1
+http://172.93.102.112:8989/278823_.m3u8
 #EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="daddylivestream", DAZN 1
 https://world-proxifier.xyz/ddy/p/XSQhJT0FNygtXl5RW08kNElTLF0gJCQvLygtXl5ROjgvX0hfIl8HBx0yVzZaJDxaBj8L/index.m3u8
 #EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="Elcano.top", DAZN 1
@@ -211,7 +207,9 @@ acestream://35c7f0c966ecde3390f4510bb4caded40018c07a
 acestream://d5b2c6b940cf3df5e8f9dc6f000f0ea23a10b151
 
 #EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="Telegram", DAZN 2
-http://172.93.102.112:8989/278822_.m3u8
+http://172.93.102.112:8989/278824_.m3u8
+#EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="Telegram", DAZN 2
+http://172.93.102.112:8989/278825_.m3u8
 #EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="daddylivestream", DAZN 2
 https://world-proxifier.xyz/ddy/p/XSQhJT0FNyguUl0kW08kNElTLF0gJCQvLyguUl0kOjgvX0hfIl8HBxwyVzZaJDxaBj8L/index.m3u8
 #EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="Elcano.top", DAZN 2
@@ -703,6 +701,8 @@ https://d1cctoeg0n48w5.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68
 https://rtvelivestream.rtve.es/rtvesec/tdp/tdp_main.m3u8
 #EXTINF:-1 tvg-id="TDP.TV" tvg-logo="https://graph.facebook.com/teledeporteRTVE/picture?width=200&height=200",Teledeporte (720)
 https://ztnr.rtve.es/ztnr/1712295.m3u8
+#EXTINF:-1 tvg-id="TDP.TV" tvg-logo="https://graph.facebook.com/teledeporteRTVE/picture?width=200&height=200",Teledeporte (720)
+http://172.93.102.112:8989/278848_.m3u8
 
 
 #EXTINF:-1 tvg-id="Prueba" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS" group-title="Prueba", Canal de pruebas
@@ -743,6 +743,8 @@ http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fzekonew.newkso.ru%2Fzeko%2F
 http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fzekonew.newkso.ru%2Fzeko%2Fpremium519%2Fmono.m3u8&data=T3JpZ2luPWh0dHBzOi8vZm9yY2VkdG9wbGF5Lnh5enxSZWZlcmVyPWh0dHBzOi8vZm9yY2VkdG9wbGF5Lnh5ei98VXNlci1hZ2VudD1Nb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0OyBydjoxMzkuMCkgR2Vja28vMjAxMDAxMDEgRmlyZWZveC8xMzkuMA%3D%3D
 #EXTINF:-1 tvg-id="Prueba" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS" group-title="Prueba", Canal de pruebas
 http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fzekonew.newkso.ru%2Fzeko%2Fpremium520%2Fmono.m3u8&data=T3JpZ2luPWh0dHBzOi8vZm9yY2VkdG9wbGF5Lnh5enxSZWZlcmVyPWh0dHBzOi8vZm9yY2VkdG9wbGF5Lnh5ei98VXNlci1hZ2VudD1Nb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0OyBydjoxMzkuMCkgR2Vja28vMjAxMDAxMDEgRmlyZWZveC8xMzkuMA%3D%3D
+#EXTINF:-1 tvg-id="Prueba" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS" group-title="Prueba", Canal de pruebas
+http://172.93.102.112:8989/279202_.m3u8
 
 #EXTINF:-1 tvg-id="Prueba 2" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS" group-title="Prueba", Canal de pruebas 2
 http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fzekonew.newkso.ru%2Fzeko%2Fpremium502%2Fmono.m3u8&data=T3JpZ2luPWh0dHBzOi8vZm9yY2VkdG9wbGF5Lnh5enxSZWZlcmVyPWh0dHBzOi8vZm9yY2VkdG9wbGF5Lnh5ei98VXNlci1hZ2VudD1Nb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0OyBydjoxMzkuMCkgR2Vja28vMjAxMDAxMDEgRmlyZWZveC8xMzkuMA%3D%3D
