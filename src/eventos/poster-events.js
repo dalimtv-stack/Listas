@@ -101,19 +101,25 @@ async function buscarPosterEnFuente(url, candidates, eventoFecha = null) {
     const $ = cheerio.load(html);
 
     const posters = [];
-    $('li').each((_, li) => {
-      const img = $(li).find('img');
-      const alt = img.attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+    $('.mplus-collection__content li').each((_, li) => {
+      const $li = $(li);
+      const img = $li.find('.mplus-collection__image img');
       const src = img.attr('src');
-      const fechaTexto = $(li).find('.mplus-collection__date').text();
+      const fechaTexto = $li.find('.mplus-collection__date').text();
       const fecha = parseFechaMovistar(fechaTexto);
-      posters.push({ alt, src, fecha });
+
+      const titulo =
+        $li.find('.mplus-collection__title-seo').text().trim() ||
+        $li.find('.mplus-collection__title a').text().trim() ||
+        img.attr('alt')?.trim() || '';
+
+      posters.push({ titulo, src, fecha });
     });
 
     for (const name of candidates) {
       const nameRegex = new RegExp(name.replace(/[-]/g, '[ -]'), 'i');
       for (const p of posters) {
-        if (nameRegex.test(p.alt)) {
+        if (nameRegex.test(normalizeMatchName(p.titulo))) {
           if (eventoFecha && p.fecha) {
             const diff = Math.abs(p.fecha.diff(eventoFecha, 'minutes').minutes);
             if (diff <= 5 && p.src?.startsWith('http')) {
