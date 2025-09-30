@@ -1,25 +1,24 @@
 // src/eventos/catalog-events.js
-'use strict';
-
-const { fetchEventos } = require('./scraper-events');
-const { normalizeId } = require('./utils-events');
-const { kvGetJson } = require('../../api/kv');
-
 async function getCatalog(configId) {
+  console.time(`[CATALOG EVENTS] Generación catálogo ${configId}`);
+
   const configData = await kvGetJson(configId);
   const url = configData?.eventosUrl;
-  if (!url) return [];
+  if (!url) {
+    console.timeEnd(`[CATALOG EVENTS] Generación catálogo ${configId}`);
+    return [];
+  }
 
   const eventos = await fetchEventos(url);
-  return eventos.map(ev => ({
+  const catalogo = eventos.map(ev => ({
     id: `Heimdallr_evt_${configId}_${normalizeId(ev)}`,
     type: 'tv',
     name: `${ev.partido} (${ev.deporte})`,
     poster: ev.poster || `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(ev.hora)}`,
     description: `${ev.hora} · ${ev.dia} · ${ev.competicion} (${ev.deporte})`,
-    //description: `${ev.dia} ${ev.hora} - ${ev.competicion} (${ev.deporte})`,
     background: null
   }));
-}
 
-module.exports = { getCatalog };
+  console.timeEnd(`[CATALOG EVENTS] Generación catálogo ${configId}`);
+  return catalogo;
+}
