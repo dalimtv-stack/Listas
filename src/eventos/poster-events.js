@@ -15,7 +15,7 @@ function normalizeMatchName(matchName) {
 }
 
 function generatePlaceholdPoster({ hora }) {
-  return `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(String(hora))}`;
+  return `https://dummyimage.com/300x450/000000/ffffff.png&text=${encodeURIComponent(String(hora))}`;
 }
 
 function isCacheablePosterUrl(url) {
