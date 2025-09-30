@@ -4,6 +4,7 @@
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 const { kvGetJsonTTL, kvSetJsonTTL } = require('../../api/kv');
+const { DateTime } = require('luxon');
 
 function normalizeMatchName(matchName) {
   return String(matchName)
@@ -61,26 +62,68 @@ function generateFallbackNames(original, context = '') {
   return [...new Set(variants)];
 }
 
-async function buscarPosterEnFuente(url, candidates) {
+function parseFechaMovistar(texto, ahoraDT = DateTime.now().setZone('Europe/Madrid')) {
+  if (!texto) return null;
+  texto = texto.trim().toLowerCase();
+
+  let base;
+  if (texto.startsWith('hoy')) {
+    base = ahoraDT.startOf('day');
+    texto = texto.replace('hoy -', '').trim();
+  } else if (texto.startsWith('mañana')) {
+    base = ahoraDT.plus({ days: 1 }).startOf('day');
+    texto = texto.replace('mañana -', '').trim();
+  } else {
+    const m = texto.match(/(\d{1,2})\/(\d{1,2})\s*-\s*(\d{1,2}):(\d{2})h/);
+    if (m) {
+      const [_, dd, mm, hh, min] = m;
+      return DateTime.fromObject(
+        { year: ahoraDT.year, month: parseInt(mm), day: parseInt(dd), hour: parseInt(hh), minute: parseInt(min) },
+        { zone: 'Europe/Madrid' }
+      );
+    }
+  }
+
+  const m2 = texto.match(/(\d{1,2}):(\d{2})h/);
+  if (base && m2) {
+    const [_, hh, min] = m2;
+    return base.set({ hour: parseInt(hh), minute: parseInt(min) });
+  }
+
+  return null;
+}
+
+async function buscarPosterEnFuente(url, candidates, eventoFecha = null) {
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const html = await res.text();
     const $ = cheerio.load(html);
+
+    const posters = [];
+    $('li').each((_, li) => {
+      const img = $(li).find('img');
+      const alt = img.attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+      const src = img.attr('src');
+      const fechaTexto = $(li).find('.mplus-collection__date').text();
+      const fecha = parseFechaMovistar(fechaTexto);
+      posters.push({ alt, src, fecha });
+    });
+
     for (const name of candidates) {
       const nameRegex = new RegExp(name.replace(/[-]/g, '[ -]'), 'i');
-      let encontrado = null;
-      $('img').each((_, img) => {
-        const alt = $(img).attr('alt')?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
-        const src = $(img).attr('src')?.toLowerCase() || '';
-        if (nameRegex.test(alt) || nameRegex.test(src)) {
-          encontrado = $(img).attr('src');
-          return false;
+      for (const p of posters) {
+        if (nameRegex.test(p.alt)) {
+          if (eventoFecha && p.fecha) {
+            const diff = Math.abs(p.fecha.diff(eventoFecha, 'minutes').minutes);
+            if (diff <= 5 && p.src?.startsWith('http')) {
+              console.info(`[Poster] Coincidencia encontrada en ${url} → ${p.src}`);
+              return p.src;
+            }
+          } else if (p.src?.startsWith('http')) {
+            return p.src;
+          }
         }
-      });
-      if (encontrado?.startsWith('http')) {
-        console.info(`[Poster] Coincidencia encontrada en ${url} → ${encontrado}`);
-        return encontrado;
       }
     }
   } catch (err) {
@@ -99,7 +142,7 @@ async function kvWritePostersHoyMap(mergedMap) {
   console.info(`[Poster] KV actualizado con ${Object.keys(mergedMap).length} entradas`);
 }
 
-async function generatePosterWithHour({ partido, hora, deporte, competicion }) {
+async function generatePosterWithHour({ partido, hora, deporte, competicion, dia }) {
   let posterSourceUrl;
   try {
     const isTenis = deporte?.toLowerCase() === 'tenis';
@@ -114,8 +157,15 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion }) {
           'https://www.movistarplus.es/deportes?conf=iptv',
           'https://www.movistarplus.es/el-partido-movistarplus'
         ];
+
+    // Construir DateTime del evento
+    let eventoFecha = null;
+    if (dia && hora) {
+      eventoFecha = DateTime.fromFormat(`${dia} ${hora}`, 'dd/MM/yyyy HH:mm', { zone: 'Europe/Madrid' });
+    }
+
     for (const fuente of fuentes) {
-      posterSourceUrl = await buscarPosterEnFuente(fuente, candidates);
+      posterSourceUrl = await buscarPosterEnFuente(fuente, candidates, eventoFecha);
       if (posterSourceUrl) break;
     }
   } catch (err) {
