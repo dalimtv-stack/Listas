@@ -266,7 +266,7 @@ async function scrapePostersForEventos(eventos) {
     resultados.map(({ id, url }) => [id, url])
   );
 
-  await kvSetJson('postersBlobHoy', kvPayload);
+  await kvSetJsonTTL('postersBlobHoy', kvPayload);
   console.info(`[Poster] KV actualizado con ${resultados.length} entradas`);
 }
 
