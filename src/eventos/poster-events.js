@@ -174,10 +174,17 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
         'https://www.movistarplus.es/el-partido-movistarplus'
       ];
     } else if (isFutbol) {
-      fuentes = [
-        'https://www.movistarplus.es/el-partido-movistarplus',
-        'https://www.movistarplus.es/deportes?conf=iptv'
-      ];
+      const comp = (competicion || '').toLowerCase();
+      const isYouth = /youth|sub-21|juvenil/i.test(comp);
+      fuentes = isYouth
+        ? [
+            'https://www.movistarplus.es/deportes?conf=iptv',
+            'https://www.movistarplus.es/el-partido-movistarplus'
+          ]
+        : [
+            'https://www.movistarplus.es/el-partido-movistarplus',
+            'https://www.movistarplus.es/deportes?conf=iptv'
+          ];
     } else {
       fuentes = [
         'https://www.movistarplus.es/deportes?conf=iptv',
