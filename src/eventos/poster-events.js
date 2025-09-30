@@ -143,14 +143,25 @@ async function buscarPosterEnFuente(url, candidates, eventoFecha = null) {
 }
 
 async function kvReadPostersHoyMap() {
-  const data = await kvGetJsonTTL('postersBlobHoy');
-  console.info(`[Poster] KV leído: postersBlobHoy con ${Object.keys(data || {}).length} entradas`);
-  return data && typeof data === 'object' ? data : {};
+  try {
+    const data = await kvGetJsonTTL('postersBlobHoy');
+    console.info(`[Poster] KV leído: postersBlobHoy con ${Object.keys(data?.data || {}).length} entradas`);
+    return data && typeof data === 'object' ? data : { data: {}, timestamp: 0 };
+  } catch (err) {
+    console.error('[Poster] Error al leer KV postersBlobHoy:', err.message);
+    return { data: {}, timestamp: 0 };
+  }
 }
 
 async function kvWritePostersHoyMap(mergedMap) {
-  await kvSetJsonTTL('postersBlobHoy', mergedMap, 86400);
-  console.info(`[Poster] KV actualizado con ${Object.keys(mergedMap).length} entradas`);
+  try {
+    console.info(`[Poster] Intentando escribir en KV: ${Object.keys(mergedMap).length} entradas`, JSON.stringify(Object.keys(mergedMap)));
+    await kvSetJsonTTL('postersBlobHoy', mergedMap, 86400);
+    console.info(`[Poster] KV actualizado con ${Object.keys(mergedMap).length} entradas`);
+  } catch (err) {
+    console.error('[Poster] Error al escribir en KV postersBlobHoy:', err.message);
+    throw err;
+  }
 }
 
 async function generatePosterWithHour({ partido, hora, deporte, competicion, dia }) {
@@ -273,55 +284,28 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion, dia }
 
 async function scrapePostersForEventos(eventos) {
   console.info(`[Poster] Iniciando procesamiento de ${eventos.length} eventos`);
-  const postersMap = await kvReadPostersHoyMap();
-  const updates = {};
-  const resultados = [];
+  let postersMap = await kvReadPostersHoyMap();
 
-  await Promise.all(
-    eventos.map(async ev => {
-      const key = buildPosterKey(ev);
-      let posterUrl;
+  // Verificar si postersBlobHoy es de antes de las 6:00 AM del día actual
+  const now = DateTime.now().setZone('Europe/Madrid');
+  const today6AM = now.startOf('day').set({ hour: 6, minute: 0 });
+  const kvTimestamp = postersMap.timestamp ? DateTime.fromMillis(postersMap.timestamp, { zone: 'Europe/Madrid' }) : null;
 
-      if (isCacheablePosterUrl(postersMap[key])) {
-        console.info(`[Poster] Usando póster cacheado para ${ev.partido} (${key}): ${postersMap[key]}`);
-        posterUrl = postersMap[key];
-      } else {
-        console.time(`Poster ${ev.partido}`);
-        posterUrl = await generatePosterWithHour({
-          partido: ev.partido,
-          hora: ev.hora,
-          deporte: ev.deporte,
-          competicion: ev.competicion,
-          dia: ev.dia
-        });
-        console.timeEnd(`Poster ${ev.partido}`);
-        if (isCacheablePosterUrl(posterUrl)) {
-          updates[key] = posterUrl;
-        }
-      }
-
-      resultados.push({ ...ev, poster: posterUrl });
-    })
-  );
-
-  if (Object.keys(updates).length > 0) {
-    const merged = { ...postersMap, ...updates };
-    await kvWritePostersHoyMap(merged);
+  if (!kvTimestamp || kvTimestamp < today6AM) {
+    console.info(`[Poster] postersBlobHoy obsoleto (timestamp: ${kvTimestamp?.toISO() || 'ninguno'}). Limpiando y regenerando.`);
+    postersMap = { data: {}, timestamp: now.toMillis() };
+    await kvWritePostersHoyMap(postersMap.data); // Limpiar KV
   }
 
-  console.info(`[Poster] Procesamiento completado, ${resultados.length} eventos con posters`);
-  return resultados;
-}
-// ✅ Procesamiento en lote usando la misma función
-async function VIEJOscrapePostersForEventos(eventos) {
-  const postersMap = await kvReadPostersHoyMap();
   const updates = {};
   const resultados = [];
 
   const eventosSinPoster = eventos.filter(ev => {
-    const partidoNorm = normalizeMatchName(`${ev.partido} ${ev.hora} ${ev.dia} ${ev.competicion}`);
-    return !isCacheablePosterUrl(postersMap[partidoNorm]);
+    const partidoNorm = buildPosterKey(ev);
+    return !isCacheablePosterUrl(postersMap.data[partidoNorm]);
   });
+
+  console.info(`[Poster] Procesando ${eventosSinPoster.length} eventos sin póster cacheado`);
 
   for (const evento of eventosSinPoster) {
     const posterLabel = `Poster ${evento.partido}`;
@@ -335,7 +319,7 @@ async function VIEJOscrapePostersForEventos(eventos) {
     });
     console.timeEnd(posterLabel);
 
-    const partidoNorm = normalizeMatchName(`${evento.partido} ${evento.hora} ${evento.dia} ${evento.competicion}`);
+    const partidoNorm = buildPosterKey(evento);
     if (isCacheablePosterUrl(url)) {
       updates[partidoNorm] = url;
     }
@@ -345,19 +329,21 @@ async function VIEJOscrapePostersForEventos(eventos) {
   }
 
   if (Object.keys(updates).length > 0) {
-    const merged = { ...postersMap, ...updates };
+    const merged = { ...postersMap.data, ...updates };
     await kvWritePostersHoyMap(merged);
   }
 
   const eventosConPosterPrevio = eventos.filter(ev => {
-    const partidoNorm = normalizeMatchName(`${ev.partido} ${ev.hora} ${ev.dia} ${ev.competicion}`);
-    return isCacheablePosterUrl(postersMap[partidoNorm]);
+    const partidoNorm = buildPosterKey(ev);
+    return isCacheablePosterUrl(postersMap.data[partidoNorm]);
   }).map(ev => ({
     ...ev,
-    poster: postersMap[normalizeMatchName(`${ev.partido} ${ev.hora} ${ev.dia} ${ev.competicion}`)]
+    poster: postersMap.data[buildPosterKey(ev)]
   }));
 
-  return [...eventosConPosterPrevio, ...resultados];
+  const finalResultados = [...eventosConPosterPrevio, ...resultados];
+  console.info(`[Poster] Procesamiento completado, ${finalResultados.length} eventos con pósters`);
+  return finalResultados;
 }
 
 module.exports = {
