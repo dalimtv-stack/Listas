@@ -210,9 +210,9 @@ async function fetchEventos(url) {
   // Normalizar horas y preparar campo de orden
   eventos.forEach(ev => {
     let hora = ev.hora || '';
-    // Asegurar formato HH:mm
+    // Asegurar formato HH:mm (ej. "8:50" -> "08:50")
     if (/^\d{1}:\d{2}$/.test(hora)) {
-      hora = '0' + hora; // "8:50" -> "08:50"
+      hora = '0' + hora;
     }
     if (!/^\d{2}:\d{2}$/.test(hora)) {
       hora = '99:99'; // marcador para "sin hora"
