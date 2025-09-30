@@ -249,7 +249,7 @@ function crearFallback(hoyISO) {
     competicion: texto,
     partido: texto,
     canales: [],
-    poster: `https://dummyimage.com/300x450/000/fff&text=${encodeURIComponent(texto)}`
+    poster: `https://dummyimage.com/300x450/000000/ffffff.png&text=${encodeURIComponent(texto)}`
   };
 }
 
