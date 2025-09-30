@@ -207,28 +207,35 @@ async function fetchEventos(url) {
     return [crearFallback(hoyISO)];
   }
 
-  // Normalizar horas y preparar campo de orden
+  // Ordenar cronológicamente ANTES de pedir posters
   eventos.forEach(ev => {
     let [dd, mm, yyyy] = ev.dia.split('/');
     let [hh, min] = (ev.hora || '').split(':');
-  
-    // fallback si falta algo
-    dd = dd || '01';
-    mm = mm || '01';
-    yyyy = yyyy || new Date().getFullYear();
+    dd = dd || '01'; mm = mm || '01'; yyyy = yyyy || new Date().getFullYear();
     hh = hh && /^\d+$/.test(hh) ? hh.padStart(2, '0') : '99';
     min = min && /^\d+$/.test(min) ? min.padStart(2, '0') : '99';
-  
     ev._orden = DateTime.fromISO(`${yyyy}-${mm}-${dd}T${hh}:${min}`, { zone: 'Europe/Madrid' });
   });
   
-  // Ordenar por el campo _orden
   eventos.sort((a, b) => a._orden.toMillis() - b._orden.toMillis());
-  
-  // Limpiar el campo auxiliar
   eventos.forEach(ev => delete ev._orden);
   
-  const eventosConPoster = await scrapePostersForEventos(eventos);
+  // Pasar a posters
+  let eventosConPoster = await scrapePostersForEventos(eventos);
+  
+  // ⚠️ Reordenar otra vez por si scrapePostersForEventos desordena
+  eventosConPoster.forEach(ev => {
+    let [dd, mm, yyyy] = ev.dia.split('/');
+    let [hh, min] = (ev.hora || '').split(':');
+    dd = dd || '01'; mm = mm || '01'; yyyy = yyyy || new Date().getFullYear();
+    hh = hh && /^\d+$/.test(hh) ? hh.padStart(2, '0') : '99';
+    min = min && /^\d+$/.test(min) ? min.padStart(2, '0') : '99';
+    ev._orden = DateTime.fromISO(`${yyyy}-${mm}-${dd}T${hh}:${min}`, { zone: 'Europe/Madrid' });
+  });
+  
+  eventosConPoster.sort((a, b) => a._orden.toMillis() - b._orden.toMillis());
+  eventosConPoster.forEach(ev => delete ev._orden);
+  
   return eventosConPoster;
 }
 
