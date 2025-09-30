@@ -131,7 +131,15 @@ async function fetchEventos(url) {
 
     console.info('[EVENTOS] Estructura detectada: daylist / dailyevent');
     bloques.each((_, li) => {
-      const fechaTexto = $(li).find('.title-section-widget').text().trim();
+      // Quita el <strong> con el día de la semana y deja solo la fecha
+      const fechaTexto = $(li)
+        .find('.title-section-widget')
+        .clone()
+        .children('strong')
+        .remove()
+        .end()
+        .text()
+        .trim();
       const fechaISO = parseFechaMarca(fechaTexto, ahoraDT.year);
       if (!fechaISO) return;
     
