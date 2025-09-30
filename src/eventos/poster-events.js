@@ -227,8 +227,8 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
 }
 
 // ✅ Única función reutilizable
-async function scrapePosterForMatch({ partido, hora, deporte, competicion }, cacheMap = null) {
-  const partidoNorm = normalizeMatchName(partido);
+async function scrapePosterForMatch({ partido, hora, deporte, competicion, dia }, cacheMap = null) {
+  const partidoNorm = normalizeMatchName(`${partido} ${hora} ${dia} ${competicion}`);
   const postersMap = cacheMap || await kvGetJsonTTL('postersBlobHoy') || {};
 
   if (typeof postersMap[partidoNorm] === 'string' && postersMap[partidoNorm].length > 0) {
@@ -253,7 +253,7 @@ async function scrapePostersForEventos(eventos) {
   const resultados = [];
 
   const eventosSinPoster = eventos.filter(ev => {
-    const partidoNorm = normalizeMatchName(ev.partido);
+    const partidoNorm = normalizeMatchName(`${ev.partido} ${ev.hora} ${ev.dia} ${ev.competicion}`);
     return !isCacheablePosterUrl(postersMap[partidoNorm]);
   });
 
@@ -269,7 +269,7 @@ async function scrapePostersForEventos(eventos) {
     });
     console.timeEnd(posterLabel);
 
-    const partidoNorm = normalizeMatchName(evento.partido);
+    const partidoNorm = normalizeMatchName(`${evento.partido} ${evento.hora} ${evento.dia} ${evento.competicion}`);
     if (isCacheablePosterUrl(url)) {
       updates[partidoNorm] = url;
     }
@@ -283,13 +283,12 @@ async function scrapePostersForEventos(eventos) {
     await kvWritePostersHoyMap(merged);
   }
 
-  // Añadir los eventos que ya tenían póster en KV
   const eventosConPosterPrevio = eventos.filter(ev => {
-    const partidoNorm = normalizeMatchName(ev.partido);
+    const partidoNorm = normalizeMatchName(`${ev.partido} ${ev.hora} ${ev.dia} ${ev.competicion}`);
     return isCacheablePosterUrl(postersMap[partidoNorm]);
   }).map(ev => ({
     ...ev,
-    poster: postersMap[normalizeMatchName(ev.partido)]
+    poster: postersMap[normalizeMatchName(`${ev.partido} ${ev.hora} ${ev.dia} ${ev.competicion}`)]
   }));
 
   return [...eventosConPosterPrevio, ...resultados];
