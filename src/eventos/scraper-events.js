@@ -207,7 +207,6 @@ async function fetchEventos(url) {
     return [crearFallback(hoyISO)];
   }
 
-  const eventosConPoster = await scrapePostersForEventos(eventos);
   eventos.sort((a, b) => {
     const fechaA = DateTime.fromFormat(`${a.dia} ${a.hora}`, 'dd/MM/yyyy HH:mm', { zone: 'Europe/Madrid' });
     const fechaB = DateTime.fromFormat(`${b.dia} ${b.hora}`, 'dd/MM/yyyy HH:mm', { zone: 'Europe/Madrid' });
