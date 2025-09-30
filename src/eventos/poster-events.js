@@ -147,6 +147,7 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
   try {
     const sport = (deporte || '').toLowerCase();
     const isTenis = sport === 'tenis';
+    const isBaloncesto = sport === 'baloncesto';
     const isFutbol = sport === 'futbol' || sport === 'fútbol';
 
     const candidates = generateFallbackNames(partido, competicion);
@@ -156,6 +157,12 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
     if (isTenis) {
       fuentes = [
         'https://www.movistarplus.es/deportes/tenis/donde-ver',
+        'https://www.movistarplus.es/deportes?conf=iptv',
+        'https://www.movistarplus.es/el-partido-movistarplus'
+      ];
+    } else if (isBaloncesto) {
+      fuentes = [
+        'https://www.movistarplus.es/deportes/baloncesto?conf=iptv',
         'https://www.movistarplus.es/deportes?conf=iptv',
         'https://www.movistarplus.es/el-partido-movistarplus'
       ];
