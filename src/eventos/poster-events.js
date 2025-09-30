@@ -252,22 +252,27 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion, dia }
 
   return generatePlaceholdPoster({ hora });
 }
+// NUEVA FUNCIÓN para gestión en paralelo
+function buildPosterKey(ev) {
+  return normalizeMatchName(`${ev.partido} ${ev.hora} ${ev.dia} ${ev.competicion}`);
+}
 
 // ✅ Procesamiento en paralelo usando la misma función
 async function scrapePostersForEventos(eventos) {
-  const resultados = await Promise.all(
+  const kvPayload = {};
+
+  await Promise.all(
     eventos.map(async ev => {
       const posterUrl = await generatePosterWithHour(ev);
-      return { id: ev.id, url: posterUrl };
+      const key = buildPosterKey(ev);
+      if (isCacheablePosterUrl(posterUrl)) {
+        kvPayload[key] = posterUrl;
+      }
     })
   );
 
-  const kvPayload = Object.fromEntries(
-    resultados.map(({ id, url }) => [id, url])
-  );
-
   await kvSetJsonTTL('postersBlobHoy', kvPayload);
-  console.info(`[Poster] KV actualizado con ${resultados.length} entradas`);
+  console.info(`[Poster] KV actualizado con ${Object.keys(kvPayload).length} entradas`);
 }
 
 // ✅ Procesamiento en lote usando la misma función
