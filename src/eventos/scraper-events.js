@@ -4,7 +4,8 @@
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 const iconv = require('iconv-lite');
-const { scrapePostersForEventos } = require('./poster-events');
+const { scrapePostersConcurrenciaLimitada } = require('./poster-events');
+const { kvGetJsonTTL } = require('../../api/kv');
 const { DateTime } = require('luxon');
 
 function parseFechaMarca(texto, añoPorDefecto) {
@@ -14,21 +15,25 @@ function parseFechaMarca(texto, añoPorDefecto) {
     septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12'
   };
 
-  const lower = (texto || '').toLowerCase().trim();
+  let lower = (texto || '').toLowerCase().trim();
+  // quitar día de la semana
+  lower = lower.replace(/^(lunes|martes|miércoles|jueves|viernes|sábado|domingo)/, '').trim();
+  // asegurar espacio antes de "de"
+  lower = lower.replace(/(\d)(de)/, '$1 de');
 
-  // Formato esperado tras limpiar el <strong>: "30 de septiembre de 2025"
-  const matchCompleto = lower.match(/(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})/);
-  if (matchCompleto) {
-    const [_, dd, mes, yyyy] = matchCompleto;
+  // "30 de septiembre de 2025"
+  let match = lower.match(/(\d{1,2}) de (\w+) de (\d{4})/);
+  if (match) {
+    const [_, dd, mes, yyyy] = match;
     const mm = meses[mes];
     if (!mm) return '';
     return `${yyyy}-${mm}-${dd.padStart(2, '0')}`;
   }
 
-  // Alternativa sin año (no debería ocurrir con el HTML que pasaste)
-  const matchSinAnio = lower.match(/(\d{1,2})\s+de\s+(\w+)/);
-  if (matchSinAnio) {
-    const [_, dd, mes] = matchSinAnio;
+  // "30 de septiembre" (sin año)
+  match = lower.match(/(\d{1,2}) de (\w+)/);
+  if (match) {
+    const [_, dd, mes] = match;
     const mm = meses[mes];
     if (!mm) return '';
     const yyyy = añoPorDefecto || new Date().getFullYear();
@@ -54,7 +59,6 @@ function formatoFechaES(fecha) {
 function eventoEsReciente(dia, hora) {
   try {
     const ahora = DateTime.now().setZone('Europe/Madrid');
-
     const eventoFecha = DateTime.fromFormat(String(dia || ''), 'dd/MM/yyyy', { zone: 'Europe/Madrid' });
     const [hh, min] = String(hora || '').split(':');
     const evento = eventoFecha.set({
@@ -62,7 +66,10 @@ function eventoEsReciente(dia, hora) {
       minute: parseInt(min || '0', 10)
     });
 
-    if (!evento.isValid) return false;
+    if (!evento.isValid) {
+      console.warn(`[EVENTOS] Fecha u hora inválida: ${dia} ${hora}`);
+      return false;
+    }
 
     const hoyISO = ahora.toISODate();
     const ayerISO = ahora.minus({ days: 1 }).toISODate();
@@ -70,30 +77,44 @@ function eventoEsReciente(dia, hora) {
     const eventoISODate = evento.toISODate();
 
     const diffHorasPasado = ahora.diff(evento, 'hours').hours;
+    const diffHorasFuturo = evento.diff(ahora, 'hours').hours;
 
     // HOY
     if (eventoISODate === hoyISO) {
-      if (ahora.hour < 3) return true; // 00:00–02:59 → todo el día
+      if (ahora.hour < 3) {
+        console.info(`[EVENTOS] Evento de hoy incluido (antes de 03:00): ${eventoISODate} ${hora}`);
+        return true;
+      }
       const umbralPasado3h = ahora.minus({ hours: 3 });
-      return evento.toMillis() >= umbralPasado3h.toMillis();
+      const reciente = evento.toMillis() >= umbralPasado3h.toMillis();
+      console.info(`[EVENTOS] Evento de hoy ${eventoISODate} ${hora}: ${reciente ? 'incluido' : 'descartado'} (diff: ${diffHorasPasado.toFixed(2)} horas)`);
+      return reciente;
     }
 
-    // AYER → solo si su hora está como mucho 2h en el pasado
+    // AYER
     if (eventoISODate === ayerISO) {
       const umbralAyer2h = ahora.minus({ hours: 2 });
-      return evento.toMillis() >= umbralAyer2h.toMillis();
+      const reciente = evento.toMillis() >= umbralAyer2h.toMillis();
+      console.info(`[EVENTOS] Evento de ayer ${eventoISODate} ${hora}: ${reciente ? 'incluido' : 'descartado'} (diff: ${diffHorasPasado.toFixed(2)} horas)`);
+      return reciente;
     }
 
-    // MAÑANA → solo a partir de las 22:00, y dentro de próximas 3 horas
+    // MAÑANA
     if (eventoISODate === mañanaISO) {
-      if (ahora.hour < 22) return false;
+      if (ahora.hour < 22) {
+        console.info(`[EVENTOS] Evento de mañana descartado (antes de 22:00): ${eventoISODate} ${hora}`);
+        return false;
+      }
       const umbralFuturo3h = ahora.plus({ hours: 3 });
-      return evento.toMillis() >= ahora.toMillis() && evento.toMillis() <= umbralFuturo3h.toMillis();
+      const reciente = evento.toMillis() >= ahora.toMillis() && evento.toMillis() <= umbralFuturo3h.toMillis();
+      console.info(`[EVENTOS] Evento de mañana ${eventoISODate} ${hora}: ${reciente ? 'incluido' : 'descartado'} (diff: ${diffHorasFuturo.toFixed(2)} horas)`);
+      return reciente;
     }
 
+    console.info(`[EVENTOS] Evento descartado: ${eventoISODate} no es ayer (${ayerISO}), hoy (${hoyISO}), ni mañana (${mañanaISO})`);
     return false;
   } catch (e) {
-    console.warn('[EVENTOS] Error en eventoEsReciente', e);
+    console.warn(`[EVENTOS] Error en eventoEsReciente: ${e.message}`);
     return false;
   }
 }
@@ -125,39 +146,24 @@ async function fetchEventos(url) {
     }
 
     console.info('[EVENTOS] Estructura detectada: daylist / dailyevent');
-
     bloques.each((_, li) => {
-      // EXTRAER fecha limpia removiendo el <strong> del día de la semana
-      const fechaTexto = $(li)
-        .find('.title-section-widget')
-        .clone()
-        .children('strong')
-        .remove()
-        .end()
-        .text()
-        .trim();
-
+      const fechaTexto = $(li).find('.title-section-widget').text().trim();
       const fechaISO = parseFechaMarca(fechaTexto, ahoraDT.year);
       if (!fechaISO) {
-        console.warn(`[EVENTOS] Fecha de bloque inválida: "${fechaTexto}"`);
+        console.warn(`[EVENTOS] Fecha no válida: "${fechaTexto}"`);
         return;
       }
 
+      // Corte duro: solo ayer, hoy y mañana
       const fechaBloque = DateTime.fromISO(fechaISO, { zone: 'Europe/Madrid' });
       const diffDias = fechaBloque.startOf('day').diff(ahoraDT.startOf('day'), 'days').days;
-
-      // Corte duro: solo ayer (-1), hoy (0) y mañana (+1)
       if (diffDias < -1 || diffDias > 1) {
-        console.info(`[EVENTOS] Bloque descartado (${fechaISO}), fuera de rango`);
+        console.info(`[EVENTOS] Saltando bloque con fecha ${fechaISO} (diffDias: ${diffDias})`);
         return;
       }
-
-      console.info(`[EVENTOS] Bloque aceptado: ${fechaISO}`);
 
       const [yyyy, mm, dd] = fechaISO.split('-');
       const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
-
-      let eventosCuentaBloque = 0;
 
       $(li).find('li.dailyevent').each((_, eventoLi) => {
         const hora = $(eventoLi).find('.dailyhour').text().trim() || '';
@@ -170,7 +176,11 @@ async function fetchEventos(url) {
         if (eventosUnicos.has(eventoId)) return;
         eventosUnicos.add(eventoId);
 
-        if (!eventoEsReciente(fechaFormateadaMarca, hora)) return;
+        console.info(`[EVENTOS] Evaluando evento: ${partido} a las ${hora} (${deporte}). Fecha: ${fechaISO}`);
+        if (!eventoEsReciente(fechaFormateadaMarca, hora)) {
+          console.info(`[EVENTOS] Evento descartado: ${partido} (${fechaFormateadaMarca} ${hora})`);
+          return;
+        }
 
         eventos.push({
           dia: fechaFormateadaMarca,
@@ -180,10 +190,7 @@ async function fetchEventos(url) {
           partido,
           canales: [{ label: canal, url: null }]
         });
-        eventosCuentaBloque++;
       });
-
-      console.info(`[EVENTOS] Eventos aceptados en bloque ${fechaISO}: ${eventosCuentaBloque}`);
     });
 
     console.info(`[EVENTOS] Scrapeo finalizado desde Marca: ${eventos.length} eventos`);
@@ -196,7 +203,7 @@ async function fetchEventos(url) {
     return [crearFallback(hoyISO)];
   }
 
-  const eventosConPoster = await scrapePostersForEventos(eventos);
+  const eventosConPoster = await scrapePostersConcurrenciaLimitada(eventos);
   return eventosConPoster;
 }
 
