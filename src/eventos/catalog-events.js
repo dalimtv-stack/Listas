@@ -6,7 +6,7 @@ const { normalizeId } = require('./utils-events');
 const { kvGetJson } = require('../../api/kv');
 
 async function getCatalog(configId) {
-  console.time(`[CATALOG EVENTS] Generando catálogo`);
+  console.time(`[CATALOG EVENTS] Catálogo generado`);
 
   const configData = await kvGetJson(configId);
   const url = configData?.eventosUrl;
