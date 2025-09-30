@@ -145,20 +145,33 @@ async function kvWritePostersHoyMap(mergedMap) {
 async function generatePosterWithHour({ partido, hora, deporte, competicion, dia }) {
   let posterSourceUrl;
   try {
-    const isTenis = deporte?.toLowerCase() === 'tenis';
-    const candidates = generateFallbackNames(partido, competicion);
-    const fuentes = isTenis
-      ? [
-          'https://www.movistarplus.es/deportes/tenis/donde-ver',
-          'https://www.movistarplus.es/deportes?conf=iptv',
-          'https://www.movistarplus.es/el-partido-movistarplus'
-        ]
-      : [
-          'https://www.movistarplus.es/deportes?conf=iptv',
-          'https://www.movistarplus.es/el-partido-movistarplus'
-        ];
+    const sport = (deporte || '').toLowerCase();
+    const isTenis = sport === 'tenis';
+    const isFutbol = sport === 'futbol' || sport === 'fútbol';
 
-    // Construir DateTime del evento
+    const candidates = generateFallbackNames(partido, competicion);
+
+    // Selección de fuentes según deporte
+    let fuentes;
+    if (isTenis) {
+      fuentes = [
+        'https://www.movistarplus.es/deportes/tenis/donde-ver',
+        'https://www.movistarplus.es/deportes?conf=iptv',
+        'https://www.movistarplus.es/el-partido-movistarplus'
+      ];
+    } else if (isFutbol) {
+      fuentes = [
+        'https://www.movistarplus.es/el-partido-movistarplus',
+        'https://www.movistarplus.es/deportes?conf=iptv'
+      ];
+    } else {
+      fuentes = [
+        'https://www.movistarplus.es/deportes?conf=iptv',
+        'https://www.movistarplus.es/el-partido-movistarplus'
+      ];
+    }
+
+    // Construir DateTime del evento para comparar con Movistar
     let eventoFecha = null;
     if (dia && hora) {
       eventoFecha = DateTime.fromFormat(`${dia} ${hora}`, 'dd/MM/yyyy HH:mm', { zone: 'Europe/Madrid' });
@@ -171,9 +184,11 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
   } catch (err) {
     console.error('[Poster] Error scraping:', err.message);
   }
+
   if (!posterSourceUrl?.startsWith('http')) {
     return generatePlaceholdPoster({ hora });
   }
+
   const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterSourceUrl)}`;
   let generados;
   try {
@@ -187,9 +202,11 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
     console.error('[Poster] Error al generar con hora:', err.message);
     return generatePlaceholdPoster({ hora });
   }
+
   if (!Array.isArray(generados)) {
     return generatePlaceholdPoster({ hora });
   }
+
   const generado = generados.find(p => p.hora === hora);
   const finalUrl = normalizeBlobUrl(generado?.url);
   return isCacheablePosterUrl(finalUrl) ? finalUrl : generatePlaceholdPoster({ hora });
