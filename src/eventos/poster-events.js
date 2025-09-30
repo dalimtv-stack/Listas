@@ -254,25 +254,47 @@ async function scrapePosterForMatch({ partido, hora, deporte, competicion, dia }
 }
 
 // ✅ Procesamiento en paralelo usando 2 funciones
-function buildPosterKey(ev) {
-  return normalizeMatchName(`${ev.partido} ${ev.hora} ${ev.dia} ${ev.competicion}`);
-}
 
 async function scrapePostersForEventos(eventos) {
-  const kvPayload = {};
+  console.info(`[Poster] Iniciando procesamiento de ${eventos.length} eventos`);
+  const postersMap = await kvReadPostersHoyMap();
+  const updates = {};
+  const resultados = [];
 
   await Promise.all(
     eventos.map(async ev => {
-      const posterUrl = await generatePosterWithHour(ev);
       const key = buildPosterKey(ev);
-      if (isCacheablePosterUrl(posterUrl)) {
-        kvPayload[key] = posterUrl;
+      let posterUrl;
+
+      if (isCacheablePosterUrl(postersMap[key])) {
+        console.info(`[Poster] Usando póster cacheado para ${ev.partido} (${key}): ${postersMap[key]}`);
+        posterUrl = postersMap[key];
+      } else {
+        console.time(`Poster ${ev.partido}`);
+        posterUrl = await generatePosterWithHour({
+          partido: ev.partido,
+          hora: ev.hora,
+          deporte: ev.deporte,
+          competicion: ev.competicion,
+          dia: ev.dia
+        });
+        console.timeEnd(`Poster ${ev.partido}`);
+        if (isCacheablePosterUrl(posterUrl)) {
+          updates[key] = posterUrl;
+        }
       }
+
+      resultados.push({ ...ev, poster: posterUrl });
     })
   );
 
-  await kvSetJsonTTL('postersBlobHoy', kvPayload);
-  console.info(`[Poster] KV actualizado con ${Object.keys(kvPayload).length} entradas`);
+  if (Object.keys(updates).length > 0) {
+    const merged = { ...postersMap, ...updates };
+    await kvWritePostersHoyMap(merged);
+  }
+
+  console.info(`[Poster] Procesamiento completado, ${resultados.length} eventos con posters`);
+  return resultados;
 }
 
 // ✅ Procesamiento en lote usando la misma función
