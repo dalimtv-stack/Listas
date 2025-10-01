@@ -112,23 +112,63 @@ async function kvDelete(key) {
   }
 }
 
+// Lista las claves (función corregida)
 async function kvListKeys(prefix = '') {
   try {
     const { CLOUDFLARE_KV_ACCOUNT_ID, CLOUDFLARE_KV_NAMESPACE_ID, CLOUDFLARE_KV_API_TOKEN } = process.env;
-    const url = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/keys?prefix=${encodeURIComponent(prefix)}&limit=1000`;
+    if (!CLOUDFLARE_KV_ACCOUNT_ID || !CLOUDFLARE_KV_NAMESPACE_ID || !CLOUDFLARE_KV_API_TOKEN) {
+      console.warn('[KV] Credenciales de Cloudflare KV no configuradas');
+      return [];
+    }
 
-    const r = await fetch(url, {
-      headers: { Authorization: `Bearer ${CLOUDFLARE_KV_API_TOKEN}` }
-    });
+    const baseUrl = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/keys`;
+    const allKeys = [];
+    let cursor = null;
+    const limit = 1000; // máximo soportado por la API en una llamada
 
-    if (!r.ok) throw new Error(`KV list failed: ${r.status}`);
-    const json = await r.json();
-    return json.result.map(k => k.name);
+    while (true) {
+      const url = `${baseUrl}?prefix=${encodeURIComponent(prefix)}&limit=${limit}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`;
+      const r = await fetch(url, {
+        headers: { Authorization: `Bearer ${CLOUDFLARE_KV_API_TOKEN}` }
+      });
+
+      if (!r.ok) {
+        throw new Error(`KV list failed: ${r.status} ${r.statusText}`);
+      }
+
+      const json = await r.json();
+      if (!json || !Array.isArray(json.result)) {
+        throw new Error('KV list: respuesta inesperada');
+      }
+
+      const names = json.result.map(k => k.name);
+      allKeys.push(...names);
+
+      // registrar resumen (no imprimas objetos sensibles)
+      console.info(`[KV] Recuperadas ${names.length} claves de la página actual (acumuladas: ${allKeys.length})`);
+
+      // paginación: Cloudflare devuelve result_info.cursor para continuar
+      const nextCursor = json.result_info && json.result_info.cursor;
+      if (!nextCursor) break;
+      cursor = nextCursor;
+    }
+
+    console.info(`[KV] Listado final: ${allKeys.length} claves${prefix ? ` (prefijo="${prefix}")` : ''}`);
+    // opcional: mostrar nombres (solo si no son demasiadas)
+    if (allKeys.length <= 300) {
+      console.info('[KV] Claves:', allKeys);
+    } else {
+      console.info('[KV] Claves: (demasiadas para listar, muestra primeras 300)');
+      console.info(allKeys.slice(0, 300));
+    }
+
+    return allKeys;
   } catch (e) {
-    console.error('[KV] listKeys error:', e.message);
+    console.error('[KV] listKeys error:', e.message || e);
     return [];
   }
 }
+
 
 module.exports = {
   kvGet,
