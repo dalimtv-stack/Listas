@@ -1,9 +1,7 @@
 'use strict';
 
 const { cleanupOldPosters } = require('../src/cron/cleanup-posters');
-const { kvGetJson, kvListKeys, kvDelete, kvGetJsonTTL } = require('../api/kv');
-
-const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const { kvGetJson, kvListKeys } = require('../api/kv');
 
 module.exports = async (req, res) => {
   if (req.method === 'POST') {
@@ -17,15 +15,12 @@ module.exports = async (req, res) => {
     try {
       allKeys = await kvListKeys();
       if (!Array.isArray(allKeys)) allKeys = [];
-      // Log por lotes de 100
-      for (let i = 0; i < allKeys.length; i += 100) {
-        console.info(`[KV] Claves batch ${i}-${i + 99}:`, allKeys.slice(i, i + 100));
-      }
     } catch (err) {
       console.error('[cleanup] Error llamando kvListKeys():', err?.message || err);
       allKeys = [];
     }
 
+    // Contar claves por prefijo
     const prefixesMap = {};
     allKeys.forEach(k => {
       const p = String(k).split(':')[0] || '';
@@ -43,6 +38,7 @@ module.exports = async (req, res) => {
     });
   }
 
+  // Página HTML principal
   const last = await kvGetJson('poster:cleanup:last');
   const lastDate = last?.timestamp
     ? new Date(last.timestamp).toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })
@@ -101,58 +97,7 @@ async function listKeys() {
 }
 
 async function runCleanup() {
-  const status = document.getElementById('status');
-  status.textContent='Calculando claves a borrar...';
-  try {
-    const allKeysRes = await fetch('/cleanup?list=1');
-    const allKeysJson = await allKeysRes.json();
-    const allKeys = allKeysJson.total && allKeysJson.prefixes ? allKeysJson.prefixes.map(p => p.split(' : ')[0]) : [];
-    
-    // Excluir claves que no se deben borrar
-    const exclude = ['postersBlobHoy','poster:cleanup:last'];
-
-    // Contar claves a borrar
-    let countToDelete = 0;
-    for(const k of allKeys){
-      if(exclude.includes(k)) continue;
-      const val = await fetchKVValue(k); // Implementar fetchKVValue que obtiene JSON
-      if(val?.timestamp && (Date.now() - val.timestamp > ${ONE_WEEK_MS})) countToDelete++;
-    }
-
-    if(!confirm('¿Seguro que quieres borrar ' + countToDelete + ' claves antiguas?')) {
-      status.textContent='🛑 Limpieza cancelada';
-      return;
-    }
-
-    status.textContent='Ejecutando limpieza...';
-
-    let deleted=0;
-    for(const k of allKeys){
-      if(exclude.includes(k)) continue;
-      const val = await fetchKVValue(k);
-      if(val?.timestamp && (Date.now() - val.timestamp > ${ONE_WEEK_MS})){
-        await deleteKVKey(k);
-        deleted++;
-      }
-    }
-    status.textContent='✅ Claves borradas: '+deleted;
-
-  } catch(err){
-    console.error('runCleanup error',err);
-    status.textContent='❌ Error al ejecutar limpieza';
-  }
-}
-
-async function fetchKVValue(key){
-  try{
-    const res = await fetch('/api/kv?key='+encodeURIComponent(key));
-    if(!res.ok) return null;
-    return await res.json();
-  } catch { return null; }
-}
-
-async function deleteKVKey(key){
-  try{ await fetch('/api/kv?key='+encodeURIComponent(key), {method:'DELETE'}); }catch{}
+  document.getElementById('status').textContent='Funcionalidad de limpieza aún no implementada';
 }
 </script>
 </body>
