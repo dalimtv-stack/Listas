@@ -181,16 +181,27 @@ async function fetchEventos(url) {
         if (eventosUnicos.has(eventoId)) return;
         eventosUnicos.add(eventoId);
 
-        if (!eventoEsReciente(fechaFormateadaMarca, hora)) return;
+        // Incluir eventos de ayer y hoy si son recientes, y eventos de mañana cercanos a 22:00
+        const esReciente = eventoEsReciente(fechaFormateadaMarca, hora);
+        const esMañana = diffDias === 1;
 
-        eventos.push({
+        if (!esReciente && !esMañana) return;
+
+        const evento = {
           dia: fechaFormateadaMarca,
           hora,
           deporte,
           competicion,
           partido,
           canales: [{ label: canal, url: null }]
-        });
+        };
+
+        // Marcar eventos de mañana con género 'Mañana', salvo los cercanos a 22:00
+        if (esMañana && !esReciente) {
+          evento.genero = 'Mañana';
+        }
+
+        eventos.push(evento);
         eventosCuentaBloque++;
       });
 
