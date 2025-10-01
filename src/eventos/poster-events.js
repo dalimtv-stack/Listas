@@ -236,9 +236,9 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
 
   if (!posterSourceUrl?.startsWith('http')) {
     if (deporte && deporte.toLowerCase() === 'balonmano') {
-      posterSourceUrl = 'https://i.ibb.co/7xJphmNH/5983108-D-B7-B7-4-ACB-A4-FD-A4-EB8-C306611.png';
+      posterSourceUrl = 'https://i.ibb.co/pvwRMBWB/Balonmano.png';
     } else if (isFutbol) {
-      posterSourceUrl = 'https://i.ibb.co/jkHkfgMn/Futbol-2.png';
+      posterSourceUrl = 'https://i.ibb.co/dswZph87/Futbol1.png';
     } else if (deporte && deporte.toLowerCase() === 'ciclismo') {
       posterSourceUrl = 'https://i.ibb.co/CswnHc5p/IMG-2324.webp';
     } else {
