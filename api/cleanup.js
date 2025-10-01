@@ -11,11 +11,13 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'GET' && req.query.list === '1') {
-    // Nueva ruta para listar claves
-    const { keys, prefixes } = await kvListKeys();
+    const allKeys = await kvListKeys();
+    // extraer prefijos únicos (antes del :)
+    const prefixes = [...new Set(allKeys.map(k => k.split(':')[0]))];
     return res.status(200).json({
-      total: keys.length,
-      uniquePrefixes: prefixes.length
+      total: allKeys.length,
+      uniquePrefixes: prefixes.length,
+      prefixes
     });
   }
 
@@ -72,6 +74,12 @@ module.exports = async (req, res) => {
           font-weight: bold;
           text-align: center;
         }
+        #prefixes {
+          margin-top: 1rem;
+          text-align: left;
+          font-size: 0.9rem;
+          white-space: pre-line;
+        }
         @media (min-width: 600px) {
           body { max-width: 600px; }
           h1 { font-size: 2rem; }
@@ -94,6 +102,7 @@ module.exports = async (req, res) => {
       <button onclick="runCleanup()">Ejecutar limpieza</button>
       
       <div id="kvinfo"></div>
+      <div id="prefixes"></div>
       <div id="status"></div>
 
       <script>
@@ -112,11 +121,14 @@ module.exports = async (req, res) => {
 
         async function listKeys() {
           const kvinfo = document.getElementById('kvinfo');
+          const prefixesDiv = document.getElementById('prefixes');
           kvinfo.textContent = 'Listando claves...';
+          prefixesDiv.textContent = '';
           try {
             const res = await fetch('/cleanup?list=1');
             const json = await res.json();
             kvinfo.textContent = \`🔑 Total de claves: \${json.total} — Prefijos únicos: \${json.uniquePrefixes}\`;
+            prefixesDiv.textContent = json.prefixes.join("\\n");
           } catch (err) {
             kvinfo.textContent = '❌ Error al listar claves';
           }
