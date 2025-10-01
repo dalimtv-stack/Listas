@@ -6,7 +6,7 @@
     { "src": "api/poster-con-hora.js", "use": "@vercel/node" }
   ],
   "crons": [
-    { "path": "/api/regenerate-posters", "schedule": "22 11 * * *" }
+    { "path": "/api/regenerate-posters", "schedule": "00 4 * * *" }
   ],
   "routes": [
     { "src": "/manifest.json", "dest": "/api/index.js" },
