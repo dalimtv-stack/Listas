@@ -1,7 +1,7 @@
 // api/cleanup.js
 'use strict';
 
-const { kvGetJson, kvListKeys, kvDelete, kvPutJson } = require('../api/kv');
+const { kvGetJson, kvListKeys, kvDelete, kvBulkDelete, kvPutJson } = require('../api/kv');
 
 module.exports = async (req, res) => {
   if (req.method === 'POST') {
