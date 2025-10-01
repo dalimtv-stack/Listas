@@ -155,10 +155,10 @@ async function kvListKeys(prefix = '') {
 
     console.info(`[KV] Listado final: ${allKeys.length} claves${prefix ? ` (prefijo="${prefix}")` : ''}`);
     // opcional: mostrar nombres (solo si no son demasiadas)
-    if (allKeys.length <= 300) {
+    if (allKeys.length <= 3000) {
       console.info('[KV] Claves:', allKeys);
     } else {
-      console.info('[KV] Claves: (demasiadas para listar, muestra primeras 300)');
+      console.info('[KV] Claves: (demasiadas para listar, muestra primeras 3000)');
       console.info(allKeys.slice(0, 300));
     }
 
