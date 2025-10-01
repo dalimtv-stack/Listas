@@ -182,6 +182,7 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
     const isTenis = sport === 'tenis';
     const isBaloncesto = sport === 'baloncesto';
     const isFutbol = sport === 'futbol' || sport === 'fútbol';
+    const isBalonmano = sport === 'balonmano';
 
     const candidates = generateFallbackNames(partido, competicion);
 
@@ -222,7 +223,6 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
     let eventoFecha = null;
     if (dia && hora) {
       eventoFecha = DateTime.fromFormat(`${dia} ${hora}`, 'dd/MM/yyyy HH:mm', { zone: 'Europe/Madrid' });
-      console.info(`[Poster] Fecha del evento ${partido}: ${eventoFecha.toISO()}`);
     }
 
     for (const fuente of fuentes) {
@@ -230,18 +230,20 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
       if (posterSourceUrl) break;
     }
   } catch (err) {
-    console.error(`[Poster] Error scraping para ${partido}: ${err.message}`);
+    console.error('[Poster] Error scraping:', err.message);
   }
 
   if (!posterSourceUrl?.startsWith('http')) {
-    console.info(`[Poster] No se encontró póster para ${partido}, usando fallback`);
-    return generatePlaceholdPoster({ hora });
+    if (deporte && deporte.toLowerCase() === 'balonmano') {
+      posterSourceUrl = 'https://i.ibb.co/7xJphmNH/5983108-D-B7-B7-4-ACB-A4-FD-A4-EB8-C306611.png';
+    } else {
+      return generatePlaceholdPoster({ hora });
+    }
   }
 
   const endpoint = `https://listas-sand.vercel.app/poster-con-hora?url=${encodeURIComponent(posterSourceUrl)}`;
   let generados;
   try {
-    console.info(`[Poster] Generando póster con hora para ${partido} en ${endpoint}`);
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -249,24 +251,17 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
     });
     generados = await res.json();
   } catch (err) {
-    console.error(`[Poster] Error al generar con hora para ${partido}: ${err.message}`);
+    console.error('[Poster] Error al generar con hora:', err.message);
     return generatePlaceholdPoster({ hora });
   }
 
   if (!Array.isArray(generados)) {
-    console.info(`[Poster] Respuesta no válida de /poster-con-hora para ${partido}, usando fallback`);
     return generatePlaceholdPoster({ hora });
   }
 
   const generado = generados.find(p => p.hora === hora);
   const finalUrl = normalizeBlobUrl(generado?.url);
-  if (!isCacheablePosterUrl(finalUrl)) {
-    console.info(`[Poster] URL no cacheable para ${partido}: ${finalUrl}, usando fallback`);
-    return generatePlaceholdPoster({ hora });
-  }
-
-  console.info(`[Poster] Póster generado para ${partido}: ${finalUrl}`);
-  return finalUrl;
+  return isCacheablePosterUrl(finalUrl) ? finalUrl : generatePlaceholdPoster({ hora });
 }
 
 function buildPosterKey({ partido, hora, dia, competicion }) {
