@@ -59,13 +59,19 @@ module.exports = async (req, res) => {
     // Ahora allKeys es garantizado un array
     console.info('[cleanup] Claves totales obtenidas (muestra 0..10):', allKeys.slice(0, 10));
 
-    // Extraer prefijos (parte antes de ':') y normalizar
-    const prefixes = [...new Set(allKeys.map(k => String(k).split(':')[0] || ''))].filter(Boolean);
+    // Calcular conteos por prefijo
+    const prefixCounts = {};
+    for (let key of allKeys) {
+      const prefix = String(key).split(':')[0] || '';
+      if (prefix) {
+        if (!prefixCounts[prefix]) prefixCounts[prefix] = 0;
+        prefixCounts[prefix]++;
+      }
+    }
 
     return res.status(200).json({
       total: allKeys.length,
-      uniquePrefixes: prefixes.length,
-      prefixes
+      prefixCounts
     });
   }
 
@@ -114,6 +120,8 @@ module.exports = async (req, res) => {
           transition: background 0.2s;
           display: block;
           margin: 1rem auto;
+          width: 100%;
+          max-width: 300px;
         }
         button:hover { background: #45a049; }
         #status, #kvinfo {
@@ -176,9 +184,11 @@ module.exports = async (req, res) => {
             const res = await fetch('/cleanup?list=1');
             if (!res.ok) throw new Error('HTTP ' + res.status);
             const json = await res.json();
-            kvinfo.textContent = \`🔑 Total de claves: \${json.total} — Prefijos únicos: \${json.uniquePrefixes}\`;
-            if (Array.isArray(json.prefixes) && json.prefixes.length > 0) {
-              prefixesDiv.textContent = json.prefixes.join("\\n");
+            const uniquePrefixes = Object.keys(json.prefixCounts).length;
+            kvinfo.textContent = \`🔑 Total de claves: \${json.total} — Prefijos únicos: \${uniquePrefixes}\`;
+            if (uniquePrefixes > 0) {
+              const sortedEntries = Object.entries(json.prefixCounts).sort((a, b) => a[0].localeCompare(b[0]));
+              prefixesDiv.textContent = sortedEntries.map(([p, c]) => \`\${p} (\${c})\`).join("\\n");
             } else {
               prefixesDiv.textContent = '(No se encontraron prefijos)';
             }
