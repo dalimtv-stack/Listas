@@ -84,7 +84,10 @@ async function buildManifest(configId) {
         id: `${CATALOG_PREFIX}_eventos_${configId}`,
         name: 'Heimdallr Eventos',
         description: 'Eventos deportivos en directo',
-        extra: []
+        "genres": ["Mañana"],
+        "extra": [
+          { "name": "genre", "isRequired": false, "options": ["Mañana"] }
+        ]
       }
     ]
   };
