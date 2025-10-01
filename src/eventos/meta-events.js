@@ -26,7 +26,7 @@ async function getMeta(id, configId) {
   const nombre = evento.partido || 'Evento';
   const deporte = evento.deporte ? ` (${evento.deporte})` : '';
   const competicion = evento.competicion ? ` • ${evento.competicion}` : '';
-  const fechaHora = [evento.dia, evento.hora].filter(Boolean).join(' ');
+  const fechaHora = [evento.hora,evento.dia].filter(Boolean).join(' ● ');
 
   return {
     id, type: 'tv',
