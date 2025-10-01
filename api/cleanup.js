@@ -3,11 +3,21 @@
 
 const { cleanupOldPosters } = require('../src/cron/cleanup-posters');
 const { kvGetJson } = require('../api/kv');
+const { kvListKeys } = require('../src/utils/kv-list'); // asumiendo que pusiste la función aquí
 
 module.exports = async (req, res) => {
   if (req.method === 'POST') {
-    const result = await cleanupOldPosters();
-    return res.status(200).json(result);
+    if (req.query.action === 'listKeys') {
+      try {
+        const keys = await kvListKeys();
+        return res.status(200).json({ total: keys.length });
+      } catch (err) {
+        return res.status(500).json({ error: err.message });
+      }
+    } else {
+      const result = await cleanupOldPosters();
+      return res.status(200).json(result);
+    }
   }
 
   const last = await kvGetJson('poster:cleanup:last');
@@ -58,7 +68,7 @@ module.exports = async (req, res) => {
         button:hover {
           background: #45a049;
         }
-        #status {
+        #status, #keysCount {
           margin-top: 1rem;
           font-weight: bold;
           text-align: center;
@@ -80,7 +90,11 @@ module.exports = async (req, res) => {
       <h1>Heimdallr Channels</h1>
       <h1>Limpieza de Pósters en KV</h1>
       <p>Última limpieza: <strong>${lastDate}</strong></p>
+
+      <button onclick="listKeys()">Listar claves KV</button>
       <button onclick="runCleanup()">Ejecutar limpieza</button>
+
+      <div id="keysCount"></div>
       <div id="status"></div>
 
       <script>
@@ -94,6 +108,22 @@ module.exports = async (req, res) => {
             status.textContent = \`✅ Eliminados: \${json.deleted} (\${json.fallbackCount} fallback, \${json.expiredCount} expirados) — \${fecha}\`;
           } catch (err) {
             status.textContent = '❌ Error al ejecutar limpieza';
+          }
+        }
+
+        async function listKeys() {
+          const keysCount = document.getElementById('keysCount');
+          keysCount.textContent = 'Consultando...';
+          try {
+            const res = await fetch('/cleanup?action=listKeys', { method: 'POST' });
+            const json = await res.json();
+            if (json.total !== undefined) {
+              keysCount.textContent = \`🔑 Total de claves en KV: \${json.total}\`;
+            } else {
+              keysCount.textContent = '❌ Error al obtener claves';
+            }
+          } catch (err) {
+            keysCount.textContent = '❌ Error al consultar claves';
           }
         }
       </script>
