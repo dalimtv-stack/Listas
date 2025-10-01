@@ -112,13 +112,13 @@ async function kvDelete(key) {
   }
 }
 
-// Lista las claves (función corregida)
+// Lista las claves (función mejorada con logging y prefijos únicos)
 async function kvListKeys(prefix = '') {
   try {
     const { CLOUDFLARE_KV_ACCOUNT_ID, CLOUDFLARE_KV_NAMESPACE_ID, CLOUDFLARE_KV_API_TOKEN } = process.env;
     if (!CLOUDFLARE_KV_ACCOUNT_ID || !CLOUDFLARE_KV_NAMESPACE_ID || !CLOUDFLARE_KV_API_TOKEN) {
       console.warn('[KV] Credenciales de Cloudflare KV no configuradas');
-      return [];
+      return { keys: [], prefixes: [] };
     }
 
     const baseUrl = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/keys`;
@@ -144,31 +144,29 @@ async function kvListKeys(prefix = '') {
       const names = json.result.map(k => k.name);
       allKeys.push(...names);
 
-      // registrar resumen (no imprimas objetos sensibles)
-      console.info(`[KV] Recuperadas ${names.length} claves de la página actual (acumuladas: ${allKeys.length})`);
+      console.info(`[KV] Recuperadas ${names.length} claves (acumuladas: ${allKeys.length})`);
 
-      // paginación: Cloudflare devuelve result_info.cursor para continuar
       const nextCursor = json.result_info && json.result_info.cursor;
       if (!nextCursor) break;
       cursor = nextCursor;
     }
 
-    console.info(`[KV] Listado final: ${allKeys.length} claves${prefix ? ` (prefijo="${prefix}")` : ''}`);
-    // opcional: mostrar nombres (solo si no son demasiadas)
-    if (allKeys.length <= 3000) {
-      console.info('[KV] Claves:', allKeys);
-    } else {
-      console.info('[KV] Claves: (demasiadas para listar, muestra primeras 3000)');
-      console.info(allKeys.slice(0, 300));
+    // Mostrar en bloques de 100
+    for (let i = 0; i < allKeys.length; i += 100) {
+      console.info(`[KV] Bloque ${i / 100 + 1}:`, allKeys.slice(i, i + 100));
     }
 
-    return allKeys;
+    // Prefijos únicos (separados por :)
+    const prefixes = [...new Set(allKeys.map(k => k.split(':')[0]))];
+
+    console.info(`[KV] Listado final: ${allKeys.length} claves, ${prefixes.length} prefijos únicos`);
+
+    return { keys: allKeys, prefixes };
   } catch (e) {
     console.error('[KV] listKeys error:', e.message || e);
-    return [];
+    return { keys: [], prefixes: [] };
   }
 }
-
 
 module.exports = {
   kvGet,
