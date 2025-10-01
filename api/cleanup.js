@@ -1,13 +1,95 @@
 // api/cleanup.js
 'use strict';
 
-const { cleanupOldPosters } = require('../src/cron/cleanup-posters');
-const { kvGetJson, kvListKeys } = require('../api/kv');
+const { kvGetJson, kvListKeys, kvDelete, kvPutJson } = require('../api/kv');
 
 module.exports = async (req, res) => {
   if (req.method === 'POST') {
-    const result = await cleanupOldPosters();
-    return res.status(200).json(result);
+    const dryrun = req.query.dryrun === '1';
+
+    let allKeys;
+    try {
+      allKeys = await kvListKeys();
+      console.info('[cleanup] kvListKeys() returned typeof:', typeof allKeys);
+    } catch (err) {
+      console.error('[cleanup] Error calling kvListKeys():', err?.message || err);
+      allKeys = [];
+    }
+
+    // Normalizar distintos formatos de retorno a un array de strings
+    if (!Array.isArray(allKeys)) {
+      if (allKeys && typeof allKeys === 'object') {
+        // Cloudflare API style: { result: [ { name: 'key' }, ... ], result_info: {...} }
+        if (Array.isArray(allKeys.result)) {
+          allKeys = allKeys.result.map(item => {
+            if (typeof item === 'string') return item;
+            return item.name || item.key || String(item);
+          });
+        } else if (Array.isArray(allKeys.keys)) {
+          allKeys = allKeys.keys.map(k => (typeof k === 'string' ? k : k.name || String(k)));
+        } else {
+          // Intentar convertir objeto simple a array de claves si tiene propiedades
+          try {
+            allKeys = Object.keys(allKeys);
+          } catch {
+            allKeys = [];
+          }
+        }
+      } else if (typeof allKeys === 'string') {
+        // Podría ser JSON string o lista simple; intentar parsear
+        try {
+          const parsed = JSON.parse(allKeys);
+          if (Array.isArray(parsed)) allKeys = parsed;
+          else allKeys = [allKeys];
+        } catch {
+          // No JSON -> convertir a array con la cadena
+          allKeys = allKeys.length ? [allKeys] : [];
+        }
+      } else {
+        // null/undefined u otro tipo
+        allKeys = [];
+      }
+    }
+
+    // Ahora allKeys es garantizado un array
+    console.info('[cleanup] Claves totales obtenidas (muestra 0..10):', allKeys.slice(0, 10));
+
+    const excluded = ['postersBlobHoy', 'poster:cleanup:last'];
+    let toDelete = [];
+
+    for (let key of allKeys) {
+      if (excluded.includes(key)) continue;
+      const value = await kvGetJson(key);
+      if (value && typeof value.timestamp === 'number' && (Date.now() - value.timestamp > 7 * 24 * 60 * 60 * 1000)) {
+        toDelete.push(key);
+      }
+    }
+
+    if (dryrun) {
+      return res.status(200).json({ toDelete: toDelete.length });
+    } else {
+      let deletedCount = 0;
+      for (let key of toDelete) {
+        try {
+          await kvDelete(key);
+          deletedCount++;
+        } catch (err) {
+          console.error(`[cleanup] Error deleting key ${key}:`, err);
+        }
+      }
+      const now = Date.now();
+      try {
+        await kvPutJson('poster:cleanup:last', { timestamp: now });
+      } catch (err) {
+        console.error('[cleanup] Error saving last cleanup:', err);
+      }
+      return res.status(200).json({
+        deleted: deletedCount,
+        fallbackCount: 0,
+        expiredCount: deletedCount,
+        timestamp: now
+      });
+    }
   }
 
   // Endpoint JSON para listar claves (usado por el front)
@@ -163,8 +245,20 @@ module.exports = async (req, res) => {
       <script>
         async function runCleanup() {
           const status = document.getElementById('status');
-          status.textContent = 'Ejecutando...';
+          status.textContent = 'Calculando...';
           try {
+            const resDry = await fetch('/cleanup?dryrun=1', { method: 'POST' });
+            const jsonDry = await resDry.json();
+            const count = jsonDry.toDelete;
+            if (count === 0) {
+              status.textContent = 'No hay claves para borrar.';
+              return;
+            }
+            if (!confirm(\`¿Confirmar borrado de \${count} claves?\`)) {
+              status.textContent = 'Limpieza cancelada.';
+              return;
+            }
+            status.textContent = 'Ejecutando...';
             const res = await fetch('/cleanup', { method: 'POST' });
             const json = await res.json();
             const fecha = new Date(json.timestamp).toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
