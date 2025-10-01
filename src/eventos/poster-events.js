@@ -177,9 +177,9 @@ async function kvWritePostersHoyMap(mergedMap) {
 
 async function generatePosterWithHour({ partido, hora, deporte, competicion, dia }) {
   let posterSourceUrl;
+    const sport = (deporte || '').toLowerCase();
     const isFutbol = sport === 'futbol' || sport === 'fútbol';
   try {
-    const sport = (deporte || '').toLowerCase();
     const isTenis = sport === 'tenis';
     const isBaloncesto = sport === 'baloncesto';
     const isBalonmano = sport === 'balonmano';
