@@ -2,22 +2,21 @@
 'use strict';
 
 const { cleanupOldPosters } = require('../src/cron/cleanup-posters');
-const { kvGetJson } = require('../api/kv');
-const { kvListKeys } = require('../api/kv'); // asumiendo que pusiste la función aquí
+const { kvGetJson, kvListKeys } = require('../api/kv');
 
 module.exports = async (req, res) => {
   if (req.method === 'POST') {
-    if (req.query.action === 'listKeys') {
-      try {
-        const keys = await kvListKeys();
-        return res.status(200).json({ total: keys.length });
-      } catch (err) {
-        return res.status(500).json({ error: err.message });
-      }
-    } else {
-      const result = await cleanupOldPosters();
-      return res.status(200).json(result);
-    }
+    const result = await cleanupOldPosters();
+    return res.status(200).json(result);
+  }
+
+  if (req.method === 'GET' && req.query.list === '1') {
+    // Nueva ruta para listar claves
+    const { keys, prefixes } = await kvListKeys();
+    return res.status(200).json({
+      total: keys.length,
+      uniquePrefixes: prefixes.length
+    });
   }
 
   const last = await kvGetJson('poster:cleanup:last');
@@ -68,7 +67,7 @@ module.exports = async (req, res) => {
         button:hover {
           background: #45a049;
         }
-        #status, #keysCount {
+        #status, #kvinfo {
           margin-top: 1rem;
           font-weight: bold;
           text-align: center;
@@ -93,8 +92,8 @@ module.exports = async (req, res) => {
 
       <button onclick="listKeys()">Listar claves KV</button>
       <button onclick="runCleanup()">Ejecutar limpieza</button>
-
-      <div id="keysCount"></div>
+      
+      <div id="kvinfo"></div>
       <div id="status"></div>
 
       <script>
@@ -112,18 +111,14 @@ module.exports = async (req, res) => {
         }
 
         async function listKeys() {
-          const keysCount = document.getElementById('keysCount');
-          keysCount.textContent = 'Consultando...';
+          const kvinfo = document.getElementById('kvinfo');
+          kvinfo.textContent = 'Listando claves...';
           try {
-            const res = await fetch('/cleanup?action=listKeys', { method: 'POST' });
+            const res = await fetch('/cleanup?list=1');
             const json = await res.json();
-            if (json.total !== undefined) {
-              keysCount.textContent = \`🔑 Total de claves en KV: \${json.total}\`;
-            } else {
-              keysCount.textContent = '❌ Error al obtener claves';
-            }
+            kvinfo.textContent = \`🔑 Total de claves: \${json.total} — Prefijos únicos: \${json.uniquePrefixes}\`;
           } catch (err) {
-            keysCount.textContent = '❌ Error al consultar claves';
+            kvinfo.textContent = '❌ Error al listar claves';
           }
         }
       </script>
