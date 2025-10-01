@@ -167,7 +167,23 @@ async function kvListKeys(prefix = '') {
     return { keys: [], prefixes: [] };
   }
 }
-
+        async function kvBulkDelete(keys) {
+          if (!keys.length) return;
+          const { CLOUDFLARE_KV_ACCOUNT_ID, CLOUDFLARE_KV_NAMESPACE_ID, CLOUDFLARE_KV_API_TOKEN } = process.env;
+          const url = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_KV_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/bulk`;
+          const res = await fetch(url, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${CLOUDFLARE_KV_API_TOKEN}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(keys)
+          });
+          if (!res.ok) {
+            throw new Error(`Bulk delete failed: ${res.status} ${await res.text()}`);
+          }
+        }
+        
 module.exports = {
   kvGet,
   kvSet,
