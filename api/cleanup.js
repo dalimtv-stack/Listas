@@ -3,7 +3,7 @@
 
 const { cleanupOldPosters } = require('../src/cron/cleanup-posters');
 const { kvGetJson } = require('../api/kv');
-const { kvListKeys } = require('../src/utils/kv-list'); // asumiendo que pusiste la función aquí
+const { kvListKeys } = require('../api/kv'); // asumiendo que pusiste la función aquí
 
 module.exports = async (req, res) => {
   if (req.method === 'POST') {
