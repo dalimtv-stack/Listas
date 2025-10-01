@@ -100,7 +100,8 @@ async function handleCatalog(req) {
   console.log('[CATALOG] parsed', { type, id, configId, extra });
 
   if (type === 'tv' && id.startsWith('Heimdallr_eventos')) {
-    const metas = await getEventosCatalog(configId);
+    console.log(logPrefix, `Procesando catálogo de eventos para configId: ${configId}, genre: ${extra.genre || 'ninguno'}`);
+    const metas = await getEventosCatalog(configId, extra.genre);
     console.log(logPrefix, `catálogo de eventos generado: ${metas.length}`);
     return { metas };
   }
