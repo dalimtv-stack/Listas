@@ -183,6 +183,7 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
     const isBaloncesto = sport === 'baloncesto';
     const isFutbol = sport === 'futbol' || sport === 'fútbol';
     const isBalonmano = sport === 'balonmano';
+    const isCiclismo = sport === 'ciclismo';
 
     const candidates = generateFallbackNames(partido, competicion);
 
@@ -202,7 +203,7 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
       ];
     } else if (isFutbol) {
       const comp = (competicion || '').toLowerCase();
-      const isYouth = /youth|sub-21|juvenil/i.test(comp);
+      const isYouth = /youth|sub-21|sub-20|sub-19|juvenil/i.test(comp);
       fuentes = isYouth
         ? [
             'https://www.movistarplus.es/deportes?conf=iptv',
@@ -236,6 +237,8 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
   if (!posterSourceUrl?.startsWith('http')) {
     if (deporte && deporte.toLowerCase() === 'balonmano') {
       posterSourceUrl = 'https://i.ibb.co/7xJphmNH/5983108-D-B7-B7-4-ACB-A4-FD-A4-EB8-C306611.png';
+    } else if (deporte && deporte.toLowerCase() === 'ciclismo') {
+      posterSourceUrl = 'https://i.ibb.co/CswnHc5p/IMG-2324.webp';
     } else {
       return generatePlaceholdPoster({ hora });
     }
