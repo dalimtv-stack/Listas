@@ -10,10 +10,58 @@ module.exports = async (req, res) => {
     return res.status(200).json(result);
   }
 
+  // Endpoint JSON para listar claves (usado por el front)
   if (req.method === 'GET' && req.query.list === '1') {
-    const allKeys = await kvListKeys();
-    // extraer prefijos únicos (antes del :)
-    const prefixes = [...new Set(allKeys.map(k => k.split(':')[0]))];
+    let allKeys;
+    try {
+      allKeys = await kvListKeys();
+      console.info('[cleanup] kvListKeys() returned typeof:', typeof allKeys);
+    } catch (err) {
+      console.error('[cleanup] Error calling kvListKeys():', err?.message || err);
+      allKeys = [];
+    }
+
+    // Normalizar distintos formatos de retorno a un array de strings
+    if (!Array.isArray(allKeys)) {
+      if (allKeys && typeof allKeys === 'object') {
+        // Cloudflare API style: { result: [ { name: 'key' }, ... ], result_info: {...} }
+        if (Array.isArray(allKeys.result)) {
+          allKeys = allKeys.result.map(item => {
+            if (typeof item === 'string') return item;
+            return item.name || item.key || String(item);
+          });
+        } else if (Array.isArray(allKeys.keys)) {
+          allKeys = allKeys.keys.map(k => (typeof k === 'string' ? k : k.name || String(k)));
+        } else {
+          // Intentar convertir objeto simple a array de claves si tiene propiedades
+          try {
+            allKeys = Object.keys(allKeys);
+          } catch {
+            allKeys = [];
+          }
+        }
+      } else if (typeof allKeys === 'string') {
+        // Podría ser JSON string o lista simple; intentar parsear
+        try {
+          const parsed = JSON.parse(allKeys);
+          if (Array.isArray(parsed)) allKeys = parsed;
+          else allKeys = [allKeys];
+        } catch {
+          // No JSON -> convertir a array con la cadena
+          allKeys = allKeys.length ? [allKeys] : [];
+        }
+      } else {
+        // null/undefined u otro tipo
+        allKeys = [];
+      }
+    }
+
+    // Ahora allKeys es garantizado un array
+    console.info('[cleanup] Claves totales obtenidas (muestra 0..10):', allKeys.slice(0, 10));
+
+    // Extraer prefijos (parte antes de ':') y normalizar
+    const prefixes = [...new Set(allKeys.map(k => String(k).split(':')[0] || ''))].filter(Boolean);
+
     return res.status(200).json({
       total: allKeys.length,
       uniquePrefixes: prefixes.length,
@@ -21,6 +69,7 @@ module.exports = async (req, res) => {
     });
   }
 
+  // Página HTML principal
   const last = await kvGetJson('poster:cleanup:last');
   const lastDate = last?.timestamp
     ? new Date(last.timestamp).toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })
@@ -66,9 +115,7 @@ module.exports = async (req, res) => {
           display: block;
           margin: 1rem auto;
         }
-        button:hover {
-          background: #45a049;
-        }
+        button:hover { background: #45a049; }
         #status, #kvinfo {
           margin-top: 1rem;
           font-weight: bold;
@@ -77,19 +124,19 @@ module.exports = async (req, res) => {
         #prefixes {
           margin-top: 1rem;
           text-align: left;
-          font-size: 0.9rem;
+          font-size: 0.95rem;
           white-space: pre-line;
+          background: #f7f7f7;
+          padding: 0.6rem;
+          border-radius: 6px;
+          max-height: 40vh;
+          overflow: auto;
         }
         @media (min-width: 600px) {
           body { max-width: 600px; }
           h1 { font-size: 2rem; }
           p { font-size: 1.1rem; }
           button { font-size: 1rem; padding: 0.8rem 1.5rem; }
-        }
-        @media (max-width: 600px) {
-          h1 { font-size: 1.4rem; }
-          p, button { font-size: 0.9rem; }
-          button { width: 100%; text-align: center; }
         }
       </style>
     </head>
@@ -100,7 +147,7 @@ module.exports = async (req, res) => {
 
       <button onclick="listKeys()">Listar claves KV</button>
       <button onclick="runCleanup()">Ejecutar limpieza</button>
-      
+
       <div id="kvinfo"></div>
       <div id="prefixes"></div>
       <div id="status"></div>
@@ -115,6 +162,7 @@ module.exports = async (req, res) => {
             const fecha = new Date(json.timestamp).toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
             status.textContent = \`✅ Eliminados: \${json.deleted} (\${json.fallbackCount} fallback, \${json.expiredCount} expirados) — \${fecha}\`;
           } catch (err) {
+            console.error('runCleanup error', err);
             status.textContent = '❌ Error al ejecutar limpieza';
           }
         }
@@ -126,11 +174,18 @@ module.exports = async (req, res) => {
           prefixesDiv.textContent = '';
           try {
             const res = await fetch('/cleanup?list=1');
+            if (!res.ok) throw new Error('HTTP ' + res.status);
             const json = await res.json();
             kvinfo.textContent = \`🔑 Total de claves: \${json.total} — Prefijos únicos: \${json.uniquePrefixes}\`;
-            prefixesDiv.textContent = json.prefixes.join("\\n");
+            if (Array.isArray(json.prefixes) && json.prefixes.length > 0) {
+              prefixesDiv.textContent = json.prefixes.join("\\n");
+            } else {
+              prefixesDiv.textContent = '(No se encontraron prefijos)';
+            }
           } catch (err) {
+            console.error('listKeys error', err);
             kvinfo.textContent = '❌ Error al listar claves';
+            prefixesDiv.textContent = '';
           }
         }
       </script>
