@@ -1,7 +1,7 @@
 // api/cleanup.js
 'use strict';
 
-const { kvGetJson, kvListKeys, kvDelete, kvBulkDelete, kvPutJson } = require('../api/kv');
+const { kvGetJson, kvListKeys, kvDelete, kvSetJson } = require('../api/kv');
 
 module.exports = async (req, res) => {
   if (req.method === 'POST') {
@@ -48,13 +48,22 @@ module.exports = async (req, res) => {
       }
     }
 
+    const prefixCountsToDelete = {};
+    for (let key of toDelete) {
+      const prefix = String(key).split(':')[0] || '';
+      if (prefix) {
+        prefixCountsToDelete[prefix] = (prefixCountsToDelete[prefix] || 0) + 1;
+      }
+    }
+
     if (dryrun) {
-      return res.status(200).json({ toDelete: toDelete.length });
+      return res.status(200).json({ toDelete: toDelete.length, prefixCountsToDelete });
     } else {
       let deletedCount = 0;
       let fallbackCount = 0;
 
       if (toDelete.length > 0) {
+        // Intenta bulk delete si la función está 
         try {
           // Divide en batches de 10000 (límite de Cloudflare bulk delete)
           const bulkBatchSize = 10000;
@@ -82,7 +91,7 @@ module.exports = async (req, res) => {
 
       const now = Date.now();
       try {
-        await kvPutJson('poster:cleanup:last', { timestamp: now });
+        await kvSetJson('poster:cleanup:last', { timestamp: now });
       } catch (err) {
         console.error('[cleanup] Error saving last cleanup:', err);
       }
@@ -170,6 +179,18 @@ module.exports = async (req, res) => {
           max-width: 300px;
         }
         button:hover { background: #45a049; }
+        button.red {
+          background: #f44336;
+        }
+        button.red:hover {
+          background: #da190b;
+        }
+        button.gray {
+          background: #808080;
+        }
+        button.gray:hover {
+          background: #696969;
+        }
         #status, #kvinfo {
           margin-top: 1rem;
           font-weight: bold;
@@ -209,6 +230,8 @@ module.exports = async (req, res) => {
       <script>
         async function runCleanup() {
           const status = document.getElementById('status');
+          const kvinfo = document.getElementById('kvinfo');
+          const prefixesDiv = document.getElementById('prefixes');
           status.textContent = 'Calculando...';
           try {
             const resDry = await fetch('/cleanup?dryrun=1', { method: 'POST' });
@@ -218,18 +241,56 @@ module.exports = async (req, res) => {
               status.textContent = 'No hay claves para borrar.';
               return;
             }
-            if (!confirm(\`¿Confirmar borrado de \${count} claves?\`)) {
-              status.textContent = 'Limpieza cancelada.';
-              return;
+            status.textContent = 'Confirme para proceder.';
+            const uniquePrefixes = Object.keys(jsonDry.prefixCountsToDelete).length;
+            kvinfo.textContent = \`🔑 Claves a borrar: \${count} — Prefijos afectados: \${uniquePrefixes}\`;
+            if (uniquePrefixes > 0) {
+              const sortedEntries = Object.entries(jsonDry.prefixCountsToDelete).sort((a, b) => a[0].localeCompare(b[0]));
+              prefixesDiv.textContent = sortedEntries.map(([p, c]) => \`\${p} (\${c})\`).join("\\n");
+            } else {
+              prefixesDiv.textContent = '(No hay prefijos a borrar)';
             }
-            status.textContent = 'Ejecutando...';
-            const res = await fetch('/cleanup', { method: 'POST' });
-            const json = await res.json();
-            const fecha = new Date(json.timestamp).toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
-            status.textContent = \`✅ Eliminados: \${json.deleted} (\${json.fallbackCount} fallback, \${json.expiredCount} expirados) — \${fecha}\`;
+
+            // Crear botón de confirmación rojo
+            const confirmBtn = document.createElement('button');
+            confirmBtn.textContent = 'Confirmar Borrado';
+            confirmBtn.classList.add('red');
+            confirmBtn.onclick = async () => {
+              status.textContent = 'Ejecutando...';
+              try {
+                const res = await fetch('/cleanup', { method: 'POST' });
+                const json = await res.json();
+                const fecha = new Date(json.timestamp).toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
+                status.textContent = \`✅ Eliminados: \${json.deleted} (\${json.fallbackCount} fallback, \${json.expiredCount} expirados) — \${fecha}\`;
+              } catch (err) {
+                console.error('runCleanup error', err);
+                status.textContent = '❌ Error al ejecutar limpieza';
+              }
+              confirmBtn.remove();
+              cancelBtn.remove();
+              prefixesDiv.textContent = '';
+              kvinfo.textContent = '';
+            };
+
+            // Crear botón de cancelar gris
+            const cancelBtn = document.createElement('button');
+            cancelBtn.textContent = 'Cancelar';
+            cancelBtn.classList.add('gray');
+            cancelBtn.onclick = () => {
+              confirmBtn.remove();
+              cancelBtn.remove();
+              status.textContent = 'Limpieza cancelada.';
+              prefixesDiv.textContent = '';
+              kvinfo.textContent = '';
+            };
+
+            // Insertar después del botón de ejecutar limpieza
+            const cleanupBtn = document.querySelector('button[onclick="runCleanup()"]');
+            cleanupBtn.after(confirmBtn);
+            confirmBtn.after(cancelBtn);
           } catch (err) {
-            console.error('runCleanup error', err);
-            status.textContent = '❌ Error al ejecutar limpieza';
+            console.error('runCleanup dryrun error', err);
+            status.textContent = '❌ Error al calcular claves a borrar';
           }
         }
 
