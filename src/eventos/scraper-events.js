@@ -99,7 +99,6 @@ function eventoEsReciente(dia, hora) {
 
 async function fetchEventos(url) {
   const ahoraDT = DateTime.now().setZone('Europe/Madrid');
-  const hoyISO = ahoraDT.toISODate();
   const hoyStr = ahoraDT.toFormat('dd/MM/yyyy');
   const ayerStr = ahoraDT.minus({ days: 1 }).toFormat('dd/MM/yyyy');
   const mañanaStr = ahoraDT.plus({ days: 1 }).toFormat('dd/MM/yyyy');
@@ -125,17 +124,13 @@ async function fetchEventos(url) {
   // 3. Si no hay cache válido, scrapear como antes
   let eventosConPoster = await scrapeEventosDesdeMarca(ahoraDT);
 
-  // 4. Guardar en KV
-  const mapHoy = {};
-  const mapMañana = {};
-  const mapAyer = {};
-
+  // 4. Guardar en KV como objetos completos
+  const mapHoy = {}, mapMañana = {}, mapAyer = {};
   for (const ev of eventosConPoster) {
-    const key = `${ev.partido} ${ev.hora} ${ev.dia} ${ev.competicion}`;
-    const value = [ev.deporte, ev.canales[0]?.label || ''];
-    if (ev.dia === hoyStr) mapHoy[key] = value;
-    else if (ev.dia === ayerStr) mapAyer[key] = value;
-    else if (ev.dia === mañanaStr) mapMañana[key] = value;
+    const key = `${ev.partido}|${ev.hora}|${ev.dia}|${ev.competicion}`;
+    if (ev.dia === hoyStr) mapHoy[key] = ev;
+    else if (ev.dia === ayerStr) mapAyer[key] = ev;
+    else if (ev.dia === mañanaStr) mapMañana[key] = ev;
   }
 
   const ts = Date.now();
@@ -151,6 +146,12 @@ async function fetchEventos(url) {
 
   return eventosConPoster;
 }
+
+// Nuevo mapCacheToEventos: ya no parsea, solo devuelve los objetos
+function mapCacheToEventos(data) {
+  return Object.values(data);
+}
+
 async function scrapeEventosDesdeMarca(ahoraDT) {
   const eventos = [];
   const eventosUnicos = new Set();
@@ -295,30 +296,6 @@ async function scrapeEventosDesdeMarca(ahoraDT) {
   eventosConPoster.forEach(ev => delete ev._orden);
 
   return eventosConPoster;
-}
-
-function mapCacheToEventos(data) {
-  return Object.entries(data).map(([key, value]) => {
-    const parts = key.split(' ');
-
-    // El penúltimo siempre es la fecha dd/MM/yyyy
-    const dia = parts[parts.length - 2];
-    // El antepenúltimo siempre es la hora HH:mm
-    const hora = parts[parts.length - 3];
-    // Lo que queda al final después de fecha y hora es la competición
-    const competicion = parts.slice(parts.length - 1).join(' ');
-    // Lo que queda al principio hasta antes de la hora es el partido
-    const partido = parts.slice(0, parts.length - 3).join(' ');
-
-    return {
-      partido,
-      hora,
-      dia,
-      competicion,
-      deporte: Array.isArray(value) ? value[0] : '',
-      canales: Array.isArray(value) ? [{ label: value[1], url: null }] : []
-    };
-  });
 }
 
 function crearFallback(hoyISO) {
