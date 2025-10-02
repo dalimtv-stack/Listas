@@ -136,7 +136,7 @@ async function fetchEventos(url) {
   // 4. Si no hay cache válido, scrapear como antes
   let eventosConPoster = await scrapeEventosDesdeMarca(ahoraDT);
 
-  // 5. Guardar en KV como objetos completos
+  // 5. Guardar en KV como objetos completos (sin anidar otra cabecera)
   const mapHoy = {}, mapMañana = {}, mapAyer = {};
   for (const ev of eventosConPoster) {
     const key = `${ev.partido}|${ev.hora}|${ev.dia}|${ev.competicion}`;
@@ -147,13 +147,28 @@ async function fetchEventos(url) {
 
   const ts = Date.now();
   if (Object.keys(mapHoy).length) {
-    await kvSetJsonTTL('EventosHoy', { timestamp: ts, ttlMs: 86400000, day: hoyStr, data: mapHoy }, 86400);
+    await kvSetJsonTTL('EventosHoy', {
+      timestamp: ts,
+      ttlMs: 86400000,
+      day: hoyStr,
+      data: mapHoy
+    }, 86400);
   }
   if (Object.keys(mapAyer).length) {
-    await kvSetJsonTTL('EventosAyer', { timestamp: ts, ttlMs: 86400000, day: ayerStr, data: mapAyer }, 86400);
+    await kvSetJsonTTL('EventosAyer', {
+      timestamp: ts,
+      ttlMs: 86400000,
+      day: ayerStr,
+      data: mapAyer
+    }, 86400);
   }
   if (Object.keys(mapMañana).length) {
-    await kvSetJsonTTL('EventosMañana', { timestamp: ts, ttlMs: 86400000, day: mañanaStr, data: mapMañana }, 86400);
+    await kvSetJsonTTL('EventosMañana', {
+      timestamp: ts,
+      ttlMs: 86400000,
+      day: mañanaStr,
+      data: mapMañana
+    }, 86400);
   }
 
   return eventosConPoster;
@@ -163,6 +178,7 @@ async function fetchEventos(url) {
 function mapCacheToEventos(data) {
   return Object.values(data);
 }
+
 
 async function scrapeEventosDesdeMarca(ahoraDT) {
   const eventos = [];
