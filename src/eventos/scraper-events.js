@@ -148,6 +148,8 @@ async function fetchEventos(url) {
       day: cacheMañana.day,
       data: mapHoy
     }, 86400);
+      // ⚠️ Invalidar postersBlobHoy para forzar regeneración
+      await kvSetJsonTTL('postersBlobHoy', { data: {}, timestamp: 0 }, 1);
   
     // 4. Devolver la unión de Ayer + Hoy (ya con posters actualizados)
     const eventos = [
