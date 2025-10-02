@@ -669,10 +669,9 @@ acestream://9231f38e71a85ad24b4c11a5e360992e30c916ed
 #EXTINF:-1 tvg-id="ESPN.EN.VIVO" tvg-name="ESPN EN VIVO" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/2560px-ESPN_wordmark.svg.png" group-title="Deportes",ESPN EN VIVO
 http://172.93.102.112:8989/278765_.m3u8
 
-#EXTINF:-1 tvg-id="ESPN.DEPORTES" tvg-name="ESPN DEPORTES" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/8/82/Espn_deportes.png" group-title="Deportes",ESPN DEPORTES
+#EXTINF:-1 tvg-id="ESPN.deportes" tvg-name="ESPN DEPORTES" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/8/82/Espn_deportes.png" group-title="Deportes",ESPN DEPORTES
 http://origin.thetvapp.to/hls/espn-deportes/mono.m3u8
-
-#EXTINF:-1 tvg-id="Espn.deportes" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/8/82/Espn_deportes.png",ESPN DEPORTES
+#EXTINF:-1 tvg-id="ESPN.deportes" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/8/82/Espn_deportes.png",ESPN DEPORTES
 acestream://ab9bf0a75f1135137e65c0bc7639cb7f8ae28af8
 
 #EXTINF:-1 tvg-id="ESPN.2.ar" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/ESPN2_logo.svg/2560px-ESPN2_logo.svg.png",ESPN 2
