@@ -119,19 +119,27 @@ async function fetchEventos(url) {
     return eventos;
   }
 
-  // 3. Promocionar caches si toca
-  if (cacheHoy && cacheHoy.day === ayerStr) {
-    await kvSetJsonTTL('EventosAyer', cacheHoy, 86400);
-  }
-  if (cacheMañana && cacheMañana.day === hoyStr) {
-    console.info('[EVENTOS] Promocionando EventosMañana a Hoy');
-    await kvSetJsonTTL('EventosHoy', cacheMañana, 86400);
-    const eventos = [
-      ...(cacheAyer ? Object.values(cacheAyer.data) : []),
-      ...Object.values(cacheMañana.data)
-    ];
-    return eventos;
-  }
+// 3. Promocionar caches si toca
+if (cacheHoy && cacheHoy.day === ayerStr) {
+  await kvSetJsonTTL('EventosAyer', {
+    day: cacheHoy.day,
+    data: cacheHoy.data
+  }, 86400);
+}
+
+if (cacheMañana && cacheMañana.day === hoyStr) {
+  console.info('[EVENTOS] Promocionando EventosMañana a Hoy');
+  await kvSetJsonTTL('EventosHoy', {
+    day: cacheMañana.day,
+    data: cacheMañana.data
+  }, 86400);
+
+  const eventos = [
+    ...(cacheAyer ? Object.values(cacheAyer.data) : []),
+    ...Object.values(cacheMañana.data)
+  ];
+  return eventos;
+}
 
   // 4. Si no hay cache válido, scrapear como antes
   let eventosConPoster = await scrapeEventosDesdeMarca(ahoraDT);
@@ -148,24 +156,18 @@ async function fetchEventos(url) {
   const ts = Date.now();
   if (Object.keys(mapHoy).length) {
     await kvSetJsonTTL('EventosHoy', {
-      timestamp: ts,
-      ttlMs: 86400000,
       day: hoyStr,
       data: mapHoy
     }, 86400);
   }
   if (Object.keys(mapAyer).length) {
     await kvSetJsonTTL('EventosAyer', {
-      timestamp: ts,
-      ttlMs: 86400000,
       day: ayerStr,
       data: mapAyer
     }, 86400);
   }
   if (Object.keys(mapMañana).length) {
     await kvSetJsonTTL('EventosMañana', {
-      timestamp: ts,
-      ttlMs: 86400000,
       day: mañanaStr,
       data: mapMañana
     }, 86400);
