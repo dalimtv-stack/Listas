@@ -119,37 +119,43 @@ async function fetchEventos(url) {
     return eventos;
   }
 
-// 3. Promocionar caches si toca
-// Si el cacheHoy está desfasado (en realidad es de ayer), lo pasamos a Ayer
-if (cacheHoy && cacheHoy.day === ayerStr) {
-  await kvSetJsonTTL('EventosAyer', {
-    day: cacheHoy.day,
-    data: cacheHoy.data
-  }, 86400);
-}
-
-// Si el cacheMañana corresponde al nuevo día de hoy → lo promovemos
-if (cacheMañana && cacheMañana.day === hoyStr) {
-  console.info('[EVENTOS] Promocionando EventosMañana a Hoy');
-
-  // Guardar como Hoy
-  await kvSetJsonTTL('EventosHoy', {
-    day: cacheMañana.day,
-    data: cacheMañana.data
-  }, 86400);
-
-  // Opcional: limpiar EventosMañana para que se regenere en el próximo scrapeo
-  await kvSetJsonTTL('EventosMañana', {
-    day: mañanaStr,
-    data: {}
-  }, 86400);
-
-  const eventos = [
-    ...(cacheAyer ? Object.values(cacheAyer.data) : []),
-    ...Object.values(cacheMañana.data)
-  ];
-  return eventos;
-}
+  // 3. Promocionar caches si toca
+  // Si el cacheHoy está desfasado (en realidad es de ayer), lo pasamos a Ayer
+  if (cacheHoy && cacheHoy.day === ayerStr) {
+    await kvSetJsonTTL('EventosAyer', {
+      day: cacheHoy.day,
+      data: cacheHoy.data
+    }, 86400);
+  }
+  
+  // Si el cacheMañana corresponde al nuevo día de hoy → lo promovemos
+  if (cacheMañana && cacheMañana.day === hoyStr) {
+    console.info('[EVENTOS] Promocionando EventosMañana a Hoy');
+  
+    // 1. Recuperar los eventos de mañana
+    let eventosPromocionados = Object.values(cacheMañana.data);
+  
+    // 2. Volver a pedir posters para ellos
+    eventosPromocionados = await scrapePostersForEventos(eventosPromocionados);
+  
+    // 3. Guardar como EventosHoy con posters frescos
+    const mapHoy = {};
+    for (const ev of eventosPromocionados) {
+      const key = `${ev.partido}|${ev.hora}|${ev.dia}|${ev.competicion}`;
+      mapHoy[key] = ev;
+    }
+    await kvSetJsonTTL('EventosHoy', {
+      day: cacheMañana.day,
+      data: mapHoy
+    }, 86400);
+  
+    // 4. Devolver la unión de Ayer + Hoy (ya con posters actualizados)
+    const eventos = [
+      ...(cacheAyer ? Object.values(cacheAyer.data) : []),
+      ...eventosPromocionados
+    ];
+    return eventos;
+  }
 
   // 4. Si no hay cache válido, scrapear como antes
   let eventosConPoster = await scrapeEventosDesdeMarca(ahoraDT);
