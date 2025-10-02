@@ -120,6 +120,7 @@ async function fetchEventos(url) {
   }
 
 // 3. Promocionar caches si toca
+// Si el cacheHoy está desfasado (en realidad es de ayer), lo pasamos a Ayer
 if (cacheHoy && cacheHoy.day === ayerStr) {
   await kvSetJsonTTL('EventosAyer', {
     day: cacheHoy.day,
@@ -127,11 +128,20 @@ if (cacheHoy && cacheHoy.day === ayerStr) {
   }, 86400);
 }
 
+// Si el cacheMañana corresponde al nuevo día de hoy → lo promovemos
 if (cacheMañana && cacheMañana.day === hoyStr) {
   console.info('[EVENTOS] Promocionando EventosMañana a Hoy');
+
+  // Guardar como Hoy
   await kvSetJsonTTL('EventosHoy', {
     day: cacheMañana.day,
     data: cacheMañana.data
+  }, 86400);
+
+  // Opcional: limpiar EventosMañana para que se regenere en el próximo scrapeo
+  await kvSetJsonTTL('EventosMañana', {
+    day: mañanaStr,
+    data: {}
   }, 86400);
 
   const eventos = [
