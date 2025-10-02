@@ -6,6 +6,7 @@ const cheerio = require('cheerio');
 const iconv = require('iconv-lite');
 const { scrapePostersForEventos } = require('./poster-events');
 const { DateTime } = require('luxon');
+const { kvGetJsonTTL, kvSetJsonTTL } = require('../../api/kv');
 
 function parseFechaMarca(texto, añoPorDefecto) {
   const meses = {
@@ -97,10 +98,63 @@ function eventoEsReciente(dia, hora) {
 }
 
 async function fetchEventos(url) {
+  const ahoraDT = DateTime.now().setZone('Europe/Madrid');
+  const hoyISO = ahoraDT.toISODate();
+  const hoyStr = ahoraDT.toFormat('dd/MM/yyyy');
+  const ayerStr = ahoraDT.minus({ days: 1 }).toFormat('dd/MM/yyyy');
+  const mañanaStr = ahoraDT.plus({ days: 1 }).toFormat('dd/MM/yyyy');
+
+  // 1. Intentar leer cache
+  const cacheHoy = await kvGetJsonTTL('EventosHoy');
+  if (cacheHoy && cacheHoy.day === hoyStr) {
+    console.info('[EVENTOS] Usando cache de EventosHoy');
+    return mapCacheToEventos(cacheHoy.data);
+  }
+
+  // 2. Promocionar caches si toca
+  if (cacheHoy && cacheHoy.day === ayerStr) {
+    await kvSetJsonTTL('EventosAyer', cacheHoy, 86400);
+  }
+  const cacheMañana = await kvGetJsonTTL('EventosMañana');
+  if (cacheMañana && cacheMañana.day === hoyStr) {
+    console.info('[EVENTOS] Promocionando EventosMañana a Hoy');
+    await kvSetJsonTTL('EventosHoy', cacheMañana, 86400);
+    return mapCacheToEventos(cacheMañana.data);
+  }
+
+  // 3. Si no hay cache válido, scrapear como antes
+  let eventosConPoster = await scrapeEventosDesdeMarca(ahoraDT);
+
+  // 4. Guardar en KV
+  const mapHoy = {};
+  const mapMañana = {};
+  const mapAyer = {};
+
+  for (const ev of eventosConPoster) {
+    const key = `${ev.partido} ${ev.hora} ${ev.dia} ${ev.competicion}`;
+    const value = [ev.deporte, ev.canales[0]?.label || ''];
+    if (ev.dia === hoyStr) mapHoy[key] = value;
+    else if (ev.dia === ayerStr) mapAyer[key] = value;
+    else if (ev.dia === mañanaStr) mapMañana[key] = value;
+  }
+
+  const ts = Date.now();
+  if (Object.keys(mapHoy).length) {
+    await kvSetJsonTTL('EventosHoy', { timestamp: ts, ttlMs: 86400000, day: hoyStr, data: mapHoy }, 86400);
+  }
+  if (Object.keys(mapAyer).length) {
+    await kvSetJsonTTL('EventosAyer', { timestamp: ts, ttlMs: 86400000, day: ayerStr, data: mapAyer }, 86400);
+  }
+  if (Object.keys(mapMañana).length) {
+    await kvSetJsonTTL('EventosMañana', { timestamp: ts, ttlMs: 86400000, day: mañanaStr, data: mapMañana }, 86400);
+  }
+
+  return eventosConPoster;
+}
+async function scrapeEventosDesdeMarca(ahoraDT) {
   const eventos = [];
   const eventosUnicos = new Set();
 
-  const ahoraDT = DateTime.now().setZone('Europe/Madrid');
   const hoyISO = ahoraDT.toISODate();
   const fechaFormateada = formatoFechaES(ahoraDT.toJSDate());
 
@@ -116,7 +170,6 @@ async function fetchEventos(url) {
     const html = iconv.decode(buffer, 'latin1');
     const $ = cheerio.load(html);
 
-    // Seleccionar solo los bloques directamente bajo la daylist
     const bloques = $('ol.daylist > li.content-item, ol.auto-items.daylist > li.content-item')
       .filter((i, el) => $(el).find('.title-section-widget').length > 0);
 
@@ -130,7 +183,6 @@ async function fetchEventos(url) {
     bloques.each((_, li) => {
       const $li = $(li);
 
-      // Extraer fecha limpia removiendo el <strong> del día de la semana
       const fechaTexto = $li
         .find('.title-section-widget')
         .clone()
@@ -149,7 +201,6 @@ async function fetchEventos(url) {
       const fechaBloque = DateTime.fromISO(fechaISO, { zone: 'Europe/Madrid' });
       const diffDias = fechaBloque.startOf('day').diff(ahoraDT.startOf('day'), 'days').days;
 
-      // Corte duro: solo ayer (-1), hoy (0) y mañana (+1)
       if (diffDias < -1 || diffDias > 1) {
         console.info(`[EVENTOS] Bloque descartado (${fechaISO}), fuera de rango`);
         return;
@@ -160,14 +211,12 @@ async function fetchEventos(url) {
       const [yyyy, mm, dd] = fechaISO.split('-');
       const fechaFormateadaMarca = `${dd}/${mm}/${yyyy}`;
 
-      // TOMAR SOLO LOS dailyevent del ol hijo directo de este bloque
       const eventosLis = $li.children('ol').first().children('li.dailyevent');
       let eventosCuentaBloque = 0;
 
       eventosLis.each((_, eventoLi) => {
         const $ev = $(eventoLi);
 
-        // Defensa extra: asegurar que el evento pertenece a ESTE content-item
         const pertenece = $ev.closest('li.content-item')[0] === li;
         if (!pertenece) return;
 
@@ -181,7 +230,6 @@ async function fetchEventos(url) {
         if (eventosUnicos.has(eventoId)) return;
         eventosUnicos.add(eventoId);
 
-        // Incluir eventos de ayer y hoy si son recientes, y eventos de mañana cercanos a 22:00
         const esReciente = eventoEsReciente(fechaFormateadaMarca, hora);
         const esMañana = diffDias === 1;
 
@@ -196,7 +244,6 @@ async function fetchEventos(url) {
           canales: [{ label: canal, url: null }]
         };
 
-        // Marcar eventos de mañana con género 'Mañana', salvo los cercanos a 22:00
         if (esMañana && !esReciente) {
           evento.genero = 'Mañana';
         }
@@ -227,13 +274,13 @@ async function fetchEventos(url) {
     min = min && /^\d+$/.test(min) ? min.padStart(2, '0') : '99';
     ev._orden = DateTime.fromISO(`${yyyy}-${mm}-${dd}T${hh}:${min}`, { zone: 'Europe/Madrid' });
   });
-  
+
   eventos.sort((a, b) => a._orden.toMillis() - b._orden.toMillis());
   eventos.forEach(ev => delete ev._orden);
-  
+
   // Pasar a posters
   let eventosConPoster = await scrapePostersForEventos(eventos);
-  
+
   // ⚠️ Reordenar otra vez por si scrapePostersForEventos desordena
   eventosConPoster.forEach(ev => {
     let [dd, mm, yyyy] = ev.dia.split('/');
@@ -243,11 +290,35 @@ async function fetchEventos(url) {
     min = min && /^\d+$/.test(min) ? min.padStart(2, '0') : '99';
     ev._orden = DateTime.fromISO(`${yyyy}-${mm}-${dd}T${hh}:${min}`, { zone: 'Europe/Madrid' });
   });
-  
+
   eventosConPoster.sort((a, b) => a._orden.toMillis() - b._orden.toMillis());
   eventosConPoster.forEach(ev => delete ev._orden);
-  
+
   return eventosConPoster;
+}
+
+function mapCacheToEventos(data) {
+  return Object.entries(data).map(([key, value]) => {
+    const parts = key.split(' ');
+
+    // El penúltimo siempre es la fecha dd/MM/yyyy
+    const dia = parts[parts.length - 2];
+    // El antepenúltimo siempre es la hora HH:mm
+    const hora = parts[parts.length - 3];
+    // Lo que queda al final después de fecha y hora es la competición
+    const competicion = parts.slice(parts.length - 1).join(' ');
+    // Lo que queda al principio hasta antes de la hora es el partido
+    const partido = parts.slice(0, parts.length - 3).join(' ');
+
+    return {
+      partido,
+      hora,
+      dia,
+      competicion,
+      deporte: Array.isArray(value) ? value[0] : '',
+      canales: Array.isArray(value) ? [{ label: value[1], url: null }] : []
+    };
+  });
 }
 
 function crearFallback(hoyISO) {
