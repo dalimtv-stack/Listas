@@ -113,7 +113,7 @@ async function fetchEventos(url) {
     console.info('[EVENTOS] Usando cache de EventosHoy (+Ayer,+Mañana)');
     const eventos = [
       ...(cacheAyer ? Object.values(cacheAyer.data) : []),
-      ...Object.values(cacheHoy.data),
+      ...Object.values(cacheHoy?.data || {}),,
       ...(cacheMañana ? Object.values(cacheMañana.data) : [])
     ];
     return eventos;
