@@ -1,15 +1,47 @@
 // pages/api/regenerate-posters.js
 import { fetchEventos } from '../../src/eventos/scraper-events';
 import { scrapePostersForEventos } from '../../src/eventos/poster-events';
-import { kvSetJsonTTL } from '../../api/kv';
+import { kvGetJsonTTL, kvSetJsonTTL } from '../../api/kv';
 
 export default async function handler(req, res) {
   try {
     console.info('[RegeneratePosters] Iniciando regeneración de postersBlobHoy');
-    const eventos = await fetchEventos();
+
+    // 1. Intentar leer EventosHoy de KV
+    let cacheHoy = await kvGetJsonTTL('EventosHoy');
+    let eventos = cacheHoy && cacheHoy.data ? Object.values(cacheHoy.data) : null;
+
+    // 2. Si no hay datos en KV, scrapear con fetchEventos()
+    if (!eventos || eventos.length === 0) {
+      console.info('[RegeneratePosters] KV vacío, llamando a fetchEventos()');
+      eventos = await fetchEventos();
+    }
+
+    if (!eventos || eventos.length === 0) {
+      console.warn('[RegeneratePosters] No se encontraron eventos ni en KV ni en scraping');
+      return res.status(200).json({ message: 'No hay eventos que regenerar' });
+    }
+
+    // 3. Re-scrapear posters
     const eventosConPosters = await scrapePostersForEventos(eventos);
+
+    // 4. Reescribir EventosHoy en KV
+    const mapHoy = {};
+    for (const ev of eventosConPosters) {
+      const key = `${ev.partido}|${ev.hora}|${ev.dia}|${ev.competicion}`;
+      mapHoy[key] = ev;
+    }
+
+    const day = cacheHoy?.day || (eventosConPosters[0] && eventosConPosters[0].dia);
+    if (day) {
+      await kvSetJsonTTL('EventosHoy', { day, data: mapHoy }, 86400);
+    }
+
     console.info('[RegeneratePosters] Regeneración completada');
-    res.status(200).json({ message: 'postersBlobHoy regenerado', eventos: eventosConPosters });
+    res.status(200).json({
+      message: 'EventosHoy y postersBlobHoy regenerados',
+      updated: eventosConPosters.length
+    });
   } catch (err) {
     console.error('[RegeneratePosters] Error:', err.message);
     res.status(500).json({ error: err.message });
