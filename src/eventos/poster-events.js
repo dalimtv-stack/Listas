@@ -37,7 +37,7 @@ function generateFallbackNames(original, context = '') {
     'atletico de madrid': 'at. madrid',
     'real madrid': 'r. madrid',
     'fc barcelona': 'barça',
-    'atletico madrileño': 'atletico de madrid b',
+    'atletico madrileno': 'atletico de madrid b',
     'juventus': 'juve',
     'inter milan': 'inter',
     'ac milan': 'milan',
