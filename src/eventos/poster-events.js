@@ -37,13 +37,13 @@ function generateFallbackNames(original, context = '') {
     'atletico de madrid': 'at. madrid',
     'real madrid': 'r. madrid',
     'fc barcelona': 'barça',
+    'atletico madrileño': 'atletico de madrid b',
     'juventus': 'juve',
     'inter milan': 'inter',
     'ac milan': 'milan',
     'bayern munich': 'bayern',
     'borussia dortmund': 'dortmund',
     'paris saint-germain': 'psg',
-    'atlético madrileño': 'atlético de madrid b',
     'simulcast': ['multieuropa', 'multichampions']
   };
   let aliasVersion = normalized;
