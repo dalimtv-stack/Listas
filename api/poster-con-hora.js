@@ -102,7 +102,8 @@ module.exports = async (req, res) => {
   for (const hora of horas) {
     let blobUrl = url; // fallback por defecto: la URL original
     const safeHora = slugify(hora);
-    const blobName = `posters/${slugify(originalBasename)}_${safeHora}.png`;
+    const todayKey = new Date().toISOString().slice(0,10).replace(/-/g, ''); // YYYYMMDD
+    const blobName = `posters/${slugify(originalBasename)}_${todayKey}_${safeHora}.png`;
 
     try {
       // 1) Si tenemos headFn, comprobar si ya existe (si devuelve info con url la usamos)
