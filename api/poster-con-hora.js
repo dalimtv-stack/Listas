@@ -110,10 +110,7 @@ module.exports = async (req, res) => {
         try {
           const headRes = await headFn(blobName, { token: process.env.BLOB_READ_WRITE_TOKEN });
           if (headRes && headRes.url) {
-            console.info(`[Poster con hora] Encontrado en blob (head): ${blobName}`);
-            blobUrl = headRes.url;
-            results.push({ hora, url: blobUrl });
-            continue; // siguiente hora
+            console.info(`[Poster con hora] Ya existía en blob, se sobrescribirá: ${blobName}`);
           }
           // si headRes no tiene url puede que head no devuelva la url; seguimos a intentar put
         } catch (errHead) {
