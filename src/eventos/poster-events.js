@@ -129,10 +129,9 @@ async function buscarPosterEnFuente(url, candidates, eventoFecha = null) {
     
     // 👉 Aquí pegas los logs de depuración
     console.log('CANDIDATES:', candidates.map(normalizeMatchName));
-    // Log para candidatos
-    //for (const p of posters) {
-      //console.log('TITULO:', normalizeMatchName(p.titulo));
-    //}
+    for (const p of posters) {
+      console.log('TITULO:', normalizeMatchName(p.titulo));
+    }
 
     for (const name of candidates) {
       const nameNorm = normalizeMatchName(name);
@@ -184,28 +183,10 @@ async function kvReadPostersHoyMap() {
 
 async function kvWritePostersHoyMap(mergedMap) {
   try {
-    const now = DateTime.now().setZone('Europe/Madrid');
-    const todayKey = now.toFormat('yyyyMMdd'); // clave de día para invalidar
-
-    // Si mergedMap no es un objeto válido, inicializamos vacío
-    const safeMap = mergedMap && typeof mergedMap === 'object' ? mergedMap : {};
-
-    const dataToWrite = {
-      data: safeMap,
-      timestamp: now.toMillis(),
-      dayKey: todayKey
-    };
-
-    console.info(
-      `[Poster] Escritura en KV (forzada diaria): ${Object.keys(safeMap).length} entradas`,
-      JSON.stringify(Object.keys(safeMap))
-    );
-
+    console.info(`[Poster] Intentando escribir en KV: ${Object.keys(mergedMap).length} entradas`, JSON.stringify(Object.keys(mergedMap)));
+    const dataToWrite = { data: mergedMap, timestamp: DateTime.now().setZone('Europe/Madrid').toMillis() };
     await kvSetJsonTTL('postersBlobHoy', dataToWrite, 86400);
-
-    console.info(
-      `[Poster] KV actualizado con ${Object.keys(safeMap).length} entradas para dayKey ${todayKey}`
-    );
+    console.info(`[Poster] KV actualizado con ${Object.keys(mergedMap).length} entradas`);
   } catch (err) {
     console.error('[Poster] Error al escribir en KV postersBlobHoy:', err.message);
     throw err;
