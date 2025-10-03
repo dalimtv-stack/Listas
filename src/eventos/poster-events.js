@@ -142,7 +142,7 @@ async function buscarPosterEnFuente(url, candidates, eventoFecha = null) {
         if (regex.test(tituloNorm)) {
           if (eventoFecha && p.fecha) {
             const diff = Math.abs(p.fecha.diff(eventoFecha, 'minutes').minutes);
-            if (diff <= 10 && p.src?.startsWith('http')) {
+            if (diff <= 30 && p.src?.startsWith('http')) {
               console.info(`[Poster] Coincidencia encontrada en ${url} → ${p.src} (fecha: ${p.fecha.toISO()})`);
               return p.src;
             }
