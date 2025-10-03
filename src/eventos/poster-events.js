@@ -183,10 +183,28 @@ async function kvReadPostersHoyMap() {
 
 async function kvWritePostersHoyMap(mergedMap) {
   try {
-    console.info(`[Poster] Intentando escribir en KV: ${Object.keys(mergedMap).length} entradas`, JSON.stringify(Object.keys(mergedMap)));
-    const dataToWrite = { data: mergedMap, timestamp: DateTime.now().setZone('Europe/Madrid').toMillis() };
+    const now = DateTime.now().setZone('Europe/Madrid');
+    const todayKey = now.toFormat('yyyyMMdd'); // clave de día para invalidar
+
+    // Si mergedMap no es un objeto válido, inicializamos vacío
+    const safeMap = mergedMap && typeof mergedMap === 'object' ? mergedMap : {};
+
+    const dataToWrite = {
+      data: safeMap,
+      timestamp: now.toMillis(),
+      dayKey: todayKey
+    };
+
+    console.info(
+      `[Poster] Escritura en KV (forzada diaria): ${Object.keys(safeMap).length} entradas`,
+      JSON.stringify(Object.keys(safeMap))
+    );
+
     await kvSetJsonTTL('postersBlobHoy', dataToWrite, 86400);
-    console.info(`[Poster] KV actualizado con ${Object.keys(mergedMap).length} entradas`);
+
+    console.info(
+      `[Poster] KV actualizado con ${Object.keys(safeMap).length} entradas para dayKey ${todayKey}`
+    );
   } catch (err) {
     console.error('[Poster] Error al escribir en KV postersBlobHoy:', err.message);
     throw err;
