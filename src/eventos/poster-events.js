@@ -129,9 +129,9 @@ async function buscarPosterEnFuente(url, candidates, eventoFecha = null) {
     
     // 👉 Aquí pegas los logs de depuración
     console.log('CANDIDATES:', candidates.map(normalizeMatchName));
-    for (const p of posters) {
-      console.log('TITULO:', normalizeMatchName(p.titulo));
-    }
+    //for (const p of posters) {
+      //console.log('TITULO:', normalizeMatchName(p.titulo));
+    //}
 
     for (const name of candidates) {
       const nameNorm = normalizeMatchName(name);
