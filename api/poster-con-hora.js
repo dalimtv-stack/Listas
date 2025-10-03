@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
     return res.end(JSON.stringify({ error: 'Faltan parámetros "url" y/o "horas[]"' }));
   }
 
-  console.info('[Poster con hora] URL de imagen de entrada:', url);
+  //console.info('[Poster con hora] URL de imagen de entrada:', url);
 
   // Intento de cargar SDK de Vercel Blob (si no está instalado no rompemos)
   let putFn = null;
@@ -62,7 +62,7 @@ module.exports = async (req, res) => {
     if (contentType.includes('webp') || Buffer.isBuffer(buffer) && buffer.slice(0, 4).toString() === 'RIFF') {
       try {
         buffer = await sharp(buffer).png().toBuffer();
-        console.info('[Poster con hora] Conversión .webp -> PNG completada.');
+        //console.info('[Poster con hora] Conversión .webp -> PNG completada.');
       } catch (err) {
         // si falla la conversión, seguimos con el buffer original y Jimp intentará leerlo
         console.warn('[Poster con hora] Falló la conversión con sharp, se intentará con Jimp directamente:', err.message);
@@ -111,7 +111,7 @@ module.exports = async (req, res) => {
         try {
           const headRes = await headFn(blobName, { token: process.env.BLOB_READ_WRITE_TOKEN });
           if (headRes && headRes.url) {
-            console.info(`[Poster con hora] Ya existía en blob, se sobrescribirá: ${blobName}`);
+            //console.info(`[Poster con hora] Ya existía en blob, se sobrescribirá: ${blobName}`);
           }
           // si headRes no tiene url puede que head no devuelva la url; seguimos a intentar put
         } catch (errHead) {
@@ -142,7 +142,7 @@ module.exports = async (req, res) => {
       // 3) Intentar subir via @vercel/blob.put si está disponible
       if (putFn && process.env.BLOB_READ_WRITE_TOKEN) {
         try {
-          console.info(`[Poster con hora] Subiendo imagen a Blob: ${blobName}`);
+          //console.info(`[Poster con hora] Subiendo imagen a Blob: ${blobName}`);
           // put acepta Buffer directamente
           const putRes = await putFn(blobName, finalBuffer, {
             access: 'public',
@@ -152,7 +152,7 @@ module.exports = async (req, res) => {
           });
           if (putRes && putRes.url) {
             blobUrl = putRes.url;
-            console.info('[Poster con hora] Imagen subida a Blob:', blobUrl);
+            //console.info('[Poster con hora] Imagen subida a Blob:', blobUrl);
           } else {
             console.warn('[Poster con hora] put() no devolvió url, se usará fallback.');
           }
