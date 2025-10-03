@@ -4,6 +4,7 @@
 const { fetchEventos } = require('./scraper-events');
 const { normalizeId } = require('./utils-events');
 const { kvGetJson } = require('../../api/kv');
+const { DateTime } = require('luxon');
 
 async function getCatalog(configId, genre = '') {
   console.time(`[CATALOG EVENTS] Catálogo generado`);
@@ -16,9 +17,23 @@ async function getCatalog(configId, genre = '') {
   }
 
   const eventos = await fetchEventos(url);
-  const filteredEventos = genre === 'Mañana'
-    ? eventos.filter(ev => ev.genero === 'Mañana')
-    : eventos.filter(ev => !ev.genero || ev.genero !== 'Mañana');
+
+  // Calcular hoy y mañana en horario de Madrid
+  const hoy = DateTime.now().setZone('Europe/Madrid').startOf('day');
+  const mañana = hoy.plus({ days: 1 });
+
+  let filteredEventos;
+  if (genre === 'Mañana') {
+    filteredEventos = eventos.filter(ev => {
+      const fechaEv = DateTime.fromFormat(ev.dia, 'dd/LL/yyyy', { zone: 'Europe/Madrid' });
+      return fechaEv.hasSame(mañana, 'day');
+    });
+  } else {
+    filteredEventos = eventos.filter(ev => {
+      const fechaEv = DateTime.fromFormat(ev.dia, 'dd/LL/yyyy', { zone: 'Europe/Madrid' });
+      return fechaEv.hasSame(hoy, 'day');
+    });
+  }
 
   const resultado = filteredEventos.map(ev => ({
     id: `Heimdallr_evt_${configId}_${normalizeId(ev)}`,
