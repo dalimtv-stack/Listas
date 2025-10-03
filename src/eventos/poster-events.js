@@ -10,6 +10,7 @@ function normalizeMatchName(matchName) {
   return String(matchName)
     .toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\u2013\u2014\u2212]/g, '-')   // en dash, em dash, minus → guion simple
     .replace(/\s+/g, ' ')
     .trim();
 }
