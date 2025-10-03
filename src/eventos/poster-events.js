@@ -43,6 +43,7 @@ function generateFallbackNames(original, context = '') {
     'bayern munich': 'bayern',
     'borussia dortmund': 'dortmund',
     'paris saint-germain': 'psg',
+    'atlético madrileño': 'atlético de madrid b',
     'simulcast': ['multieuropa', 'multichampions']
   };
   let aliasVersion = normalized;
