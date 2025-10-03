@@ -154,6 +154,7 @@ async function fetchEventos(url) {
     // 3. Guardar como EventosHoy con posters frescos (claves robustas)
     const mapHoy = {};
     for (const ev of eventosPromocionados) {
+      delete ev.genero; // 🔧 limpiar flag temporal
       mapHoy[buildEventKey(ev)] = ev;
     }
     await kvSetJsonTTL('EventosHoy', {
@@ -180,6 +181,7 @@ async function fetchEventos(url) {
   const mapHoy = {}, mapMañana = {}, mapAyer = {};
   for (const ev of eventosConPoster) {
     const key = buildEventKey(ev);
+    delete ev.genero
     if (ev.dia === hoyStr) mapHoy[key] = ev;
     else if (ev.dia === ayerStr) mapAyer[key] = ev;
     else if (ev.dia === mañanaStr) mapMañana[key] = ev;
