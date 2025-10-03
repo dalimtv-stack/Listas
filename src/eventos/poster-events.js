@@ -33,11 +33,13 @@ function normalizeBlobUrl(url) {
 function generateFallbackNames(original, context = '') {
   const normalized = normalizeMatchName(original);
   const variants = [normalized];
+
+  // Diccionario de alias en su forma "humana"
   const teamAliases = {
     'atletico de madrid': 'at. madrid',
     'real madrid': 'r. madrid',
     'fc barcelona': 'barça',
-    'atletico madrileno': 'atletico de madrid b',
+    'atlético madrileño': 'atlético de madrid b',
     'juventus': 'juve',
     'inter milan': 'inter',
     'ac milan': 'milan',
@@ -46,19 +48,27 @@ function generateFallbackNames(original, context = '') {
     'paris saint-germain': 'psg',
     'simulcast': ['multieuropa', 'multichampions']
   };
-  let aliasVersion = normalized;
+
+  // Normalizamos las claves del diccionario para que coincidan con normalizeMatchName
+  const normalizedAliases = {};
   for (const [full, alias] of Object.entries(teamAliases)) {
-    const regex = new RegExp(`\\b${full}\\b`, 'gi');
+    normalizedAliases[normalizeMatchName(full)] = alias;
+  }
+
+  let aliasVersion = normalized;
+  for (const [fullNorm, alias] of Object.entries(normalizedAliases)) {
+    const regex = new RegExp(`\\b${fullNorm}\\b`, 'gi');
     if (Array.isArray(alias)) {
       alias.forEach(a => {
-        const replaced = aliasVersion.replace(regex, a);
+        const replaced = aliasVersion.replace(regex, normalizeMatchName(a));
         if (replaced !== aliasVersion) variants.push(replaced);
       });
     } else {
-      const replaced = aliasVersion.replace(regex, alias);
+      const replaced = aliasVersion.replace(regex, normalizeMatchName(alias));
       if (replaced !== aliasVersion) variants.push(replaced);
     }
   }
+
   if (context) variants.push(normalizeMatchName(context));
   return [...new Set(variants)];
 }
