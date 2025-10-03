@@ -198,12 +198,6 @@ async function fetchEventos(url) {
   return eventosConPoster;
 }
 
-// Nuevo mapCacheToEventos: ya no parsea, solo devuelve los objetos
-function mapCacheToEventos(data) {
-  return Object.values(data);
-}
-
-
 async function scrapeEventosDesdeMarca(ahoraDT) {
   const eventos = [];
   const eventosUnicos = new Set();
