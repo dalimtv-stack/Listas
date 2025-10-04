@@ -16,7 +16,7 @@ async function getCatalog(configId, genre = '') {
     return [];
   }
 
-  const eventos = await fetchEventos(url);
+  const eventos = await fetchEventos(url, { modo: genre === 'Mañana' ? 'mañana' : undefined });
 
   // Calcular hoy y mañana en horario de Madrid
   const hoy = DateTime.now().setZone('Europe/Madrid').startOf('day');
