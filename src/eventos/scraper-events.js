@@ -110,7 +110,7 @@ function eventoEsReciente(dia, hora) {
   }
 }
 
-async function fetchEventos(url) {
+async function fetchEventos(url, opts = {}) {
   const ahoraDT = DateTime.now().setZone('Europe/Madrid');
   const hoyStr = ahoraDT.toFormat('dd/MM/yyyy');
   const ayerStr = ahoraDT.minus({ days: 1 }).toFormat('dd/MM/yyyy');
@@ -120,6 +120,12 @@ async function fetchEventos(url) {
   const cacheHoy = await kvGetJsonTTL('EventosHoy');
   const cacheAyer = await kvGetJsonTTL('EventosAyer');
   const cacheMañana = await kvGetJsonTTL('EventosMañana');
+
+  // 🔧 Si el modo es "mañana", devolver directamente los eventos de mañana
+  if (opts.modo === 'mañana') {
+    const eventosMañana = getEventos(cacheMañana).filter(ev => ev.dia === mañanaStr);
+    return eventosMañana;
+  }
 
   // 2. Si hay cache válido de hoy → devolver unión, filtrada por ventana temporal
   if (getDay(cacheHoy) === hoyStr) {
@@ -133,7 +139,6 @@ async function fetchEventos(url) {
   }
 
   // 3. Promocionar caches si toca
-  // Si el cacheHoy está desfasado (en realidad es de ayer), lo pasamos a Ayer
   if (getDay(cacheHoy) === ayerStr) {
     await kvSetJsonTTL('EventosAyer', {
       day: getDay(cacheHoy),
@@ -141,31 +146,19 @@ async function fetchEventos(url) {
     }, 86400);
   }
 
-  // Si el cacheMañana corresponde al nuevo día de hoy → lo promovemos
   if (getDay(cacheMañana) === hoyStr) {
     console.info('[EVENTOS] Promocionando EventosMañana a Hoy');
-
-    // 1. Recuperar los eventos de mañana
     let eventosPromocionados = getEventos(cacheMañana);
-
-    // 2. Volver a pedir posters para ellos
     eventosPromocionados = await scrapePostersForEventos(eventosPromocionados);
 
-    // 3. Guardar como EventosHoy con posters frescos (claves robustas)
     const mapHoy = {};
     for (const ev of eventosPromocionados) {
-      delete ev.genero; // 🔧 limpiar flag temporal
+      delete ev.genero;
       mapHoy[buildEventKey(ev)] = ev;
     }
-    await kvSetJsonTTL('EventosHoy', {
-      day: getDay(cacheMañana),
-      data: mapHoy
-    }, 86400);
-
-    // 4. Invalidar postersBlobHoy para forzar regeneración
+    await kvSetJsonTTL('EventosHoy', { day: getDay(cacheMañana), data: mapHoy }, 86400);
     await kvSetJsonTTL('postersBlobHoy', { data: {}, timestamp: 0 }, 1);
 
-    // 5. Devolver unión Ayer + Hoy, filtrada por ventana temporal
     const merged = [
       ...getEventos(cacheAyer),
       ...eventosPromocionados
@@ -177,11 +170,11 @@ async function fetchEventos(url) {
   // 4. Si no hay cache válido, scrapear como antes
   let eventosConPoster = await scrapeEventosDesdeMarca(ahoraDT);
 
-  // 5. Guardar en KV como objetos completos (sin anidar otra cabecera)
+  // 5. Guardar en KV
   const mapHoy = {}, mapMañana = {}, mapAyer = {};
   for (const ev of eventosConPoster) {
     const key = buildEventKey(ev);
-    delete ev.genero
+    delete ev.genero;
     if (ev.dia === hoyStr) mapHoy[key] = ev;
     else if (ev.dia === ayerStr) mapAyer[key] = ev;
     else if (ev.dia === mañanaStr) mapMañana[key] = ev;
