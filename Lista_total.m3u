@@ -386,7 +386,8 @@ http://172.93.102.112:8989/278866_.m3u8
 http://172.93.102.112:8989/278830_.m3u8
 
 #EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://i.ibb.co/4wVnPgDk/Primera-RFEF-2021.png" group-title="NEW ERA", Canal 1 [1RFEF] (SOLO EVENTOS)
-acestream://c1ee6e1e0ef5928d8261f855c417de21794f437d
+acestream://0a56c3f215071f5d21a71e6dca8383aa64eb9b2f
+//acestream://c1ee6e1e0ef5928d8261f855c417de21794f437d
 #EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://i.ibb.co/4wVnPgDk/Primera-RFEF-2021.png" group-title="Shickat.me", Canal 1 [1RFEF] (SOLO EVENTOS)
 acestream://b40212c43e96e97542ea00f2129212a054853a57
 
