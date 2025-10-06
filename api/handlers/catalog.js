@@ -9,6 +9,7 @@ const { normalizeCatalogName, getM3uHash, parseCatalogRest, extractConfigIdFromU
 const { CACHE_TTL, ADDON_PREFIX, FORCE_REFRESH_GENRES } = require('../../src/config');
 const { resolveM3uUrl } = require('../resolve');
 const { getCatalog: getEventosCatalog } = require('../../src/eventos/catalog-events');
+const { transformarTexto, extraerYLimpiarCalidad } = require('../../src/eventos/stream-events');
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
@@ -162,13 +163,23 @@ async function handleCatalog(req) {
     console.log(logPrefix, `aplicado genre="${g}", tras filtro: ${filtered.length}`);
   }
 
-  const metas = filtered.map(c => ({
-    id: `${ADDON_PREFIX}_${configId}_${c.id}`,
-    type: 'tv',
-    name: normalizeCatalogName(c.name),
-    poster: c.logo_url,
-    description: `Prueba description:`
-  }));
+  const metas = filtered.map(c => {
+    const { calidadDetectada } = extraerYLimpiarCalidad(c.name);
+    const categoria = c.group_title && c.group_title !== 'General' ? transformarTexto(c.group_title) : transformarTexto(c.extra_genres?.[0] || 'Otros');
+    const formato = c.acestream_id ? 'Acestream' : c.m3u8_url ? 'M3U8' : c.stream_url ? 'Directo' : 'Browser';
+    const audioMatch = c.name.match(/\(multiaudio\)|[\[](AR|PT|ES|EN)[^\]]*]/i);
+    const audio = audioMatch ? (audioMatch[1] || 'Multiaudio') : 'Multiaudio';
+    const proveedor = 'NEW ERA'; // Ajustar si hay campo
+    const description = `Formato: ${formato}\nCategoria: ${categoria}\nCalidad: 🖥️ ${calidadDetectada}\nAudio: 📡 ${audio}\nProveedor: 🏴‍☠️${proveedor}🏴‍☠️`;
+
+    return {
+      id: `${ADDON_PREFIX}_${configId}_${c.id}`,
+      type: 'tv',
+      name: transformarTexto(normalizeCatalogName(c.name)),
+      poster: c.logo_url || `https://dummyimage.com/300x450/000000/ffffff.png&text=${encodeURIComponent(c.name)}`,
+      description
+    };
+  });
 
   const resp = { metas };
   cache.set(cacheKey, resp);
