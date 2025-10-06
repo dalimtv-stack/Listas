@@ -7,8 +7,7 @@
   ],
   "crons": [
     { "path": "/api/regenerate-posters", "schedule": "00 4 * * *" },
-    { "path": "/api/cleanup-posters", "schedule": "00 4 * * *" },
-	{ "path": "/cron/scrape-streams", "schedule": "0 5 * * *" }
+    { "path": "/api/cleanup-posters", "schedule": "00 4 * * *" }
   ],
   "routes": [
     { "src": "/manifest.json", "dest": "/api/index.js" },
