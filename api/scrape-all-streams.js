@@ -1,10 +1,10 @@
 'use strict';
 
 const { DateTime } = require('luxon');
-const { getChannels } = require('../db');
-const { resolveM3uUrl } = require('../../api/resolve');
-const { kvSetJsonTTL, kvGetJsonTTL } = require('../../api/kv');
-const { handleStreamInternal, enrichWithExtra } = require('../../api/handlers/stream');
+const { getChannels } = require('../src/db');
+const { resolveM3uUrl } = require('./resolve');
+const { kvSetJsonTTL, kvGetJsonTTL } = require('./kv');
+const { handleStreamInternal, enrichWithExtra } = require('./handlers/stream');
 
 async function scrapeAndCacheStreams() {
   const logPrefix = '[CRON]';
