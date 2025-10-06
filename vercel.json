@@ -25,6 +25,8 @@
 
     { "src": "/cleanup", "dest": "/api/cleanup.js" },
     { "src": "/poster-con-hora", "dest": "/api/poster-con-hora.js" },
+    { "src": "/scrape-streams", "dest": "/src/cron/scrape-streams.js" },
+	  
 
     { "src": "/(.*)", "dest": "/api/index.js" }
   ]
