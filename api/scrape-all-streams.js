@@ -2,7 +2,7 @@
 
 const { DateTime } = require('luxon');
 const { getChannels } = require('../src/db');
-const { resolveM3uUrl } = require('./resolve');
+const { resolveM3uUrlALL } = require('./resolve');
 const { kvSetJsonTTL, kvGetJsonTTL } = require('./kv');
 const { handleStreamInternal, enrichWithExtra } = require('./handlers/stream');
 const { ADDON_PREFIX } = require('../src/config');
