@@ -9,7 +9,7 @@ const { channelAliases, normalizeName } = require('../../api/scraper');
 function getChannelIdFromLabel(label) {
   if (!label) return null;
   const normalized = normalizeName(label);
-  for (const [key, aliases] = Object.entries(channelAliases)) {
+  for (const [key, aliases] of Object.entries(channelAliases)) {
     if (key === normalized || aliases.includes(normalized)) {
       return key.replace(/\s/g, '_').toLowerCase();
     }
