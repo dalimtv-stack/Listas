@@ -3,7 +3,7 @@
 const { DateTime } = require('luxon');
 const { getChannels } = require('../db');
 const { resolveM3uUrl } = require('../../api/resolve');
-const { kvSetJsonTTL } = require('../../api/kv');
+const { kvSetJsonTTL, kvGetJsonTTL } = require('../../api/kv');
 const { handleStreamInternal, enrichWithExtra } = require('../../api/handlers/stream');
 
 async function scrapeAndCacheStreams() {
@@ -12,7 +12,6 @@ async function scrapeAndCacheStreams() {
 
   const configListKV = await kvGetJsonTTL('ConfigList');
   const configIds = Array.isArray(configListKV?.data) ? configListKV.data : ['default'];
-
 
   for (const configId of configIds) {
     const m3uUrl = await resolveM3uUrl(configId);
@@ -58,6 +57,7 @@ function getStreamType(stream) {
   return 'browser';
 }
 
+// 👇 Esto es lo que permite que Vercel lo ejecute vía HTTP
 module.exports = async (req, res) => {
   try {
     await scrapeAndCacheStreams();
