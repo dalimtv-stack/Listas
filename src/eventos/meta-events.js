@@ -32,7 +32,7 @@ async function getMeta(id, configId) {
     id, type: 'tv',
     name: `${nombre}${deporte}`,
     poster: null, background: null,
-    description: `${fechaHora}${competicion}`.trim() || nombre
+    description: `${fechaHora}${competicion}${deporte}`.trim() || nombre
   };
 }
 
