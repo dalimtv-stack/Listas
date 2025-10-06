@@ -7,6 +7,7 @@ const { parse } = require('iptv-playlist-parser');
 const { kvGetJsonTTL, kvSetJsonTTLIfChanged, kvDelete } = require('./kv');
 
 const channelAliases = {
+  'laliga hypermotion': ['laliga_hypermotion','laliga.hypermotion', 'laliga tv hypermotion','la liga hypermotion','la liga tv hypermotion'],
   'movistar plus': ['movistar plus', 'movistarplus', 'm. plus', 'm+ plus', 'm+plus', 'movistar plus fhd', 'movistar+', 'plus fhd', 'movistarplus 1080', 'movistar plus 1080'],
   'movistar laliga (fhd)': ['m. laliga', 'm. laliga 1080p', 'movistar laliga'],
   'dazn f1': ['dazn f1', 'dazn f1 1080', 'dazn f1 1080 (fórmula 1)', 'fórmula 1', 'dazn f1 es'],
