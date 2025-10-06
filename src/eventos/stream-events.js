@@ -73,7 +73,6 @@ async function getStreams(id, configId) {
     const prefix = `Heimdallr_evt_${configId}_`;
     const cleanId = id?.startsWith(prefix) ? id.slice(prefix.length) : id;
 
-    // KV defensivo: asegurar objetos vacíos si data viene undefined
     const hoyKV = await kvGetJsonTTL('EventosHoy');
     const mañanaKV = await kvGetJsonTTL('EventosMañana');
 
@@ -82,24 +81,40 @@ async function getStreams(id, configId) {
 
     const allEventos = { ...hoyData, ...mañanaData };
 
-    // Buscar evento por normalizeId exacto
     const evento = Object.values(allEventos).find(ev => normalizeId(ev) === cleanId);
-    if (!evento || !Array.isArray(evento.canales) || !evento.canales[0]?.label) {
+    if (!evento) {
+      console.info('[STREAM] No se encontró evento con id normalizado:', cleanId);
+      return { streams: [], chName: '' };
+    }
+
+    if (!Array.isArray(evento.canales) || !evento.canales[0]?.label) {
+      console.info('[STREAM] Evento sin canales válidos:', evento.partido);
       return { streams: [], chName: '' };
     }
 
     const label = evento.canales[0].label;
+    const normalized = normalizeName(label);
     const channelId = getChannelIdFromLabel(label);
+
+    console.info('[STREAM] Canal detectado en evento:', {
+      rawLabel: label,
+      normalized,
+      resolvedChannelId: channelId
+    });
+
     if (!channelId) {
+      console.info('[STREAM] No se pudo resolver channelId para label:', label);
       return { streams: [], chName: '' };
     }
 
-    // KV de streams: contemplar envoltura { data } si existe
     const kvKey = `Streams:${channelId}:${configId}`;
+    console.info('[STREAM] Buscando streams en KV con clave:', kvKey);
+
     const cached = await kvGetJsonTTL(kvKey);
     const rawStreams = (cached?.streams) || (cached?.data?.streams) || [];
 
     if (!Array.isArray(rawStreams) || rawStreams.length === 0) {
+      console.info('[STREAM] No se encontraron streams en KV para', kvKey);
       return { streams: [], chName: '' };
     }
 
@@ -126,6 +141,7 @@ async function getStreams(id, configId) {
       };
     }).filter(Boolean);
 
+    console.info('[STREAM] streams de evento generados:', streams.length);
     return { streams, chName: partido };
   } catch (e) {
     console.error('[STREAM] getStreams error:', e);
