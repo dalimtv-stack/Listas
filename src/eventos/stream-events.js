@@ -8,8 +8,13 @@ const { channelAliases, normalizeName } = require('../../api/scraper');
 
 function getChannelIdFromLabel(label) {
   if (!label) return null;
-  const { canalLimpio } = extraerYLimpiarCalidad(label);
-  return canalLimpio || null;
+  const normalized = normalizeName(label);
+  for (const [kvName, aliases] of Object.entries(channelAliases)) {
+    if (aliases.includes(normalized)) {
+      return kvName; // 👈 nombre exacto como está en KV
+    }
+  }
+  return null;
 }
 
 function extraerYLimpiarCalidad(label = '') {
