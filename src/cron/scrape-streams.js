@@ -58,4 +58,12 @@ function getStreamType(stream) {
   return 'browser';
 }
 
-module.exports = scrapeAndCacheStreams;
+module.exports = async (req, res) => {
+  try {
+    await scrapeAndCacheStreams();
+    res.status(200).send('Scrape ejecutado correctamente');
+  } catch (err) {
+    console.error('[SCRAPE ERROR]', err);
+    res.status(500).send('Error al ejecutar scrape');
+  }
+};
