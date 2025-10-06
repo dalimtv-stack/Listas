@@ -8,16 +8,8 @@ const { channelAliases, normalizeName } = require('../../api/scraper');
 
 function getChannelIdFromLabel(label) {
   if (!label) return null;
-  const normalized = normalizeName(label);
-  for (const [key, aliases] of Object.entries(channelAliases || {})) {
-    const isMatch =
-      key === normalized ||
-      (Array.isArray(aliases) && aliases.includes(normalized));
-    if (isMatch) {
-      return key.replace(/\s/g, '_').toLowerCase();
-    }
-  }
-  return null;
+  const { canalLimpio } = extraerYLimpiarCalidad(label);
+  return canalLimpio || null;
 }
 
 function extraerYLimpiarCalidad(label = '') {
