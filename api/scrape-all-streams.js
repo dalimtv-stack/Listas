@@ -15,7 +15,7 @@ async function scrapeAndCacheStreams() {
   const configIds = Array.isArray(configListKV?.data) ? configListKV.data : ['default'];
 
   for (const configId of configIds) {
-    const m3uUrl = await resolveM3uUrl(configId);
+    const m3uUrl = await resolveM3uUrlALL(configId);
     if (!m3uUrl) {
       console.warn(logPrefix, `No m3uUrl para ${configId}`);
       continue;
