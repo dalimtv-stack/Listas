@@ -319,4 +319,4 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
   return finalResults;
 }
 
-module.exports = { scrapeExtraWebs };
+module.exports = { scrapeExtraWebs, normalizeName };
