@@ -5,6 +5,7 @@ const { getChannels } = require('../src/db');
 const { resolveM3uUrl } = require('./resolve');
 const { kvSetJsonTTL, kvGetJsonTTL } = require('./kv');
 const { handleStreamInternal, enrichWithExtra } = require('./handlers/stream');
+const { ADDON_PREFIX } = require('../src/config');
 
 async function scrapeAndCacheStreams() {
   const logPrefix = '[CRON]';
