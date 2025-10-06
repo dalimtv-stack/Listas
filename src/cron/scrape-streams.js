@@ -10,7 +10,9 @@ async function scrapeAndCacheStreams() {
   const logPrefix = '[CRON]';
   console.log(logPrefix, 'Iniciando scrape a las', DateTime.now().setZone('Europe/Madrid').toLocaleString());
 
-  const configIds = ['default'];
+  const configListKV = await kvGetJsonTTL('ConfigList');
+  const configIds = Array.isArray(configListKV?.data) ? configListKV.data : ['default'];
+
 
   for (const configId of configIds) {
     const m3uUrl = await resolveM3uUrl(configId);
