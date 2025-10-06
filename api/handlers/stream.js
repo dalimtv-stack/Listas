@@ -8,8 +8,6 @@ const { kvGet, kvSet, kvGetJsonTTL, kvSetJsonTTLIfChanged, kvDelete } = require(
 const { getM3uHash, extractConfigIdFromUrl } = require('../utils');
 const { CACHE_TTL } = require('../../src/config');
 const { resolveM3uUrl, resolveExtraWebs } = require('../resolve');
-
-// --- Import de eventos ---
 const { getStreams: getEventosStreams } = require('../../src/eventos/stream-events');
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
@@ -19,7 +17,6 @@ async function handleStream(req) {
   const id = String(req.params.id).replace(/\.json$/, '');
   const configId = req.params.configId || extractConfigIdFromUrl(req);
 
-  // --- Rama de eventos ---
   if (id.startsWith('Heimdallr_evt')) {
     const { streams, chName } = await getEventosStreams(id, configId);
     console.log(logPrefix, `streams de evento generados: ${streams.length}`);
@@ -28,7 +25,6 @@ async function handleStream(req) {
 
   const m3uUrl = await resolveM3uUrl(configId);
   console.log('[ROUTE] STREAM', { url: req.originalUrl, id, configId, m3uUrl: m3uUrl ? '[ok]' : null });
-
 
   if (!m3uUrl) {
     console.log(logPrefix, 'm3uUrl no resuelta');
@@ -51,23 +47,54 @@ async function handleStream(req) {
     console.log(logPrefix, `Caché de scraper limpiado para ${id}`);
   }
 
+  const channelId = id.split('_').slice(2).join('_');
+  const kvKeyCron = `Streams:${channelId}:${configId}`;
+  let cached = await kvGetJsonTTL(kvKeyCron);
+
+  if (cached && cached.streams) {
+    console.log(logPrefix, 'Usando cache por cron:', kvKeyCron);
+    return cached;
+  }
+
   const m3uHash = currentM3uHash;
-  const kvKey = `stream:${m3uHash}:${id}`;
-  let kvCached = await kvGetJsonTTL(kvKey);
+  const kvKeyDynamic = `stream:${m3uHash}:${id}`;
+  let kvCached = await kvGetJsonTTL(kvKeyDynamic);
 
   if (kvCached && !forceScrape) {
-    console.log(logPrefix, 'Usando caché KV:', kvCached);
+    console.log(logPrefix, 'Usando cache dinámico:', kvKeyDynamic);
     const enriched = await enrichWithExtra(kvCached, configId, m3uUrl, forceScrape);
+    await kvSetJsonTTLIfChanged(kvKeyCron, enriched, 86400);
     return enriched;
   }
 
   let result = await handleStreamInternal({ id, m3uUrl, configId });
   const enriched = await enrichWithExtra(result, configId, m3uUrl, forceScrape);
 
-  await kvSetJsonTTLIfChanged(kvKey, enriched, 3600);
+  enriched.streams = sortStreams(enriched.streams);
+
+  await kvSetJsonTTLIfChanged(kvKeyDynamic, enriched, 3600);
+  await kvSetJsonTTLIfChanged(kvKeyCron, enriched, 86400);
 
   console.log(logPrefix, 'Respuesta final con streams:', enriched.streams);
   return enriched;
+}
+
+function sortStreams(streams) {
+  const priority = {
+    'm3u8-no-vlc': 1,
+    'acestream': 2,
+    'vlc': 3,
+    'browser': 4
+  };
+
+  return streams.sort((a, b) => priority[getStreamType(a)] - priority[getStreamType(b)]);
+}
+
+function getStreamType(stream) {
+  if (stream.url && stream.url.endsWith('.m3u8') && !stream.name.includes('VLC')) return 'm3u8-no-vlc';
+  if (stream.externalUrl && stream.externalUrl.startsWith('acestream://')) return 'acestream';
+  if (stream.name.includes('VLC')) return 'vlc';
+  return 'browser';
 }
 
 async function handleStreamInternal({ id, m3uUrl, configId }) {
@@ -100,7 +127,6 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
       behaviorHints = src.behaviorHints || { notWebReady: false, external: false };
     }
 
-    // Fix: si es el canal principal con Ace, usar su acestream_group_title para etiquetar correctamente
     let name;
     let title;
     let group_title_for_audit;
@@ -121,7 +147,6 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
       name,
       title,
       behaviorHints,
-      // solo para auditoría/depuración; Stremio lo ignora
       group_title: group_title_for_audit
     };
 
@@ -136,17 +161,14 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
     console.log(logPrefix, `Añadido stream: ${streamUrl}, behaviorHints=`, out.behaviorHints);
   };
 
-  // Añadir posibles principales: Ace/M3U8/Directo/url
   if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) {
     addStream(ch);
   }
 
-  // Añadir adicionales
   if (Array.isArray(ch.additional_streams)) {
     ch.additional_streams.forEach(addStream);
   }
 
-  // Añadir website si existe
   if (ch.website_url && !seenUrls.has(ch.website_url)) {
     streams.push({
       title: `${ch.name} - Website`,
@@ -185,7 +207,6 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
       const extraStreams = await scrapeExtraWebs(chName, extraWebsList, forceScrape);
       console.log(logPrefix, 'Streams extra devueltos por scraper:', extraStreams);
       if (extraStreams.length > 0) {
-        // Deduplicación: por URL o AceID
         const existingKeys = new Set(
           baseObj.streams.map(s => {
             if (s.externalUrl && s.externalUrl.startsWith('acestream://')) {
