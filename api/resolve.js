@@ -40,4 +40,10 @@ async function resolveExtraWebs(configId) {
   }
 }
 
-module.exports = { resolveM3uUrl, resolveExtraWebs };
+async function resolveM3uUrlALL(configId) {
+  const cfg = await kvGetJson(`Config:${configId}`); // 👈 clave correcta
+  if (cfg?.m3uUrl) return cfg.m3uUrl;
+  return DEFAULT_M3U_URL;
+}
+
+module.exports = { resolveM3uUrl, resolveExtraWebs, resolveM3uUrlALL };
