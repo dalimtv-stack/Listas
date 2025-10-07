@@ -141,8 +141,17 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
 	};
 
   if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) {
-    addStream(ch);
-  }
+	  addStream({
+	    name: ch.name,                 // proveedor
+	    title: ch.title || '',         // título original para detectar calidad
+	    url: ch.url,
+	    m3u8_url: ch.m3u8_url,
+	    acestream_id: ch.acestream_id,
+	    stream_url: ch.stream_url,
+	    behaviorHints: ch.behaviorHints,
+	    group_title: ch.group_title    // mantener group_title correcto
+	  });
+	}
 
   if (Array.isArray(ch.additional_streams)) {
     ch.additional_streams.forEach(addStream);
