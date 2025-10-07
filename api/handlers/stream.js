@@ -257,25 +257,27 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
     const calidadDetectada = extraerYLimpiarCalidad(originalTitle);
     const proveedor = (s.name || s.group_title || '').trim();
     const canal = (baseObj.chName || '').trim();
+  
     const formato = s.externalUrl?.startsWith('acestream://')
       ? 'Acestream'
       : (s.url?.includes('m3u8') ? 'M3U8'
       : (s.url?.includes('vlc') ? 'VLC'
       : ((s.title?.includes('Website') || s.group_title === 'Website') ? 'Browser' : 'Directo')));
-
-    // --- Audio: Multiaudio si estaba en el título original; si no, país por sufijo del id/name ---
+  
+    // --- Audio ---
     let audioInfo = '';
     if (/multiaudio/i.test(originalTitle)) {
       audioInfo = 'Multiaudio';
     } else {
-      const ref = String(baseObj.id || s.name || s.group_title || '').toLowerCase().trim();
+      // mirar id del canal primero
+      const ref = String(baseObj.id || '').toLowerCase().trim();
       if (ref.endsWith('.es')) {
         audioInfo = 'España';
-      } else if (ref.endsWith('.ar') || ref.endsWith('ar')) {
+      } else if (ref.endsWith('.ar')) {
         audioInfo = 'Argentina';
       }
     }
-
+  
     return {
       ...s,
       title:
