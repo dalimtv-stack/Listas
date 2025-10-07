@@ -14,6 +14,26 @@ const { getStreams: getEventosStreams } = require('../../src/eventos/stream-even
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
+function extraerYLimpiarCalidad(label = '') {
+  const calidadRaw = label.toLowerCase();
+  const map = [
+    { match: ['4320p', '4320'], nombre: 'Full UHD (4320p)' },
+    { match: ['2160p', '2160', 'uhd', '4k'], nombre: 'Ultra HD - 4K (2160p)' },
+    { match: ['1440p', '1440', '2k', 'qhd', 'quad hd'], nombre: 'Quad HD - 2K (1440p)' },
+    { match: ['1080p', '1080', 'fhd'], nombre: 'Full HD (1080p)' },
+    { match: ['720p', '720', 'hd'], nombre: 'HD (720p)' },
+    { match: ['540p', '540', '480p', '480', 'sd'], nombre: 'SD (480p/540p)' }
+  ];
+  let calidadDetectada = 'Sin especificar';
+  for (const { match, nombre } of map) {
+    if (match.some(m => calidadRaw.includes(m))) {
+      calidadDetectada = nombre;
+      break;
+    }
+  }
+  return calidadDetectada;
+}
+
 async function handleStream(req) {
   const logPrefix = '[STREAM]';
   const id = String(req.params.id).replace(/\.json$/, '');
@@ -230,6 +250,24 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
         behaviorHints: s.behaviorHints
       });
     }
+  });
+  // --- Enriquecer títulos justo antes de devolver ---
+  baseObj.streams = baseObj.streams.map(s => {
+    const originalTitle = s.title || '';
+    const calidadDetectada = extraerYLimpiarCalidad(originalTitle);
+    const proveedor = s.name || s.group_title || '';
+    const formato = s.externalUrl?.startsWith('acestream://')
+      ? 'Acestream'
+      : (s.url?.includes('m3u8') ? 'M3U8'
+      : (s.url?.includes('vlc') ? 'VLC' : 'Directo'));
+  
+    return {
+      ...s,
+      title: `Formato: 🔗 ${formato}\n` +
+             `Calidad: 🖥️ ${calidadDetectada}\n` +
+             `Canal: 📡 ${baseObj.chName}\n` +
+             `Proveedor: 🏴‍☠️${proveedor}🏴‍☠️`
+    };
   });
   return baseObj;
 }
