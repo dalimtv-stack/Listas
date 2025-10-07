@@ -3,147 +3,95 @@
 
 const { fetchEventos } = require('./scraper-events');
 const { normalizeId } = require('./utils-events');
-const { kvGetJsonTTL } = require('../../api/kv');
-const { channelAliases, normalizeName } = require('../../api/scraper');
+const { kvGetJson } = require('../../api/kv');
 
-function getChannelIdFromLabel(label) {
-  if (!label) return null;
-  const normalized = normalizeName(label);
-  for (const [kvName, aliases] of Object.entries(channelAliases)) {
-    if (aliases.includes(normalized)) {
-      return kvName; // 👈 nombre exacto como está en KV
+// Detecta calidad y devuelve descripción + canal limpio
+function extraerYLimpiarCalidad(label = '') {
+  const calidadRaw = label.toLowerCase();
+  const map = [
+    { match: ['4320p', '4320'], nombre: 'Full UHD (4320p)' },
+    { match: ['2160p', '2160', 'uhd', '4k'], nombre: 'Ultra HD - 4K(2160p)' },
+    { match: ['1440p', '1440', '2k', 'qhd', 'quad hd'], nombre: 'Quad HD - 2K(1440p)' },
+    { match: ['1080p', '1080', 'fhd'], nombre: 'Full HD (1080p)' },
+    { match: ['720p', '720', 'hd'], nombre: 'HD (720p)' },
+    { match: ['540p', '540', '480p', '480', 'sd'], nombre: 'SD (480p/540p)' }
+  ];
+
+  let calidadDetectada = '';
+  for (const { match, nombre } of map) {
+    if (match.some(m => calidadRaw.includes(m))) {
+      calidadDetectada = nombre;
+      break;
     }
   }
-  return null;
-}
 
-function extraerYLimpiarCalidad(label = '') {
-  const qualityMap = {
-    '4320': 'Full UHD',
-    '2160': 'Ultra HD',
-    '1440': 'Quad HD',
-    '1080': 'Full HD',
-    '720': 'HD',
-    'sd': 'SD'
-  };
-  const qualityRegex = /(4320p?|2160p?|1440p?|1080p?|720p?|sd)/i;
-  const match = label.match(qualityRegex);
-  const calidadDetectada = match
-    ? qualityMap[match[1].toLowerCase().replace('p', '')] || 'SD'
-    : 'SD';
-  const canalLimpio = label.replace(qualityRegex, '').replace(/\s+/g, ' ').trim();
+  // Elimina cualquier mención de calidad (con o sin paréntesis)
+  const canalLimpio = label
+    .replace(/\(?\b(?:SD|HD|FHD|QHD|2K|UHD|4K|480p|480|540p|540|720p|720|1080p|1080|1440p|1440|2160p|2160|4320p|4320)\b\)?/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
   return { canalLimpio, calidadDetectada };
 }
 
+// Reemplaza términos en partido y deporte
 function transformarTexto(texto = '') {
-  const emojis = {
-    'futbol': '⚽',
-    'fútbol': '⚽',
-    'basket': '🏀',
-    'baloncesto': '🏀',
-    'tenis': '🎾',
-    'f1': '🏎️',
-    'formula 1': '🏎️',
-    'deporte': '🏅',
-    'deportes': '🏅',
-    'cine': '🎬',
-    'movistar': '📺',
-    'dazn': '📺',
-    'espn': '📺'
-  };
-  let result = String(texto);
-  for (const [key, emoji] of Object.entries(emojis)) {
-    result = result.replace(new RegExp(key, 'gi'), `${emoji} ${key}`);
-  }
-  return result.trim();
+  return texto
+    .replace(/\bVS\b|\bvs\b|\bVs\b/g, ' 🆚 ')
+    .replace(/\bFútbol\b|\bFutbol\b|\(Fútbol\)|\(Futbol\)/gi, '⚽')
+    .replace(/\bBaloncesto\b|\(Baloncesto\)/gi, '🏀')
+    .replace(/\bTenis\b|\(Tenis\)/gi, '🎾');
 }
 
+// Detecta tipo de stream desde la URL
 function detectarFormatoDesdeUrl(url = '') {
-  if (url.includes('acestream://')) return 'Acestream';
-  if (url.includes('.m3u8')) return 'M3U8';
-  if (url.includes('vlc.shickat.me')) return 'VLC';
-  return 'Browser';
+  const lower = url.toLowerCase();
+  if (lower.startsWith('acestream://')) return '🔄 Acestream';
+  if (lower.includes('m3u8')) return '🔗 MU38';
+  if (lower.includes('directo')) return '🔗 Directo';
+  if (lower.includes('vlc')) return '🔗 VLC';
+  return '🔗 Stream';
 }
 
 async function getStreams(id, configId) {
-  try {
-    const prefix = `Heimdallr_evt_${configId}_`;
-    const cleanId = id?.startsWith(prefix) ? id.slice(prefix.length) : id;
+  const configData = await kvGetJson(configId);
+  const url = configData?.eventosUrl;
+  const eventos = url ? await fetchEventos(url) : [];
 
-    const hoyKV = await kvGetJsonTTL('EventosHoy');
-    const mañanaKV = await kvGetJsonTTL('EventosMañana');
+  const prefix = `Heimdallr_evt_${configId}_`;
+  const cleanId = id.startsWith(prefix) ? id.slice(prefix.length) : id;
 
-    const hoyData = (hoyKV && typeof hoyKV.data === 'object') ? hoyKV.data : {};
-    const mañanaData = (mañanaKV && typeof mañanaKV.data === 'object') ? mañanaKV.data : {};
+  const evento = eventos.find(ev => normalizeId(ev) === cleanId);
+  if (!evento) return { streams: [], chName: '' };
 
-    const allEventos = { ...hoyData, ...mañanaData };
+  const partido = transformarTexto(evento.partido);
+  const deporte = transformarTexto(evento.deporte);
 
-    const evento = Object.values(allEventos).find(ev => normalizeId(ev) === cleanId);
-    if (!evento) {
-      console.info('[STREAM] No se encontró evento con id normalizado:', cleanId);
-      return { streams: [], chName: '' };
-    }
+  const seen = new Set();
+  const streams = [];
+  for (const canal of evento.canales) {
+    const rawLabel = canal.label || deporte;
+    const url = canal.url;
+    if (!url || seen.has(url)) continue;
 
-    if (!Array.isArray(evento.canales) || !evento.canales[0]?.label) {
-      console.info('[STREAM] Evento sin canales válidos:', evento.partido);
-      return { streams: [], chName: '' };
-    }
+    const { canalLimpio, calidadDetectada } = extraerYLimpiarCalidad(rawLabel);
+    const canalName = canalLimpio.split('-->').shift().trim();
+    const temporal = canalLimpio.split('-->').pop().trim();
+    const formato = detectarFormatoDesdeUrl(url);
 
-    const label = evento.canales[0].label;
-    const normalized = normalizeName(label);
-    const channelId = getChannelIdFromLabel(label);
+    // Añadir paréntesis en name si no los tiene
+    const nameFinal = /\(.*\)/.test(canalName) ? canalName : `${canalName}`;
 
-    console.info('[STREAM] Canal detectado en evento:', {
-      rawLabel: label,
-      normalized,
-      resolvedChannelId: channelId
+    streams.push({
+      name: nameFinal,
+      title: `${partido}  ${deporte}\nFormato:  ${formato}  \nCalidad:  🖥️ ${calidadDetectada}  \nCanal:  📡 ${canalName} \nProveedor:  🏴‍☠️${temporal}🏴‍☠️`,
+      externalUrl: url,
+      behaviorHints: { notWebReady: true, external: true }
     });
-
-    if (!channelId) {
-      console.info('[STREAM] No se pudo resolver channelId para label:', label);
-      return { streams: [], chName: '' };
-    }
-
-    const kvKey = `Streams:${channelId}:${configId}`;
-    console.info('[STREAM] Buscando streams en KV con clave:', kvKey);
-
-    const cached = await kvGetJsonTTL(kvKey);
-    const rawStreams = (cached?.streams) || (cached?.data?.streams) || [];
-
-    if (!Array.isArray(rawStreams) || rawStreams.length === 0) {
-      console.info('[STREAM] No se encontraron streams en KV para', kvKey);
-      return { streams: [], chName: '' };
-    }
-
-    const partido = transformarTexto(evento.partido);
-    const deporte = transformarTexto(evento.deporte);
-    const seen = new Set();
-
-    const streams = rawStreams.map(stream => {
-      const dedupKey = stream.externalUrl || stream.url;
-      if (!dedupKey || seen.has(dedupKey)) return null;
-      seen.add(dedupKey);
-
-      const { canalLimpio, calidadDetectada } = extraerYLimpiarCalidad(stream.name || '');
-      const canalName = canalLimpio.split('-->').shift().trim();
-      const temporal = stream.group_title || 'NEW ERA';
-      const formato = detectarFormatoDesdeUrl(stream.externalUrl || stream.url || '');
-
-      return {
-        name: canalName || 'Canal',
-        title: `${partido} ${deporte}\nFormato: ${formato}\nCalidad: 🖥️ ${calidadDetectada}\nCanal: 📡 ${canalName}\nProveedor: 🏴‍☠️${temporal}🏴‍☠️`,
-        externalUrl: stream.externalUrl,
-        url: stream.url,
-        behaviorHints: stream.behaviorHints
-      };
-    }).filter(Boolean);
-
-    console.info('[STREAM] streams de evento generados:', streams.length);
-    return { streams, chName: partido };
-  } catch (e) {
-    console.error('[STREAM] getStreams error:', e);
-    return { streams: [], chName: '' };
+    seen.add(url);
   }
+
+  return { streams, chName: partido };
 }
 
-module.exports = { getStreams, extraerYLimpiarCalidad, transformarTexto, detectarFormatoDesdeUrl };
+module.exports = { getStreams };
