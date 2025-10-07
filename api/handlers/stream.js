@@ -86,14 +86,6 @@ async function handleStream(req) {
   console.log(logPrefix, 'Respuesta final con streams:', enriched.streams);
   return enriched;
 }
-  let result = await handleStreamInternal({ id, m3uUrl, configId });
-  const enriched = await enrichWithExtra(result, configId, m3uUrl, forceScrape);
-
-  await kvSetJsonTTLIfChanged(kvKey, enriched, 3600);
-
-  console.log(logPrefix, 'Respuesta final con streams:', enriched.streams);
-  return enriched;
-}
 
 async function handleStreamInternal({ id, m3uUrl, configId }) {
   const logPrefix = '[STREAM]';
