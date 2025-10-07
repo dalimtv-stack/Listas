@@ -67,29 +67,29 @@ async function getStreams(id, configId) {
   const partido = transformarTexto(evento.partido);
   const deporte = transformarTexto(evento.deporte);
 
-  const seen = new Set();
-  const streams = [];
-  for (const canal of evento.canales) {
-    const rawLabel = canal.label || deporte;
-    const url = canal.url;
-    if (!url || seen.has(url)) continue;
-
-    const { canalLimpio, calidadDetectada } = extraerYLimpiarCalidad(rawLabel);
-    const canalName = canalLimpio.split('-->').shift().trim();
-    const temporal = canalLimpio.split('-->').pop().trim();
-    const formato = detectarFormatoDesdeUrl(url);
-
-    // Añadir paréntesis en name si no los tiene
-    const nameFinal = /\(.*\)/.test(canalName) ? canalName : `${canalName}`;
-
-    streams.push({
-      name: nameFinal,
-      title: `${partido}  ${deporte}\nFormato:  ${formato}  \nCalidad:  🖥️ ${calidadDetectada}  \nCanal:  📡 ${canalName} \nProveedor:  🏴‍☠️${temporal}🏴‍☠️`,
-      externalUrl: url,
-      behaviorHints: { notWebReady: true, external: true }
-    });
-    seen.add(url);
+  // --- Nuevo: cargar streams del catálogo principal ---
+  const canalName = (evento.canal || '').trim();
+  if (!canalName) {
+    return { streams: [], chName: partido };
   }
+
+  // Resolver m3uUrl para este configId
+  const m3uUrl = await resolveM3uUrl(configId);
+
+  // Construir un id de canal como lo espera handleStreamInternal
+  const channelId = canalName.replace(/\s+/g, '.'); // ej: "Movistar LaLiga" -> "Movistar.LaLiga"
+  const fakeId = `heimdallr_${configId}_${channelId}`;
+
+  // Obtener streams del catálogo principal
+  let result = await handleStreamInternal({ id: fakeId, m3uUrl, configId });
+  result.id = fakeId;
+  const enriched = await enrichWithExtra(result, configId, m3uUrl, false);
+
+  // Reetiquetar títulos para que incluyan partido y deporte
+  const streams = enriched.streams.map(s => ({
+    ...s,
+    title: `${partido}  ${deporte}\n${s.title}`
+  }));
 
   return { streams, chName: partido };
 }
