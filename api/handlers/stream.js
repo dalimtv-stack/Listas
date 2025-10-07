@@ -255,7 +255,8 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
   baseObj.streams = baseObj.streams.map(s => {
     const originalTitle = s.title || '';
     const calidadDetectada = extraerYLimpiarCalidad(originalTitle);
-    const proveedor = s.name || s.group_title || '';
+    const proveedor = (s.name || s.group_title || '').trim();
+    const canal = (baseObj.chName || '').trim();
     const formato = s.externalUrl?.startsWith('acestream://')
       ? 'Acestream'
       : (s.url?.includes('m3u8') ? 'M3U8'
@@ -265,10 +266,11 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
       ...s,
       title: `Formato: 🔗 ${formato}\n` +
              `Calidad: 🖥️ ${calidadDetectada}\n` +
-             `Canal: 📡 ${baseObj.chName}\n` +
+             `Canal: 📡 ${canal}\n` +
              `Proveedor: 🏴‍☠️${proveedor}🏴‍☠️`
     };
   });
+
   return baseObj;
 }
 
