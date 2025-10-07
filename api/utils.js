@@ -7,10 +7,17 @@ const { DEFAULT_CONFIG_ID } = require('../src/config');
 
 function normalizeCatalogName(name) {
   if (!name) return '';
-  return name
+
+  let nameFormateado = name
+    // elimina texto entre paréntesis, ej. "Película (2023)" → "Película"
     .replace(/\s*\([^)]*\)\s*/g, ' ')
-    .trim()
-    .replace(/\s+/g, ' ');
+    // elimina etiquetas de calidad (HD, 1080p, etc.)
+    .replace(/\(?\b(?:SD|HD|FHD|QHD|2K|UHD|4K|480p|480|540p|540|720p|720|1080p|1080|1440p|1440|2160p|2160|4320p|4320)\b\)?/gi, '')
+    // normaliza espacios múltiples
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return nameFormateado;
 }
 
 function getM3uHash(m3uUrl) {
