@@ -104,18 +104,18 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
 
   const addStream = (src) => {
     const streamUrl = src.acestream_id ? `acestream://${src.acestream_id}` : src.m3u8_url || src.stream_url || src.url;
-
+  
     if (!streamUrl || seenUrls.has(streamUrl)) {
       console.log(logPrefix, `Descartado stream duplicado o sin URL: ${streamUrl}`);
       return;
     }
-
+  
     const behaviorHints = src.acestream_id
       ? { notWebReady: true, external: true }
       : src.behaviorHints || { notWebReady: false, external: false };
-
-    const proveedor = src.group_title || src.name || ch.name || '';
-    const calidadDetectada = extraerYLimpiarCalidad(src.title || src.name || '');
+  
+    const proveedor = src.name || '';
+    const calidadDetectada = extraerYLimpiarCalidad(src.title || '');
     const formato = src.acestream_id
       ? 'Acestream'
       : streamUrl.includes('m3u8')
@@ -123,20 +123,20 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
       : streamUrl.includes('vlc')
       ? 'VLC'
       : 'Directo';
-
+  
     const out = {
       name: proveedor,
-      title: `Formato: 🔗 ${formato}\nCalidad: 🖥️ ${calidadDetectada}\nCanal: 📡 ${chName}\nProveedor: 🏴‍☠️${proveedor}🏴‍☠️`,
+      title: `Formato: 🔗 ${formato}\nCalidad: 🖥️ ${calidadDetectada}\nCanal: 📡 ${ch.name}\nProveedor: 🏴‍☠️${proveedor}🏴‍☠️`,
       behaviorHints,
       group_title: proveedor
     };
-
+  
     if (src.acestream_id) {
       out.externalUrl = streamUrl;
     } else {
       out.url = streamUrl;
     }
-
+  
     seenUrls.add(streamUrl);
     streams.push(out);
   };
@@ -192,8 +192,8 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
         });
 
         nuevos.forEach(s => {
-          const proveedor = s.group_title || s.name || '';
-          const calidadDetectada = extraerYLimpiarCalidad(s.title || s.name || '');
+          const proveedor = s.name || '';
+          const calidadDetectada = extraerYLimpiarCalidad(s.title || '');
           const formato = s.externalUrl?.startsWith('acestream://')
             ? 'Acestream'
             : s.url?.includes('m3u8')
@@ -201,7 +201,7 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
             : s.url?.includes('vlc')
             ? 'VLC'
             : 'Directo';
-
+          
           s.title = `Formato: 🔗 ${formato}\nCalidad: 🖥️ ${calidadDetectada}\nCanal: 📡 ${chName}\nProveedor: 🏴‍☠️${proveedor}🏴‍☠️`;
         });
 
