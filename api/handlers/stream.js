@@ -108,16 +108,16 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
       ? `acestream://${src.acestream_id}`
       : src.m3u8_url || src.stream_url || src.url;
   
-    if (!streamUrl || seenUrls.has(streamUrl)) {
-      return;
-    }
+    if (!streamUrl || seenUrls.has(streamUrl)) return;
   
     const behaviorHints = src.acestream_id
       ? { notWebReady: true, external: true }
       : src.behaviorHints || { notWebReady: false, external: false };
   
-    const proveedor = src.name || ''; // proveedor correcto
-    const calidadDetectada = extraerYLimpiarCalidad(src.title || ''); // usar el title original
+    const proveedor = src.name || ''; // no tocar
+    const originalTitle = src.title || ''; // usar el title original
+    const calidadDetectada = extraerYLimpiarCalidad(originalTitle);
+  
     const formato = src.acestream_id
       ? 'Acestream'
       : streamUrl.includes('m3u8')
@@ -127,10 +127,9 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
       : 'Directo';
   
     const out = {
-      name: proveedor, // no tocar
+      ...src, // mantiene name, group_title, etc. tal cual
       title: `Formato: 🔗 ${formato}\nCalidad: 🖥️ ${calidadDetectada}\nCanal: 📡 ${ch.name}\nProveedor: 🏴‍☠️${proveedor}🏴‍☠️`,
-      behaviorHints,
-      group_title: proveedor
+      behaviorHints
     };
   
     if (src.acestream_id) {
@@ -195,7 +194,9 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
 
         nuevos.forEach(s => {
           const proveedor = s.name || '';
-          const calidadDetectada = extraerYLimpiarCalidad(s.title || ''); // usar el title original
+          const originalTitle = s.title || '';
+          const calidadDetectada = extraerYLimpiarCalidad(originalTitle);
+        
           const formato = s.externalUrl?.startsWith('acestream://')
             ? 'Acestream'
             : s.url?.includes('m3u8')
