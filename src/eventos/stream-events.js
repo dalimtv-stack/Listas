@@ -72,6 +72,9 @@ async function getStreams(id, configId) {
   if (!canalName) {
     return { streams: [], chName: partido };
   }
+  
+  // Log para ver qué canal se está buscando
+  console.log('[EVENTOS] Buscando streams para canal:', canalName, 'configId:', configId);
 
   // Resolver m3uUrl para este configId
   const m3uUrl = await resolveM3uUrl(configId);
