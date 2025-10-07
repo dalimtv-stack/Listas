@@ -4,7 +4,7 @@
 const NodeCache = require('node-cache');
 const { getChannel } = require('../../src/db');
 const { kvGetJsonTTL, kvSetJsonTTLIfChanged } = require('../kv');
-const { getM3uHash, extractConfigIdFromUrl } = require('../utils');
+const { normalizeCatalogName, getM3uHash, extractConfigIdFromUrl } = require('../utils');
 const { CACHE_TTL } = require('../../src/config');
 const { resolveM3uUrl } = require('../resolve');
 
@@ -50,7 +50,7 @@ async function handleMeta(req) {
     return { meta: null };
   }
   
-  const cleanName = ch.name.replace(/\b(?:HD|FHD|720|1080)\b|\((?:HD|FHD|720|1080)\)/gi, '').trim();
+  const cleanName = normalizeCatalogName (ch.name);
 
   const resp = {
     meta: {
