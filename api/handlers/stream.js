@@ -114,8 +114,8 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
       ? { notWebReady: true, external: true }
       : src.behaviorHints || { notWebReady: false, external: false };
 
-    const proveedor = src.name || ch.name || '';
-    const calidadDetectada = extraerYLimpiarCalidad(proveedor);
+    const proveedor = src.group_title || src.name || ch.name || '';
+    const calidadDetectada = extraerYLimpiarCalidad(src.title || src.name || '');
     const formato = src.acestream_id
       ? 'Acestream'
       : streamUrl.includes('m3u8')
@@ -192,8 +192,8 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
         });
 
         nuevos.forEach(s => {
-          const proveedor = s.name || '';
-          const calidadDetectada = extraerYLimpiarCalidad(proveedor);
+          const proveedor = s.group_title || s.name || '';
+          const calidadDetectada = extraerYLimpiarCalidad(s.title || s.name || '');
           const formato = s.externalUrl?.startsWith('acestream://')
             ? 'Acestream'
             : s.url?.includes('m3u8')
