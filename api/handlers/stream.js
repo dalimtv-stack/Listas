@@ -271,6 +271,38 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
     };
   });
 
+  // --- Ordenar streams por formato y calidad ---
+  const formatoOrden = { 'M3U8': 1, 'Directo': 2, 'Acestream': 3, 'VLC': 4, 'Browser': 5 };
+  const calidadOrden = {
+    'Ultra HD - 4K (2160p)': 1,
+    'Quad HD - 2K (1440p)': 2,
+    'Full HD (1080p)': 3,
+    'HD (720p)': 4,
+    'SD (480p/540p)': 5,
+    'Sin especificar': 6
+  };
+
+  baseObj.streams.sort((a, b) => {
+    const formatoA = a.title.includes('M3U8') ? 'M3U8'
+                   : a.title.includes('Directo') ? 'Directo'
+                   : a.title.includes('Acestream') ? 'Acestream'
+                   : a.title.includes('VLC') ? 'VLC'
+                   : 'Browser';
+    const formatoB = b.title.includes('M3U8') ? 'M3U8'
+                   : b.title.includes('Directo') ? 'Directo'
+                   : b.title.includes('Acestream') ? 'Acestream'
+                   : b.title.includes('VLC') ? 'VLC'
+                   : 'Browser';
+
+    const calidadA = Object.keys(calidadOrden).find(c => a.title.includes(c)) || 'Sin especificar';
+    const calidadB = Object.keys(calidadOrden).find(c => b.title.includes(c)) || 'Sin especificar';
+
+    if (formatoOrden[formatoA] !== formatoOrden[formatoB]) {
+      return formatoOrden[formatoA] - formatoOrden[formatoB];
+    }
+    return calidadOrden[calidadA] - calidadOrden[calidadB];
+  });
+
   return baseObj;
 }
 
