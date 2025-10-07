@@ -70,6 +70,7 @@ async function handleStream(req) {
 
   const m3uHash = currentM3uHash;
   const kvKey = `stream:${m3uHash}:${id}`;
+  console.log(logPrefix, `KV key usada para cache de streams: ${kvKey}`
   let kvCached = await kvGetJsonTTL(kvKey);
 
   if (kvCached && !forceScrape) {
