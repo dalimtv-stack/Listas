@@ -59,7 +59,7 @@ async function handleMeta(req) {
       name: cleanName,
       poster: ch.logo_url,
       background: ch.logo_url,
-      description: ch.name
+      description: ``
     }
   };
 
