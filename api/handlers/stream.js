@@ -5,7 +5,7 @@ const NodeCache = require('node-cache');
 const { getChannel } = require('../../src/db');
 const { scrapeExtraWebs } = require('../scraper');
 const { kvGet, kvSet, kvGetJsonTTL, kvSetJsonTTLIfChanged, kvDelete } = require('../kv');
-const { getM3uHash, extractConfigIdFromUrl } = require('../utils');
+const { normalizeCatalogName, getM3uHash, extractConfigIdFromUrl } = require('../utils');
 const { CACHE_TTL } = require('../../src/config');
 const { resolveM3uUrl, resolveExtraWebs } = require('../resolve');
 
@@ -262,7 +262,7 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
     const originalTitle = s.title || '';
     const calidadDetectada = extraerYLimpiarCalidad(originalTitle);
     const proveedor = (s.name || s.group_title || '').trim();
-    const canal = (baseObj.chName || '').trim();
+    const canal = normalizeCatalogName((baseObj.chName || '')).trim();
     const formato = s.externalUrl?.startsWith('acestream://')
       ? 'Acestream'
       : (s.url?.includes('m3u8') ? 'M3U8'
