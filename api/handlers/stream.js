@@ -260,14 +260,30 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
     const formato = s.externalUrl?.startsWith('acestream://')
       ? 'Acestream'
       : (s.url?.includes('m3u8') ? 'M3U8'
-      : (s.url?.includes('vlc') ? 'VLC' : 'Directo'));
-  
+      : (s.url?.includes('vlc') ? 'VLC'
+      : ((s.title?.includes('Website') || s.group_title === 'Website') ? 'Browser' : 'Directo')));
+
+    // --- Audio: Multiaudio si estaba en el título original; si no, país por sufijo del id/name ---
+    let audioInfo = '';
+    if (/multiaudio/i.test(originalTitle)) {
+      audioInfo = 'Multiaudio';
+    } else {
+      const ref = String(baseObj.id || s.name || s.group_title || '').toLowerCase().trim();
+      if (ref.endsWith('.es')) {
+        audioInfo = 'España';
+      } else if (ref.endsWith('.ar') || ref.endsWith('ar')) {
+        audioInfo = 'Argentina';
+      }
+    }
+
     return {
       ...s,
-      title: `Formato: 🔗 ${formato}\n` +
-             `Calidad: 🖥️ ${calidadDetectada}\n` +
-             `Canal: 📡 ${canal}\n` +
-             `Proveedor: 🏴‍☠️${proveedor}🏴‍☠️`
+      title:
+        `Formato: 🔗 ${formato}\n` +
+        `Calidad: 🖥️ ${calidadDetectada}` +
+        (audioInfo ? `\nAudio: 🎧 ${audioInfo}` : '') + '\n' +
+        `Canal: 📡 ${canal}\n` +
+        `Proveedor: 🏴‍☠️${proveedor}🏴‍☠️`
     };
   });
 
