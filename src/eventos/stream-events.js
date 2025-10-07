@@ -54,6 +54,7 @@ function detectarFormatoDesdeUrl(url = '') {
 }
 
 async function getStreams(id, configId) {
+  console.log('[EVENTOS] Entrando en getStreams con id:', id, 'configId:', configId);
   const configData = await kvGetJson(configId);
   const url = configData?.eventosUrl;
   const eventos = url ? await fetchEventos(url) : [];
