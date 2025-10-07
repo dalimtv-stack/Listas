@@ -1,4 +1,3 @@
-// api/handlers/stream.js
 'use strict';
 
 const NodeCache = require('node-cache');
@@ -8,18 +7,37 @@ const { kvGet, kvSet, kvGetJsonTTL, kvSetJsonTTLIfChanged, kvDelete } = require(
 const { getM3uHash, extractConfigIdFromUrl } = require('../utils');
 const { CACHE_TTL } = require('../../src/config');
 const { resolveM3uUrl, resolveExtraWebs } = require('../resolve');
-
-// --- Import de eventos ---
 const { getStreams: getEventosStreams } = require('../../src/eventos/stream-events');
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
+
+function extraerYLimpiarCalidad(label = '') {
+  const calidadRaw = label.toLowerCase();
+  const map = [
+    { match: ['4320p', '4320'], nombre: 'Full UHD (4320p)' },
+    { match: ['2160p', '2160', 'uhd', '4k'], nombre: 'Ultra HD - 4K(2160p)' },
+    { match: ['1440p', '1440', '2k', 'qhd', 'quad hd'], nombre: 'Quad HD - 2K(1440p)' },
+    { match: ['1080p', '1080', 'fhd'], nombre: 'Full HD (1080p)' },
+    { match: ['720p', '720', 'hd'], nombre: 'HD (720p)' },
+    { match: ['540p', '540', '480p', '480', 'sd'], nombre: 'SD (480p/540p)' }
+  ];
+
+  let calidadDetectada = 'Sin especificar';
+  for (const { match, nombre } of map) {
+    if (match.some(m => calidadRaw.includes(m))) {
+      calidadDetectada = nombre;
+      break;
+    }
+  }
+
+  return calidadDetectada;
+}
 
 async function handleStream(req) {
   const logPrefix = '[STREAM]';
   const id = String(req.params.id).replace(/\.json$/, '');
   const configId = req.params.configId || extractConfigIdFromUrl(req);
 
-  // --- Rama de eventos ---
   if (id.startsWith('Heimdallr_evt')) {
     const { streams, chName } = await getEventosStreams(id, configId);
     console.log(logPrefix, `streams de evento generados: ${streams.length}`);
@@ -28,7 +46,6 @@ async function handleStream(req) {
 
   const m3uUrl = await resolveM3uUrl(configId);
   console.log('[ROUTE] STREAM', { url: req.originalUrl, id, configId, m3uUrl: m3uUrl ? '[ok]' : null });
-
 
   if (!m3uUrl) {
     console.log(logPrefix, 'm3uUrl no resuelta');
@@ -69,6 +86,14 @@ async function handleStream(req) {
   console.log(logPrefix, 'Respuesta final con streams:', enriched.streams);
   return enriched;
 }
+  let result = await handleStreamInternal({ id, m3uUrl, configId });
+  const enriched = await enrichWithExtra(result, configId, m3uUrl, forceScrape);
+
+  await kvSetJsonTTLIfChanged(kvKey, enriched, 3600);
+
+  console.log(logPrefix, 'Respuesta final con streams:', enriched.streams);
+  return enriched;
+}
 
 async function handleStreamInternal({ id, m3uUrl, configId }) {
   const logPrefix = '[STREAM]';
@@ -93,36 +118,25 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
       return;
     }
 
-    let behaviorHints;
-    if (src.acestream_id) {
-      behaviorHints = { notWebReady: true, external: true };
-    } else {
-      behaviorHints = src.behaviorHints || { notWebReady: false, external: false };
-    }
+    const behaviorHints = src.acestream_id
+      ? { notWebReady: true, external: true }
+      : src.behaviorHints || { notWebReady: false, external: false };
 
-    // Fix: si es el canal principal con Ace, usar su acestream_group_title para etiquetar correctamente
-    let name;
-    let title;
-    let group_title_for_audit;
-
-    if (src.acestream_id && src.id === ch.id) {
-      const aceGroup = src.acestream_group_title || src.group_title || 'Acestream';
-      name = aceGroup;
-      title = `${chName} (Acestream)`;
-      group_title_for_audit = aceGroup;
-    } else {
-      const grp = src.group_title || 'Stream';
-      name = src.group_title || src.name || chName;
-      title = src.title || `${chName} (${grp})`;
-      group_title_for_audit = src.group_title;
-    }
+    const proveedor = src.name || ch.name || '';
+    const calidadDetectada = extraerYLimpiarCalidad(proveedor);
+    const formato = src.acestream_id
+      ? 'Acestream'
+      : streamUrl.includes('m3u8')
+      ? 'M3U8'
+      : streamUrl.includes('vlc')
+      ? 'VLC'
+      : 'Directo';
 
     const out = {
-      name,
-      title,
+      name: proveedor,
+      title: `Formato: 🔗 ${formato}\nCalidad: 🖥️ ${calidadDetectada}\nCanal: 📡 ${chName}\nProveedor: 🏴‍☠️${proveedor}🏴‍☠️`,
       behaviorHints,
-      // solo para auditoría/depuración; Stremio lo ignora
-      group_title: group_title_for_audit
+      group_title: proveedor
     };
 
     if (src.acestream_id) {
@@ -133,46 +147,29 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
 
     seenUrls.add(streamUrl);
     streams.push(out);
-    console.log(logPrefix, `Añadido stream: ${streamUrl}, behaviorHints=`, out.behaviorHints);
   };
 
-  // Añadir posibles principales: Ace/M3U8/Directo/url
   if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) {
     addStream(ch);
   }
 
-  // Añadir adicionales
   if (Array.isArray(ch.additional_streams)) {
     ch.additional_streams.forEach(addStream);
   }
 
-  // Añadir website si existe
   if (ch.website_url && !seenUrls.has(ch.website_url)) {
+    const proveedor = 'Website';
     streams.push({
-      title: `${ch.name} - Website`,
+      name: proveedor,
+      title: `Formato: 🔗 Website\nCalidad: 🖥️ Sin especificar\nCanal: 📡 ${ch.name}\nProveedor: 🏴‍☠️${proveedor}🏴‍☠️`,
       externalUrl: ch.website_url,
       behaviorHints: { notWebReady: true, external: true },
-      group_title: 'Website'
+      group_title: proveedor
     });
     seenUrls.add(ch.website_url);
-    console.log(logPrefix, `Añadido website_url: ${ch.website_url}`);
   }
 
-  const resp = { streams, chName };
-  console.log(logPrefix, `streams para ${channelId}: ${streams.length}`);
-  console.log('[AUDIT] Streams construidos en handleStreamInternal:');
-  streams.forEach(s => {
-    if (s.externalUrl && s.externalUrl.startsWith('acestream://')) {
-      console.log('[AUDIT] ACE', {
-        url: s.externalUrl,
-        name: s.name,
-        title: s.title,
-        group_title: s.group_title,
-        behaviorHints: s.behaviorHints
-      });
-    }
-  });
-  return resp;
+  return { streams, chName };
 }
 
 async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
@@ -181,11 +178,8 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
   const extraWebsList = await resolveExtraWebs(configId);
   if (extraWebsList.length) {
     try {
-      console.log(logPrefix, `Llamando scrapeExtraWebs con forceScrape=${forceScrape} para ${chName}`);
       const extraStreams = await scrapeExtraWebs(chName, extraWebsList, forceScrape);
-      console.log(logPrefix, 'Streams extra devueltos por scraper:', extraStreams);
       if (extraStreams.length > 0) {
-        // Deduplicación: por URL o AceID
         const existingKeys = new Set(
           baseObj.streams.map(s => {
             if (s.externalUrl && s.externalUrl.startsWith('acestream://')) {
@@ -205,12 +199,22 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
           return key && !existingKeys.has(key);
         });
 
-        if (nuevos.length) {
-          baseObj.streams = [...nuevos, ...baseObj.streams];
-          console.log(logPrefix, `Añadidos ${nuevos.length} streams extra para ${chName}`);
-        } else {
-          console.log(logPrefix, `No se añadieron streams extra para ${chName} (sin coincidencias)`);
-        }
+        nuevos.forEach(s => {
+          const proveedor = s.name || '';
+          const calidadDetectada = extraerYLimpiarCalidad(proveedor);
+          const formato = s.externalUrl?.startsWith('acestream://')
+            ? 'Acestream'
+            : s.url?.includes('m3u8')
+            ? 'M3U8'
+            : s.url?.includes('vlc')
+            ? 'VLC'
+            : 'Directo';
+
+          s.title = `Formato: 🔗 ${formato}\nCalidad: 🖥️ ${calidadDetectada}\nCanal: 📡 ${chName}\nProveedor: 🏴‍☠️${proveedor}🏴‍☠️`;
+        });
+
+        baseObj.streams = [...nuevos, ...baseObj.streams];
+        console.log(logPrefix, `Añadidos ${nuevos.length} streams extra para ${chName}`);
       } else {
         console.log(logPrefix, `No se añadieron streams extra para ${chName} (sin coincidencias)`);
       }
@@ -218,19 +222,8 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
       console.error(logPrefix, `Error en scrapeExtraWebs para ${chName}:`, e.message);
     }
   }
+
   console.log(logPrefix, 'Respuesta final con streams:', baseObj.streams);
-  console.log('[AUDIT] Streams antes de devolver en enrichWithExtra:');
-  baseObj.streams.forEach(s => {
-    if (s.externalUrl && s.externalUrl.startsWith('acestream://')) {
-      console.log('[AUDIT] ACE', {
-        url: s.externalUrl,
-        name: s.name,
-        title: s.title,
-        group_title: s.group_title,
-        behaviorHints: s.behaviorHints
-      });
-    }
-  });
   return baseObj;
 }
 
