@@ -103,44 +103,42 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
   const streams = [];
   const seenUrls = new Set();
 
-  const addStream = (src) => {
-    const streamUrl = src.acestream_id
-      ? `acestream://${src.acestream_id}`
-      : src.m3u8_url || src.stream_url || src.url;
-  
-    if (!streamUrl || seenUrls.has(streamUrl)) return;
-  
-    const behaviorHints = src.acestream_id
-      ? { notWebReady: true, external: true }
-      : src.behaviorHints || { notWebReady: false, external: false };
-  
-    const proveedor = src.name || ''; // no tocar
-    const originalTitle = src.title || ''; // usar el title original
-    const calidadDetectada = extraerYLimpiarCalidad(originalTitle);
-  
-    const formato = src.acestream_id
-      ? 'Acestream'
-      : streamUrl.includes('m3u8')
-      ? 'M3U8'
-      : streamUrl.includes('vlc')
-      ? 'VLC'
-      : 'Directo';
-  
-    const out = {
-      ...src, // mantiene name, group_title, etc. tal cual
-      title: `Formato: 🔗 ${formato}\nCalidad: 🖥️ ${calidadDetectada}\nCanal: 📡 ${ch.name}\nProveedor: 🏴‍☠️${proveedor}🏴‍☠️`,
-      behaviorHints
-    };
-  
-    if (src.acestream_id) {
-      out.externalUrl = streamUrl;
-    } else {
-      out.url = streamUrl;
-    }
-  
-    seenUrls.add(streamUrl);
-    streams.push(out);
-  };
+	const addStream = (src) => {
+	  const streamUrl = src.acestream_id
+		? `acestream://${src.acestream_id}`
+		: src.m3u8_url || src.stream_url || src.url;
+
+	  if (!streamUrl || seenUrls.has(streamUrl)) return;
+
+	  const behaviorHints = src.acestream_id
+		? { notWebReady: true, external: true }
+		: src.behaviorHints || { notWebReady: false, external: false };
+
+	  const originalTitle = src.title || ''; // usar el title original
+	  const calidadDetectada = extraerYLimpiarCalidad(originalTitle);
+	  const formato = src.acestream_id
+		? 'Acestream'
+		: streamUrl.includes('m3u8')
+		? 'M3U8'
+		: streamUrl.includes('vlc')
+		? 'VLC'
+		: 'Directo';
+
+	  const out = {
+		...src, // mantiene name, group_title, etc. sin tocarlos
+		title: `Formato: 🔗 ${formato}\nCalidad: 🖥️ ${calidadDetectada}\nCanal: 📡 ${ch.name}\nProveedor: 🏴‍☠️${src.name}🏴‍☠️`,
+		behaviorHints
+	  };
+
+	  if (src.acestream_id) {
+		out.externalUrl = streamUrl;
+	  } else {
+		out.url = streamUrl;
+	  }
+
+	  seenUrls.add(streamUrl);
+	  streams.push(out);
+	};
 
   if (ch.acestream_id || ch.m3u8_url || ch.stream_url || ch.url) {
     addStream(ch);
