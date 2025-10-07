@@ -43,16 +43,16 @@ async function handleStream(req) {
   if (id.startsWith('Heimdallr_evt')) {
     const { streams, chName } = await getEventosStreams(id, configId);
     console.log(logPrefix, `streams de evento generados: ${streams.length}`);
-    return { streams, chName };
+    // asegurar que el id está presente para enriquecido posterior
+    return { streams, chName, id };
   }
 
   const m3uUrl = await resolveM3uUrl(configId);
   console.log('[ROUTE] STREAM', { url: req.originalUrl, id, configId, m3uUrl: m3uUrl ? '[ok]' : null });
 
-
   if (!m3uUrl) {
     console.log(logPrefix, 'm3uUrl no resuelta');
-    return { streams: [], chName: '' };
+    return { streams: [], chName: '', id };
   }
 
   const currentM3uHash = await getM3uHash(m3uUrl);
@@ -77,11 +77,15 @@ async function handleStream(req) {
 
   if (kvCached && !forceScrape) {
     console.log(logPrefix, 'Usando caché KV:', kvCached);
+    // adjuntar id para enriquecido (país)
+    kvCached.id = id;
     const enriched = await enrichWithExtra(kvCached, configId, m3uUrl, forceScrape);
     return enriched;
   }
 
   let result = await handleStreamInternal({ id, m3uUrl, configId });
+  // adjuntar id para enriquecido (país)
+  result.id = id;
   const enriched = await enrichWithExtra(result, configId, m3uUrl, forceScrape);
 
   await kvSetJsonTTLIfChanged(kvKey, enriched, 3600);
@@ -89,6 +93,7 @@ async function handleStream(req) {
   console.log(logPrefix, 'Respuesta final con streams:', enriched.streams);
   return enriched;
 }
+
 
 async function handleStreamInternal({ id, m3uUrl, configId }) {
   const logPrefix = '[STREAM]';
@@ -251,33 +256,33 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
       });
     }
   });
+
   // --- Enriquecer títulos justo antes de devolver ---
   baseObj.streams = baseObj.streams.map(s => {
     const originalTitle = s.title || '';
     const calidadDetectada = extraerYLimpiarCalidad(originalTitle);
     const proveedor = (s.name || s.group_title || '').trim();
     const canal = (baseObj.chName || '').trim();
-  
     const formato = s.externalUrl?.startsWith('acestream://')
       ? 'Acestream'
       : (s.url?.includes('m3u8') ? 'M3U8'
       : (s.url?.includes('vlc') ? 'VLC'
       : ((s.title?.includes('Website') || s.group_title === 'Website') ? 'Browser' : 'Directo')));
-  
-    // --- Audio ---
+
+    // --- Audio: Multiaudio si estaba en el título original; si no, país por sufijo del id del canal ---
     let audioInfo = '';
     if (/multiaudio/i.test(originalTitle)) {
       audioInfo = 'Multiaudio';
     } else {
-      // mirar id del canal primero
       const ref = String(baseObj.id || '').toLowerCase().trim();
-      if (ref.endsWith('.es')) {
+      // ejemplos: ..._Hollywood.es.json | ..._TyC.ar.json
+      if (ref.endsWith('.es.json') || ref.endsWith('.es')) {
         audioInfo = 'España';
-      } else if (ref.endsWith('.ar')) {
+      } else if (ref.endsWith('.ar.json') || ref.endsWith('.ar')) {
         audioInfo = 'Argentina';
       }
     }
-  
+
     return {
       ...s,
       title:
@@ -323,5 +328,6 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
 
   return baseObj;
 }
+
 
 module.exports = { handleStream, handleStreamInternal, enrichWithExtra };
