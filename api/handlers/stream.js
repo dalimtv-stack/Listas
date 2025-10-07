@@ -103,10 +103,11 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
   const seenUrls = new Set();
 
   const addStream = (src) => {
-    const streamUrl = src.acestream_id ? `acestream://${src.acestream_id}` : src.m3u8_url || src.stream_url || src.url;
+    const streamUrl = src.acestream_id
+      ? `acestream://${src.acestream_id}`
+      : src.m3u8_url || src.stream_url || src.url;
   
     if (!streamUrl || seenUrls.has(streamUrl)) {
-      console.log(logPrefix, `Descartado stream duplicado o sin URL: ${streamUrl}`);
       return;
     }
   
@@ -114,8 +115,8 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
       ? { notWebReady: true, external: true }
       : src.behaviorHints || { notWebReady: false, external: false };
   
-    const proveedor = src.name || '';
-    const calidadDetectada = extraerYLimpiarCalidad(src.title || '');
+    const proveedor = src.name || ''; // proveedor correcto
+    const calidadDetectada = extraerYLimpiarCalidad(src.title || ''); // usar el title original
     const formato = src.acestream_id
       ? 'Acestream'
       : streamUrl.includes('m3u8')
@@ -125,7 +126,7 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
       : 'Directo';
   
     const out = {
-      name: proveedor,
+      name: proveedor, // no tocar
       title: `Formato: 🔗 ${formato}\nCalidad: 🖥️ ${calidadDetectada}\nCanal: 📡 ${ch.name}\nProveedor: 🏴‍☠️${proveedor}🏴‍☠️`,
       behaviorHints,
       group_title: proveedor
@@ -193,7 +194,7 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
 
         nuevos.forEach(s => {
           const proveedor = s.name || '';
-          const calidadDetectada = extraerYLimpiarCalidad(s.title || '');
+          const calidadDetectada = extraerYLimpiarCalidad(s.title || ''); // usar el title original
           const formato = s.externalUrl?.startsWith('acestream://')
             ? 'Acestream'
             : s.url?.includes('m3u8')
@@ -201,7 +202,7 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
             : s.url?.includes('vlc')
             ? 'VLC'
             : 'Directo';
-          
+        
           s.title = `Formato: 🔗 ${formato}\nCalidad: 🖥️ ${calidadDetectada}\nCanal: 📡 ${chName}\nProveedor: 🏴‍☠️${proveedor}🏴‍☠️`;
         });
 
