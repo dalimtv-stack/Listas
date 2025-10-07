@@ -280,6 +280,10 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
         audioInfo = 'España';
       } else if (ref.endsWith('.ar.json') || ref.endsWith('.ar')) {
         audioInfo = 'Argentina';
+      } else if (ref.endsWith('.us.json') || ref.endsWith('.us')) {
+        audioInfo = 'USA';
+      } else if (ref.endsWith('.apt.json') || ref.endsWith('.pt')) {
+        audioInfo = 'Portugal';
       }
     }
 
