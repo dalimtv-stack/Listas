@@ -62,24 +62,29 @@ function isNumberMismatch(streamName, channelName) {
 }
 
 function isMatch(normalizedName, searchTerms, channelName) {
-  const isChannel1 = normalizeName(channelName).includes('canal 1 [1rfef]');
+  const baseChannel = normalizeName(channelName).replace(/\(.*?\)/g, '').trim();
+  const baseStream = normalizeName(normalizedName).replace(/\(.*?\)/g, '').trim();
 
-  // 🛡️ Verificación defensiva: si el canal buscado contiene "ellas" pero el stream no, descartar
-  if (
-    normalizeName(channelName).includes('ellas') &&
-    !normalizeName(normalizedName).includes('ellas')
-  ) {
-    return false;
+  // 🛡️ Reglas defensivas
+  if (baseChannel.includes('ellas') && !baseStream.includes('ellas')) return false;
+  if (baseChannel.includes('rfef') && !baseStream.includes('rfef') && !baseStream.includes('1rfef')) return false;
+  if (baseChannel.includes('f1') && !baseStream.includes('f1')) return false;
+
+  // Coincidencia fuerte por sufijos conocidos
+  const suffixMatch = /
+
+\[(.*?)\]
+
+$/.exec(normalizedName);
+  if (suffixMatch) {
+    const suffix = normalizeName(suffixMatch[1]);
+    if (!baseChannel.includes(suffix) && !suffix.includes(baseChannel)) return false;
   }
 
+  // Coincidencia por alias
   return searchTerms.some(term => {
     const baseTerm = normalizeName(term);
-    const baseName = normalizeName(normalizedName);
-    const baseMatch = baseName.includes(baseTerm) || baseTerm.includes(baseName);
-    const rfefMatch = (baseName.includes('1rfef') && baseTerm.includes('rfef')) ||
-                     (baseTerm.includes('1rfef') && baseName.includes('rfef'));
-    const movistarMatch = baseName.includes('movistarplus') && baseTerm.includes('movistar plus');
-    return (baseMatch || rfefMatch || movistarMatch) && (isChannel1 ? rfefMatch : true);
+    return baseStream.includes(baseTerm) || baseTerm.includes(baseStream);
   });
 }
 
