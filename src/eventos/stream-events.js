@@ -5,7 +5,9 @@ const { fetchEventos } = require('./scraper-events');
 const { normalizeId } = require('./utils-events');
 const { kvGetJson } = require('../../api/kv');
 const { resolveM3uUrl } = require('../../api/resolve');
-const streamModule = require('../../api/handlers/stream'); // ✅ Importación segura
+
+// ✅ Evita dependencia circular: acceso dinámico
+const getStreamModule = () => require('../../api/handlers/stream');
 
 // Detecta calidad y devuelve descripción + canal limpio
 function extraerYLimpiarCalidad(label = '') {
@@ -84,10 +86,12 @@ async function getStreams(id, configId) {
   const channelId = canalName.replace(/\s+/g, '.');
   const fakeId = `heimdallr_${configId}_${channelId}`;
 
-  // ✅ Usar el módulo directamente para evitar errores de desestructuración
-  let result = await streamModule.handleStreamInternal({ id: fakeId, m3uUrl, configId });
+  // ✅ Acceso dinámico para evitar dependencia circular
+  const { handleStreamInternal, enrichWithExtra } = getStreamModule();
+
+  let result = await handleStreamInternal({ id: fakeId, m3uUrl, configId });
   result.id = fakeId;
-  const enriched = await streamModule.enrichWithExtra(result, configId, m3uUrl, false);
+  const enriched = await enrichWithExtra(result, configId, m3uUrl, false);
 
   const streams = enriched.streams.map(s => ({
     ...s,
