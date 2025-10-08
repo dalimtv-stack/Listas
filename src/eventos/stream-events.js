@@ -80,13 +80,24 @@ async function getStreams(id, configId) {
     return { streams: [], chName: partido };
   }
 
-  console.log('[EVENTOS] Buscando streams para canal:', canalName, 'configId:', configId);
+  // 🎯 Mapeo explícito de nombres de canal
+  const canalMap = {
+    'Teledeporte': 'Teledeporte.es',
+    'Esport 3': 'Esport3.cat',
+    'Movistar Plus+': 'Movistar.Plus.es',
+    'Movistar Plus+ 2': 'Movistar.Plus.2.es',
+    'M+ Ellas V': 'Movistar.Ellas.Vamos.es',
+    'M+ Vamos': 'Movistar.Vamos.es'
+  };
+
+  const mappedName = canalMap[canalName] || canalName;
+  const channelId = mappedName.replace(/\s+/g, '.');
+
+  console.log('[EVENTOS] Buscando streams para canal:', mappedName, 'configId:', configId);
 
   const m3uUrl = await resolveM3uUrl(configId);
-  const channelId = canalName.replace(/\s+/g, '.');
   const fakeId = `heimdallr_${configId}_${channelId}`;
 
-  // ✅ Acceso dinámico para evitar dependencia circular
   const { handleStreamInternal, enrichWithExtra } = getStreamModule();
 
   let result = await handleStreamInternal({ id: fakeId, m3uUrl, configId });
