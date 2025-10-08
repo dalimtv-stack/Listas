@@ -62,31 +62,29 @@ function isNumberMismatch(streamName, channelName) {
 }
 
 function isMatch(normalizedName, searchTerms, channelName) {
+  // Normaliza canal y stream eliminando paréntesis y espacios extra
   const baseChannel = normalizeName(channelName).replace(/\(.*?\)/g, '').trim();
   const baseStream = normalizeName(normalizedName).replace(/\(.*?\)/g, '').trim();
 
-  // 🛡️ Reglas defensivas
+  // 🛡️ Reglas defensivas por contexto
   if (baseChannel.includes('ellas') && !baseStream.includes('ellas')) return false;
   if (baseChannel.includes('rfef') && !baseStream.includes('rfef') && !baseStream.includes('1rfef')) return false;
   if (baseChannel.includes('f1') && !baseStream.includes('f1')) return false;
 
-  // Coincidencia fuerte por sufijos conocidos
-  const suffixMatch = /
-
-\[(.*?)\]
-
-$/.exec(normalizedName);
+  // 🧩 Coincidencia por sufijo entre corchetes (si existe)
+  const suffixMatch = /\[(.*?)\]$/.exec(normalizedName);
   if (suffixMatch) {
     const suffix = normalizeName(suffixMatch[1]);
     if (!baseChannel.includes(suffix) && !suffix.includes(baseChannel)) return false;
   }
 
-  // Coincidencia por alias
+  // 🧠 Coincidencia por alias o términos
   return searchTerms.some(term => {
     const baseTerm = normalizeName(term);
     return baseStream.includes(baseTerm) || baseTerm.includes(baseStream);
   });
 }
+
 
 async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) {
   const logPrefix = '[SCRAPER]';
