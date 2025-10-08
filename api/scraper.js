@@ -30,9 +30,7 @@ function getSearchTerms(channelName) {
   const normalized = normalizeName(channelName)
     .replace(/\s*\(.*?\)\s*/g, '')
     .replace(/\[.*?\]/g, '');
-  const aliases = channelAliases[normalized]
-  || (!normalized.includes('ellas') ? channelAliases[original] : [])
-  || [];
+  const aliases = channelAliases[normalized] || channelAliases[original] || [];
   const terms = [...new Set([normalized, original, ...aliases])];
   return terms;
 }
@@ -65,6 +63,15 @@ function isNumberMismatch(streamName, channelName) {
 
 function isMatch(normalizedName, searchTerms, channelName) {
   const isChannel1 = normalizeName(channelName).includes('canal 1 [1rfef]');
+
+  // 🛡️ Verificación defensiva: si el canal buscado contiene "ellas" pero el stream no, descartar
+  if (
+    normalizeName(channelName).includes('ellas') &&
+    !normalizeName(normalizedName).includes('ellas')
+  ) {
+    return false;
+  }
+
   return searchTerms.some(term => {
     const baseTerm = normalizeName(term);
     const baseName = normalizeName(normalizedName);
