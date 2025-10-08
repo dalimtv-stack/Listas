@@ -15,7 +15,7 @@ const channelAliases = {
   'dazn f1 (1080)': ['dazn f1 es', 'dazn f1 [es]'],
   'laliga hypermotion': ['laliga tv hypermotion'],
   'movistar ellas vamos': ['ellas vamos spain'],
-  'movistar vamos': ['vamos spain', 'movistar vamos', 'vamos']
+  'movistar vamos': ['vamos spain', 'movistar vamos', 'vamos', 'm+ vamos spain', 'm+ vamos']
 };
 
 function normalizeName(name) {
@@ -142,8 +142,8 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
           const bracketMatch = /\[(.*?)\]/.exec(groupTitle || name);
           if (bracketMatch) {
             bracketTag = bracketMatch[1].trim();
+            searchTerms.push(normalizeName(bracketTag));
           }
-
           // Usar bracketTag como candidato prioritario
           const candidateName = bracketTag || name;
           const normalizedName = normalizeName(candidateName);
