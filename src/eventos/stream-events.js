@@ -104,19 +104,7 @@ async function getStreams(id, configId) {
   result.id = fakeId;
   const enriched = await enrichWithExtra(result, configId, m3uUrl, false);
 
-  const streams = enriched.streams.map(s => {
-    const lowerTitle = (s.title || '').toLowerCase();
-    const lowerPartido = partido.toLowerCase();
-  
-    const incluyePartido = lowerTitle.includes(lowerPartido);
-    const prefix = incluyePartido ? '' : `${partido}  ${deporte}\n`;
-  
-    return {
-      ...s,
-      title: `${prefix}${s.title}`
-    };
-  });
-
+  const streams = enriched.streams;
 
   return { streams, chName: partido };
 }
