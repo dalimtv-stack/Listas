@@ -72,16 +72,15 @@ function isMatch(normalizedName, searchTerms, channelName) {
   if (baseChannel.includes('f1') && !baseStream.includes('f1')) return false;
 
   // 🧩 Coincidencia por sufijo entre corchetes (si existe)
-  const suffixMatch = /\[(.*?)\]$/.exec(normalizedName);
-  if (suffixMatch) {
-    const suffix = normalizeName(suffixMatch[1]);
-    if (!baseChannel.includes(suffix) && !suffix.includes(baseChannel)) return false;
+  const bracketTag = /\[(.*?)\]/.exec(normalizedName)?.[1].trim();
+  if (bracketTag) {
+    if (!baseChannel.includes(normalizeName(bracketTag))) return false;
   }
 
-  // 🧠 Coincidencia por alias o términos
+  // 🧠 Coincidencia estricta: el term debe coincidir exactamente o ser el inicio del stream
   return searchTerms.some(term => {
     const baseTerm = normalizeName(term);
-    return baseStream.includes(baseTerm) || baseTerm.includes(baseStream);
+    return baseStream === baseTerm || baseStream.startsWith(baseTerm);
   });
 }
 
@@ -103,7 +102,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
   }
 
   const results = [];
-  const vlcResults = []; // acumulamos VLC aquí
+  const vlcResults = [];
   const seenUrls = new Set();
   const searchTerms = getSearchTerms(channelName);
 
@@ -136,9 +135,21 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
             const match = item.raw.match(/group-title="([^"]+)"/);
             if (match) groupTitle = match[1];
           }
-          const normalizedName = normalizeName(name);
+
+          // 🔧 FIX: detectar texto entre corchetes en groupTitle o name
+          let bracketTag = null;
+          const bracketMatch = /\[(.*?)\]/.exec(groupTitle || name);
+          if (bracketMatch) {
+            bracketTag = bracketMatch[1].trim();
+            searchTerms.push(normalizeName(bracketTag));
+          }
+          // Usar bracketTag como candidato prioritario
+          const candidateName = bracketTag || name;
+          const normalizedName = normalizeName(candidateName);
+
           const matchResult = isMatch(normalizedName, searchTerms, channelName);
           const numberMismatch = isNumberMismatch(name, channelName);
+
           if (name && href && href.endsWith('.m3u8') && groupTitle === 'SPAIN' && matchResult && !numberMismatch && !seenUrls.has(href)) {
             const displayName = normalizeUrlForDisplay(url);
             const stream = {
@@ -157,7 +168,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
 
       const $ = cheerio.load(content);
       let encontrados = 0;
-
+      
       // Selector para shickat.me u otros (solo acestream://)
       $('#linksList li').each((_, li) => {
         const name = $(li).find('.link-name').text().trim();
@@ -181,7 +192,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
           };
           results.push(stream);
           seenUrls.add(href);
-
+          
           // 🚀 Alternativa VLC
           const aceId = href.replace('acestream://', '');
           const vlcUrl = `http://vlc.shickat.me:8000/pid/${aceId}/stream.mp4`;
@@ -200,7 +211,6 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
             // Normaliza explícitamente por si alguna mutación externa lo ensucia
             delete vlcStream.externalUrl;
             delete vlcStream.acestream_id;
-            
             vlcResults.push(vlcStream);
             seenUrls.add(vlcUrl);
           }
@@ -230,7 +240,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
           };
           results.push(stream);
           seenUrls.add(href);
-
+          
           // 🚀 Alternativa VLC
           const aceId = href.replace('acestream://', '');
           const vlcUrl = `http://vlc.shickat.me:8000/pid/${aceId}/stream.mp4`;
@@ -249,13 +259,12 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
             // Normaliza explícitamente por si alguna mutación externa lo ensucia
             delete vlcStream.externalUrl;
             delete vlcStream.acestream_id;
-            
             vlcResults.push(vlcStream);
             seenUrls.add(vlcUrl);
           }
         }
       });
-
+      
       // Selector para elcano.top - extrae JSON de linksData (solo acestream://)
       if (url.includes('elcano.top')) {
         const scriptText = $('script').filter((i, el) => $(el).html().includes('linksData')).html();
@@ -287,7 +296,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
                     };
                     results.push(stream);
                     seenUrls.add(href);
-
+                    
                     // 🚀 Alternativa VLC
                     const aceId = href.replace('acestream://', '');
                     const vlcUrl = `http://vlc.shickat.me:8000/pid/${aceId}/stream.mp4`;
@@ -306,7 +315,6 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
                       // Normaliza explícitamente por si alguna mutación externa lo ensucia
                       delete vlcStream.externalUrl;
                       delete vlcStream.acestream_id;
-                      
                       vlcResults.push(vlcStream);
                       seenUrls.add(vlcUrl);
                     }
@@ -322,7 +330,6 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
     }
   }
 
-  // 🚀 Devolver primero VLC y luego el resto
   const finalResults = [...vlcResults, ...results];
 
   if (finalResults.length > 0) {
