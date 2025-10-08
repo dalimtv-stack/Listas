@@ -60,7 +60,7 @@ async function getStreams(id, configId) {
   console.log('[EVENTOS] Entrando en getStreams con id:', id, 'configId:', configId);
   const configData = await kvGetJson(configId);
   const url = configData?.eventosUrl;
-  const eventos = url ? await fetchEventos(url) : [];
+  const eventos = url ? await fetchEventos(url, { modo: 'mañana' }) : [];
   console.log('[EVENTOS] Eventos cargados:', eventos.length);
   eventos.forEach(ev => {
     console.log('[EVENTOS] normalizeId(ev)=', normalizeId(ev), 'partido=', ev.partido, 'canal=', ev.canal);
