@@ -17,18 +17,20 @@ http://www.huhu.to/play/4205258144/index.m3u8
 # https://www.movistarplus.es/recorte/m-DP/modmarcas/MPLUHD
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://stremio.shickat.me/Images/Channels/PLUS.jpg" group-title="VLC", Movistar Plus
 http://vlc.shickat.me:8000/pid/199190e3f28c1de0be34bccf0d3568dc65209b99/stream.mp4
-#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://stremio.shickat.me/Images/Channels/PLUS.jpg" group-title="daddylivestream", Movistar Plus
-https://world-proxifier.xyz/ddy/p/XSQhJT0FNyguUl0kW08kNElTLF0gJCQvLyguUl0kOjgvX0hfIl8HBh8yVzZaJDxaBj8L/index.m3u8
+#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://stremio.shickat.me/Images/Channels/PLUS.jpg" group-title="daddylivestream", Movistar Plus (1080)
+https://world-proxifier.xyz/daddylive_go/p/C4MWCOI7FMRTSNRGFI3XSYK6IZDRWEAYCNRXKAZVGMWTW6LFPBQWK3ICAVHVMVKUBACTMZTAOZVXEZTBOZVX2/index.m3u8
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://i.ibb.co/hFYPWbpJ/plus.png" group-title="NEW ERA", Movistar Plus (FHD)
 acestream://b2a4d1eba9b46df5f52a87105df779f9d39abeb4
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://i.ibb.co/hFYPWbpJ/plus.png" group-title="NEW LOOP", Movistar Plus
 acestream://56ac8e227d526e722624675ccdd91b0cc850582f
 
 # https://bit.ly/CanallaligadeDiego
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://stremio.shickat.me/Images/Channels/LALIGA.jpg" group-title="Telegram", Movistar LaLiga
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://stremio.shickat.me/Images/Channels/LALIGA.jpg" group-title="Telegram", Movistar LaLiga (720)
 http://172.93.102.112:8989/278844_.m3u8
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="daddylivestream", Movistar LaLiga
-https://world-proxifier.xyz/ddy/p/XSQhJT0FNygtXl5RW08kNElTLF0gJCQvLygtXl5ROjgvX0hfIl8DBydSKUklOV8GIh4=/index.m3u8
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://stremio.shickat.me/Images/Channels/LALIGA.jpg" group-title="Telegram", Movistar LaLiga (720)
+http://clarotv7.com/live/508373667/k717x9942z/234253.m3u8
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="daddylivestream", Movistar LaLiga (720)
+https://world-proxifier.xyz/daddylive_go/p/C4MWCOI7FMRTSNRGFI3XS7KTL5OVOUIQDJ4XK2DRFZYTONBHGQXSAPICAYDQMBQCA4CQ/index.m3u8
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://i.imgur.com/26c7mQb.png" group-title="7pal.short.gy",Movistar LaLiga (UHD) 
 https://7pal.short.gy/mplusuhd
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4404104" group-title="Elcano.top", Movistar LaLiga (1080 MultiAudio)
@@ -68,8 +70,8 @@ acestream://ebe14f1edeb49f2253e3b355a8beeadc9b4f0bc4
 #EXTINF:-1 tvg-id="Movistar.LaLiga.3.es" tvg-logo="https://i.ibb.co/BZF0xG9/liga3.png" group-title="ELCANO", Movistar LaLiga 3 (SD)
 acestream://835639b89db00cc0d94660da3c10b6e38bfbcdc1
 
-#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://dazngroup.com/wp-content/uploads/2025/08/DAZN-x-LALIGA.webp" group-title="daddylivestream", DAZN LaLiga
-https://world-proxifier.xyz/ddy/p/XSQhJT0FNyhQJF1YJBlTXz44W1csWD0sNDUjOlQkWEUsCSgkJ1daXj9SDRQCOl8kWzkxVxQjAw==/index.m3u8
+#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://dazngroup.com/wp-content/uploads/2025/08/DAZN-x-LALIGA.webp" group-title="daddylivestream", DAZN LaLiga (1080)
+https://world-proxifier.xyz/daddylive_go/p/C4MWCOIWAUHR4ZI6FIETAVSTCMPBUEAFANVSS2BGG56WI2DVMR4CO2KXA4FFAUQ/index.m3u8
 #EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://dazngroup.com/wp-content/uploads/2025/08/DAZN-x-LALIGA.webp" group-title="Elcano.top", DAZN LaLiga (1080 MultiAudio)
 acestream://e2b8a4aba2f4ea3dd68992fcdb65c9e62d910b05
 #EXTINF:-1 tvg-id="DAZN.LALIGA.es" group-title="Elcano.top", DAZN LaLiga (1080 MultiAudio) (Opcion 2)
@@ -88,7 +90,7 @@ acestream://8c8c1e047a1c5ed213ba74722a5345dc55c3c0eb
 # https://i.ibb.co/nsyG7wRV/DAZN-x-LALIGA-2.png
 # https://i.ibb.co/tw7G81gf/dazn-laliga-2-es.png
 #EXTINF:-1 tvg-id="DAZN.LALIGA.2.es" tvg-logo="https://i.ibb.co/XxMT4qnN/DAZN-x-LALIGA-2.webp" group-title="daddylivestream", DAZN LaLiga 2
-https://world-proxifier.xyz/ddy/p/XSQhJT0FNygtXl5RW08kNElTLF0gJCQvLygtXl5ROjgvX0hfIl8HBidSKUklOV8GIh4=/index.m3u8
+https://world-proxifier.xyz/daddylive_go/p/C4MWCOIWAUHR4ZI6FIETAVSTCMDBAGQ2CBTWMLDVNJ2GEYREMUXCO32XKZIFCBCT/index.m3u8
 #EXTINF:-1 tvg-id="DAZN.LALIGA.2.es" tvg-logo="https://i.ibb.co/XxMT4qnN/DAZN-x-LALIGA-2.webp" group-title="Elcano.top", DAZN LaLiga 2 (1080 MultiAudio)
 acestream://a231b2fa1f7754433efeb8bb8d69d7b9096dcba8
 #EXTINF:-1 tvg-id="DAZN.LALIGA.2.es" group-title="Elcano.top", DAZN LaLiga 2 (1080 MultiAudio) (Opcion 2)
@@ -185,12 +187,12 @@ acestream://2fd410c5d89e7a627cd3785685b7915b8e4bd534
 #EXTINF:-1 tvg-id="Movistar.Deportes.3.es" tvg-logo="https://i.ibb.co/jDg5qWD/deportes3.png" group-title="NEW ERA", Movistar Deportes 3 (FHD)
 acestream://753d4b1f7c4ef43238b5cf23b05572b550a44eee
 
-#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="Telegram", DAZN 1
+#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="Telegram", DAZN 1 (720)
 http://172.93.102.112:8989/278822_.m3u8
-#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="Telegram", DAZN 1
+#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="Telegram", DAZN 1 (SD)
 http://172.93.102.112:8989/278823_.m3u8
-#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="daddylivestream", DAZN 1
-https://world-proxifier.xyz/ddy/p/XSQhJT0FNygtXl5RW08kNElTLF0gJCQvLygtXl5ROjgvX0hfIl8HBx0yVzZaJDxaBj8L/index.m3u8
+#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="daddylivestream", DAZN 1 (720)
+https://world-proxifier.xyz/daddylive_go/p/C4MWCOIWAUHR4ZLDNMLCSUC3LUKBUGQQARTWALBBNJZWENBGGN4XMOYAKBJFCAKU/index.m3u8
 #EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4371802" group-title="Elcano.top", DAZN 1
 acestream://eb6ffec065b26259ad3d1811e0bbb0a5332ed276
 #EXTINF:-1 tvg-id="DAZN.1.es" group-title="Elcano.top", DAZN 1 (Opcion 2)
@@ -208,12 +210,12 @@ acestream://35c7f0c966ecde3390f4510bb4caded40018c07a
 #EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://i.ibb.co/FVzKq1y/dazn1.png" group-title="NEW LOOP",DAZN 1
 acestream://d5b2c6b940cf3df5e8f9dc6f000f0ea23a10b151
 
-#EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="Telegram", DAZN 2
+#EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="Telegram", DAZN 2 (720)
 http://172.93.102.112:8989/278824_.m3u8
-#EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="Telegram", DAZN 2
+#EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="Telegram", DAZN 2 (720)
 http://172.93.102.112:8989/278825_.m3u8
-#EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="daddylivestream", DAZN 2
-https://world-proxifier.xyz/ddy/p/XSQhJT0FNyguUl0kW08kNElTLF0gJCQvLyguUl0kOjgvX0hfIl8HBxwyVzZaJDxaBj8L/index.m3u8
+#EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="daddylivestream", DAZN 2 (720)
+https://world-proxifier.xyz/daddylive_go/p/C4MWCOIWAUHR4ZLANMLCSUC3LUKBUGQQARTWGLD4MVZGGMRBNNZHK2IFAIDAMUIH/index.m3u8
 #EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2357974V4081906" group-title="Elcano.top", DAZN 2
 acestream://ae68a0835039fab28fd2314108fabd4fab33b8ab
 #EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://i.ibb.co/Kz0GXSX/dazn2.png" group-title="NEW ERA", DAZN 2 (FHD)
@@ -227,8 +229,8 @@ acestream://a929eeec1268d69d1556a2e3ace793b2577d8810
 #EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://i.ibb.co/Kz0GXSX/dazn2.png" group-title="NEW LOOP",DAZN 2
 acestream://b0eabe0fdd02fdd165896236765a9b753a2ff516
 
-#EXTINF:-1 tvg-id="DAZN.3.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2359028V4081907" group-title="daddylivestream", DAZN 3
-https://world-proxifier.xyz/ddy/p/XSQhJT0FNyguUl0kW08kNElTLF0gJCQvLyguUl0kOjgvX0hfIl8HBx8yVzZaJDxaBj8L/index.m3u8
+#EXTINF:-1 tvg-id="DAZN.3.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2359028V4081907" group-title="daddylivestream", DAZN 3 (720)
+https://world-proxifier.xyz/daddylive_go/p/C4MWCOIWAUHR4ZLBNMLCSUC3LUKBUGQQARTWELBDMZZGEMJAM55CCYCUKZKQOUII/index.m3u8
 #EXTINF:-1 tvg-id="DAZN.3.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2359028V4081907" group-title="NEW ERA", DAZN 3 (FHD)
 acestream://d641cd0fca0f467b3130754a091e2f4d22e68eb1
 #EXTINF:-1 tvg-id="DAZN.3.es" tvg-logo="https://i.ibb.co/2vkThM3/dazn3.png" group-title="NEW ERA", DAZN 3 (FHD) (Opcion 2)
@@ -255,11 +257,11 @@ acestream://d03c13b6723f66155d7a0df3692a3b073fe630f2
 #EXTINF:-1 tvg-id="Movistar.Vamos.es" tvg-logo="https://i.ibb.co/gWMRpFB/vamos.png" group-title="ELCANO", Movistar Vamos
 acestream://12ba546d229bc39f01c3c18988a034b215fe6adb
 
-#EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratula5/M386373V4072004" group-title="VLC", Eurosport
-http://vlc.shickat.me:8000/pid/ef2abf419586d9876370be127ad592dbb41b126a/stream.mp4
-#EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://stremio.shickat.me/Images/Channels/EUROSPORT.jpg" group-title="Telegram", Eurosport
+#EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratula5/M386373V4072004" group-title="Telegram", Eurosport (1080)
+https://world-proxifier.xyz/daddylive_go/p/C4MWCOIXGETT6FRCEQ3S2EIDCNTUAUKZLZZX66TFM53GCLDWGZ6SO2SUKFLFMVCVABKWKNZS/index.m3u8
+#EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://stremio.shickat.me/Images/Channels/EUROSPORT.jpg" group-title="Telegram", Eurosport (720)
 http://185.189.225.157/EuroSport1/index.m3u8
-#EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://i.imgur.com/eurosport-logo.png" group-title="Telegram", Eurosport HD (Opcion 2)
+#EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://i.imgur.com/eurosport-logo.png" group-title="Telegram", Eurosport (HD)
 http://87.120.179.187:8000/play/a02c
 #EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratula5/M386373V4072004" group-title="Elcano.top", Eurosport (1080)
 acestream://c3da6c4f91d9d10ade00318a869435e19f204d0e
@@ -272,9 +274,9 @@ acestream://714e14e6d6e27660fd25a75b57b0ac5580fe705d
 #EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://rasset.ie/rte-dist/images/rte-logo.png" group-title="ELCANO", Eurosport
 acestream://16ffa1713f42aa27317ee039a2bd0cdbc89a1580
 
-#EXTINF:-1 tvg-id="Eurosport.2.es" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLDpV4QUeZOXm02CMRuM0U6fGDh1MbO5XObQ&s" group-title="daddylivestream", Eurosport 2
-https://world-proxifier.xyz/ddy/p/XSQhJT0FNyhQUSsBW08kNElTLF0gJCQvLyhQUSsBOjgvX0hfIl8ABR0yVzZaJDxaBj8L/index.m3u8
-#EXTINF:-1 tvg-id="Eurosport.2.es" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLDpV4QUeZOXm02CMRuM0U6fGDh1MbO5XObQ&s" group-title="Telegram", Eurosport 2 (HD)
+#EXTINF:-1 tvg-id="Eurosport.2.es" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLDpV4QUeZOXm02CMRuM0U6fGDh1MbO5XObQ&s" group-title="daddylivestream", Eurosport 2 (1080)
+https://world-proxifier.xyz/daddylive_go/p/C4MWCOIXGETT6FRCEQ3S2EIACNTUAUKZLZZX66TFM53GALD5MUUHCYIBBMBVKAKTKRLGCNDE/index.m3u8
+#EXTINF:-1 tvg-id="Eurosport.2.es" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLDpV4QUeZOXm02CMRuM0U6fGDh1MbO5XObQ&s" group-title="Telegram", Eurosport 2 (1080)
 http://185.189.225.157/EuroSport2/index.m3u8
 #EXTINF:-1 tvg-id="Eurosport.2.es" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLDpV4QUeZOXm02CMRuM0U6fGDh1MbO5XObQ&s" group-title="Elcano.top", Eurosport 2 (1080)
 acestream://0585e09bb8ac9720e4c11934f1b184e309291551
@@ -397,12 +399,12 @@ acestream://b40212c43e96e97542ea00f2129212a054853a57
 #EXTINF:-1 tvg-id="Canal.2.1RFEF" tvg-logo="https://i.ibb.co/4wVnPgDk/Primera-RFEF-2021.png" group-title="NEW ERA", Canal 2 [1RFEF] (SOLO EVENTOS)
 acestream://8677d339ecddd75165c0015025f598b6215974cf
 
-#EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://stremio.shickat.me/Images/Channels/GOLF.jpg" group-title="Telegram", Movistar Golf
+#EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://stremio.shickat.me/Images/Channels/GOLF.jpg" group-title="Telegram", Movistar Golf (720)
 http://172.93.102.112:8989/278851_.m3u8
 #EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://stremio.shickat.me/Images/Channels/GOLF.jpg" group-title="VLC", Movistar Golf
 http://vlc.shickat.me:8000/pid/9ed46050217ee6ed8236a64b72d7992f7b3b37f2/stream.mp4
-#EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/M1857850V3157130" group-title="daddylivestream", Movistar Golf
-https://world-proxifier.xyz/ddy/p/XSQhJT0FNyhQJF1YJBlTXz44W1csWD0sNDUjOlQkWEUsCSgkJ1daXj9SDRcCOl8kWzkxVxQjAw==/index.m3u8
+#EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/M1857850V3157130" group-title="daddylivestream", Movistar Golf (SD)
+https://world-proxifier.xyz/daddylive_go/p/C4MWCOI7FMRTSNRGFI3XS5S5L5JBAY2AKE5DW4DPPBSGAYT5FZ6HG3CQKQFQOAIEAVKDCYRSONSA/index.m3u8
 #EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/M1857850V3157130" group-title="NEW ERA", Movistar Golf (FHD)
 acestream://8546cff89e4ee8bf3ad31cf6457c3bc2c4341031
 #EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://i.ibb.co/Vp04N3pT/golf.png" group-title="NEW LOOP", Movistar Golf (HD)
