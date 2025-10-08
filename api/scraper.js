@@ -14,7 +14,8 @@ const channelAliases = {
   'canal 1 [1rfef] (solo eventos)': ['primera federacion', 'primera federacion "rfef"', '1rfef', 'primera federacion rfef', 'canal 1 [1rfef]'],
   'dazn f1 (1080)': ['dazn f1 es', 'dazn f1 [es]'],
   'laliga hypermotion': ['laliga tv hypermotion'],
-  'movistar vamos': ['vamos']
+  'movistar vamos': ['vamos'],
+  'movistar ellas vamos': ['[ellas vamos spain]'] 
 };
 
 function normalizeName(name) {
