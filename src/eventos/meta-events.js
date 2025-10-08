@@ -8,7 +8,7 @@ const { kvGetJson } = require('../../api/kv');
 async function getMeta(id, configId) {
   const configData = await kvGetJson(configId);
   const url = configData?.eventosUrl;
-  const eventos = url ? await fetchEventos(url) : [];
+  const eventos = url ? await fetchEventos(url, { modo: 'mañana' }) : [];
 
   const prefix = `Heimdallr_evt_${configId}_`;
   const cleanId = id.startsWith(prefix) ? id.slice(prefix.length) : id;
