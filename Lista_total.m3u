@@ -356,9 +356,9 @@ http://vlc.shickat.me:8000/pid/096b817fcc836535f608facb15fca6408fae3162/stream.m
 #EXTINF:-1 tvg-id="Movistar.Originales.es" tvg-logo="https://i.ibb.co/rGVmRcSH/hits.png" group-title="NEW ERA", Movistar Originales (FHD)
 acestream://2752dee68a7faa9c847216dc22a6821661db891a
 
-#EXTINF:-1 tvg-id="dark.es" tvg-logo="https://i.ibb.co/pvSNFSfp/IMG-2338.jpg" group-title="Acestream", Dark (FHD)
+#EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://i.ibb.co/pvSNFSfp/IMG-2338.jpg" group-title="Acestream", Dark (FHD)
 acestream://25465ea2deba65c623b7659136abf6fcc9f5dc20
-#EXTINF:-1 tvg-id="dark.es" tvg-logo="https://i.ibb.co/pvSNFSfp/IMG-2338.jpg" group-title="Acestream", Dark (FHD)
+#EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://i.ibb.co/pvSNFSfp/IMG-2338.jpg" group-title="Acestream", Dark (FHD)
 acestream://77aa26a614522c3845bdda1fa1f0e15dbe97c877
 
 #EXTINF:-1 tvg-id="AXN.es" tvg-logo="http://vpns.universof.com:25461/images/7798388f9d79038c19aa53a7cfa79574.png" group-title="Telegram", AXN
