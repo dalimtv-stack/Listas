@@ -58,6 +58,10 @@ async function getStreams(id, configId) {
   const configData = await kvGetJson(configId);
   const url = configData?.eventosUrl;
   const eventos = url ? await fetchEventos(url) : [];
+  console.log('[EVENTOS] Eventos cargados:', eventos.length);
+  eventos.forEach(ev => {
+    console.log('[EVENTOS] normalizeId(ev)=', normalizeId(ev), 'partido=', ev.partido, 'canal=', ev.canal);
+  });
 
   const prefix = `Heimdallr_evt_${configId}_`;
   const cleanId = id.startsWith(prefix) ? id.slice(prefix.length) : id;
