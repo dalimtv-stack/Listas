@@ -1,4 +1,3 @@
-// api/scraper.js
 'use strict';
 
 const fetch = require('node-fetch');
@@ -72,16 +71,15 @@ function isMatch(normalizedName, searchTerms, channelName) {
   if (baseChannel.includes('f1') && !baseStream.includes('f1')) return false;
 
   // 🧩 Coincidencia por sufijo entre corchetes (si existe)
-  const suffixMatch = /\[(.*?)\]$/.exec(normalizedName);
-  if (suffixMatch) {
-    const suffix = normalizeName(suffixMatch[1]);
-    if (!baseChannel.includes(suffix) && !suffix.includes(baseChannel)) return false;
+  const bracketTag = /\[(.*?)\]/.exec(normalizedName)?.[1].trim();
+  if (bracketTag) {
+    if (!baseChannel.includes(normalizeName(bracketTag))) return false;
   }
 
-  // 🧠 Coincidencia por alias o términos
+  // 🧠 Coincidencia estricta: el term debe estar completamente en el stream o viceversa
   return searchTerms.some(term => {
     const baseTerm = normalizeName(term);
-    return baseStream.includes(baseTerm) || baseTerm.includes(baseStream);
+    return baseStream === baseTerm || baseStream.startsWith(baseTerm) || baseTerm.startsWith(baseStream);
   });
 }
 
