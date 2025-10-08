@@ -15,7 +15,7 @@ const channelAliases = {
   'dazn f1 (1080)': ['dazn f1 es', 'dazn f1 [es]'],
   'laliga hypermotion': ['laliga tv hypermotion'],
   'movistar ellas vamos': ['ellas vamos spain'],
-  'movistar vamos': ['vamos spain']
+  'movistar vamos': ['vamos spain, movistar vamos, vamos']
 };
 
 function normalizeName(name) {
@@ -30,7 +30,9 @@ function getSearchTerms(channelName) {
   const normalized = normalizeName(channelName)
     .replace(/\s*\(.*?\)\s*/g, '')
     .replace(/\[.*?\]/g, '');
-  const aliases = channelAliases[normalized] || channelAliases[original] || [];
+  const aliases = channelAliases[normalized]
+  || (!normalized.includes('ellas') ? channelAliases[original] : [])
+  || [];
   const terms = [...new Set([normalized, original, ...aliases])];
   return terms;
 }
