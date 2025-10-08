@@ -5,6 +5,7 @@ const { fetchEventos } = require('./scraper-events');
 const { normalizeId } = require('./utils-events');
 const { kvGetJson } = require('../../api/kv');
 const { resolveM3uUrl } = require('../../api/resolve');
+const { DateTime } = require('luxon');
 
 // ✅ Evita dependencia circular: acceso dinámico
 const getStreamModule = () => require('../../api/handlers/stream');
@@ -60,14 +61,20 @@ async function getStreams(id, configId) {
   console.log('[EVENTOS] Entrando en getStreams con id:', id, 'configId:', configId);
   const configData = await kvGetJson(configId);
   const url = configData?.eventosUrl;
-  const eventos = url ? await fetchEventos(url, esEventoDeManana ? { modo: 'mañana' } : {}) : [];
+
+  const prefix = `Heimdallr_evt_${configId}_`;
+  const cleanId = id.startsWith(prefix) ? id.slice(prefix.length) : id;
+
+  // Detectar si el evento es de mañana
+  const esDeManana = cleanId.startsWith(
+    DateTime.now().plus({ days: 1 }).setZone('Europe/Madrid').toFormat('ddMMyyyy')
+  );
+
+  const eventos = url ? await fetchEventos(url, esDeManana ? { modo: 'mañana' } : {}) : [];
   console.log('[EVENTOS] Eventos cargados:', eventos.length);
   eventos.forEach(ev => {
     console.log('[EVENTOS] normalizeId(ev)=', normalizeId(ev), 'partido=', ev.partido, 'canal=', ev.canal);
   });
-
-  const prefix = `Heimdallr_evt_${configId}_`;
-  const cleanId = id.startsWith(prefix) ? id.slice(prefix.length) : id;
 
   const evento = eventos.find(ev => normalizeId(ev) === cleanId);
   if (!evento) return { streams: [], chName: '' };
@@ -106,7 +113,6 @@ async function getStreams(id, configId) {
     'LALIGA TV HYPERMOTION 2': 'LaLiga.Hypermotion.2.es',
     'LALIGA TV HYPERMOTION 3': 'LaLiga.Hypermotion.3.es',
     'LA 1': 'LA1.es',
-    'Teledeporte': 'Teledeporte.es',
     'M+ Vamos': 'Movistar.Vamos.es'
   };
 
