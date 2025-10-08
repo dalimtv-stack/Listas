@@ -146,11 +146,14 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
           const candidateName = bracketTag || name;
           const normalizedName = normalizeName(candidateName);
 
-          const matchResult = isMatch(normalizedName, searchTerms, channelName);
           const numberMismatch = isNumberMismatch(candidateName, channelName);
-          // Aceptar si es SPAIN o si viene con sufijo de eventos entre corchetes
+
           const isSpainGroup = normalizeName(groupTitle) === 'spain';
-          const isEventMatch = Boolean(bracketTag) && matchResult;
+          let isEventMatch = false;
+          if (bracketTag) {
+            const normalizedTag = normalizeName(bracketTag);
+            isEventMatch = searchTerms.some(term => normalizedTag.includes(normalizeName(term)));
+          }
 
           if (
             candidateName &&
@@ -178,7 +181,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
       // --- BLOQUE CHEERIO (shickat, canal-card, elcano) ---
       const $ = cheerio.load(content);
 
-      // Selector para shickat.me u otros (solo acestream://)
+      // Selector para shickat.me
       $('#linksList li').each((_, li) => {
         const name = $(li).find('.link-name').text().trim();
         const href = $(li).find('.link-url a').attr('href');
@@ -212,12 +215,11 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
               url: vlcUrl,
               group_title: 'VLC',
               behaviorHints: { notWebReady: false, external: false }
-            };            
-            // Guardas de integridad (diagnóstico)
+            };
+            // Guardas de integridad
             if (vlcStream.externalUrl || vlcStream.acestream_id) {
               console.warn('[SCRAPER] [ALERTA] vlcStream trae campos de Ace (NO DEBE):', vlcStream);
             }
-            // Normaliza explícitamente por si alguna mutación externa lo ensucia
             delete vlcStream.externalUrl;
             delete vlcStream.acestream_id;
             vlcResults.push(vlcStream);
@@ -225,8 +227,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
           }
         }
       });
-
-      // Selector para canal-card (solo acestream://)
+      // Selector para canal-card
       $('.canal-card').each((_, card) => {
         const name = $(card).find('.canal-nombre').text().trim();
         const href = $(card).find('.acestream-link').attr('href');
@@ -261,11 +262,9 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
               group_title: 'VLC',
               behaviorHints: { notWebReady: false, external: false }
             };
-            // Guardas de integridad (diagnóstico)
             if (vlcStream.externalUrl || vlcStream.acestream_id) {
               console.warn('[SCRAPER] [ALERTA] vlcStream trae campos de Ace (NO DEBE):', vlcStream);
             }
-            // Normaliza explícitamente por si alguna mutación externa lo ensucia
             delete vlcStream.externalUrl;
             delete vlcStream.acestream_id;
             vlcResults.push(vlcStream);
@@ -274,7 +273,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
         }
       });
 
-      // Selector para elcano.top - extrae JSON de linksData (solo acestream://)
+      // Selector para elcano.top
       if (url.includes('elcano.top')) {
         const scriptText = $('script').filter((i, el) => $(el).html().includes('linksData')).html();
         if (scriptText) {
@@ -317,6 +316,9 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
                         group_title: 'VLC',
                         behaviorHints: { notWebReady: false, external: false }
                       };
+                      if (vlcStream.externalUrl || vlcStream.acestream_id) {
+                        console.warn('[SCRAPER] [ALERTA] vlcStream trae campos de Ace (NO DEBE):', vlcStream);
+                      }
                       delete vlcStream.externalUrl;
                       delete vlcStream.acestream_id;
                       vlcResults.push(vlcStream);
@@ -342,5 +344,6 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
 
   return finalResults;
 }
+
 
 module.exports = { scrapeExtraWebs };
