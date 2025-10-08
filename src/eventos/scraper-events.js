@@ -295,6 +295,7 @@ async function scrapeEventosDesdeMarca(ahoraDT) {
           deporte,
           competicion,
           partido,
+          canal: canal,
           canales: [{ label: canal, url: null }]
         };
 
