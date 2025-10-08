@@ -213,6 +213,9 @@ async function getChannels(args = {}) {
   const m3uUrl = args.m3uUrl || DEFAULT_M3U_URL;
   console.log(`[getChannels] Llamado con m3uUrl: ${m3uUrl}`);
   await loadM3U({ m3uUrl });
+  cachedChannels.forEach(item => {
+    console.log('[DEBUG] Canal disponible:', item.id);
+  });
   return cachedChannels;
 }
 
