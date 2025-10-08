@@ -120,7 +120,6 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
         clearTimeout(timeoutId);
       }
 
-      // --- BLOQUE M3U ---
       if (url.endsWith('.m3u') || content.startsWith('#EXTM3U')) {
         let playlist;
         try {
@@ -138,35 +137,25 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
             if (match) groupTitle = match[1];
           }
 
-          // Extraer sufijo entre corchetes
+          // 🔧 FIX: detectar texto entre corchetes en groupTitle o name
           let bracketTag = null;
-          const bracketMatch = /\[(.*?)\]/.exec(((groupTitle || '') + ' ' + (name || '')));
-          if (bracketMatch) bracketTag = bracketMatch[1].trim();
-
+          const bracketMatch = /\[(.*?)\]/.exec(groupTitle || name);
+          if (bracketMatch) {
+            bracketTag = bracketMatch[1].trim();
+            searchTerms.push(normalizeName(bracketTag));
+          }
+          // Usar bracketTag como candidato prioritario
           const candidateName = bracketTag || name;
           const normalizedName = normalizeName(candidateName);
 
-          const numberMismatch = isNumberMismatch(candidateName, channelName);
+          const matchResult = isMatch(normalizedName, searchTerms, channelName);
+          const numberMismatch = isNumberMismatch(name, channelName);
 
-          const isSpainGroup = normalizeName(groupTitle) === 'spain';
-          let isEventMatch = false;
-          if (bracketTag) {
-            const normalizedTag = normalizeName(bracketTag);
-            isEventMatch = searchTerms.some(term => normalizedTag.includes(normalizeName(term)));
-          }
-
-          if (
-            candidateName &&
-            href &&
-            href.endsWith('.m3u8') &&
-            (isSpainGroup || isEventMatch) &&
-            !numberMismatch &&
-            !seenUrls.has(href)
-          ) {
+          if (name && href && href.endsWith('.m3u8') && groupTitle === 'SPAIN' && matchResult && !numberMismatch && !seenUrls.has(href)) {
             const displayName = normalizeUrlForDisplay(url);
             const stream = {
               name: displayName,
-              title: `${candidateName} (M3U8)`,
+              title: `${name} (M3U8)`,
               url: href,
               group_title: displayName,
               behaviorHints: { notWebReady: false, external: false }
@@ -178,10 +167,10 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
         continue;
       }
 
-      // --- BLOQUE CHEERIO (shickat, canal-card, elcano) ---
       const $ = cheerio.load(content);
-
-      // Selector para shickat.me
+      let encontrados = 0;
+      
+      // Selector para shickat.me u otros (solo acestream://)
       $('#linksList li').each((_, li) => {
         const name = $(li).find('.link-name').text().trim();
         const href = $(li).find('.link-url a').attr('href');
@@ -204,7 +193,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
           };
           results.push(stream);
           seenUrls.add(href);
-
+          
           // 🚀 Alternativa VLC
           const aceId = href.replace('acestream://', '');
           const vlcUrl = `http://vlc.shickat.me:8000/pid/${aceId}/stream.mp4`;
@@ -216,10 +205,11 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
               group_title: 'VLC',
               behaviorHints: { notWebReady: false, external: false }
             };
-            // Guardas de integridad
+            // Guardas de integridad (diagnóstico)
             if (vlcStream.externalUrl || vlcStream.acestream_id) {
               console.warn('[SCRAPER] [ALERTA] vlcStream trae campos de Ace (NO DEBE):', vlcStream);
             }
+            // Normaliza explícitamente por si alguna mutación externa lo ensucia
             delete vlcStream.externalUrl;
             delete vlcStream.acestream_id;
             vlcResults.push(vlcStream);
@@ -227,7 +217,8 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
           }
         }
       });
-      // Selector para canal-card
+
+      // Selector para canal-card (solo acestream://)
       $('.canal-card').each((_, card) => {
         const name = $(card).find('.canal-nombre').text().trim();
         const href = $(card).find('.acestream-link').attr('href');
@@ -250,7 +241,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
           };
           results.push(stream);
           seenUrls.add(href);
-
+          
           // 🚀 Alternativa VLC
           const aceId = href.replace('acestream://', '');
           const vlcUrl = `http://vlc.shickat.me:8000/pid/${aceId}/stream.mp4`;
@@ -262,9 +253,11 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
               group_title: 'VLC',
               behaviorHints: { notWebReady: false, external: false }
             };
+            // Guardas de integridad (diagnóstico)
             if (vlcStream.externalUrl || vlcStream.acestream_id) {
               console.warn('[SCRAPER] [ALERTA] vlcStream trae campos de Ace (NO DEBE):', vlcStream);
             }
+            // Normaliza explícitamente por si alguna mutación externa lo ensucia
             delete vlcStream.externalUrl;
             delete vlcStream.acestream_id;
             vlcResults.push(vlcStream);
@@ -272,8 +265,8 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
           }
         }
       });
-
-      // Selector para elcano.top
+      
+      // Selector para elcano.top - extrae JSON de linksData (solo acestream://)
       if (url.includes('elcano.top')) {
         const scriptText = $('script').filter((i, el) => $(el).html().includes('linksData')).html();
         if (scriptText) {
@@ -304,7 +297,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
                     };
                     results.push(stream);
                     seenUrls.add(href);
-
+                    
                     // 🚀 Alternativa VLC
                     const aceId = href.replace('acestream://', '');
                     const vlcUrl = `http://vlc.shickat.me:8000/pid/${aceId}/stream.mp4`;
@@ -316,9 +309,11 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
                         group_title: 'VLC',
                         behaviorHints: { notWebReady: false, external: false }
                       };
+                      // Guardas de integridad (diagnóstico)
                       if (vlcStream.externalUrl || vlcStream.acestream_id) {
                         console.warn('[SCRAPER] [ALERTA] vlcStream trae campos de Ace (NO DEBE):', vlcStream);
                       }
+                      // Normaliza explícitamente por si alguna mutación externa lo ensucia
                       delete vlcStream.externalUrl;
                       delete vlcStream.acestream_id;
                       vlcResults.push(vlcStream);
@@ -344,6 +339,5 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
 
   return finalResults;
 }
-
 
 module.exports = { scrapeExtraWebs };
