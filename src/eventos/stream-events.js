@@ -5,7 +5,7 @@ const { fetchEventos } = require('./scraper-events');
 const { normalizeId } = require('./utils-events');
 const { kvGetJson } = require('../../api/kv');
 const { resolveM3uUrl } = require('../../api/resolve');
-const { handleStreamInternal, enrichWithExtra } = require('../../api/handlers/stream');
+const streamModule = require('../../api/handlers/stream'); // ✅ Importación segura
 
 // Detecta calidad y devuelve descripción + canal limpio
 function extraerYLimpiarCalidad(label = '') {
@@ -27,7 +27,6 @@ function extraerYLimpiarCalidad(label = '') {
     }
   }
 
-  // Elimina cualquier mención de calidad (con o sin paréntesis)
   const canalLimpio = label
     .replace(/\(?\b(?:SD|HD|FHD|QHD|2K|UHD|4K|480p|480|540p|540|720p|720|1080p|1080|1440p|1440|2160p|2160|4320p|4320)\b\)?/gi, '')
     .replace(/\s+/g, ' ')
@@ -74,28 +73,22 @@ async function getStreams(id, configId) {
   const partido = transformarTexto(evento.partido);
   const deporte = transformarTexto(evento.deporte);
 
-  // --- Nuevo: cargar streams del catálogo principal ---
   const canalName = (evento.canal || '').trim();
   if (!canalName) {
     return { streams: [], chName: partido };
   }
-  
-  // Log para ver qué canal se está buscando
+
   console.log('[EVENTOS] Buscando streams para canal:', canalName, 'configId:', configId);
 
-  // Resolver m3uUrl para este configId
   const m3uUrl = await resolveM3uUrl(configId);
-
-  // Construir un id de canal como lo espera handleStreamInternal
-  const channelId = canalName.replace(/\s+/g, '.'); // ej: "Movistar LaLiga" -> "Movistar.LaLiga"
+  const channelId = canalName.replace(/\s+/g, '.');
   const fakeId = `heimdallr_${configId}_${channelId}`;
 
-  // Obtener streams del catálogo principal
-  let result = await handleStreamInternal({ id: fakeId, m3uUrl, configId });
+  // ✅ Usar el módulo directamente para evitar errores de desestructuración
+  let result = await streamModule.handleStreamInternal({ id: fakeId, m3uUrl, configId });
   result.id = fakeId;
-  const enriched = await enrichWithExtra(result, configId, m3uUrl, false);
+  const enriched = await streamModule.enrichWithExtra(result, configId, m3uUrl, false);
 
-  // Reetiquetar títulos para que incluyan partido y deporte
   const streams = enriched.streams.map(s => ({
     ...s,
     title: `${partido}  ${deporte}\n${s.title}`
