@@ -105,7 +105,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
   const results = [];
   const vlcResults = [];
   const seenUrls = new Set();
-  let searchTerms = getSearchTerms(channelName); // ahora let para poder ampliar
+  const searchTerms = getSearchTerms(channelName);
 
   for (const url of extraWebsList) {
     let content;
@@ -120,6 +120,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
         clearTimeout(timeoutId);
       }
 
+      // --- BLOQUE M3U ---
       if (url.endsWith('.m3u') || content.startsWith('#EXTM3U')) {
         let playlist;
         try {
@@ -137,39 +138,36 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
             if (match) groupTitle = match[1];
           }
 
-          // Detectar texto entre corchetes en groupTitle o name (caso eventos)
+          // Extraer sufijo entre corchetes
           let bracketTag = null;
-          const bracketMatch = /\[(.*?)\]/.exec((groupTitle || '') + ' ' + (name || ''));
-          if (bracketMatch) bracketTag = bracketMatch[1].trim();
-          if (bracketTag) {
-            const normalizedTag = normalizeName(bracketTag);
-            if (!searchTerms.includes(normalizedTag)) {
-              searchTerms.push(normalizedTag);
-            }
-          }
+          const bracketMatch = /
 
-          // Usar bracketTag como candidato prioritario de matching
+\[(.*?)\]
+
+/.exec(((groupTitle || '') + ' ' + (name || '')));
+          if (bracketMatch) bracketTag = bracketMatch[1].trim();
+
           const candidateName = bracketTag || name;
           const normalizedName = normalizeName(candidateName);
 
           const matchResult = isMatch(normalizedName, searchTerms, channelName);
           const numberMismatch = isNumberMismatch(candidateName, channelName);
-
           // Aceptar si es SPAIN o si viene con sufijo de eventos entre corchetes
           const isSpainGroup = normalizeName(groupTitle) === 'spain';
-          const isEventWithTag = Boolean(bracketTag);
+          const isEventMatch = Boolean(bracketTag) && matchResult;
 
-          if (candidateName &&
-              href &&
-              href.endsWith('.m3u8') &&
-              (isSpainGroup || isEventWithTag) &&
-              matchResult &&
-              !numberMismatch &&
-              !seenUrls.has(href)) {
+          if (
+            candidateName &&
+            href &&
+            href.endsWith('.m3u8') &&
+            (isSpainGroup || isEventMatch) &&
+            !numberMismatch &&
+            !seenUrls.has(href)
+          ) {
             const displayName = normalizeUrlForDisplay(url);
             const stream = {
               name: displayName,
-              title: `${name} (M3U8)`,
+              title: `${candidateName} (M3U8)`,
               url: href,
               group_title: displayName,
               behaviorHints: { notWebReady: false, external: false }
@@ -181,8 +179,8 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
         continue;
       }
 
+      // --- BLOQUE CHEERIO (shickat, canal-card, elcano) ---
       const $ = cheerio.load(content);
-      let encontrados = 0;
 
       // Selector para shickat.me u otros (solo acestream://)
       $('#linksList li').each((_, li) => {
@@ -218,7 +216,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
               url: vlcUrl,
               group_title: 'VLC',
               behaviorHints: { notWebReady: false, external: false }
-            };
+            };            
             // Guardas de integridad (diagnóstico)
             if (vlcStream.externalUrl || vlcStream.acestream_id) {
               console.warn('[SCRAPER] [ALERTA] vlcStream trae campos de Ace (NO DEBE):', vlcStream);
@@ -266,7 +264,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
               url: vlcUrl,
               group_title: 'VLC',
               behaviorHints: { notWebReady: false, external: false }
-            };            
+            };
             // Guardas de integridad (diagnóstico)
             if (vlcStream.externalUrl || vlcStream.acestream_id) {
               console.warn('[SCRAPER] [ALERTA] vlcStream trae campos de Ace (NO DEBE):', vlcStream);
