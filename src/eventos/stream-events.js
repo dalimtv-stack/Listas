@@ -4,6 +4,7 @@
 const { fetchEventos } = require('./scraper-events');
 const { normalizeId } = require('./utils-events');
 const { kvGetJson } = require('../../api/kv');
+const { resolveM3uUrl } = require('../../api/resolve');
 
 // Detecta calidad y devuelve descripción + canal limpio
 function extraerYLimpiarCalidad(label = '') {
