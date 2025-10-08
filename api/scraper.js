@@ -140,11 +140,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
 
           // Extraer sufijo entre corchetes
           let bracketTag = null;
-          const bracketMatch = /
-
-\[(.*?)\]
-
-/.exec(((groupTitle || '') + ' ' + (name || '')));
+          const bracketMatch = /\[(.*?)\]/.exec(((groupTitle || '') + ' ' + (name || '')));
           if (bracketMatch) bracketTag = bracketMatch[1].trim();
 
           const candidateName = bracketTag || name;
