@@ -4,11 +4,19 @@
 const { fetchEventos } = require('./scraper-events');
 const { normalizeId } = require('./utils-events');
 const { kvGetJson } = require('../../api/kv');
+const { DateTime } = require('luxon');
 
 async function getMeta(id, configId) {
   const configData = await kvGetJson(configId);
   const url = configData?.eventosUrl;
-  const eventos = url ? await fetchEventos(url, { modo: 'mañana' }) : [];
+   // si no está ya importado
+
+  const cleanId = id.startsWith(prefix) ? id.slice(prefix.length) : id;
+  const esDeManana = cleanId.startsWith(
+    DateTime.now().plus({ days: 1 }).setZone('Europe/Madrid').toFormat('ddMMyyyy')
+  );
+  
+  const eventos = url ? await fetchEventos(url, esDeManana ? { modo: 'mañana' } : {}) : [];
 
   const prefix = `Heimdallr_evt_${configId}_`;
   const cleanId = id.startsWith(prefix) ? id.slice(prefix.length) : id;
