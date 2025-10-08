@@ -9,17 +9,16 @@ const { DateTime } = require('luxon');
 async function getMeta(id, configId) {
   const configData = await kvGetJson(configId);
   const url = configData?.eventosUrl;
-   // si no está ya importado
-
-  const cleanId = id.startsWith(prefix) ? id.slice(prefix.length) : id;
-  const esDeManana = cleanId.startsWith(
-    DateTime.now().plus({ days: 1 }).setZone('Europe/Madrid').toFormat('ddMMyyyy')
-  );
-  
-  const eventos = url ? await fetchEventos(url, esDeManana ? { modo: 'mañana' } : {}) : [];
 
   const prefix = `Heimdallr_evt_${configId}_`;
   const cleanId = id.startsWith(prefix) ? id.slice(prefix.length) : id;
+
+  // 🧠 Detectar si el evento es de mañana
+  const esDeManana = cleanId.startsWith(
+    DateTime.now().plus({ days: 1 }).setZone('Europe/Madrid').toFormat('ddMMyyyy')
+  );
+
+  const eventos = url ? await fetchEventos(url, esDeManana ? { modo: 'mañana' } : {}) : [];
 
   const evento = eventos.find(ev => normalizeId(ev) === cleanId);
   if (!evento) {
@@ -34,7 +33,7 @@ async function getMeta(id, configId) {
   const nombre = evento.partido || 'Evento';
   const deporte = evento.deporte ? ` (${evento.deporte})` : '';
   const competicion = evento.competicion ? ` • ${evento.competicion}` : '';
-  const fechaHora = [evento.hora,evento.dia].filter(Boolean).join(' • ');
+  const fechaHora = [evento.hora, evento.dia].filter(Boolean).join(' • ');
 
   return {
     id, type: 'tv',
