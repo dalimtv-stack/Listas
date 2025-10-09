@@ -41,7 +41,6 @@ async function getMeta(id, configId) {
     id, type: 'tv',
     name: `${nombre}${deporte}`,
     poster: null, background: null,
-    releaseInfo: `${evento.canal}`,
     description: `${fechaHora}${competicion}${deporte}\n \n${evento.canal}`.trim() || nombre
 
   };
