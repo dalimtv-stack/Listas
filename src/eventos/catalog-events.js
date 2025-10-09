@@ -41,6 +41,7 @@ async function getCatalog(configId, genre = '') {
     name: `${ev.partido} (${ev.deporte})`,
     poster: ev.poster || `https://dummyimage.com/300x450/000000/ffffff.png&text=${encodeURIComponent(ev.hora)}`,
     description: `${ev.hora} • ${ev.dia} • ${ev.competicion} (${ev.deporte})`,
+    producer: `${ev.canal}`,
     background: null
   }));
 
