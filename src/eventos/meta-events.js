@@ -35,14 +35,14 @@ async function getMeta(id, configId) {
   const competicion = evento.competicion ? ` • ${evento.competicion}` : '';
   const fechaHora = [evento.hora, evento.dia].filter(Boolean).join(' • ');
 
-  console.log('[Meta]', { canal: evento.canal, canales: evento.canales });
+  //console.log('[Meta]', { canal: evento.canal, canales: evento.canales });
 
   return {
     id, type: 'tv',
     name: `${nombre}${deporte}`,
     poster: null, background: null,
     releaseInfo: `${evento.canal}`,
-    description: `${fechaHora}${competicion}${deporte}\n • ${evento.canal} • `.trim() || nombre
+    description: `${fechaHora}${competicion}${deporte}\n \n${evento.canal}`.trim() || nombre
 
   };
 }
