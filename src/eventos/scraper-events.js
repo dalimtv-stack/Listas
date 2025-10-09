@@ -116,19 +116,57 @@ async function fetchEventos(url, opts = {}) {
   const ayerStr = ahoraDT.minus({ days: 1 }).toFormat('dd/MM/yyyy');
   const mañanaStr = ahoraDT.plus({ days: 1 }).toFormat('dd/MM/yyyy');
 
-  // 1. Leer caches
+  // Leer caches
   const cacheHoy = await kvGetJsonTTL('EventosHoy');
   const cacheAyer = await kvGetJsonTTL('EventosAyer');
   const cacheMañana = await kvGetJsonTTL('EventosMañana');
 
-  // 🔧 Si se pide explícitamente modo mañana → devolver directamente los eventos de mañana sin eventoEsReciente
+  // 🔧 Si se pide explícitamente modo mañana
   if (opts.modo === 'mañana') {
     const eventosMañana = getEventos(cacheMañana).filter(ev => ev.dia === mañanaStr);
     if (eventosMañana.length) return eventosMañana;
-    // si no hay cache todavía, seguimos y al final filtramos por fecha real
   }
 
-  // 2. Si hay cache válido de hoy → devolver unión, filtrada por ventana temporal
+  // 🔧 Si EventosHoy está caducado → mover a Ayer y regenerar todo
+  if (getDay(cacheHoy) === ayerStr) {
+    console.info('[EVENTOS] EventosHoy está caducado, moviendo a EventosAyer y forzando regeneración');
+
+    await kvSetJsonTTL('EventosAyer', {
+      day: getDay(cacheHoy),
+      data: (cacheHoy?.data?.data ?? cacheHoy?.data ?? {})
+    }, 86400);
+
+    await kvDelete('EventosHoy');
+    await kvDelete('EventosMañana');
+
+    const eventosConPoster = await scrapeEventosDesdeMarca(ahoraDT);
+
+    const mapHoy = {}, mapMañana = {}, mapAyer = {};
+    for (const ev of eventosConPoster) {
+      const key = buildEventKey(ev);
+      delete ev.genero;
+      if (ev.dia === hoyStr) mapHoy[key] = ev;
+      else if (ev.dia === mañanaStr) mapMañana[key] = ev;
+      else if (ev.dia === ayerStr) mapAyer[key] = ev;
+    }
+
+    if (Object.keys(mapHoy).length) {
+      await kvSetJsonTTL('EventosHoy', { day: hoyStr, data: mapHoy }, 86400);
+    }
+    if (Object.keys(mapMañana).length) {
+      await kvSetJsonTTL('EventosMañana', { day: mañanaStr, data: mapMañana }, 86400);
+    }
+    if (Object.keys(mapAyer).length) {
+      await kvSetJsonTTL('EventosAyer', { day: ayerStr, data: mapAyer }, 86400);
+    }
+
+    if (opts.modo === 'mañana') {
+      return eventosConPoster.filter(ev => ev.dia === mañanaStr);
+    }
+    return eventosConPoster.filter(ev => eventoEsReciente(ev.dia, ev.hora));
+  }
+
+  // 🔧 Si EventosHoy es válido → usar cache
   if (getDay(cacheHoy) === hoyStr) {
     console.info('[EVENTOS] Usando cache de EventosHoy (+Ayer,+Mañana)');
     let merged = [
@@ -136,21 +174,13 @@ async function fetchEventos(url, opts = {}) {
       ...getEventos(cacheHoy),
       ...getEventos(cacheMañana)
     ];
-    if (opts.modo !== 'mañana') {
-      merged = merged.filter(ev => eventoEsReciente(ev.dia, ev.hora));
-      return merged;
+    if (opts.modo === 'mañana') {
+      return merged.filter(ev => ev.dia === mañanaStr);
     }
-    return merged.filter(ev => ev.dia === mañanaStr);
+    return merged.filter(ev => eventoEsReciente(ev.dia, ev.hora));
   }
 
-  // 3. Promocionar caches si toca
-  if (getDay(cacheHoy) === ayerStr) {
-    await kvSetJsonTTL('EventosAyer', {
-      day: getDay(cacheHoy),
-      data: (cacheHoy?.data?.data ?? cacheHoy?.data ?? {})
-    }, 86400);
-  }
-
+  // 🔧 Si EventosMañana contiene eventos de hoy → promocionar
   if (getDay(cacheMañana) === hoyStr) {
     console.info('[EVENTOS] Promocionando EventosMañana a Hoy');
     let eventosPromocionados = getEventos(cacheMañana);
@@ -161,6 +191,7 @@ async function fetchEventos(url, opts = {}) {
       delete ev.genero;
       mapHoy[buildEventKey(ev)] = ev;
     }
+
     await kvSetJsonTTL('EventosHoy', { day: getDay(cacheMañana), data: mapHoy }, 86400);
     await kvSetJsonTTL('postersBlobHoy', { data: {}, timestamp: 0 }, 1);
 
@@ -168,41 +199,40 @@ async function fetchEventos(url, opts = {}) {
       ...getEventos(cacheAyer),
       ...eventosPromocionados
     ];
-    if (opts.modo !== 'mañana') {
-      merged = merged.filter(ev => eventoEsReciente(ev.dia, ev.hora));
-      return merged;
+    if (opts.modo === 'mañana') {
+      return merged.filter(ev => ev.dia === mañanaStr);
     }
-    return merged.filter(ev => ev.dia === mañanaStr);
+    return merged.filter(ev => eventoEsReciente(ev.dia, ev.hora));
   }
 
-  // 4. Si no hay cache válido, scrapear como antes
-  let eventosConPoster = await scrapeEventosDesdeMarca(ahoraDT);
+  // 🔧 Si no hay cache válido → scrapear desde Marca
+  const eventosConPoster = await scrapeEventosDesdeMarca(ahoraDT);
 
-  // 5. Guardar en KV como objetos completos
+  // Guardar en KV como objetos completos
   const mapHoy = {}, mapMañana = {}, mapAyer = {};
   for (const ev of eventosConPoster) {
     const key = buildEventKey(ev);
     delete ev.genero;
     if (ev.dia === hoyStr) mapHoy[key] = ev;
-    else if (ev.dia === ayerStr) mapAyer[key] = ev;
     else if (ev.dia === mañanaStr) mapMañana[key] = ev;
+    else if (ev.dia === ayerStr) mapAyer[key] = ev;
   }
 
   if (Object.keys(mapHoy).length) {
     await kvSetJsonTTL('EventosHoy', { day: hoyStr, data: mapHoy }, 86400);
   }
-  if (Object.keys(mapAyer).length) {
-    await kvSetJsonTTL('EventosAyer', { day: ayerStr, data: mapAyer }, 86400);
-  }
   if (Object.keys(mapMañana).length) {
     await kvSetJsonTTL('EventosMañana', { day: mañanaStr, data: mapMañana }, 86400);
+  }
+  if (Object.keys(mapAyer).length) {
+    await kvSetJsonTTL('EventosAyer', { day: ayerStr, data: mapAyer }, 86400);
   }
 
   // 🔧 Último retorno: si el modo es "mañana", devolver solo los del día siguiente sin ventana temporal
   if (opts.modo === 'mañana') {
     return eventosConPoster.filter(ev => ev.dia === mañanaStr);
   }
-  return eventosConPoster;
+  return eventosConPoster.filter(ev => eventoEsReciente(ev.dia, ev.hora));
 }
 
 async function scrapeEventosDesdeMarca(ahoraDT) {
