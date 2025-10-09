@@ -1,9 +1,9 @@
-// pages/api/regenerate-posters.js
-import { fetchEventos } from '../../src/eventos/scraper-events';
-import { scrapePostersForEventos } from '../../src/eventos/poster-events';
-import { kvGetJsonTTL, kvSetJsonTTL } from '../../api/kv';
+// api/regenerate-posters.js
+const { fetchEventos } = require('../../src/eventos/scraper-events');
+const { scrapePostersForEventos } = require('../../src/eventos/poster-events');
+const { kvGetJsonTTL, kvSetJsonTTL } = require('../../api/kv');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     console.info('[RegeneratePosters] Iniciando regeneración de postersBlobHoy');
 
@@ -46,4 +46,4 @@ export default async function handler(req, res) {
     console.error('[RegeneratePosters] Error:', err.message);
     res.status(500).json({ error: err.message });
   }
-}
+};
