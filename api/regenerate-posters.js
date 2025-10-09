@@ -1,7 +1,7 @@
 // api/regenerate-posters.js
-const { fetchEventos } = require('../../src/eventos/scraper-events');
-const { scrapePostersForEventos } = require('../../src/eventos/poster-events');
-const { kvGetJsonTTL, kvSetJsonTTL } = require('../../api/kv');
+const { fetchEventos } = require('../src/eventos/scraper-events');
+const { scrapePostersForEventos } = require('../src/eventos/poster-events');
+const { kvGetJsonTTL, kvSetJsonTTL } = require('./kv');
 
 module.exports = async function handler(req, res) {
   try {
