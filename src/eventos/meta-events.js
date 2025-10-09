@@ -35,6 +35,8 @@ async function getMeta(id, configId) {
   const competicion = evento.competicion ? ` • ${evento.competicion}` : '';
   const fechaHora = [evento.hora, evento.dia].filter(Boolean).join(' • ');
 
+  console.log('[Meta]', { canal: evento.canal, canales: evento.canales });
+
   return {
     id, type: 'tv',
     name: `${nombre}${deporte}`,
