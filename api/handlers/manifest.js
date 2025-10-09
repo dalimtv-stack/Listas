@@ -74,6 +74,7 @@ async function buildManifest(configId) {
         id: `${CATALOG_PREFIX}_${configId}`,
         name: 'Heimdallr Live Channels',
         description: `Última actualización: ${lastUpdateStr}`,
+        posterShape: 'poster',
         extra: [
           { name: 'search', isRequired: false },
           { name: 'genre', isRequired: false, options: genreOptions }
@@ -84,6 +85,7 @@ async function buildManifest(configId) {
         id: `${CATALOG_PREFIX}_eventos_${configId}`,
         name: 'Heimdallr Eventos',
         description: 'Eventos deportivos en directo',
+        posterShape: 'poster',
         "genres": ["Mañana"],
         "extra": [
           { "name": "genre", "isRequired": false, "options": ["Mañana"] }
