@@ -38,9 +38,15 @@ module.exports = async function handler(req, res) {
     // Re-scrapear posters
     const eventosConPosters = await scrapePostersForEventos(eventos);
 
-    // Reescribir EventosHoy en KV
+    // Ordenar eventos por hora antes de guardar
+    const eventosOrdenados = [...eventosConPosters].sort((a, b) => {
+      const [ha, ma] = a.hora.split(':').map(Number);
+      const [hb, mb] = b.hora.split(':').map(Number);
+      return ha - hb || ma - mb;
+    });
+
     const mapHoy = {};
-    for (const ev of eventosConPosters) {
+    for (const ev of eventosOrdenados) {
       const key = `${ev.partido}|${ev.hora}|${ev.dia}|${ev.competicion}`;
       mapHoy[key] = ev;
     }
