@@ -32,7 +32,9 @@ module.exports = async function handler(req, res) {
       mapHoy[key] = ev;
     }
 
-    const day = cacheHoy?.day || (eventosConPosters[0] && eventosConPosters[0].dia);
+    const diaSet = new Set(eventosConPosters.map(ev => ev.dia));
+    const day = diaSet.size === 1 ? [...diaSet][0] : DateTime.now().setZone('Europe/Madrid').toFormat('dd/MM/yyyy');
+
     if (day) {
       await kvSetJsonTTL('EventosHoy', { day, data: mapHoy }, 86400);
     }
