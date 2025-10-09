@@ -257,6 +257,16 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
       posterSourceUrl = 'https://i.ibb.co/pvwRMBWB/Balonmano.png';
     } else if (isFutbol) {
       posterSourceUrl = 'https://i.ibb.co/dswZph87/Futbol1.png';
+    } else if (deporte && deporte.toLowerCase() === 'ufc') {
+      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/UFC.jpeg';
+    } else if (deporte && deporte.toLowerCase() === 'baloncesto') {
+      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/baloncesto.jpeg';
+    } else if (deporte && deporte.toLowerCase() === 'billar') {
+      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/billar.jpeg';
+    } else if (deporte && deporte.toLowerCase() === 'f. sala') {
+      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/futbolsala.jpeg';
+    } else if (deporte && deporte.toLowerCase() === 'tenis') {
+      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/tenis.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'ciclismo') {
       posterSourceUrl = 'https://i.ibb.co/CswnHc5p/IMG-2324.webp';
     } else {
