@@ -42,7 +42,8 @@ async function getMeta(id, configId) {
     name: `${nombre}${deporte}`,
     poster: null, background: null,
     producer: `${evento.canal}`,
-    description: `${fechaHora}${competicion}${deporte}`.trim() || nombre
+    description: `${fechaHora}${competicion}${deporte} • \n${evento.canal}`.trim() || nombre
+
   };
 }
 
