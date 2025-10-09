@@ -167,7 +167,10 @@ async function handleCatalog(req) {
     type: 'tv',
     name: normalizeCatalogName(c.name),
     poster: c.logo_url,
-    description: `Prueba description:`
+    background: c.logo_url || null,
+    producer: normalizeCatalogName(c.name),
+    releaseInfo: `2025`,
+    description: `2025`
   }));
 
   const resp = { metas };
