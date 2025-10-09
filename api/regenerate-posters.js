@@ -1,31 +1,44 @@
 // api/regenerate-posters.js
 const { fetchEventos } = require('../src/eventos/scraper-events');
 const { scrapePostersForEventos } = require('../src/eventos/poster-events');
-const { kvGetJsonTTL, kvSetJsonTTL } = require('./kv');
+const { kvGetJsonTTL, kvSetJsonTTL, kvDelete } = require('./kv');
+const { DateTime } = require('luxon');
 
 module.exports = async function handler(req, res) {
   try {
     console.info('[RegeneratePosters] Iniciando regeneración de postersBlobHoy');
 
-    // 1. Intentar leer EventosHoy de KV
-    let cacheHoy = await kvGetJsonTTL('EventosHoy');
-    let eventos = cacheHoy && cacheHoy.data ? Object.values(cacheHoy.data) : null;
+    const ahoraDT = DateTime.now().setZone('Europe/Madrid');
+    const hoyStr = ahoraDT.toFormat('dd/MM/yyyy');
+    const ayerStr = ahoraDT.minus({ days: 1 }).toFormat('dd/MM/yyyy');
 
-    // 2. Si no hay datos en KV, scrapear con fetchEventos()
-    if (!eventos || eventos.length === 0) {
-      console.info('[RegeneratePosters] KV vacío, llamando a fetchEventos()');
-      eventos = await fetchEventos();
+    const cacheHoy = await kvGetJsonTTL('EventosHoy');
+
+    // Si EventosHoy está caducado → mover a Ayer y borrar claves
+    if (cacheHoy?.day === ayerStr) {
+      console.info('[RegeneratePosters] EventosHoy está caducado, moviendo a EventosAyer y borrando claves');
+
+      await kvSetJsonTTL('EventosAyer', {
+        day: cacheHoy.day,
+        data: cacheHoy.data?.data ?? cacheHoy.data ?? {}
+      }, 86400);
+
+      await kvDelete('EventosHoy');
+      await kvDelete('EventosMañana');
     }
 
+    // Scrapear eventos desde cero
+    const eventos = await fetchEventos();
+
     if (!eventos || eventos.length === 0) {
-      console.warn('[RegeneratePosters] No se encontraron eventos ni en KV ni en scraping');
+      console.warn('[RegeneratePosters] No se encontraron eventos en scraping');
       return res.status(200).json({ message: 'No hay eventos que regenerar' });
     }
 
-    // 3. Re-scrapear posters
+    // Re-scrapear posters
     const eventosConPosters = await scrapePostersForEventos(eventos);
 
-    // 4. Reescribir EventosHoy en KV
+    // Reescribir EventosHoy en KV
     const mapHoy = {};
     for (const ev of eventosConPosters) {
       const key = `${ev.partido}|${ev.hora}|${ev.dia}|${ev.competicion}`;
@@ -33,15 +46,13 @@ module.exports = async function handler(req, res) {
     }
 
     const diaSet = new Set(eventosConPosters.map(ev => ev.dia));
-    const day = diaSet.size === 1 ? [...diaSet][0] : DateTime.now().setZone('Europe/Madrid').toFormat('dd/MM/yyyy');
+    const day = diaSet.size === 1 ? [...diaSet][0] : hoyStr;
 
-    if (day) {
-      await kvSetJsonTTL('EventosHoy', { day, data: mapHoy }, 86400);
-    }
+    await kvSetJsonTTL('EventosHoy', { day, data: mapHoy }, 86400);
 
     console.info('[RegeneratePosters] Regeneración completada');
     res.status(200).json({
-      message: 'EventosHoy y postersBlobHoy regenerados',
+      message: 'EventosHoy, EventosAyer y postersBlobHoy regenerados',
       updated: eventosConPosters.length
     });
   } catch (err) {
