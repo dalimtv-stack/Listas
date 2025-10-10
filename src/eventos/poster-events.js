@@ -197,7 +197,6 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
   let posterSourceUrl;
     const sport = (deporte || '').toLowerCase();
     const isFutbol = sport === 'futbol' || sport === 'fútbol';
-  try {
     const isTenis = sport === 'tenis';
     const isBaloncesto = sport === 'baloncesto';
     const isBalonmano = sport === 'balonmano';
@@ -205,7 +204,7 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
     const isCiclismo = sport === 'ciclismo';
     const isGolf = sport === 'golf';
     const isHockey = sport === 'hockey';
-
+  try {
     const candidates = generateFallbackNames(partido, competicion);
 
     // Selección de fuentes según deporte
