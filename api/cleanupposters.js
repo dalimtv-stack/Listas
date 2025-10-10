@@ -4,6 +4,8 @@
 const { list, del } = require('@vercel/blob');
 const { DateTime } = require('luxon');
 
+console.log(`[Cleanup Posters] entrando el proceso`);
+
 async function cleanupPosters() {
   const today = DateTime.now().setZone('Europe/Madrid');
   const cutoff = today.minus({ days: 3 }).toFormat('yyyyMMdd');
