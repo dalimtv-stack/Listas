@@ -1,4 +1,4 @@
-// api/cleanup-posters.js
+// api/cleanupposters.js
 'use strict';
 
 const { list, del } = require('@vercel/blob');
