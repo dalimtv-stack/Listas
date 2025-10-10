@@ -201,7 +201,10 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
     const isTenis = sport === 'tenis';
     const isBaloncesto = sport === 'baloncesto';
     const isBalonmano = sport === 'balonmano';
+    const isRugby = sport === 'rugby';
     const isCiclismo = sport === 'ciclismo';
+    const isGolf = sport === 'golf';
+    const isHockey = sport === 'hockey';
 
     const candidates = generateFallbackNames(partido, competicion);
 
@@ -216,6 +219,23 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
     } else if (isBaloncesto) {
       fuentes = [
         'https://www.movistarplus.es/deportes/baloncesto?conf=iptv',
+        'https://www.movistarplus.es/deportes?conf=iptv',
+        'https://www.movistarplus.es/el-partido-movistarplus'
+      ];
+    } else if (isRugby) {
+      fuentes = [
+        'https://www.movistarplus.es/deportes/rugby?conf=iptv',
+        'https://www.movistarplus.es/deportes?conf=iptv',
+        'https://www.movistarplus.es/el-partido-movistarplus'
+      ];
+    } else if (isHockey) {
+      fuentes = [
+        'https://www.movistarplus.es/deportes?conf=iptv',
+        'https://www.movistarplus.es/el-partido-movistarplus'
+      ];
+    } else if (isGolf) {
+      fuentes = [
+        'https://www.movistarplus.es/deportes/golf?conf=iptv',
         'https://www.movistarplus.es/deportes?conf=iptv',
         'https://www.movistarplus.es/el-partido-movistarplus'
       ];
