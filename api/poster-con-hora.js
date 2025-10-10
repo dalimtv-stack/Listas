@@ -89,6 +89,15 @@ module.exports = async (req, res) => {
   let baseImage;
   try {
     baseImage = await Jimp.read(buffer);
+    const TARGET_WIDTH = 600;
+    const TARGET_HEIGHT = 405;
+    
+    baseImage.contain(
+      TARGET_WIDTH,
+      TARGET_HEIGHT,
+      Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE
+    );
+
   } catch (err) {
     console.warn('[Poster con hora] Jimp no pudo leer el buffer inicial. Intentaremos usar fallback para todas las horas.', err.message);
     // Si Jimp no puede leer el buffer, devolvemos fallback para todas las horas
