@@ -277,7 +277,8 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
     } else if (isFutbol && competicion?.toLowerCase() === 'liga f') {
       posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/ligafemenina.jpeg';
     } else if (isFutbol) {
-      posterSourceUrl = 'https://i.ibb.co/dswZph87/Futbol1.png';
+      // posterSourceUrl = 'https://i.ibb.co/dswZph87/Futbol1.png';
+      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/futbol.jpeg';
     } else if (isHockey && competicion?.toLowerCase() === 'nhl') {
       posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/NHL.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'ufc') {
