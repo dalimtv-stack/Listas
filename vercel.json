@@ -4,7 +4,7 @@
     { "src": "api/index.js", "use": "@vercel/node" },
     { "src": "api/cleanup.js", "use": "@vercel/node" },
     { "src": "api/poster-con-hora.js", "use": "@vercel/node" },
-    { "src": "api/cleanup-posters", "use": "@vercel/node" },
+    { "src": "api/cleanup-posters.js", "use": "@vercel/node" },
     { "src": "api/regenerate-posters.js", "use": "@vercel/node" }
   ],
   "crons": [
