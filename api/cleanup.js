@@ -13,7 +13,8 @@ module.exports = async (req, res) => {
       allKeys = listResult.keys || [];
       console.info('[cleanup] Claves totales obtenidas:', allKeys.length);
     } catch (err) {
-      console.error('[cleanup] Error listing keys:', err);
+      console.error('[cleanup] Error listing keys:', err.stack || err.message);
+      return res.status(500).json({ error: 'Error al listar claves' });
     }
 
     const excluded = ['postersBlobHoy', 'poster:cleanup:last'];
@@ -28,7 +29,7 @@ module.exports = async (req, res) => {
           try {
             values[i + j] = await kvGetJson(k);
           } catch (err) {
-            console.error(`Error getting ${k}:`, err);
+            console.error(`Error getting ${k}:`, err.stack || err.message);
             values[i + j] = null;
           }
         });
@@ -44,48 +45,41 @@ module.exports = async (req, res) => {
     for (let i = 0; i < candidateKeys.length; i++) {
       const value = values[i];
       if (value && typeof value.timestamp === 'number' && value.timestamp < oneWeekAgo) {
-        toDelete.push(candidateKeys[i]);
+        toDelete.push({
+          key: candidateKeys[i],
+          timestamp: new Date(value.timestamp).toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })
+        });
       }
     }
 
     const prefixCountsToDelete = {};
-    for (let key of toDelete) {
-      const prefix = String(key).split(':')[0] || '';
+    for (let item of toDelete) {
+      const prefix = String(item.key).split(':')[0] || '';
       if (prefix) {
         prefixCountsToDelete[prefix] = (prefixCountsToDelete[prefix] || 0) + 1;
       }
     }
 
     if (dryrun) {
-      return res.status(200).json({ toDelete: toDelete.length, prefixCountsToDelete });
+      return res.status(200).json({
+        toDelete: toDelete, // Devolver claves individuales
+        prefixCountsToDelete,
+        total: candidateKeys.length
+      });
     } else {
       let deletedCount = 0;
       let fallbackCount = 0;
 
       if (toDelete.length > 0) {
-        // Intenta bulk delete si la función está 
-        try {
-          // Divide en batches de 10000 (límite de Cloudflare bulk delete)
-          const bulkBatchSize = 10000;
-          for (let i = 0; i < toDelete.length; i += bulkBatchSize) {
-            const batch = toDelete.slice(i, i + bulkBatchSize);
-            await kvBulkDelete(batch); // Descomenta cuando implementes la función
-            deletedCount += batch.length;
+        for (let item of toDelete) {
+          try {
+            await kvDelete(item.key);
+            deletedCount++;
+            console.info(`[cleanup] Borrado: ${item.key}`);
+          } catch (e) {
+            console.error(`[cleanup] Error deleting ${item.key}:`, e.stack || e.message);
+            fallbackCount++;
           }
-        } catch (err) {
-          console.error('[cleanup] Error bulk deleting:', err);
-          // Fallback a deletes individuales
-          fallbackCount = toDelete.length;
-          deletedCount = 0;
-          for (let key of toDelete) {
-            try {
-              await kvDelete(key);
-              deletedCount++;
-            } catch (e) {
-              console.error(`[cleanup] Error deleting ${key}:`, e);
-            }
-          }
-          fallbackCount = fallbackCount - deletedCount;
         }
       }
 
@@ -93,7 +87,7 @@ module.exports = async (req, res) => {
       try {
         await kvSetJson('poster:cleanup:last', { timestamp: now });
       } catch (err) {
-        console.error('[cleanup] Error saving last cleanup:', err);
+        console.error('[cleanup] Error saving last cleanup:', err.stack || err.message);
       }
 
       return res.status(200).json({
@@ -112,10 +106,10 @@ module.exports = async (req, res) => {
       const listResult = await kvListKeys();
       allKeys = listResult.keys || [];
     } catch (err) {
-      console.error('[cleanup] Error getting all keys:', err);
+      console.error('[cleanup] Error getting all keys:', err.stack || err.message);
+      return res.status(500).json({ error: 'Error al listar claves' });
     }
 
-    // Calcular conteos por prefijo
     const prefixCounts = {};
     for (let key of allKeys) {
       const prefix = String(key).split(':')[0] || '';
@@ -207,6 +201,16 @@ module.exports = async (req, res) => {
           max-height: 40vh;
           overflow: auto;
         }
+        #keys {
+          margin-top: 1rem;
+          text-align: left;
+          font-size: 0.95rem;
+          background: #f7f7f7;
+          padding: 0.6rem;
+          border-radius: 6px;
+          max-height: 40vh;
+          overflow: auto;
+        }
         @media (min-width: 600px) {
           body { max-width: 600px; }
           h1 { font-size: 2rem; }
@@ -225,6 +229,7 @@ module.exports = async (req, res) => {
 
       <div id="kvinfo"></div>
       <div id="prefixes"></div>
+      <div id="keys"></div>
       <div id="status"></div>
 
       <script>
@@ -232,13 +237,15 @@ module.exports = async (req, res) => {
           const status = document.getElementById('status');
           const kvinfo = document.getElementById('kvinfo');
           const prefixesDiv = document.getElementById('prefixes');
+          const keysDiv = document.getElementById('keys');
           status.textContent = 'Calculando...';
           try {
             const resDry = await fetch('/cleanup?dryrun=1', { method: 'POST' });
             const jsonDry = await resDry.json();
-            const count = jsonDry.toDelete;
+            const count = jsonDry.toDelete.length;
             if (count === 0) {
               status.textContent = 'No hay claves para borrar.';
+              keysDiv.textContent = '';
               return;
             }
             status.textContent = 'Confirme para proceder.';
@@ -249,6 +256,12 @@ module.exports = async (req, res) => {
               prefixesDiv.textContent = sortedEntries.map(([p, c]) => \`\${p} (\${c})\`).join("\\n");
             } else {
               prefixesDiv.textContent = '(No hay prefijos a borrar)';
+            }
+            // Mostrar claves individuales
+            if (jsonDry.toDelete.length > 0) {
+              keysDiv.innerHTML = jsonDry.toDelete.map(item => \`<div>\${item.key} (Fecha: \${item.timestamp})</div>\`).join('');
+            } else {
+              keysDiv.textContent = '(No hay claves a borrar)';
             }
 
             // Crear botón de confirmación rojo
@@ -269,6 +282,7 @@ module.exports = async (req, res) => {
               confirmBtn.remove();
               cancelBtn.remove();
               prefixesDiv.textContent = '';
+              keysDiv.textContent = '';
               kvinfo.textContent = '';
             };
 
@@ -281,6 +295,7 @@ module.exports = async (req, res) => {
               cancelBtn.remove();
               status.textContent = 'Limpieza cancelada.';
               prefixesDiv.textContent = '';
+              keysDiv.textContent = '';
               kvinfo.textContent = '';
             };
 
