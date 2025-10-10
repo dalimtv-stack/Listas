@@ -1,3 +1,4 @@
+// api/cleanup-posters.js
 'use strict';
 
 const { list, del } = require('@vercel/blob');
@@ -38,7 +39,12 @@ async function cleanupPosters() {
   }
 }
 
-cleanupPosters().catch(err => {
-  console.error('[Cleanup] Error general:', err);
-  process.exit(1);
-});
+module.exports = async function handler(req, res) {
+  try {
+    await cleanupPosters();
+    res.status(200).json({ message: 'Cleanup completado' });
+  } catch (err) {
+    console.error('[Cleanup] Error general:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
