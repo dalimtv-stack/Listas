@@ -89,8 +89,8 @@ module.exports = async (req, res) => {
   let baseImage;
   try {
     baseImage = await Jimp.read(buffer);
-    const TARGET_WIDTH = 600;
-    const TARGET_HEIGHT = 405;
+    const TARGET_WIDTH = 405;
+    const TARGET_HEIGHT = 600;
     
     baseImage.contain(
       TARGET_WIDTH,
