@@ -26,7 +26,7 @@
 
     { "src": "/cleanup", "dest": "/api/cleanup.js" },
     { "src": "/poster-con-hora", "dest": "/api/poster-con-hora.js" },
-    { "src": "/cleanupposters", "dest": "/api/cleanupposters" },
+    { "src": "/cleanupposters", "dest": "/api/cleanupposters.js" },
     { "src": "/regenerate-posters", "dest": "/api/regenerate-posters.js" },
 
     { "src": "/(.*)", "dest": "/api/index.js" }
