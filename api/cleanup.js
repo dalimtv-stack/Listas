@@ -47,10 +47,15 @@ module.exports = async (req, res) => {
       if (value && typeof value.timestamp === 'number' && value.timestamp < oneWeekAgo) {
         toDelete.push({
           key: candidateKeys[i],
-          timestamp: new Date(value.timestamp).toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })
+          timestamp: value.timestamp,
+          formattedTimestamp: new Date(value.timestamp).toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })
         });
       }
     }
+
+    // Ordenar por timestamp (ascendente) y tomar las 100 más antiguas
+    toDelete.sort((a, b) => a.timestamp - b.timestamp);
+    toDelete = toDelete.slice(0, 100); // Limitar a 100 claves
 
     const prefixCountsToDelete = {};
     for (let item of toDelete) {
@@ -62,7 +67,7 @@ module.exports = async (req, res) => {
 
     if (dryrun) {
       return res.status(200).json({
-        toDelete: toDelete, // Devolver claves individuales
+        toDelete: toDelete.map(item => ({ key: item.key, timestamp: item.formattedTimestamp })), // Devolver solo key y timestamp formateado
         prefixCountsToDelete,
         total: candidateKeys.length
       });
@@ -190,21 +195,11 @@ module.exports = async (req, res) => {
           font-weight: bold;
           text-align: center;
         }
-        #prefixes {
+        #prefixes, #keys {
           margin-top: 1rem;
           text-align: left;
           font-size: 0.95rem;
           white-space: pre-line;
-          background: #f7f7f7;
-          padding: 0.6rem;
-          border-radius: 6px;
-          max-height: 40vh;
-          overflow: auto;
-        }
-        #keys {
-          margin-top: 1rem;
-          text-align: left;
-          font-size: 0.95rem;
           background: #f7f7f7;
           padding: 0.6rem;
           border-radius: 6px;
