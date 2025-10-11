@@ -15,7 +15,10 @@ const channelAliases = {
   'dazn f1 (1080)': ['dazn f1 es', 'dazn f1 [es]'],
   'laliga hypermotion': ['laliga tv hypermotion'],
   'movistar ellas vamos': ['ellas vamos spain'],
-  'movistar vamos': ['vamos spain', 'movistar vamos', 'vamos', 'm+ vamos spain', 'm+ vamos']
+  'movistar vamos': ['vamos spain', 'movistar vamos', 'vamos', 'm+ vamos spain', 'm+ vamos'],
+  'eurosport': ['eurosport', 'eurosport 1', 'eurosport uno', 'eurosport es'],
+  'eurosport 2': ['eurosport 2', 'eurosport dos', 'eurosport2', 'eurosport 2 es']
+
 };
 
 function normalizeName(name) {
@@ -70,6 +73,9 @@ function isMatch(normalizedName, searchTerms, channelName) {
   if (baseChannel.includes('ellas') && !baseStream.includes('ellas')) return false;
   if (baseChannel.includes('rfef') && !baseStream.includes('rfef') && !baseStream.includes('1rfef')) return false;
   if (baseChannel.includes('f1') && !baseStream.includes('f1')) return false;
+
+  // 🛡️ FIX específico: si se busca "Eurosport", bloquear cualquier stream que contenga "2"
+  if (baseChannel === 'eurosport' && /\b2\b/.test(baseStream)) return false;
 
   // 🧩 Coincidencia por sufijo entre corchetes (si existe)
   const bracketTag = /\[(.*?)\]/.exec(normalizedName)?.[1].trim();
