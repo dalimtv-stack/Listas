@@ -6,7 +6,7 @@ const cheerio = require('cheerio');
 const iconv = require('iconv-lite');
 const { scrapePostersForEventos } = require('./poster-events');
 const { DateTime } = require('luxon');
-const { kvGetJsonTTL, kvSetJsonTTL } = require('../../api/kv');
+const { kvGetJsonTTL, kvSetJsonTTL, kvDelete } = require('../../api/kv');
 
 function getDay(cache) {
   return cache?.data?.day ?? cache?.day ?? null;
