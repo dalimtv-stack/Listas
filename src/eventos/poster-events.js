@@ -285,6 +285,8 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
       posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/NHL.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'ufc') {
       posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/UFC.jpeg';
+    } else if (deporte && deporte.toLowerCase() === 'waterpolo') {
+      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/waterpolo.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'baloncesto') {
       posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/baloncesto.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'billar') {
