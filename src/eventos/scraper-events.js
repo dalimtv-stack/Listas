@@ -124,7 +124,30 @@ async function fetchEventos(url, opts = {}) {
   // 🔧 Si se pide explícitamente modo mañana
   if (opts.modo === 'mañana') {
     const eventosMañana = getEventos(cacheMañana).filter(ev => ev.dia === mañanaStr);
-    if (eventosMañana.length) return eventosMañana;
+    const cacheDia = getDay(cacheMañana);
+    const cacheVacia = !eventosMañana.length;
+
+    if (cacheDia !== mañanaStr || cacheVacia) {
+      console.warn('[EVENTOS] EventosMañana vacíos o desactualizados, forzando scrapeo');
+      await kvDelete('EventosMañana');
+      const eventosConPoster = await scrapeEventosDesdeMarca(ahoraDT);
+
+      const mapMañana = {};
+      for (const ev of eventosConPoster) {
+        if (ev.dia === mañanaStr) {
+          delete ev.genero;
+          mapMañana[buildEventKey(ev)] = ev;
+        }
+      }
+
+      if (Object.keys(mapMañana).length) {
+        await kvSetJsonTTL('EventosMañana', { day: mañanaStr, data: mapMañana }, 86400);
+      }
+
+      return Object.values(mapMañana);
+    }
+
+    return eventosMañana;
   }
 
   // 🔧 Si EventosHoy está caducado → mover a Ayer y regenerar todo
