@@ -42,20 +42,18 @@ function extractConfigIdFromUrl(req) {
 }
 
 function parseCatalogRest(restRaw) {
-  const rest = decodeURIComponent(restRaw);
-  const segments = rest.split('/');
+  const segments = restRaw.split('/');
   const id = segments.shift();
   const extra = {};
   for (const seg of segments) {
     const [k, v] = seg.split('=');
     if (!k || v === undefined) continue;
-    const key = k.trim();
+    const key = decodeURIComponent(k.trim());
     const val = decodeURIComponent(v.trim());
     if (key === 'genre' || key === 'search') extra[key] = val;
   }
   return { id, extra };
 }
-
 module.exports = {
   normalizeCatalogName,
   getM3uHash,
