@@ -127,6 +127,9 @@ async function handleCatalog(req) {
     console.log(logPrefix, `M3U sin cambios, canales cargados: ${channels.length}`);
   }
 
+  // --- LOG PARA VER NOMBRE E ID DE LOS CANALES ---
+  console.log(logPrefix, 'Lista de canales (id y nombre):', channels.map(c => ({ id: c.id, name: c.name })));
+
   const m3uHash = currentM3uHash;
   const cacheKey = `catalog_${m3uHash}_${extra.genre || ''}_${extra.search || ''}`;
   const cached = cache.get(cacheKey);
