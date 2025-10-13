@@ -6,6 +6,7 @@ const sharp = require('sharp');
 const fetch = require('node-fetch');
 const path = require('path');
 const fs = require('fs');
+const { kvGetJsonTTL, kvSetJsonTTLIfChanged } = require('./kv');
 
 function slugify(s) {
   return String(s || '')
@@ -161,6 +162,15 @@ module.exports = async (req, res) => {
           });
           if (putRes && putRes.url) {
             blobUrl = putRes.url;
+            // Actualizar índice KV
+            try {
+              const indexKey = 'posters:index';
+              const currentList = await kvGetJsonTTL(indexKey) || [];
+              const updatedList = [...new Set([...currentList, blobName])];
+              await kvSetJsonTTLIfChanged(indexKey, updatedList, 30 * 24 * 3600); // TTL de 30 días
+            } catch (errKV) {
+              console.warn(`[Poster con hora] Error actualizando índice KV para "${blobName}":`, errKV.message);
+            }
             //console.info('[Poster con hora] Imagen subida a Blob:', blobUrl);
           } else {
             console.warn('[Poster con hora] put() no devolvió url, se usará fallback.');
