@@ -57,7 +57,6 @@ async function buildManifest(configId) {
     types: ['tv'],
     logo: 'https://play-lh.googleusercontent.com/daJbjIyFdJ_pMOseXNyfZuy2mKOskuelsyUyj6AcGb0rV0sJS580ViqOTcSi-A1BUnI=w480-h960',
     resources: ['catalog', 'meta', 'stream'],
-    // 👇 Aquí está la corrección: prefijos globales para canales y eventos
     idPrefixes: [
       `${ADDON_PREFIX}_${configId}_`,
       `Heimdallr_evt_${configId}_`
@@ -86,9 +85,43 @@ async function buildManifest(configId) {
         name: 'Heimdallr Eventos',
         description: 'Eventos deportivos en directo',
         posterShape: 'poster',
-        "genres": ["Mañana"],
-        "extra": [
-          { "name": "genre", "isRequired": false, "options": ["Mañana"] }
+        genres: [
+          'Mañana',
+          'Fútbol',
+          'Baloncesto',
+          'Rugby',
+          'Tenis',
+          'Billar',
+          'Balonmano',
+          'Ciclismo',
+          'Golf',
+          'Hockey',
+          'UFC',
+          'NFL',
+          'F. Sala',
+          'Otros'
+        ],
+        extra: [
+          {
+            name: 'genre',
+            isRequired: false,
+            options: [
+              'Mañana',
+              'Fútbol',
+              'Baloncesto',
+              'Rugby',
+              'Tenis',
+              'Billar',
+              'Balonmano',
+              'Ciclismo',
+              'Golf',
+              'Hockey',
+              'UFC',
+              'NFL',
+              'F. Sala',
+              'Otros'
+            ]
+          }
         ]
       }
     ]
