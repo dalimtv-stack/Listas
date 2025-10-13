@@ -7,12 +7,12 @@ const { DateTime } = require('luxon');
 
 async function cleanupPosters() {
   const today = DateTime.now().setZone('Europe/Madrid');
-
-  // 🧱 Solo ejecuta si es el último día del mes
   const tomorrow = today.plus({ days: 1 });
-  if (tomorrow.month !== today.month) {
+  const isLastDayOfMonth = tomorrow.month !== today.month;
+
+  if (!isLastDayOfMonth) {
     console.log('[Cleanup] No es fin de mes. Abortando.');
-    return null; // señal de que no se ejecuta
+    return { executed: false, deleted: [] };
   }
 
   console.log('[Cleanup] Hoy es el último día del mes. Procediendo...');
@@ -51,19 +51,18 @@ async function cleanupPosters() {
     }
   }
 
-  // 🧼 Actualiza el índice
-  await kvSetJsonTTLIfChanged(indexKey, keep, 30 * 24 * 3600); // 30 días
+  await kvSetJsonTTLIfChanged(indexKey, keep, 30 * 24 * 3600);
 
-  return deleted;
+  return { executed: true, deleted };
 }
 
 module.exports = async function handler(req, res) {
   try {
-    const deleted = await cleanupPosters();
+    const { executed, deleted } = await cleanupPosters();
 
-    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
 
-    if (!deleted) {
+    if (!executed) {
       return res.end(`<html><body><h2>No se ha podido realizar limpieza por instrucciones del administrador</h2></body></html>`);
     }
 
@@ -75,7 +74,7 @@ module.exports = async function handler(req, res) {
   } catch (err) {
     console.error('[Cleanup] Error general:', err);
     res.statusCode = 500;
-    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     return res.end(`<html><body><h2>Error en limpieza</h2><pre>${err.message}</pre></body></html>`);
   }
 };
