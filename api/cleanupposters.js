@@ -57,10 +57,8 @@ async function cleanupPosters() {
 }
 
 function renderHtml({ executed, deleted }) {
-  const title = executed
-    ? 'Limpieza completada'
-    : 'Limpieza no ejecutada';
-
+  const title = 'Heimdallr Posters Cleanup';
+  const heading = executed ? 'Limpieza completada' : 'Limpieza no ejecutada';
   const message = executed
     ? (deleted.length
         ? `<p>Se han eliminado los siguientes pósters:</p><ul>${deleted.map(name => `<li>${name}</li>`).join('')}</ul>`
@@ -77,42 +75,45 @@ function renderHtml({ executed, deleted }) {
       body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         max-width: 90%;
-        margin: 1rem auto;
-        padding: 0 0.5rem;
+        margin: 2rem auto;
+        padding: 0 1rem;
         line-height: 1.5;
         color: #333;
+        text-align: center;
       }
       h1 {
-        font-size: 1.8rem;
-        text-align: center;
+        font-size: 2rem;
+        margin-bottom: 1rem;
+      }
+      h2 {
+        font-size: 1.5rem;
         margin-bottom: 1rem;
       }
       p {
         font-size: 1rem;
-        margin-bottom: 0.8rem;
+        margin-bottom: 1rem;
       }
       ul {
-        padding-left: 1.2rem;
+        list-style: none;
+        padding: 0;
+        margin: 1rem auto;
+        max-width: 600px;
+        text-align: left;
       }
       li {
-        margin-bottom: 0.4rem;
+        background: #f4f4f4;
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        border-radius: 4px;
         font-family: monospace;
         font-size: 0.95rem;
       }
-      @media (min-width: 600px) {
-        body {
-          max-width: 600px;
-        }
-        h1 {
-          font-size: 2rem;
-        }
-        p {
-          font-size: 1.1rem;
-        }
-      }
       @media (max-width: 600px) {
         h1 {
-          font-size: 1.4rem;
+          font-size: 1.6rem;
+        }
+        h2 {
+          font-size: 1.3rem;
         }
         p, li {
           font-size: 0.9rem;
@@ -122,6 +123,7 @@ function renderHtml({ executed, deleted }) {
   </head>
   <body>
     <h1>${title}</h1>
+    <h2>${heading}</h2>
     ${message}
   </body>
 </html>`;
@@ -136,6 +138,6 @@ module.exports = async function handler(req, res) {
     console.error('[Cleanup] Error general:', err);
     res.statusCode = 500;
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    return res.end(`<html><body><h2>Error en limpieza</h2><pre>${err.message}</pre></body></html>`);
+    return res.end(`<html><body><h1>Heimdallr Posters Cleanup</h1><h2>Error en limpieza</h2><pre>${err.message}</pre></body></html>`);
   }
 };
