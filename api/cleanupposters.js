@@ -63,7 +63,7 @@ module.exports = async function handler(req, res) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
 
     if (!executed) {
-      return res.end(`<html><body><h2>No se ha podido realizar limpieza por instrucciones del administrador</h2></body></html>`);
+      return res.end(`<html><body><h2>La limpieza ha sido omitida según las instrucciones del administrador</h2></body></html>`);
     }
 
     const htmlList = deleted.length
