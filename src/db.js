@@ -20,7 +20,7 @@ function getExtraGenres(canal) {
   // Movistar
   if (id.includes('movistar')) genres.add('Movistar');
 
-  // Cine/Series
+  // Cine-Series
   const cineSeriesIds = new Set([
     'hollywood.es', 'movistar.estrenos.es', 'movistar.hits.es', 'movistar.comedia.es',
     'movistar.accion.es', 'movistar.drama.es', 'movistar.especial.1.es', 'movistar.especial.2.es',
@@ -28,7 +28,7 @@ function getExtraGenres(canal) {
     'movistar.documentales.es', 'movistar.originales.es', 'invitado.es', 'dark.es',
     'axn.es', 'axn.movie.es', 'amc.es', 'calle.13.es'
   ]);
-  if (cineSeriesIds.has(id)) genres.add('Cine/Series');
+  if (cineSeriesIds.has(id)) genres.add('Cine-Series');
 
   // Documentales
   const documentalesIds = new Set([
@@ -51,8 +51,8 @@ function getExtraGenres(canal) {
   ];
   if (deportesKeywords.some(k => id.includes(k) || name.includes(k))) genres.add('Deportes');
 
-  // Dazn
-  if (id.includes('dazn')) genres.add('Dazn');
+  // DAZN
+  if (id.includes('dazn')) genres.add('DAZN');
 
   // ESPN
   if (id.includes('espn')) genres.add('ESPN');
