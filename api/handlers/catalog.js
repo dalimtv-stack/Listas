@@ -127,9 +127,6 @@ async function handleCatalog(req) {
     console.log(logPrefix, `M3U sin cambios, canales cargados: ${channels.length}`);
   }
 
-  // --- LOG PARA VER NOMBRE E ID DE LOS CANALES ---
-  console.dir(channels.map(c => ({ id: c.id, name: c.name })), { depth: null, maxArrayLength: null });
-
   const m3uHash = currentM3uHash;
   const cacheKey = `catalog_${m3uHash}_${extra.genre || ''}_${extra.search || ''}`;
   const cached = cache.get(cacheKey);
@@ -170,10 +167,7 @@ async function handleCatalog(req) {
     type: 'tv',
     name: normalizeCatalogName(c.name),
     poster: c.logo_url,
-    background: c.logo_url || null,
-    producer: normalizeCatalogName(c.name),
-    releaseInfo: `2025`,
-    description: `2025`
+    background: c.logo_url || null
   }));
 
   const resp = { metas };
