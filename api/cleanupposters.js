@@ -56,21 +56,82 @@ async function cleanupPosters() {
   return { executed: true, deleted };
 }
 
+function renderHtml({ executed, deleted }) {
+  const title = executed
+    ? 'Limpieza completada'
+    : 'Limpieza no ejecutada';
+
+  const message = executed
+    ? (deleted.length
+        ? `<p>Se han eliminado los siguientes pósters:</p><ul>${deleted.map(name => `<li>${name}</li>`).join('')}</ul>`
+        : `<p>No se ha eliminado ningún póster.</p>`)
+    : `<p>No se ha realizado la limpieza por decisión del administrador.</p>`;
+
+  return `<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        max-width: 90%;
+        margin: 1rem auto;
+        padding: 0 0.5rem;
+        line-height: 1.5;
+        color: #333;
+      }
+      h1 {
+        font-size: 1.8rem;
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+      p {
+        font-size: 1rem;
+        margin-bottom: 0.8rem;
+      }
+      ul {
+        padding-left: 1.2rem;
+      }
+      li {
+        margin-bottom: 0.4rem;
+        font-family: monospace;
+        font-size: 0.95rem;
+      }
+      @media (min-width: 600px) {
+        body {
+          max-width: 600px;
+        }
+        h1 {
+          font-size: 2rem;
+        }
+        p {
+          font-size: 1.1rem;
+        }
+      }
+      @media (max-width: 600px) {
+        h1 {
+          font-size: 1.4rem;
+        }
+        p, li {
+          font-size: 0.9rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>${title}</h1>
+    ${message}
+  </body>
+</html>`;
+}
+
 module.exports = async function handler(req, res) {
   try {
-    const { executed, deleted } = await cleanupPosters();
-
+    const result = await cleanupPosters();
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-
-    if (!executed) {
-      return res.end(`<html><body><h2>La limpieza ha sido omitida según las instrucciones del administrador</h2></body></html>`);
-    }
-
-    const htmlList = deleted.length
-      ? `<ul>${deleted.map(name => `<li>${name}</li>`).join('')}</ul>`
-      : `<p>No se ha eliminado ningún póster.</p>`;
-
-    return res.end(`<html><body><h2>Limpieza completada</h2>${htmlList}</body></html>`);
+    return res.end(renderHtml(result));
   } catch (err) {
     console.error('[Cleanup] Error general:', err);
     res.statusCode = 500;
