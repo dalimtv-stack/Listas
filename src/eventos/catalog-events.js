@@ -22,11 +22,44 @@ async function getCatalog(configId, genre = '') {
   const hoy = DateTime.now().setZone('Europe/Madrid').startOf('day');
   const mañana = hoy.plus({ days: 1 });
 
+  const deportesDefinidos = [
+    'Fútbol',
+    'Baloncesto',
+    'Rugby',
+    'Tenis',
+    'Billar',
+    'Balonmano',
+    'Ciclismo',
+    'Golf',
+    'Hockey',
+    'UFC',
+    'NFL',
+    'F. Sala'
+  ];
+
   let filteredEventos;
+
   if (genre === 'Mañana') {
     filteredEventos = eventos.filter(ev => {
       const fechaEv = DateTime.fromFormat(ev.dia, 'dd/LL/yyyy', { zone: 'Europe/Madrid' });
       return fechaEv.hasSame(mañana, 'day');
+    });
+  } else if (deportesDefinidos.includes(genre)) {
+    filteredEventos = eventos.filter(ev => {
+      const fechaEv = DateTime.fromFormat(ev.dia, 'dd/LL/yyyy', { zone: 'Europe/Madrid' });
+      return (
+        fechaEv.hasSame(hoy, 'day') &&
+        ev.deporte?.trim().toLowerCase() === genre.toLowerCase()
+      );
+    });
+  } else if (genre === 'Otros') {
+    filteredEventos = eventos.filter(ev => {
+      const fechaEv = DateTime.fromFormat(ev.dia, 'dd/LL/yyyy', { zone: 'Europe/Madrid' });
+      const deporte = ev.deporte?.trim().toLowerCase();
+      return (
+        fechaEv.hasSame(hoy, 'day') &&
+        !deportesDefinidos.map(d => d.toLowerCase()).includes(deporte)
+      );
     });
   } else {
     filteredEventos = eventos.filter(ev => {
