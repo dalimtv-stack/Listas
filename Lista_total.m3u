@@ -314,14 +314,14 @@ http://172.93.102.112:8989/278850_.m3u8
 #EXTINF:-1 tvg-id="Movistar.Drama.es" tvg-logo="https://stremio.shickat.me/Images/Channels/DRAMA.jpg" group-title="VLC", Movistar Drama
 http://vlc.shickat.me:8000/pid/a6de6a4977d7801bbddc9c7739d822f4beb358ae/stream.mp4
 
-#EXTINF:-1 tvg-id="Movistar.Festival.es" tvg-logo="https://i.ibb.co/QvTGm5Nq/Festival-San-Sebastian-V-scaled.jpg" group-title="VLC", Movistar Festival de San Sebastián
+#EXTINF:-1 tvg-id="Movistar.Especial.1.es" tvg-logo="https://i.ibb.co/QvTGm5Nq/Festival-San-Sebastian-V-scaled.jpg" group-title="VLC", Movistar Terror
 http://vlc.shickat.me:8000/pid/cf99e99c105162410ec6d1f68cc6f4811560fee7/stream.mp4
-#EXTINF:-1 tvg-id="Movistar.Festival.es" tvg-logo="https://i.ibb.co/hJ1mPCbC/M-vacaciones.webp" group-title="Shickat.me", Movistar Festival de San Sebastián (FHD)
+#EXTINF:-1 tvg-id="Movistar.Especial.1.es" tvg-logo="https://i.ibb.co/hJ1mPCbC/M-vacaciones.webp" group-title="Shickat.me", Movistar Terror (FHD)
 acestream://cf99e99c105162410ec6d1f68cc6f4811560fee7
 
-#EXTINF:-1 tvg-id="Movistar.Comic.es" tvg-logo="https://i.ibb.co/tpGNt3Cf/COMIC-CC-V-scaled.jpg" group-title="VLC", Movistar Cómic (FHD)
+#EXTINF:-1 tvg-id="Movistar.Especial.2.es" tvg-logo="https://i.ibb.co/tpGNt3Cf/COMIC-CC-V-scaled.jpg" group-title="VLC", Movistar Romance (FHD)
 http://vlc.shickat.me:8000/pid/4bfeb0516c44c4f0e3502e3f1ca1035d39ddf9c2/stream.mp4
-#EXTINF:-1 tvg-id="Movistar.Comic.es" tvg-logo="https://i.ibb.co/Q177kHV/M-western.webp" group-title="Shickat.me", Movistar Cómic (FHD)
+#EXTINF:-1 tvg-id="Movistar.Especial.2.es" tvg-logo="https://i.ibb.co/Q177kHV/M-western.webp" group-title="Shickat.me", Movistar Romance (FHD)
 acestream://4bfeb0516c44c4f0e3502e3f1ca1035d39ddf9c2
 
 #https://i.ibb.co/WWq3fbcj/M-indie.png
