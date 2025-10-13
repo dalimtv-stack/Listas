@@ -1,6 +1,6 @@
 {
   "name": "Heimdallr Channels",
-  "version": "1.5.33",
+  "version": "1.5.34",
   "description": "Addon para cargar canales Acestream o M3U8 desde una lista M3U.",
   "main": "api/index.js",
   "scripts": {
