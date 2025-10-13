@@ -1,52 +1,51 @@
 // api/cleanupposters.js
-'use strict';
-
-const { list, del } = require('@vercel/blob');
+const { kvGetJsonTTL, kvSetJsonTTLIfChanged, kvDelete } = require('./kv');
+const { del } = require('@vercel/blob');
 const { DateTime } = require('luxon');
-
-console.log(`[Cleanup Posters] entrando el proceso`);
 
 async function cleanupPosters() {
   const today = DateTime.now().setZone('Europe/Madrid');
+
+  // 🧱 Solo ejecuta si es el último día del mes
+  const tomorrow = today.plus({ days: 1 });
+  if (tomorrow.month !== today.month) {
+    console.log('[Cleanup] Hoy es el último día del mes. Procediendo...');
+  } else {
+    console.log('[Cleanup] No es fin de mes. Abortando.');
+    return;
+  }
+
   const cutoff = today.minus({ days: 3 }).toFormat('yyyyMMdd');
+  const indexKey = 'posters:index';
+  const posterList = await kvGetJsonTTL(indexKey) || [];
 
-  console.info(`[Cleanup] Borrando imágenes anteriores a ${cutoff} o sin fecha`);
+  const keep = [];
+  const toDelete = [];
 
-  const { blobs } = await list({ prefix: 'posters/' });
-
-  for (const blob of blobs) {
-    const name = blob.pathname; // ej: posters/F4411875_20251001_20_00.png
+  for (const name of posterList) {
     const match = name.match(/_(\d{8})_/);
-
-    let shouldDelete = false;
-
     if (match) {
-      const fileDate = match[1]; // YYYYMMDD
+      const fileDate = match[1];
       if (fileDate < cutoff) {
-        shouldDelete = true;
+        toDelete.push(name);
+      } else {
+        keep.push(name);
       }
     } else {
-      // no tiene fecha en el nombre
-      shouldDelete = true;
-    }
-
-    if (shouldDelete) {
-      try {
-        await del(name, { token: process.env.BLOB_READ_WRITE_TOKEN });
-        console.info(`[Cleanup] Borrado: ${name}`);
-      } catch (err) {
-        console.warn(`[Cleanup] Error borrando ${name}:`, err.message);
-      }
+      toDelete.push(name); // sin fecha → eliminar
     }
   }
+
+  for (const name of toDelete) {
+    try {
+      await del(name, { token: process.env.BLOB_READ_WRITE_TOKEN });
+      console.info(`[Cleanup] Borrado: ${name}`);
+    } catch (err) {
+      console.warn(`[Cleanup] Error borrando ${name}:`, err.message);
+      keep.push(name); // lo conservamos si falló
+    }
+  }
+
+  // 🧼 Actualiza el índice
+  await kvSetJsonTTLIfChanged(indexKey, keep, 30 * 24 * 3600); // 30 días
 }
-
-module.exports = async function handler(req, res) {
-  try {
-    await cleanupPosters();
-    res.status(200).json({ message: 'Cleanup completado' });
-  } catch (err) {
-    console.error('[Cleanup] Error general:', err);
-    res.status(500).json({ error: err.message });
-  }
-};
