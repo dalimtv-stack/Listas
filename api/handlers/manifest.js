@@ -21,7 +21,7 @@ async function getLastUpdateString(configId) {
 
 async function buildManifest(configId) {
   const orderedGenres = [
-    'Cine/Series',
+    'Cine-Series',
     'La Liga',
     'Liga de Campeones',
     'Fútbol',
