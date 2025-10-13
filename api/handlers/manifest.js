@@ -20,6 +20,22 @@ async function getLastUpdateString(configId) {
 }
 
 async function buildManifest(configId) {
+  const orderedGenres = [
+    'Cine/Series',
+    'La Liga',
+    'Liga de Campeones',
+    'Fútbol',
+    'Deportes',
+    'Movistar',
+    'Documentales',
+    'DAZN',
+    'ESPN',
+    'España',
+    'Argentina',
+    'Portugal',
+    'General'
+  ];
+
   let genreOptions = ['General'];
   const lastUpdateStr = await getLastUpdateString(configId);
   let currentM3u = '';
@@ -37,9 +53,9 @@ async function buildManifest(configId) {
 
   try {
     const genresKV = await kvGetJsonTTL(`genres:${configId}`);
-    if (Array.isArray(genresKV) && genresKV.length > 1) {
-      genreOptions = genresKV;
-      console.log(`[MANIFEST] géneros cargados desde KV para ${configId}: ${genreOptions.length}`);
+    if (Array.isArray(genresKV) && genresKV.length > 0) {
+      genreOptions = orderedGenres.filter(g => genresKV.includes(g));
+      console.log(`[MANIFEST] géneros filtrados y ordenados desde KV para ${configId}: ${genreOptions.length}`);
     } else if (FORCE_REFRESH_GENRES) {
       console.warn(`[MANIFEST] FORCE_REFRESH_GENRES activo pero géneros no disponibles, usando ['General']`);
     } else {
