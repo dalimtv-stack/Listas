@@ -6,12 +6,6 @@
 http://172.93.102.112:8989/278839_.m3u8
 #EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Acestream", Hollywood (FHD)
 acestream://b0405501919792a8c5f7ca89a3b3b0a7186ce49e
-#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Huhu.to", Hollywood (HD)
-https://www.huhu.to/play/4079560337/index.m3u8
-#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Huhu.to", Hollywood (HD) (Opcion 2)
-http://www.huhu.to/play/3288402534/index.m3u8
-#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Huhu.to", Hollywood (HD) (Opcion 3)
-http://www.huhu.to/play/4205258144/index.m3u8
 
 # https://i.ibb.co/VcRYc75W/M-plus.png
 # https://www.movistarplus.es/recorte/m-DP/modmarcas/MPLUHD
@@ -257,7 +251,7 @@ acestream://d03c13b6723f66155d7a0df3692a3b073fe630f2
 #EXTINF:-1 tvg-id="Movistar.Vamos.es" tvg-logo="https://i.ibb.co/gWMRpFB/vamos.png" group-title="ELCANO", Movistar Vamos
 acestream://12ba546d229bc39f01c3c18988a034b215fe6adb
 
-#EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratula5/M386373V4072004" group-title="Telegram", Eurosport (1080)
+#EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratula5/M386373V4072004" group-title="daddylivestream", Eurosport (1080)
 https://world-proxifier.xyz/daddylive_go/p/C4MWCOIXGETT6FRCEQ3S2EIDCNTUAUKZLZZX66TFM53GCLDWGZ6SO2SUKFLFMVCVABKWKNZS/index.m3u8
 #EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://stremio.shickat.me/Images/Channels/EUROSPORT.jpg" group-title="Telegram", Eurosport (720)
 http://185.189.225.157/EuroSport1/index.m3u8
