@@ -7,62 +7,65 @@ const { parse } = require('iptv-playlist-parser');
 let cachedChannels = [];
 const DEFAULT_M3U_URL = 'https://raw.githubusercontent.com/dalimtv-stack/Listas/refs/heads/main/Lista_total.m3u';
 
-function getExtraGenres(name) {
-  const lowerName = String(name || '').toLowerCase();
-  const extraGenres = [];
-  if (
-    lowerName.includes('deporte') ||
-    lowerName.includes('formula 1') ||
-    lowerName.includes('bein') ||
-    lowerName.includes('f1') ||
-    lowerName.includes('dazn') ||
-    lowerName.includes('nba') ||
-    lowerName.includes('espn') ||
-    lowerName.includes('liga') ||
-    lowerName.includes('futbol') ||
-    lowerName.includes('football') ||
-    lowerName.includes('1rfef') ||
-    lowerName.includes('copa') ||
-    lowerName.includes('gol') ||
-    lowerName.includes('sport')
-  ) {
-    extraGenres.push('Deportes');
-  }
-  if (lowerName.includes('movistar')) {
-    extraGenres.push('Movistar');
-  }
-  if (
-    lowerName.includes('hollywood')||
-    lowerName.includes('amc') ||
-    lowerName.includes('axn') ||
-    lowerName.includes('calle') ||
-    lowerName.includes('cosmo') ||
-    lowerName.includes('estrenos') ||
-    lowerName.includes('hits') ||
-    lowerName.includes('comedia') ||
-    lowerName.includes('acción') ||
-    lowerName.includes('drama') ||
-    lowerName.includes('indie') ||
-    lowerName.includes('cine') ||
-    lowerName.includes('estrenos') ||
-    lowerName.includes('estrenos') ||
-    lowerName.includes('sport')
-  ) {
-    extraGenres.push('Cine');
-  }
-  if (lowerName.includes('dazn')) {
-    extraGenres.push('Dazn');
-  }
-  if (lowerName.includes('espn')) {
-    extraGenres.push('ESPN');
-  }
-  if (lowerName.includes('campeones')) {
-    extraGenres.push('Liga de Campeones');
-  }
-  if (extraGenres.length === 0) {
-    extraGenres.push('General');
-  }
-  return extraGenres;
+function getExtraGenres(canal) {
+  const name = (canal.name || '').toLowerCase();
+  const id = (canal.id || '').toLowerCase();
+  const genres = new Set();
+
+  // País por sufijo
+  if (id.endsWith('.es')) genres.add('España');
+  if (id.endsWith('.ar')) genres.add('Argentina');
+  if (id.endsWith('.pt')) genres.add('Portugal');
+
+  // Movistar
+  if (id.includes('movistar')) genres.add('Movistar');
+
+  // Cine/Series
+  const cineSeriesIds = new Set([
+    'hollywood.es', 'movistar.estrenos.es', 'movistar.hits.es', 'movistar.comedia.es',
+    'movistar.accion.es', 'movistar.drama.es', 'movistar.especial.1.es', 'movistar.especial.2.es',
+    'movistar.indie.es', 'movistar.clasicos.es', 'movistar.cine.espanol.es',
+    'movistar.documentales.es', 'movistar.originales.es', 'invitado.es', 'dark.es',
+    'axn.es', 'axn.movie.es', 'amc.es', 'calle.13.es'
+  ]);
+  if (cineSeriesIds.has(id)) genres.add('Cine/Series');
+
+  // Documentales
+  const documentalesIds = new Set([
+    'movistar.documentales.es', 'movistar.originales.es', 'crime.es', 'odisea.es',
+    'movistar.plus.es', 'movistar.plus.2.es', 'national.geographic.wild.es'
+  ]);
+  if (documentalesIds.has(id)) genres.add('Documentales');
+
+  // Liga de Campeones
+  if (id.includes('liga.de.campeones')) genres.add('Liga de Campeones');
+
+  // La Liga
+  if (id.includes('laliga') || id.includes('la.liga')) genres.add('La Liga');
+  if (id === 'movistar.plus.es' || id === 'movistar.plus.2.es') genres.add('La Liga');
+
+  // Deportes
+  const deportesKeywords = [
+    'vamos', 'deporte', 'formula 1', 'bein', 'f1', 'dazn', 'nba', 'espn',
+    'liga', 'futbol', 'football', '1rfef', 'copa', 'gol', 'sport', 'golf'
+  ];
+  if (deportesKeywords.some(k => id.includes(k) || name.includes(k))) genres.add('Deportes');
+
+  // Dazn
+  if (id.includes('dazn')) genres.add('Dazn');
+
+  // ESPN
+  if (id.includes('espn')) genres.add('ESPN');
+
+  // Fútbol
+  const futbolTriggers = ['futbol', 'football', '1rfef', 'copa', 'gol'];
+  const hasFutbolKeyword = futbolTriggers.some(k => id.includes(k));
+  const hasFutbolGenero = ['La Liga', 'Liga de Campeones', 'ESPN'].some(g => genres.has(g));
+  if (hasFutbolKeyword || hasFutbolGenero) genres.add('Fútbol');
+
+  if (genres.size === 0) genres.add('General');
+
+  return Array.from(genres);
 }
 
 async function loadM3U(args = {}) {
@@ -154,7 +157,7 @@ async function loadM3U(args = {}) {
         behaviorHints
       };
 
-      const extraGenres = getExtraGenres(name);
+      const extraGenres = getExtraGenres({ id: tvgId, name });
 
       if (!channelMap[tvgId]) {
         // Crear canal principal (no se sobrescriben estos metadatos después)
