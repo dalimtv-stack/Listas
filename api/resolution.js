@@ -13,19 +13,34 @@ module.exports = async (req, res) => {
 
     try {
       console.log('Solicitando URL inicial:', url);
-      // Hacer solicitud inicial con redirecciones habilitadas
-      let response = await fetch(url, {
-        headers: { 'User-Agent': 'Mozilla/5.0' },
-        redirect: 'follow',
-      });
+      // Capturar redirecciones
+      const redirects = [url];
+      const customFetch = async (fetchUrl) => {
+        const response = await fetch(fetchUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0' },
+          redirect: 'manual', // No seguir redirecciones automáticamente
+        });
+        if (response.status >= 300 && response.status < 400) {
+          const location = response.headers.get('location');
+          if (location) {
+            const nextUrl = new URL(location, fetchUrl).href;
+            console.log('Redirección detectada:', nextUrl);
+            redirects.push(nextUrl);
+            return await customFetch(nextUrl); // Seguir la redirección
+          }
+        }
+        return response;
+      };
+
+      let response = await customFetch(url);
       if (!response.ok) {
         console.error('Error HTTP:', response.status, response.statusText);
         throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
       }
 
-      // Obtener la URL final después de redirecciones
-      let finalUrl = response.url;
-      console.log('URL final después de redirecciones:', finalUrl);
+      // Obtener la URL final
+      let finalUrl = redirects[redirects.length - 1];
+      console.log('URL final:', finalUrl);
       let text = await response.text();
 
       // Si la URL final no termina en .m3u8, intentar extraer una URL .m3u8 del contenido
@@ -36,6 +51,7 @@ module.exports = async (req, res) => {
         if (match) {
           url = match[1];
           console.log('URL .m3u8 encontrada:', url);
+          redirects.push(url);
           response = await fetch(url, {
             headers: { 'User-Agent': 'Mozilla/5.0' },
           });
@@ -49,12 +65,13 @@ module.exports = async (req, res) => {
           console.error('No se encontró una URL .m3u8 en el contenido');
           return res.json({
             error: 'No se encontró un archivo .m3u8 en la URL proporcionada',
-            content: text.slice(0, 1000),
+            content: text.slice(0, 5000),
+            redirects,
           });
         }
       }
 
-      console.log('Contenido recibido (primeros 1000 chars):', text.slice(0, 1000));
+      console.log('Contenido recibido (primeros 5000 chars):', text.slice(0, 5000));
 
       const results = [];
       const lines = text.split('\n');
@@ -140,15 +157,16 @@ module.exports = async (req, res) => {
         console.log('No se detectaron resoluciones');
         return res.json({
           resolutions: [{ label: 'No se detectaron resoluciones', width: null, height: null, bandwidth: null, codecs: null, url: null }],
-          content: text.slice(0, 1000),
+          content: text.slice(0, 5000),
+          redirects,
         });
       }
 
       console.log('Resoluciones encontradas:', unique);
-      return res.json({ resolutions: unique, content: null });
+      return res.json({ resolutions: unique, content: null, redirects });
     } catch (err) {
       console.error('Error en servidor:', err.message);
-      return res.status(500).json({ error: `Error: ${err.message}`, content: null });
+      return res.status(500).json({ error: `Error: ${err.message}`, content: null, redirects });
     }
   }
 
@@ -275,7 +293,10 @@ module.exports = async (req, res) => {
             if (data.error) {
               let errorHtml = \`<p class="error">❌ \${data.error}</p>\`;
               if (data.content) {
-                errorHtml += \`<pre>Contenido del archivo (primeros 1000 caracteres):\n\${data.content}</pre>\`;
+                errorHtml += \`<pre>Contenido del archivo (primeros 5000 caracteres):\n\${data.content}</pre>\`;
+              }
+              if (data.redirects && data.redirects.length > 1) {
+                errorHtml += \`<pre>Cadena de redirecciones:\n\${data.redirects.join(' → ')}</pre>\`;
               }
               resultDiv.innerHTML = errorHtml;
               throw new Error(data.error);
@@ -284,7 +305,10 @@ module.exports = async (req, res) => {
             if (data.resolutions[0].label === 'No se detectaron resoluciones') {
               let errorHtml = '<p class="error">❌ No se detectaron resoluciones</p>';
               if (data.content) {
-                errorHtml += \`<pre>Contenido del archivo (primeros 1000 caracteres):\n\${data.content}</pre>\`;
+                errorHtml += \`<pre>Contenido del archivo (primeros 5000 caracteres):\n\${data.content}</pre>\`;
+              }
+              if (data.redirects && data.redirects.length > 1) {
+                errorHtml += \`<pre>Cadena de redirecciones:\n\${data.redirects.join(' → ')}</pre>\`;
               }
               resultDiv.innerHTML = errorHtml;
               return;
@@ -302,6 +326,9 @@ module.exports = async (req, res) => {
               </tr>\`;
             });
             table += '</table>';
+            if (data.redirects && data.redirects.length > 1) {
+              table += \`<pre>Cadena de redirecciones:\n\${data.redirects.join(' → ')}</pre>\`;
+            }
             resultDiv.innerHTML = table;
           } catch (err) {
             resultDiv.innerHTML = \`<p class="error">❌ Error: \${err.message}</p>\`;
