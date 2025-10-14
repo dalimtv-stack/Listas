@@ -358,7 +358,7 @@ module.exports = async (req, res) => {
                 errorHtml += \`<pre>Cadena de redirecciones:\n\${data.redirects.join(' → ')}</pre>\`;
               }
               if (data.derivedUrls && data.derivedUrls.length > 0) {
-                errorHtml += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.map(url => `<a href="${url}" target="_blank">${url}</a>`).join('<br>')}</pre>\`;
+                errorHtml += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.map(url => '<a href="' + url + '" target="_blank">' + url + '</a>').join('<br>')}</pre>\`;
               }
               resultDiv.innerHTML = errorHtml;
               return;
@@ -373,7 +373,7 @@ module.exports = async (req, res) => {
                 errorHtml += \`<pre>Cadena de redirecciones:\n\${data.redirects.join(' → ')}</pre>\`;
               }
               if (data.derivedUrls && data.derivedUrls.length > 0) {
-                errorHtml += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.map(url => `<a href="${url}" target="_blank">${url}</a>`).join('<br>')}</pre>\`;
+                errorHtml += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.map(url => '<a href="' + url + '" target="_blank">' + url + '</a>').join('<br>')}</pre>\`;
               }
               resultDiv.innerHTML = errorHtml;
               return;
@@ -387,7 +387,7 @@ module.exports = async (req, res) => {
                 <td>\${r.height || '-'}</td>
                 <td>\${r.bandwidth ? (r.bandwidth / 1000).toFixed(0) + ' kbps' : '-'}</td>
                 <td>\${r.codecs || '-'}</td>
-                <td>\${r.url ? \`<a href="\${r.url}" target="_blank">Ver</a>\` : '-'}</td>
+                <td>\${r.url ? '<a href="' + r.url + '" target="_blank">Ver</a>' : '-'}</td>
               </tr>\`;
             });
             table += '</table>';
@@ -395,11 +395,12 @@ module.exports = async (req, res) => {
               table += \`<pre>Cadena de redirecciones:\n\${data.redirects.join(' → ')}</pre>\`;
             }
             if (data.derivedUrls && data.derivedUrls.length > 0) {
-              table += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.map(url => `<a href="${url}" target="_blank">${url}</a>`).join('<br>')}</pre>\`;
+              table += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.map(url => '<a href="' + url + '" target="_blank">' + url + '</a>').join('<br>')}</pre>\`;
             }
             resultDiv.innerHTML = table;
           } catch (err) {
             resultDiv.innerHTML = \`<p class="error">❌ Error: \${err.message}</p>\`;
+            console.error('Error en el cliente:', err);
           }
         }
       </script>
