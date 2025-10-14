@@ -7,57 +7,40 @@ module.exports = async (req, res) => {
   if (req.method === 'GET' && req.query.url) {
     const { url } = req.query;
     if (!url || !url.startsWith('http') || !url.endsWith('.m3u8')) {
-      console.error('Invalid URL:', url);
+      console.error('URL inválida:', url);
       return res.status(400).json({ error: 'URL inválida, debe ser un .m3u8' });
     }
 
     try {
-      console.log('Fetching URL:', url);
+      console.log('Solicitando URL:', url);
       const response = await fetch(url, {
         headers: { 'User-Agent': 'Mozilla/5.0' },
       });
       if (!response.ok) {
-        console.error('HTTP Error:', response.status, response.statusText);
+        console.error('Error HTTP:', response.status, response.statusText);
         throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
       }
       const text = await response.text();
-      console.log('Received text:', text.slice(0, 200)); // Log partial content for debugging
+      console.log('Contenido recibido (primeros 200 chars):', text.slice(0, 200));
 
       const results = [];
-      const regex = /#EXT-X-STREAM-INF:.*?BANDWIDTH=(\d+)(?:.*?RESOLUTION=(\d+)x(\d+))?(?:.*?CODECS="([^"]+)")?/g;
+      // Regex más flexible para capturar BANDWIDTH, RESOLUTION y CODECS en cualquier orden
+      const regex = /#EXT-X-STREAM-INF:(?:.*?)BANDWIDTH=(\d+)(?:.*?)RESOLUTION=(\d+)x(\d+)(?:.*?)CODECS="([^"]+)"?/g;
 
       if (text.includes('#EXT-X-STREAM-INF')) {
-        console.log('Detected master playlist');
-        const lines = text.split('\n');
-        for (let i = 0; i < lines.length; i++) {
-          if (lines[i].startsWith('#EXT-X-STREAM-INF')) {
-            const variantUrl = lines[i + 1];
-            if (variantUrl && !variantUrl.startsWith('#')) {
-              const absoluteUrl = new URL(variantUrl, url).href;
-              console.log('Fetching variant URL:', absoluteUrl);
-              const variantResponse = await fetch(absoluteUrl, {
-                headers: { 'User-Agent': 'Mozilla/5.0' },
-              });
-              if (!variantResponse.ok) {
-                console.error('Variant HTTP Error:', variantResponse.status, variantResponse.statusText);
-                throw new Error(`Variant HTTP Error ${variantResponse.status}`);
-              }
-              const variantText = await variantResponse.text();
-              let match;
-              while ((match = regex.exec(variantText)) !== null) {
-                results.push({
-                  label: `${match[3] || 'desconocido'}p`,
-                  width: parseInt(match[2]) || null,
-                  height: parseInt(match[3]) || null,
-                  bandwidth: parseInt(match[1]),
-                  codecs: match[4] || null,
-                });
-              }
-            }
-          }
+        console.log('Detectado master playlist - parseando directamente');
+        let match;
+        while ((match = regex.exec(text)) !== null) {
+          results.push({
+            label: `${match[3] || 'desconocido'}p`,
+            width: parseInt(match[2]) || null,
+            height: parseInt(match[3]) || null,
+            bandwidth: parseInt(match[1]),
+            codecs: match[4] || null,
+          });
         }
       } else {
-        console.log('Detected media playlist');
+        console.log('Detectado media playlist - parseando');
         let match;
         while ((match = regex.exec(text)) !== null) {
           results.push({
@@ -70,19 +53,20 @@ module.exports = async (req, res) => {
         }
       }
 
+      // Eliminar duplicados basados en label
       const unique = [...new Map(results.map(r => [r.label, r])).values()];
 
       if (!unique.length) {
-        console.log('No resolutions found');
+        console.log('No se detectaron resoluciones');
         return res.json({
           resolutions: [{ label: 'No se detectaron resoluciones', width: null, height: null }],
         });
       }
 
-      console.log('Resolutions found:', unique);
+      console.log('Resoluciones encontradas:', unique);
       return res.json({ resolutions: unique });
     } catch (err) {
-      console.error('Server Error:', err.message);
+      console.error('Error en servidor:', err.message);
       return res.status(500).json({ error: `Error: ${err.message}` });
     }
   }
@@ -149,21 +133,19 @@ module.exports = async (req, res) => {
         async function checkResolution() {
           const url = document.getElementById('streamUrl').value.trim();
           const resultDiv = document.getElementById('result');
-          if (!url) {
-            resultDiv.textContent = '❌ Introduce una URL válida';
+          if (!url || !url.endsWith('.m3u8')) {
+            resultDiv.textContent = '❌ Introduce una URL válida que termine en .m3u8';
             return;
           }
           resultDiv.textContent = 'Analizando...';
           try {
-            const res = await fetch(\`/api/resolution?url=\${encodeURIComponent(url)}\`);
-            const text = await res.text();
-            let data;
-            try {
-              data = JSON.parse(text);
-            } catch {
-              throw new Error('Respuesta no válida: ' + text.slice(0, 80));
+            // CAMBIO CLAVE: Cambia /api/resolution a /Resolution (la misma ruta de la página)
+            const res = await fetch(\`/Resolution?url=\${encodeURIComponent(url)}\`);
+            if (!res.ok) {
+              const text = await res.text();
+              throw new Error(\`Error del servidor: HTTP \${res.status} - \${text.slice(0, 80)}\`);
             }
-
+            const data = await res.json();
             if (data.error) throw new Error(data.error);
 
             resultDiv.innerHTML = data.resolutions
