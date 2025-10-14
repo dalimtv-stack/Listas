@@ -107,7 +107,7 @@ module.exports = async (req, res) => {
         console.log('No se detectaron resoluciones');
         return res.json({
           resolutions: [{ label: 'No se detectaron resoluciones', width: null, height: null, bandwidth: null, codecs: null, url: null }],
-          content: text.slice(0, 1000), // Incluir los primeros 1000 caracteres
+          content: text.slice(0, 5000), // Incluir los primeros 5000 caracteres
         });
       }
 
