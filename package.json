@@ -14,7 +14,7 @@
     "dotenv": "^16.3.1",
     "luxon": "^3.4.3",
     "@vercel/blob": "^0.25.1",
-    "formidable": "^3.5.4",
+    "formidable": "^2.1.2",
     "sharp": "^0.32.5",
     "p-limit": "^3.1.0",
     "jimp": "^0.22.10",
