@@ -151,32 +151,31 @@ acestream://77998f8161373611ff6b348e7eda5b4e97d3ec29
 acestream://f1219582a3059e7fff2db22e69475c45cbc84356
 
 # https://i.ibb.co/CV4CLjz/deportes.png
-
-#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://i.ibb.co/zVPpQrDD/Deportes-alt.png" group-title="VLC", Movistar Deportes
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Movistar_Deportes.jpg" group-title="VLC", Movistar Deportes (1080)
 http://vlc.shickat.me:8000/pid/5d3f582738467aaf213e408601aca5cc13fa9359/stream.mp4
-#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://stremio.shickat.me/Images/Channels/DEPORTES.jpg" group-title="Telegram", Movistar Deportes
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://stremio.shickat.me/Images/Channels/DEPORTES.jpg" group-title="Telegram", Movistar Deportes (720)
 http://172.93.102.112:8989/278862_.m3u8
 #EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4265923" group-title="Elcano.top", Movistar Deportes (1080)
 acestream://ebca4a63ce3bfda7b272964a1acc5227218184a4
-#EXTINF:-1 tvg-id="Movistar.Deportes.es" group-title="Elcano.top", Movistar Deportes (720)
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://i.ibb.co/zVPpQrDD/Deportes-alt.png" group-title="Elcano.top", Movistar Deportes (720)
 acestream://2f3cfd199a49819cbd129689a840dc3d23ab93aa
 #EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://i.ibb.co/CV4CLjz/deportes.png" group-title="NEW ERA", Movistar Deportes (FHD)
 acestream://ef9dcc4eaac36a0f608b52a31f8ab237859e071a
 
-#EXTINF:-1 tvg-id="Movistar.Deportes.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4406652" group-title="VLC", Movistar Deportes 2
+#EXTINF:-1 tvg-id="Movistar.Deportes.2.es" tvg-logo="https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Deportes%202.jpeg" group-title="VLC", Movistar Deportes 2
 http://vlc.shickat.me:8000/pid/73d38feaa770d788848ec098470e32670fe55a61/stream.mp4
 #EXTINF:-1 tvg-id="Movistar.Deportes.2.es" tvg-logo="https://stremio.shickat.me/Images/Channels/DEPORTES2.jpg" group-title="Elcano.top", Movistar Deportes 2 (1080)
 acestream://f0ee7a2b43c1df5ea9e4fac5bf876d5bef4372b0
 #EXTINF:-1 tvg-id="Movistar.Deportes.2.es" group-title="Elcano.top", Movistar Deportes 2 (720)
 acestream://bfa01c11c5c6b7a616a516de4f2c769a89d26b25
-#EXTINF:-1 tvg-id="Movistar.Deportes.2.es" tvg-logo="https://i.ibb.co/q95fBKV/deportes2.png" group-title="NEW ERA", Movistar Deportes 2 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Deportes.2.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/F4406652" group-title="NEW ERA", Movistar Deportes 2 (FHD)
 acestream://edd06f11e1cef292a1d795e15207ef2f580e298c
 #EXTINF:-1 tvg-id="Movistar.Deportes.2.es" tvg-logo="https://i.ibb.co/q95fBKV/deportes2.png" group-title="ELCANO", Movistar Deportes 2
 acestream://639c561dd57fa3fc91fde715caeb696c5efb7ce7
 
-#EXTINF:-1 tvg-id="Movistar.Deportes.3.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/M1853457V1621457" group-title="Elcano.top", Movistar Deportes 3 (1080)
+#EXTINF:-1 tvg-id="Movistar.Deportes.3.es" tvg-logo="https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Deportes%203.jpeg" group-title="Elcano.top", Movistar Deportes 3 (1080)
 acestream://799c6b5ee1cf41af077d14e3f9c45a32697eb903
-#EXTINF:-1 tvg-id="Movistar.Deportes.3.es" group-title="Elcano.top", Movistar Deportes 3 (720)
+#EXTINF:-1 tvg-id="Movistar.Deportes.3.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/M1853457V1621457" group-title="Elcano.top", Movistar Deportes 3 (720)
 acestream://2fd410c5d89e7a627cd3785685b7915b8e4bd534
 #EXTINF:-1 tvg-id="Movistar.Deportes.3.es" tvg-logo="https://i.ibb.co/jDg5qWD/deportes3.png" group-title="NEW ERA", Movistar Deportes 3 (FHD)
 acestream://753d4b1f7c4ef43238b5cf23b05572b550a44eee
@@ -309,17 +308,19 @@ http://vlc.shickat.me:8000/pid/089673779de9fa7a18ac8dc26eb4a79cf5a86f96/stream.m
 acestream://102bcb79ca391e37ac1fc9ee77dc53440d0a59ce
 
 # https://i.ibb.co/6c2zRp9y/M-drama.png
-#EXTINF:-1 tvg-id="Movistar.Drama.es" tvg-logo="https://stremio.shickat.me/Images/Channels/DRAMA.jpg" group-title="Telegram", Movistar Drama
+#EXTINF:-1 tvg-id="Movistar.Drama.es" tvg-logo="https://stremio.shickat.me/Images/Channels/DRAMA.jpg" group-title="Telegram", Movistar Drama (720)
 http://172.93.102.112:8989/278850_.m3u8
-#EXTINF:-1 tvg-id="Movistar.Drama.es" tvg-logo="https://stremio.shickat.me/Images/Channels/DRAMA.jpg" group-title="VLC", Movistar Drama
+#EXTINF:-1 tvg-id="Movistar.Drama.es" tvg-logo="https://stremio.shickat.me/Images/Channels/DRAMA.jpg" group-title="VLC", Movistar Drama (1080)
 http://vlc.shickat.me:8000/pid/a6de6a4977d7801bbddc9c7739d822f4beb358ae/stream.mp4
 
-#EXTINF:-1 tvg-id="Movistar.Especial.1.es" tvg-logo="https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Terror.jpg" group-title="VLC", Movistar Terror
+# https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Terror.jpg
+#EXTINF:-1 tvg-id="Movistar.Especial.1.es" tvg-logo="https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/TERROR_poster.jpg" group-title="VLC", Movistar Terror (1080)
 http://vlc.shickat.me:8000/pid/cf99e99c105162410ec6d1f68cc6f4811560fee7/stream.mp4
 #EXTINF:-1 tvg-id="Movistar.Especial.1.es" tvg-logo="https://i.ibb.co/hJ1mPCbC/M-vacaciones.webp" group-title="Shickat.me", Movistar Terror (FHD)
 acestream://cf99e99c105162410ec6d1f68cc6f4811560fee7
 
-#EXTINF:-1 tvg-id="Movistar.Especial.2.es" tvg-logo="https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Romance.jpg" group-title="VLC", Movistar Romance (FHD)
+# https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Romance.jpg
+#EXTINF:-1 tvg-id="Movistar.Especial.2.es" tvg-logo="https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Romance_poster.jpg" group-title="VLC", Movistar Romance (FHD)
 http://vlc.shickat.me:8000/pid/4bfeb0516c44c4f0e3502e3f1ca1035d39ddf9c2/stream.mp4
 #EXTINF:-1 tvg-id="Movistar.Especial.2.es" tvg-logo="https://i.ibb.co/Q177kHV/M-western.webp" group-title="Shickat.me", Movistar Romance (FHD)
 acestream://4bfeb0516c44c4f0e3502e3f1ca1035d39ddf9c2
