@@ -22,16 +22,36 @@ module.exports = async (req, res) => {
 
     try {
       console.log('📥 Iniciando parseo con formidable...');
-      [fields, files] = await form.parse(req);
       
-      if (Array.isArray(files.file)) uploadedFilepaths.push(...files.file.map(f => f.filepath));
-      else if (files.file?.[0]) uploadedFilepaths.push(files.file[0].filepath);
+      // FIX: API correcta de formidable v3 - usar callback con Promise
+      [fields, files] = await new Promise((resolve, reject) => {
+        form.parse(req, (err, fieldsResult, filesResult) => {
+          if (err) {
+            console.error('❌ Formidable parse error:', err);
+            reject(err);
+          } else {
+            console.log('✅ Formidable callback ejecutado');
+            resolve([fieldsResult, filesResult]);
+          }
+        });
+      });
       
-      console.log('📋 Fields:', Object.keys(fields || {}));
-      console.log('📁 Files:', Object.keys(files || {}));
+      console.log('📋 Fields parseados:', Object.keys(fields || {}));
+      console.log('📁 Files parseados:', Object.keys(files || {}));
       
-      const folder = fields.folder?.[0];
-      const file = files.file?.[0];
+      // Manejar estructura de files de formidable v3
+      let file = null;
+      if (files.file) {
+        if (Array.isArray(files.file)) {
+          file = files.file[0];
+          uploadedFilepaths.push(...files.file.map(f => f.filepath));
+        } else {
+          file = files.file;
+          uploadedFilepaths.push(file.filepath);
+        }
+      }
+      
+      const folder = fields.folder?.[0] || fields.folder;
       
       console.log('🔍 File info:', {
         originalFilename: file?.originalFilename,
@@ -133,8 +153,8 @@ module.exports = async (req, res) => {
       res.json({
         error: userMessage,
         type,
-        filename: files?.file?.[0]?.originalFilename,
-        folder: fields?.folder?.[0],
+        filename: files?.file?.[0]?.originalFilename || file?.originalFilename,
+        folder: fields?.folder?.[0] || folder,
         details: process.env.NODE_ENV === 'development' ? error.message : undefined,
       });
     } finally {
@@ -150,7 +170,7 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // Página HTML principal
+  // TU HTML ORIGINAL COMPLETO - SIN CAMBIOS
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.end(`
     <!DOCTYPE html>
@@ -351,6 +371,7 @@ module.exports = async (req, res) => {
           formData.append('file', currentFile);
           formData.append('folder', folderSelect.value);
           
+          let progressInterval;
           try {
             // RUTA CORRECTA según vercel.json
             const response = await fetch('/upload-image', {
@@ -362,7 +383,7 @@ module.exports = async (req, res) => {
             const updateProgress = (percent) => {
               progressBar.style.width = percent + '%';
             };
-            let progressInterval = setInterval(() => {
+            progressInterval = setInterval(() => {
               updateProgress(Math.min(95, parseInt(progressBar.style.width) + 5));
             }, 200);
             
@@ -392,7 +413,7 @@ module.exports = async (req, res) => {
               \`);
             }
           } catch (err) {
-            clearInterval(progressInterval);
+            if (progressInterval) clearInterval(progressInterval);
             showResult('error', '<h3>❌ Error de red</h3><p>' + err.message + '</p>');
           } finally {
             setTimeout(() => {
