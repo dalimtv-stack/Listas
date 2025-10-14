@@ -36,9 +36,8 @@ module.exports = async (req, res) => {
             console.log('Línea #EXT-X-STREAM-INF:', attributes);
             let bandwidth, width, height, codecs;
 
-            // Parsear atributos
             let attrMatch;
-            attrRegex.lastIndex = 0; // Resetear el índice del regex
+            attrRegex.lastIndex = 0;
             while ((attrMatch = attrRegex.exec(attributes)) !== null) {
               if (attrMatch[1]) bandwidth = parseInt(attrMatch[1]);
               if (attrMatch[2] && attrMatch[3]) {
@@ -48,7 +47,6 @@ module.exports = async (req, res) => {
               if (attrMatch[4]) codecs = attrMatch[4];
             }
 
-            // Capturar la URL de la playlist variante (línea siguiente)
             let variantUrl = null;
             if (i + 1 < lines.length && !lines[i + 1].startsWith('#') && lines[i + 1].trim()) {
               try {
@@ -96,7 +94,7 @@ module.exports = async (req, res) => {
                 height: height || null,
                 bandwidth,
                 codecs: codecs || null,
-                url: null, // Media playlists no tienen URLs variantes
+                url: null,
               });
             }
           }
@@ -109,14 +107,15 @@ module.exports = async (req, res) => {
         console.log('No se detectaron resoluciones');
         return res.json({
           resolutions: [{ label: 'No se detectaron resoluciones', width: null, height: null, bandwidth: null, codecs: null, url: null }],
+          content: text.slice(0, 1000), // Incluir los primeros 1000 caracteres
         });
       }
 
       console.log('Resoluciones encontradas:', unique);
-      return res.json({ resolutions: unique });
+      return res.json({ resolutions: unique, content: null });
     } catch (err) {
       console.error('Error en servidor:', err.message);
-      return res.status(500).json({ error: `Error: ${err.message}` });
+      return res.status(500).json({ error: `Error: ${err.message}`, content: null });
     }
   }
 
@@ -198,8 +197,18 @@ module.exports = async (req, res) => {
           color: #ff4444;
           font-weight: bold;
         }
+        pre {
+          background: #222;
+          padding: 1rem;
+          border-radius: 6px;
+          margin-top: 1rem;
+          white-space: pre-wrap;
+          word-break: break-all;
+          font-size: 0.85rem;
+          color: #ccc;
+        }
         @media (max-width: 600px) {
-          table, th, td {
+          table, th, td, pre {
             font-size: 0.8rem;
             padding: 0.5rem;
           }
@@ -231,16 +240,23 @@ module.exports = async (req, res) => {
             }
             const data = await res.json();
             if (data.error) {
-              resultDiv.innerHTML = \`<p class="error">❌ \${data.error}</p>\`;
+              let errorHtml = \`<p class="error">❌ \${data.error}</p>\`;
+              if (data.content) {
+                errorHtml += \`<pre>Contenido del archivo (primeros 1000 caracteres):\n\${data.content}</pre>\`;
+              }
+              resultDiv.innerHTML = errorHtml;
               throw new Error(data.error);
             }
 
             if (data.resolutions[0].label === 'No se detectaron resoluciones') {
-              resultDiv.innerHTML = '<p class="error">❌ No se detectaron resoluciones</p>';
+              let errorHtml = '<p class="error">❌ No se detectaron resoluciones</p>';
+              if (data.content) {
+                errorHtml += \`<pre>Contenido del archivo (primeros 1000 caracteres):\n\${data.content}</pre>\`;
+              }
+              resultDiv.innerHTML = errorHtml;
               return;
             }
 
-            // Crear tabla para mostrar resultados
             let table = '<table><tr><th>Resolución</th><th>Ancho</th><th>Alto</th><th>Bitrate</th><th>Codecs</th><th>URL</th></tr>';
             data.resolutions.forEach(r => {
               table += \`<tr>
