@@ -21,35 +21,68 @@ module.exports = async (req, res) => {
         throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
       }
       const text = await response.text();
-      console.log('Contenido recibido (primeros 200 chars):', text.slice(0, 200));
+      console.log('Contenido recibido (primeros 500 chars):', text.slice(0, 500));
 
       const results = [];
-      // Regex más flexible para capturar BANDWIDTH, RESOLUTION y CODECS en cualquier orden
-      const regex = /#EXT-X-STREAM-INF:(?:.*?)BANDWIDTH=(\d+)(?:.*?)RESOLUTION=(\d+)x(\d+)(?:.*?)CODECS="([^"]+)"?/g;
+      // Regex más flexible: captura BANDWIDTH, RESOLUTION y CODECS en cualquier orden
+      const regex = /#EXT-X-STREAM-INF:(.*?)(?:$|\n)/g;
+      const attrRegex = /BANDWIDTH=(\d+)|RESOLUTION=(\d+)x(\d+)|CODECS="([^"]+)"/g;
 
       if (text.includes('#EXT-X-STREAM-INF')) {
         console.log('Detectado master playlist - parseando directamente');
-        let match;
-        while ((match = regex.exec(text)) !== null) {
-          results.push({
-            label: `${match[3] || 'desconocido'}p`,
-            width: parseInt(match[2]) || null,
-            height: parseInt(match[3]) || null,
-            bandwidth: parseInt(match[1]),
-            codecs: match[4] || null,
-          });
+        let streamInfMatch;
+        while ((streamInfMatch = regex.exec(text)) !== null) {
+          const attributes = streamInfMatch[1]; // Captura todos los atributos de la línea
+          console.log('Línea #EXT-X-STREAM-INF:', attributes);
+          let bandwidth, width, height, codecs;
+          
+          // Parsear los atributos individuales
+          let attrMatch;
+          while ((attrMatch = attrRegex.exec(attributes)) !== null) {
+            if (attrMatch[1]) bandwidth = parseInt(attrMatch[1]);
+            if (attrMatch[2] && attrMatch[3]) {
+              width = parseInt(attrMatch[2]);
+              height = parseInt(attrMatch[3]);
+            }
+            if (attrMatch[4]) codecs = attrMatch[4];
+          }
+
+          if (bandwidth) { // Solo agregar si hay BANDWIDTH
+            results.push({
+              label: `${height || 'desconocido'}p`,
+              width: width || null,
+              height: height || null,
+              bandwidth,
+              codecs: codecs || null,
+            });
+          }
         }
       } else {
         console.log('Detectado media playlist - parseando');
         let match;
         while ((match = regex.exec(text)) !== null) {
-          results.push({
-            label: `${match[3] || 'desconocido'}p`,
-            width: parseInt(match[2]) || null,
-            height: parseInt(match[3]) || null,
-            bandwidth: parseInt(match[1]),
-            codecs: match[4] || null,
-          });
+          const attributes = match[1];
+          console.log('Línea #EXT-X-STREAM-INF:', attributes);
+          let bandwidth, width, height, codecs;
+          
+          while ((attrMatch = attrRegex.exec(attributes)) !== null) {
+            if (attrMatch[1]) bandwidth = parseInt(attrMatch[1]);
+            if (attrMatch[2] && attrMatch[3]) {
+              width = parseInt(attrMatch[2]);
+              height = parseInt(attrMatch[3]);
+            }
+            if (attrMatch[4]) codecs = attrMatch[4];
+          }
+
+          if (bandwidth) {
+            results.push({
+              label: `${height || 'desconocido'}p`,
+              width: width || null,
+              height: height || null,
+              bandwidth,
+              codecs: codecs || null,
+            });
+          }
         }
       }
 
@@ -139,7 +172,6 @@ module.exports = async (req, res) => {
           }
           resultDiv.textContent = 'Analizando...';
           try {
-            // CAMBIO CLAVE: Cambia /api/resolution a /Resolution (la misma ruta de la página)
             const res = await fetch(\`/Resolution?url=\${encodeURIComponent(url)}\`);
             if (!res.ok) {
               const text = await res.text();
