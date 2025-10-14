@@ -6,23 +6,21 @@ const fetch = require('node-fetch');
 module.exports = async (req, res) => {
   if (req.method === 'GET' && req.query.url) {
     const { url } = req.query;
-    if (!url || !/^https?:\/\//.test(url) || !url.endsWith('.m3u8')) {
-      return res.status(400).json({ error: 'Invalid .m3u8 URL' });
+    if (!url || !url.startsWith('http') || !url.endsWith('.m3u8')) {
+      return res.status(400).json({ error: 'URL inválida, debe ser un .m3u8' });
     }
 
     try {
       const response = await fetch(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        },
+        headers: { 'User-Agent': 'Mozilla/5.0' },
       });
-      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+      if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
       const text = await response.text();
 
       const results = [];
       const regex = /#EXT-X-STREAM-INF:.*?BANDWIDTH=(\d+)(?:.*?RESOLUTION=(\d+)x(\d+))?(?:.*?CODECS="([^"]+)")?/g;
 
-      // Handle master playlist
+      // Si es un master playlist
       if (text.includes('#EXT-X-STREAM-INF')) {
         const lines = text.split('\n');
         for (let i = 0; i < lines.length; i++) {
@@ -31,15 +29,13 @@ module.exports = async (req, res) => {
             if (variantUrl && !variantUrl.startsWith('#')) {
               const absoluteUrl = new URL(variantUrl, url).href;
               const variantResponse = await fetch(absoluteUrl, {
-                headers: {
-                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                },
+                headers: { 'User-Agent': 'Mozilla/5.0' },
               });
               const variantText = await variantResponse.text();
               let match;
               while ((match = regex.exec(variantText)) !== null) {
                 results.push({
-                  label: `${match[3] || 'unknown'}p`,
+                  label: `${match[3] || 'desconocido'}p`,
                   width: parseInt(match[2]) || null,
                   height: parseInt(match[3]) || null,
                   bandwidth: parseInt(match[1]),
@@ -50,11 +46,11 @@ module.exports = async (req, res) => {
           }
         }
       } else {
-        // Handle media playlist
+        // Playlist normal
         let match;
         while ((match = regex.exec(text)) !== null) {
           results.push({
-            label: `${match[3] || 'unknown'}p`,
+            label: `${match[3] || 'desconocido'}p`,
             width: parseInt(match[2]) || null,
             height: parseInt(match[3]) || null,
             bandwidth: parseInt(match[1]),
@@ -67,14 +63,14 @@ module.exports = async (req, res) => {
 
       if (!unique.length) {
         return res.json({
-          resolutions: [{ label: 'No resolutions detected', width: null, height: null }],
+          resolutions: [{ label: 'No se detectaron resoluciones', width: null, height: null }],
         });
       }
 
       return res.json({ resolutions: unique });
     } catch (err) {
-      console.error('Error:', err);
-      return res.status(500).json({ error: err.message });
+      console.error('Error:', err.message);
+      return res.status(500).json({ error: `Error: ${err.message}` });
     }
   }
 
