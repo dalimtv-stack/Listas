@@ -24,19 +24,21 @@ module.exports = async (req, res) => {
       console.log('Contenido recibido (primeros 500 chars):', text.slice(0, 500));
 
       const results = [];
-      const regex = /#EXT-X-STREAM-INF:(.*?)(?:\n|$)/g;
+      const lines = text.split('\n');
+      const regex = /#EXT-X-STREAM-INF:(.*)/g;
       const attrRegex = /BANDWIDTH=(\d+)|RESOLUTION=(\d+)x(\d+)|CODECS="([^"]+)"/g;
 
       if (text.includes('#EXT-X-STREAM-INF')) {
         console.log('Detectado master playlist - parseando directamente');
-        const lines = text.split('\n');
         for (let i = 0; i < lines.length; i++) {
-          let streamInfMatch = regex.exec(text);
           if (lines[i].startsWith('#EXT-X-STREAM-INF')) {
             const attributes = lines[i].replace('#EXT-X-STREAM-INF:', '');
             console.log('Línea #EXT-X-STREAM-INF:', attributes);
             let bandwidth, width, height, codecs;
-            
+
+            // Parsear atributos
+            let attrMatch;
+            attrRegex.lastIndex = 0; // Resetear el índice del regex
             while ((attrMatch = attrRegex.exec(attributes)) !== null) {
               if (attrMatch[1]) bandwidth = parseInt(attrMatch[1]);
               if (attrMatch[2] && attrMatch[3]) {
@@ -47,7 +49,14 @@ module.exports = async (req, res) => {
             }
 
             // Capturar la URL de la playlist variante (línea siguiente)
-            const variantUrl = lines[i + 1] && !lines[i + 1].startsWith('#') ? new URL(lines[i + 1], url).href : null;
+            let variantUrl = null;
+            if (i + 1 < lines.length && !lines[i + 1].startsWith('#') && lines[i + 1].trim()) {
+              try {
+                variantUrl = new URL(lines[i + 1], url).href;
+              } catch (e) {
+                console.warn('No se pudo resolver la URL variante:', lines[i + 1], e.message);
+              }
+            }
 
             if (bandwidth) {
               results.push({
@@ -56,37 +65,40 @@ module.exports = async (req, res) => {
                 height: height || null,
                 bandwidth,
                 codecs: codecs || null,
-                url: variantUrl || null,
+                url: variantUrl,
               });
             }
           }
         }
       } else {
         console.log('Detectado media playlist - parseando');
-        let match;
-        while ((match = regex.exec(text)) !== null) {
-          const attributes = match[1];
-          console.log('Línea #EXT-X-STREAM-INF:', attributes);
-          let bandwidth, width, height, codecs;
-          
-          while ((attrMatch = attrRegex.exec(attributes)) !== null) {
-            if (attrMatch[1]) bandwidth = parseInt(attrMatch[1]);
-            if (attrMatch[2] && attrMatch[3]) {
-              width = parseInt(attrMatch[2]);
-              height = parseInt(attrMatch[3]);
-            }
-            if (attrMatch[4]) codecs = attrMatch[4];
-          }
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].startsWith('#EXT-X-STREAM-INF')) {
+            const attributes = lines[i].replace('#EXT-X-STREAM-INF:', '');
+            console.log('Línea #EXT-X-STREAM-INF:', attributes);
+            let bandwidth, width, height, codecs;
 
-          if (bandwidth) {
-            results.push({
-              label: `${height || 'desconocido'}p`,
-              width: width || null,
-              height: height || null,
-              bandwidth,
-              codecs: codecs || null,
-              url: null, // Media playlists no tienen URLs variantes
-            });
+            let attrMatch;
+            attrRegex.lastIndex = 0;
+            while ((attrMatch = attrRegex.exec(attributes)) !== null) {
+              if (attrMatch[1]) bandwidth = parseInt(attrMatch[1]);
+              if (attrMatch[2] && attrMatch[3]) {
+                width = parseInt(attrMatch[2]);
+                height = parseInt(attrMatch[3]);
+              }
+              if (attrMatch[4]) codecs = attrMatch[4];
+            }
+
+            if (bandwidth) {
+              results.push({
+                label: `${height || 'desconocido'}p`,
+                width: width || null,
+                height: height || null,
+                bandwidth,
+                codecs: codecs || null,
+                url: null, // Media playlists no tienen URLs variantes
+              });
+            }
           }
         }
       }
@@ -214,7 +226,7 @@ module.exports = async (req, res) => {
             const res = await fetch(\`/Resolution?url=\${encodeURIComponent(url)}\`);
             if (!res.ok) {
               const text = await res.text();
-              resultiv.innerHTML = \`<p class="error">Error del servidor: HTTP \${res.status} - \${text.slice(0, 80)}</p>\`;
+              resultDiv.innerHTML = \`<p class="error">Error del servidor: HTTP \${res.status} - \${text.slice(0, 80)}</p>\`;
               throw new Error(\`Error del servidor: HTTP \${res.status}\`);
             }
             const data = await res.json();
