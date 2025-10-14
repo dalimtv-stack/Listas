@@ -2,48 +2,76 @@
 'use strict';
 
 const { put } = require('@vercel/blob');
+const formidable = require('formidable');
 const path = require('path');
-const fs = require('fs');
 
 module.exports = async (req, res) => {
-  // Validar método y parámetros para API
-  if (req.method === 'POST' && req.body && req.body.file && req.body.folder) {
-    const { file: fileData, folder } = req.body;
-    
-    if (!['plantillas', 'Canales'].includes(folder)) {
-      console.error('Carpeta inválida:', folder);
-      return res.status(400).json({ 
-        error: 'Carpeta inválida. Debe ser "plantillas" o "Canales"', 
-        folder: null, 
-        filename: null 
-      });
-    }
-
-    // Validar que sea imagen
-    if (!fileData.type || !fileData.type.startsWith('image/')) {
-      console.error('Tipo de archivo inválido:', fileData.type);
-      return res.status(400).json({ 
-        error: 'Solo se permiten archivos de imagen', 
-        folder, 
-        filename: fileData.name || null 
-      });
-    }
-
-    // Usar nombre original sin renombrar
-    const originalName = fileData.name || 'imagen.png';
-    const blobName = `${folder}/${originalName}`;
-    const buffer = Buffer.from(fileData.data, 'base64'); // Asumiendo base64 en el body
-
-    if (!buffer || buffer.length === 0) {
-      console.error('Buffer vacío para:', originalName);
-      return res.status(400).json({ 
-        error: 'Archivo vacío o corrupto', 
-        folder, 
-        filename: originalName 
-      });
-    }
-
+  // Aumentar límite de payload en Vercel
+  res.setHeader('Cache-Control', 's-maxage=0');
+  
+  // Validar método POST para API
+  if (req.method === 'POST') {
     try {
+      // Configurar formidable para manejar multipart/form-data
+      const form = formidable({
+        maxFileSize: 10 * 1024 * 1024, // 10MB límite
+        keepExtensions: true,
+        multiples: false,
+        filter: ({ mimetype }) => {
+          return mimetype && mimetype.startsWith('image/');
+        }
+      });
+
+      const [fields, files] = await form.parse(req);
+      
+      const folder = fields.folder?.[0];
+      const file = files.file?.[0];
+      
+      if (!file) {
+        console.error('No se recibió archivo');
+        return res.status(400).json({ 
+          error: 'No se recibió archivo de imagen', 
+          folder: folder || null, 
+          filename: null 
+        });
+      }
+
+      if (!folder || !['plantillas', 'Canales'].includes(folder)) {
+        console.error('Carpeta inválida:', folder);
+        return res.status(400).json({ 
+          error: 'Carpeta inválida. Debe ser "plantillas" o "Canales"', 
+          folder: folder || null, 
+          filename: file.originalFilename || null 
+        });
+      }
+
+      // Usar nombre original sin renombrar
+      const originalName = file.originalFilename || file.newFilename || 'imagen.png';
+      const blobName = `${folder}/${originalName}`;
+      
+      // Leer buffer del archivo temporal
+      let buffer;
+      try {
+        buffer = await require('fs').promises.readFile(file.filepath);
+      } catch (err) {
+        console.error('Error leyendo archivo temporal:', err);
+        return res.status(500).json({ 
+          error: 'Error procesando archivo', 
+          type: 'FILE_READ_ERROR',
+          folder, 
+          filename: originalName 
+        });
+      }
+
+      if (!buffer || buffer.length === 0) {
+        console.error('Buffer vacío para:', originalName);
+        return res.status(400).json({ 
+          error: 'Archivo vacío o corrupto', 
+          folder, 
+          filename: originalName 
+        });
+      }
+
       // Verificar token
       if (!process.env.BLOB_READ_WRITE_TOKEN) {
         console.error('BLOB_READ_WRITE_TOKEN no configurado');
@@ -55,25 +83,34 @@ module.exports = async (req, res) => {
         });
       }
 
-      console.log(`Subiendo ${originalName} a ${folder}/...`);
+      console.log(`Subiendo ${originalName} (${(buffer.length/1024).toFixed(1)}KB) a ${folder}/...`);
 
-      // Subida directa SIN verificar existencia (minimizando operaciones)
+      // Subida directa SIN verificar existencia
       const result = await put(blobName, buffer, {
         access: 'public',
-        contentType: fileData.type,
+        contentType: file.mimetype || 'image/png',
         token: process.env.BLOB_READ_WRITE_TOKEN,
-        addRandomSuffix: false // Mantiene nombre original
+        addRandomSuffix: false
       });
 
       if (result && result.url) {
         console.log(`✅ Subida exitosa: ${result.url}`);
+        
+        // Limpiar archivo temporal
+        try {
+          require('fs').unlinkSync(file.filepath);
+        } catch (cleanupErr) {
+          console.warn('No se pudo limpiar archivo temporal:', cleanupErr.message);
+        }
+        
         return res.json({ 
           success: true, 
           url: result.url, 
           blobName, 
           folder, 
           filename: originalName,
-          size: buffer.length 
+          size: buffer.length,
+          mimetype: file.mimetype
         });
       } else {
         console.error('put() no devolvió URL válida');
@@ -86,7 +123,16 @@ module.exports = async (req, res) => {
       }
 
     } catch (error) {
-      console.error('Error subiendo archivo:', error.message);
+      console.error('Error procesando upload:', error);
+      
+      // Limpiar archivos temporales en caso de error
+      if (req.__formidable_files) {
+        req.__formidable_files.forEach(file => {
+          try {
+            require('fs').unlinkSync(file.filepath);
+          } catch (e) {}
+        });
+      }
       
       let errorType = 'UNKNOWN';
       let errorMessage = 'Error desconocido al subir archivo';
@@ -100,25 +146,28 @@ module.exports = async (req, res) => {
       } else if (error.message.includes('permission') || error.message.includes('access')) {
         errorType = 'PERMISSION_ERROR';
         errorMessage = 'Sin permisos para subir a Vercel Blob';
-      } else if (error.message.includes('quota') || error.message.includes('limit')) {
+      } else if (error.message.includes('quota') || error.message.includes('limit') || error.message.includes('size')) {
         errorType = 'QUOTA_ERROR';
-        errorMessage = 'Límite de almacenamiento alcanzado';
-      } else if (error.message.includes('Invalid') && error.message.includes('name')) {
+        errorMessage = 'Límite de tamaño o almacenamiento alcanzado';
+      } else if (error.message.includes('Invalid') && (error.message.includes('name') || error.message.includes('filename'))) {
         errorType = 'FILENAME_ERROR';
         errorMessage = 'Nombre de archivo inválido para Vercel Blob';
+      } else if (error.message.includes('maxFileSize')) {
+        errorType = 'FILE_TOO_LARGE';
+        errorMessage = 'Archivo demasiado grande (máximo 10MB)';
       }
 
       return res.status(500).json({ 
         error: errorMessage,
         type: errorType,
         details: error.message,
-        folder, 
-        filename: originalName 
+        folder: fields?.folder?.[0] || null,
+        filename: files?.file?.[0]?.originalFilename || null
       });
     }
   }
 
-  // Si no es POST válido, mostrar página HTML
+  // Página HTML principal
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.end(`
     <!DOCTYPE html>
@@ -148,10 +197,8 @@ module.exports = async (req, res) => {
         }
         .upload-area:hover { border-color: #0070f3; }
         .upload-area.dragover { border-color: #0070f3; background: #222; }
-        input[type="file"] {
-          display: none;
-        }
-        select, input[type="text"] {
+        input[type="file"] { display: none; }
+        select {
           width: 100%;
           max-width: 400px;
           padding: 0.7rem;
@@ -202,10 +249,14 @@ module.exports = async (req, res) => {
         .file-info { font-size: 0.9rem; color: #aaa; margin-top: 0.5rem; }
         .folder-selector { margin-bottom: 1rem; }
         label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        .progress { width: 100%; height: 20px; background: #333; border-radius: 10px; overflow: hidden; margin: 1rem 0; }
+        .progress-bar { height: 100%; background: #0070f3; width: 0%; transition: width 0.3s; }
+        .warning { color: #ffaa00; font-size: 0.9rem; margin-top: 0.5rem; }
       </style>
     </head>
     <body>
       <h1>🖼️ Subir Imagen a Vercel Blob</h1>
+      <p><strong>Máximo 10MB por imagen</strong></p>
       <p>Selecciona carpeta y arrastra o selecciona una imagen para subir</p>
       
       <div class="folder-selector">
@@ -218,12 +269,16 @@ module.exports = async (req, res) => {
       
       <div class="upload-area" id="uploadArea">
         <p>📁 Arrastra una imagen aquí o <span id="clickToUpload">haz clic para seleccionar</span></p>
-        <input type="file" id="fileInput" accept="image/*" />
         <div id="fileInfo" class="file-info" style="display: none;"></div>
+        <input type="file" id="fileInput" accept="image/*" />
       </div>
       
       <button id="uploadBtn" disabled>🚀 Subir Imagen</button>
+      <div class="progress" id="progress" style="display: none;">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
       <div id="result"></div>
+      <div class="warning">⚠️ Archivos mayores a 10MB serán rechazados</div>
 
       <script>
         const uploadArea = document.getElementById('uploadArea');
@@ -231,8 +286,12 @@ module.exports = async (req, res) => {
         const uploadBtn = document.getElementById('uploadBtn');
         const folderSelect = document.getElementById('folder');
         const resultDiv = document.getElementById('result');
+        const progressDiv = document.getElementById('progress');
+        const progressBar = document.getElementById('progressBar');
         const clickToUpload = document.getElementById('clickToUpload');
         let currentFile = null;
+
+        const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
         // Click para seleccionar archivo
         uploadArea.addEventListener('click', () => fileInput.click());
@@ -278,8 +337,18 @@ module.exports = async (req, res) => {
         function handleFiles(files) {
           if (files.length > 0) {
             currentFile = files[0];
+            
+            // Validar tamaño
+            if (currentFile.size > MAX_SIZE) {
+              showResult('error', '<h3>❌ Archivo demasiado grande</h3><p>Máximo 10MB permitido. Tu archivo tiene ' + (currentFile.size / 1024 / 1024).toFixed(1) + 'MB</p>');
+              return;
+            }
+            
             const fileInfo = document.getElementById('fileInfo');
-            fileInfo.textContent = \`\${currentFile.name} (\${(currentFile.size / 1024).toFixed(1)} KB)\`;
+            fileInfo.innerHTML = \`
+              <strong>\${currentFile.name}</strong><br>
+              \${(currentFile.size / 1024).toFixed(1)} KB - \${currentFile.type}
+            \`;
             fileInfo.style.display = 'block';
             uploadBtn.disabled = false;
           }
@@ -292,66 +361,69 @@ module.exports = async (req, res) => {
           
           uploadBtn.disabled = true;
           uploadBtn.textContent = '⏳ Subiendo...';
+          progressDiv.style.display = 'block';
           resultDiv.style.display = 'none';
           
-          const reader = new FileReader();
-          reader.onload = async function(e) {
-            const base64Data = e.target.result.split(',')[1]; // Remove data:image/...;base64,
+          const formData = new FormData();
+          formData.append('file', currentFile);
+          formData.append('folder', folderSelect.value);
+          
+          try {
+            const response = await fetch('/api/upload-image', {
+              method: 'POST',
+              body: formData
+            });
             
-            try {
-              const formData = {
-                file: {
-                  name: currentFile.name,
-                  type: currentFile.type,
-                  data: base64Data
-                },
-                folder: folderSelect.value
-              };
-              
-              const response = await fetch('/api/upload-image', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-              });
-              
-              const data = await response.json();
-              
-              if (response.ok && data.success) {
-                showResult('success', \`
-                  <h3>✅ Subida exitosa</h3>
-                  <p><strong>Carpeta:</strong> \${data.folder}</p>
-                  <p><strong>Archivo:</strong> \${data.filename}</p>
-                  <p><strong>Tamaño:</strong> \${(data.size / 1024).toFixed(1)} KB</p>
-                  <div class="url-box">
-                    <strong>URL:</strong><br>
-                    <a href="\${data.url}" target="_blank">\${data.url}</a>
-                  </div>
-                  <img src="\${data.url}" alt="Preview" class="preview" onload="this.style.display='block'" style="display:none;">
-                \`);
-              } else {
-                showResult('error', \`
-                  <h3>❌ Error: \${data.error}</h3>
-                  <p><strong>Tipo:</strong> \${data.type || 'UNKNOWN'}</p>
-                  \${data.details ? '<p><strong>Detalles:</strong> ' + data.details + '</p>' : ''}
-                  <p><strong>Archivo:</strong> \${data.filename}</p>
-                  <p><strong>Carpeta:</strong> \${data.folder}</p>
-                \`);
-              }
-            } catch (err) {
-              showResult('error', '<h3>❌ Error de red</h3><p>' + err.message + '</p>');
-            } finally {
+            // Actualizar progreso (simulado)
+            const updateProgress = (percent) => {
+              progressBar.style.width = percent + '%';
+            };
+            let progressInterval = setInterval(() => {
+              updateProgress(Math.min(95, parseInt(progressBar.style.width) + 5));
+            }, 200);
+            
+            const data = await response.json();
+            clearInterval(progressInterval);
+            updateProgress(100);
+            
+            if (response.ok && data.success) {
+              showResult('success', \`
+                <h3>✅ Subida exitosa</h3>
+                <p><strong>Carpeta:</strong> \${data.folder}</p>
+                <p><strong>Archivo:</strong> \${data.filename}</p>
+                <p><strong>Tamaño:</strong> \${(data.size / 1024).toFixed(1)} KB</p>
+                <div class="url-box">
+                  <strong>URL:</strong><br>
+                  <a href="\${data.url}" target="_blank">\${data.url}</a>
+                </div>
+                <img src="\${data.url}" alt="Preview" class="preview" onload="this.style.display='block'" style="display:none;">
+              \`);
+            } else {
+              showResult('error', \`
+                <h3>❌ Error: \${data.error}</h3>
+                <p><strong>Tipo:</strong> \${data.type || 'UNKNOWN'}</p>
+                \${data.details ? '<p><strong>Detalles:</strong> ' + data.details + '</p>' : ''}
+                <p><strong>Archivo:</strong> \${data.filename || currentFile.name}</p>
+                <p><strong>Carpeta:</strong> \${data.folder || folderSelect.value}</p>
+              \`);
+            }
+          } catch (err) {
+            clearInterval(progressInterval);
+            showResult('error', '<h3>❌ Error de red</h3><p>' + err.message + '</p>');
+          } finally {
+            setTimeout(() => {
+              progressDiv.style.display = 'none';
               uploadBtn.disabled = false;
               uploadBtn.textContent = '🚀 Subir Imagen';
-            }
-          };
-          
-          reader.readAsDataURL(currentFile);
+            }, 1000);
+          }
         }
 
         function showResult(type, html) {
           resultDiv.className = type;
           resultDiv.innerHTML = html;
           resultDiv.style.display = 'block';
+          progressDiv.style.display = 'none';
         }
       </script>
     </body>
