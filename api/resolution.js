@@ -7,8 +7,8 @@ module.exports = async (req, res) => {
   // Si es llamada API → ?url=...
   if (req.method === 'GET' && req.query.url) {
     const { url } = req.query;
-    if (!url) {
-      return res.status(400).json({ error: 'Falta el parámetro URL' });
+    if (!url || !/^https?:\/\//.test(url)) {
+      return res.status(400).json({ error: 'Parámetro URL inválido' });
     }
 
     try {
@@ -17,8 +17,7 @@ module.exports = async (req, res) => {
       const text = await response.text();
 
       // Regex que captura RESOLUTION, BANDWIDTH y CODECS si están en la misma línea o cercanas
-      const regex =
-        /BANDWIDTH=(\d+).*?RESOLUTION=(\d+)x(\d+).*?(?:CODECS="([^"]+)")?/g;
+      const regex = /BANDWIDTH=(\d+).*?RESOLUTION=(\d+)x(\d+).*?(?:CODECS="([^"]+)")?/g;
 
       const results = [];
       let match;
@@ -37,9 +36,7 @@ module.exports = async (req, res) => {
         });
       }
 
-      const unique = [
-        ...new Map(results.map((r) => [r.label, r])).values(),
-      ];
+      const unique = [...new Map(results.map(r => [r.label, r])).values()];
 
       if (!unique.length) {
         return res.json({
@@ -102,6 +99,7 @@ module.exports = async (req, res) => {
           border-radius: 8px;
           text-align: left;
           white-space: pre-line;
+          line-height: 1.4;
         }
       </style>
     </head>
@@ -123,7 +121,14 @@ module.exports = async (req, res) => {
           resultDiv.textContent = 'Analizando...';
           try {
             const res = await fetch(\`/api/resolution?url=\${encodeURIComponent(url)}\`);
-            const data = await res.json();
+            const text = await res.text();
+            let data;
+            try {
+              data = JSON.parse(text);
+            } catch {
+              throw new Error('Respuesta no válida: ' + text.slice(0, 80));
+            }
+
             if (data.error) throw new Error(data.error);
 
             resultDiv.innerHTML = data.resolutions
