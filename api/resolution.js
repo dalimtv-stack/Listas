@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
         throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
       }
       const text = await response.text();
-      console.log('Contenido recibido (primeros 500 chars):', text.slice(0, 500));
+      console.log('Contenido recibido (primeros 1000 chars):', text.slice(0, 1000));
 
       const results = [];
       const lines = text.split('\n');
