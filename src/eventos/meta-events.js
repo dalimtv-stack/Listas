@@ -33,7 +33,7 @@ async function getMeta(id, configId) {
   const nombre = evento.partido || 'Evento';
   const deporte = evento.deporte ? ` (${evento.deporte})` : '';
   const competicion = evento.competicion ? ` • ${evento.competicion}` : '';
-  const fechaHora = [evento.hora, evento.dia].filter(Boolean).join(' • ');
+  const fechaHora = [evento.hora, evento.dia].filter(Boolean).join('  •  ');
 
   //console.log('[Meta]', { canal: evento.canal, canales: evento.canales });
 
@@ -42,9 +42,9 @@ async function getMeta(id, configId) {
     name: `${nombre}${deporte}`,
     poster: evento.poster || null,
     background: evento.poster || null,
-    producer: evento.canal || (evento.canales?.map(c => c.label).join(', ') || 'Canal desconocido'),
-    releaseInfo: `${evento.dia} • ${evento.hora}`,
-    description: `${fechaHora}${competicion}${deporte}\n \n${evento.canal}`.trim() || nombre
+    //producer: evento.canal || (evento.canales?.map(c => c.label).join(', ') || 'Canal desconocido'),
+    releaseInfo: evento.canal || (evento.canales?.map(c => c.label).join(', ') || 'Canal desconocido'),
+    description: `${fechaHora}\n \n${competicion} ${deporte}`.trim() || nombre
   };
 }
 
