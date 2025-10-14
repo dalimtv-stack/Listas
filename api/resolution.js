@@ -7,30 +7,41 @@ module.exports = async (req, res) => {
   if (req.method === 'GET' && req.query.url) {
     const { url } = req.query;
     if (!url || !url.startsWith('http') || !url.endsWith('.m3u8')) {
+      console.error('Invalid URL:', url);
       return res.status(400).json({ error: 'URL inválida, debe ser un .m3u8' });
     }
 
     try {
+      console.log('Fetching URL:', url);
       const response = await fetch(url, {
         headers: { 'User-Agent': 'Mozilla/5.0' },
       });
-      if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+      if (!response.ok) {
+        console.error('HTTP Error:', response.status, response.statusText);
+        throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
+      }
       const text = await response.text();
+      console.log('Received text:', text.slice(0, 200)); // Log partial content for debugging
 
       const results = [];
       const regex = /#EXT-X-STREAM-INF:.*?BANDWIDTH=(\d+)(?:.*?RESOLUTION=(\d+)x(\d+))?(?:.*?CODECS="([^"]+)")?/g;
 
-      // Si es un master playlist
       if (text.includes('#EXT-X-STREAM-INF')) {
+        console.log('Detected master playlist');
         const lines = text.split('\n');
         for (let i = 0; i < lines.length; i++) {
           if (lines[i].startsWith('#EXT-X-STREAM-INF')) {
             const variantUrl = lines[i + 1];
             if (variantUrl && !variantUrl.startsWith('#')) {
               const absoluteUrl = new URL(variantUrl, url).href;
+              console.log('Fetching variant URL:', absoluteUrl);
               const variantResponse = await fetch(absoluteUrl, {
                 headers: { 'User-Agent': 'Mozilla/5.0' },
               });
+              if (!variantResponse.ok) {
+                console.error('Variant HTTP Error:', variantResponse.status, variantResponse.statusText);
+                throw new Error(`Variant HTTP Error ${variantResponse.status}`);
+              }
               const variantText = await variantResponse.text();
               let match;
               while ((match = regex.exec(variantText)) !== null) {
@@ -46,7 +57,7 @@ module.exports = async (req, res) => {
           }
         }
       } else {
-        // Playlist normal
+        console.log('Detected media playlist');
         let match;
         while ((match = regex.exec(text)) !== null) {
           results.push({
@@ -62,14 +73,16 @@ module.exports = async (req, res) => {
       const unique = [...new Map(results.map(r => [r.label, r])).values()];
 
       if (!unique.length) {
+        console.log('No resolutions found');
         return res.json({
           resolutions: [{ label: 'No se detectaron resoluciones', width: null, height: null }],
         });
       }
 
+      console.log('Resolutions found:', unique);
       return res.json({ resolutions: unique });
     } catch (err) {
-      console.error('Error:', err.message);
+      console.error('Server Error:', err.message);
       return res.status(500).json({ error: `Error: ${err.message}` });
     }
   }
