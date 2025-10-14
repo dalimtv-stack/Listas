@@ -8,7 +8,7 @@ module.exports = async (req, res) => {
     let { url } = req.query;
     if (!url || !url.startsWith('http')) {
       console.error('URL inválida:', url);
-      return res.status(400).json({ error: 'URL inválida, debe empezar con http o https', content: null, redirects: [url] });
+      return res.status(400).json({ error: 'URL inválida, debe empezar con http o https', content: null, redirects: [url], derivedUrls: [] });
     }
 
     try {
@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
       let finalUrl = redirects[redirects.length - 1];
       console.log('URL final:', finalUrl);
 
-      // Verificar tipo MIME para evitar leer contenido binario
+      // Verificar tipo MIME
       const contentType = response.headers.get('content-type') || '';
       let text = null;
       if (contentType.includes('text') || contentType.includes('application/vnd.apple.mpegurl')) {
@@ -50,13 +50,14 @@ module.exports = async (req, res) => {
         console.log('Contenido recibido (primeros 5000 chars):', text.slice(0, 5000));
       } else {
         console.log('Contenido no es texto (tipo MIME:', contentType, '), omitiendo lectura');
-        text = '[Contenido no legible, probablemente archivo binario (.ts)]';
+        text = '[Contenido no legible, probablemente archivo binario (.ts o .mp4)]';
       }
 
-      // Si la URL final no termina en .m3u8, intentar extraer una URL .m3u8 del contenido
+      // Si la URL final no termina en .m3u8, intentar extraer una URL .m3u8 o probar URLs derivadas
+      const derivedUrls = [];
       if (!finalUrl.endsWith('.m3u8')) {
         console.log('No es un archivo .m3u8, buscando URL .m3u8 en el contenido');
-        if (text && text !== '[Contenido no legible, probablemente archivo binario (.ts)]') {
+        if (text && text !== '[Contenido no legible, probablemente archivo binario (.ts o .mp4)]') {
           const m3u8Regex = /(https?:\/\/[^\s"']+\.m3u8)/i;
           const match = text.match(m3u8Regex);
           if (match) {
@@ -76,15 +77,44 @@ module.exports = async (req, res) => {
               text = await response.text();
               console.log('Contenido recibido (primeros 5000 chars):', text.slice(0, 5000));
             } else {
-              text = '[Contenido no legible, probablemente archivo binario (.ts)]';
+              text = '[Contenido no legible, probablemente archivo binario (.ts o .mp4)]';
             }
           } else {
-            console.error('No se encontró una URL .m3u8 en el contenido');
-            return res.json({
-              error: 'No se encontró un archivo .m3u8 en la URL proporcionada',
-              content: text.slice(0, 5000),
-              redirects,
-            });
+            // Intentar URLs derivadas
+            console.log('No se encontró .m3u8, intentando URLs derivadas');
+            const baseUrl = finalUrl.replace(/\/[^\/]+\.(ts|mp4)$/, '');
+            const candidates = [
+              `${baseUrl}/index.m3u8`,
+              `${baseUrl}/playlist.m3u8`,
+              finalUrl.replace(/\/[^\/]+\.(ts|mp4)$/, '/master.m3u8'),
+            ];
+            derivedUrls.push(...candidates);
+            for (const candidate of candidates) {
+              console.log('Probando URL derivada:', candidate);
+              const derivedResponse = await fetch(candidate, {
+                headers: { 'User-Agent': 'Mozilla/5.0' },
+              });
+              if (derivedResponse.ok) {
+                const derivedContentType = derivedResponse.headers.get('content-type') || '';
+                if (derivedContentType.includes('text') || derivedContentType.includes('application/vnd.apple.mpegurl')) {
+                  url = candidate;
+                  finalUrl = candidate;
+                  text = await derivedResponse.text();
+                  console.log('URL .m3u8 derivada encontrada:', url);
+                  redirects.push(url);
+                  break;
+                }
+              }
+            }
+            if (finalUrl !== url) {
+              console.error('No se encontró una URL .m3u8 en el contenido ni en URLs derivadas');
+              return res.json({
+                error: 'No se encontró un archivo .m3u8 en la URL proporcionada',
+                content: text.slice(0, 5000),
+                redirects,
+                derivedUrls,
+              });
+            }
           }
         } else {
           console.error('No se encontró una URL .m3u8 y el contenido no es legible');
@@ -92,6 +122,7 @@ module.exports = async (req, res) => {
             error: 'No se encontró un archivo .m3u8 en la URL proporcionada',
             content: text,
             redirects,
+            derivedUrls,
           });
         }
       }
@@ -182,14 +213,15 @@ module.exports = async (req, res) => {
           resolutions: [{ label: 'No se detectaron resoluciones', width: null, height: null, bandwidth: null, codecs: null, url: null }],
           content: text.slice(0, 5000),
           redirects,
+          derivedUrls,
         });
       }
 
       console.log('Resoluciones encontradas:', unique);
-      return res.json({ resolutions: unique, content: null, redirects });
+      return res.json({ resolutions: unique, content: null, redirects, derivedUrls: [] });
     } catch (err) {
       console.error('Error en servidor:', err.message);
-      return res.status(500).json({ error: `Error: ${err.message}`, content: null, redirects });
+      return res.status(500).json({ error: `Error: ${err.message}`, content: null, redirects, derivedUrls: [] });
     }
   }
 
@@ -310,7 +342,7 @@ module.exports = async (req, res) => {
             if (!res.ok) {
               const text = await res.text();
               resultDiv.innerHTML = \`<p class="error">Error del servidor: HTTP \${res.status} - \${text.slice(0, 80)}</p>\`;
-              return; // No lanzar error para evitar sobrescribir
+              return;
             }
             const data = await res.json();
             let errorHtml = '';
@@ -321,6 +353,9 @@ module.exports = async (req, res) => {
               }
               if (data.redirects && data.redirects.length > 1) {
                 errorHtml += \`<pre>Cadena de redirecciones:\n\${data.redirects.join(' → ')}</pre>\`;
+              }
+              if (data.derivedUrls && data.derivedUrls.length > 0) {
+                errorHtml += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.join('\n')}</pre>\`;
               }
               resultDiv.innerHTML = errorHtml;
               return;
@@ -333,6 +368,9 @@ module.exports = async (req, res) => {
               }
               if (data.redirects && data.redirects.length > 1) {
                 errorHtml += \`<pre>Cadena de redirecciones:\n\${data.redirects.join(' → ')}</pre>\`;
+              }
+              if (data.derivedUrls && data.derivedUrls.length > 0) {
+                errorHtml += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.join('\n')}</pre>\`;
               }
               resultDiv.innerHTML = errorHtml;
               return;
@@ -353,10 +391,12 @@ module.exports = async (req, res) => {
             if (data.redirects && data.redirects.length > 1) {
               table += \`<pre>Cadena de redirecciones:\n\${data.redirects.join(' → ')}</pre>\`;
             }
+            if (data.derivedUrls && data.derivedUrls.length > 0) {
+              table += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.join('\n')}</pre>\`;
+            }
             resultDiv.innerHTML = table;
           } catch (err) {
-            let errorHtml = \`<p class="error">❌ Error: \${err.message}</p>\`;
-            resultDiv.innerHTML = errorHtml;
+            resultDiv.innerHTML = \`<p class="error">❌ Error: \${err.message}</p>\`;
           }
         }
       </script>
