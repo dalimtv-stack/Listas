@@ -6,12 +6,8 @@ const formidable = require('formidable');
 const fs = require('fs').promises;
 
 module.exports = async (req, res) => {
-  // CRÍTICO: Deshabilitar body parser ANTES de cualquier procesamiento
   if (req.method === 'POST') {
     req.disableBodyParser = true;
-    
-    let fields, files;
-    const uploadedFilepaths = [];
     
     const form = formidable({
       maxFileSize: 4 * 1024 * 1024, // 4MB
@@ -21,151 +17,65 @@ module.exports = async (req, res) => {
     });
 
     try {
-      console.log('📥 Iniciando parseo con formidable...');
+      console.log('📥 Parseando con formidable...');
       
-      // FIX: API correcta de formidable v3 - usar callback con Promise
-      [fields, files] = await new Promise((resolve, reject) => {
-        form.parse(req, (err, fieldsResult, filesResult) => {
-          if (err) {
-            console.error('❌ Formidable parse error:', err);
-            reject(err);
-          } else {
-            console.log('✅ Formidable callback ejecutado');
-            resolve([fieldsResult, filesResult]);
-          }
-        });
-      });
-      
-      console.log('📋 Fields parseados:', Object.keys(fields || {}));
-      console.log('📁 Files parseados:', Object.keys(files || {}));
-      
-      // Manejar estructura de files de formidable v3
-      let file = null;
-      if (files.file) {
-        if (Array.isArray(files.file)) {
-          file = files.file[0];
-          uploadedFilepaths.push(...files.file.map(f => f.filepath));
-        } else {
-          file = files.file;
-          uploadedFilepaths.push(file.filepath);
+      // API OFICIAL v3 - callback como en la web
+      form.parse(req, async (err, fields, files) => {
+        if (err) {
+          console.error('❌ Formidable error:', err);
+          res.status(500).json({ error: err.message, type: 'PARSE_ERROR' });
+          return;
         }
-      }
-      
-      const folder = fields.folder?.[0] || fields.folder;
-      
-      console.log('🔍 File info:', {
-        originalFilename: file?.originalFilename,
-        mimetype: file?.mimetype,
-        size: file?.size,
-        filepath: file?.filepath
-      });
 
-      if (!file) {
-        console.error('❌ No file received');
-        return res.status(400).json({ error: 'No image file received', type: 'NO_FILE' });
-      }
+        console.log('✅ Formidable parseado:', Object.keys(fields), Object.keys(files));
+        
+        const folder = fields.folder?.[0];
+        const file = Array.isArray(files.file) ? files.file[0] : files.file;
+        
+        if (!file) {
+          console.error('❌ No file');
+          res.status(400).json({ error: 'No image file received', type: 'NO_FILE' });
+          return;
+        }
 
-      if (!folder || !['plantillas', 'Canales'].includes(folder)) {
-        console.error('❌ Invalid folder:', folder);
-        return res.status(400).json({ 
-          error: 'Invalid folder: use "plantillas" or "Canales"', 
-          type: 'INVALID_FOLDER' 
+        if (!folder || !['plantillas', 'Canales'].includes(folder)) {
+          res.status(400).json({ error: 'Invalid folder', type: 'INVALID_FOLDER' });
+          return;
+        }
+
+        const originalName = file.originalFilename || `${Date.now()}.png`;
+        const blobName = `${folder}/${originalName}`;
+        
+        const buffer = await fs.readFile(file.filepath);
+        console.log(`📊 Buffer: ${(buffer.length / 1024).toFixed(1)} KB`);
+
+        if (!process.env.BLOB_READ_WRITE_TOKEN) {
+          throw new Error('BLOB_READ_WRITE_TOKEN missing');
+        }
+
+        const result = await put(blobName, buffer, {
+          access: 'public',
+          contentType: file.mimetype || 'image/png',
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+          addRandomSuffix: false,
         });
-      }
 
-      const originalName = file.originalFilename || `${Date.now()}.png`;
-      const blobName = `${folder}/${originalName}`;
-      
-      console.log(`📂 Leyendo buffer de ${file.filepath}`);
-      const buffer = await fs.readFile(file.filepath);
-      console.log(`📊 Buffer size: ${(buffer.length / 1024).toFixed(1)} KB`);
+        // Cleanup
+        fs.unlink(file.filepath).catch(console.warn);
 
-      if (buffer.length === 0) {
-        throw new Error('Empty file');
-      }
-
-      if (!process.env.BLOB_READ_WRITE_TOKEN) {
-        console.error('❌ BLOB_READ_WRITE_TOKEN missing');
-        throw new Error('BLOB_READ_WRITE_TOKEN missing');
-      }
-
-      console.log(`🚀 Subiendo ${originalName} (${(buffer.length / 1024).toFixed(1)} KB) a ${blobName}`);
-
-      const result = await put(blobName, buffer, {
-        access: 'public',
-        contentType: file.mimetype || 'image/png',
-        token: process.env.BLOB_READ_WRITE_TOKEN,
-        addRandomSuffix: false, // Keep original name
-      });
-
-      console.log('📤 Vercel Blob result:', result ? 'OK' : 'NULL');
-
-      if (!result || !result.url) {
-        console.error('❌ No URL returned from Blob:', result);
-        throw new Error('No URL returned from Blob');
-      }
-
-      // Limpiar archivo temporal
-      try {
-        await fs.unlink(file.filepath);
-        console.log('🧹 Temp file cleaned');
-      } catch (cleanupErr) {
-        console.warn('⚠️ Cleanup failed:', cleanupErr.message);
-      }
-
-      console.log(`✅ SUCCESS: ${result.url}`);
-      
-      res.setHeader('Content-Type', 'application/json');
-      res.status(200).json({
-        success: true,
-        url: result.url,
-        blobName,
-        folder,
-        filename: originalName,
-        size: buffer.length,
+        res.json({
+          success: true,
+          url: result.url,
+          blobName,
+          folder,
+          filename: originalName,
+          size: buffer.length,
+        });
       });
 
     } catch (error) {
-      console.error('[Upload Error]', error.message);
-      console.error('Stack:', error.stack);
-      
-      let type = 'UNKNOWN_ERROR';
-      let userMessage = error.message;
-
-      if (error.message.includes('maxFileSize') || error.message.includes('File too large')) {
-        type = 'FILE_TOO_LARGE';
-        userMessage = 'File exceeds 4MB limit (Vercel Functions restriction)';
-      } else if (error.message.includes('BLOB_READ_WRITE_TOKEN')) {
-        type = 'CONFIG_ERROR';
-        userMessage = 'Vercel Blob token not configured';
-      } else if (error.message.includes('network') || error.message.includes('fetch')) {
-        type = 'NETWORK_ERROR';
-        userMessage = 'Network error uploading to Vercel Blob';
-      } else if (error.message.includes('permission') || error.message.includes('access denied')) {
-        type = 'PERMISSION_ERROR';
-        userMessage = 'Permission denied uploading file';
-      } else if (error.message.includes('quota') || error.message.includes('limit')) {
-        type = 'QUOTA_ERROR';
-        userMessage = 'Storage quota exceeded';
-      }
-
-      res.status(500).setHeader('Content-Type', 'application/json');
-      res.json({
-        error: userMessage,
-        type,
-        filename: files?.file?.[0]?.originalFilename || file?.originalFilename,
-        folder: fields?.folder?.[0] || folder,
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
-      });
-    } finally {
-      // Cleanup en finally
-      uploadedFilepaths.forEach(async (filepath) => {
-        try {
-          await fs.unlink(filepath);
-        } catch (err) {
-          console.warn('[Cleanup Warn]', filepath, err.message);
-        }
-      });
+      console.error('Error:', error);
+      res.status(500).json({ error: error.message, type: 'SERVER_ERROR' });
     }
     return;
   }
