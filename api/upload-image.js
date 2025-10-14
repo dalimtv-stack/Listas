@@ -10,67 +10,62 @@ module.exports = async (req, res) => {
     req.disableBodyParser = true;
     
     const form = formidable({
-      maxFileSize: 4 * 1024 * 1024, // 4MB
+      maxFileSize: 4 * 1024 * 1024,
       keepExtensions: true,
       multiples: false,
       filter: ({ mimetype }) => mimetype?.startsWith('image/') ?? false,
     });
 
     try {
-      console.log('📥 Parseando con formidable...');
+      console.log('📥 Parseando con formidable v2...');
       
-      // API OFICIAL v3 - callback como en la web
-      form.parse(req, async (err, fields, files) => {
-        if (err) {
-          console.error('❌ Formidable error:', err);
-          res.status(500).json({ error: err.message, type: 'PARSE_ERROR' });
-          return;
-        }
+      // V2: await form.parse(req) DEVUELVE [fields, files]
+      const [fields, files] = await form.parse(req);
+      
+      console.log('✅ Parseado v2:', Object.keys(fields), Object.keys(files));
+      console.log('🔍 Fields debug:', JSON.stringify(fields));
+      
+      const folder = fields.folder; // V2: string directo, no array
+      const file = files.file; // V2: objeto directo
+      
+      console.log('📁 Folder:', folder);
+      console.log('📄 File:', file?.originalFilename);
 
-        console.log('✅ Formidable parseado:', Object.keys(fields), Object.keys(files));
-        
-        const folder = fields.folder?.[0];
-        const file = Array.isArray(files.file) ? files.file[0] : files.file;
-        
-        if (!file) {
-          console.error('❌ No file');
-          res.status(400).json({ error: 'No image file received', type: 'NO_FILE' });
-          return;
-        }
+      if (!file) {
+        return res.status(400).json({ error: 'No image file', type: 'NO_FILE' });
+      }
 
-        if (!folder || !['plantillas', 'Canales'].includes(folder)) {
-          res.status(400).json({ error: 'Invalid folder', type: 'INVALID_FOLDER' });
-          return;
-        }
-
-        const originalName = file.originalFilename || `${Date.now()}.png`;
-        const blobName = `${folder}/${originalName}`;
-        
-        const buffer = await fs.readFile(file.filepath);
-        console.log(`📊 Buffer: ${(buffer.length / 1024).toFixed(1)} KB`);
-
-        if (!process.env.BLOB_READ_WRITE_TOKEN) {
-          throw new Error('BLOB_READ_WRITE_TOKEN missing');
-        }
-
-        const result = await put(blobName, buffer, {
-          access: 'public',
-          contentType: file.mimetype || 'image/png',
-          token: process.env.BLOB_READ_WRITE_TOKEN,
-          addRandomSuffix: false,
+      if (!folder || !['plantillas', 'Canales'].includes(folder)) {
+        console.error('❌ Invalid folder:', folder);
+        return res.status(400).json({ 
+          error: `Invalid folder: "${folder}"`, 
+          type: 'INVALID_FOLDER',
+          received: folder 
         });
+      }
 
-        // Cleanup
-        fs.unlink(file.filepath).catch(console.warn);
+      const originalName = file.originalFilename || `${Date.now()}.png`;
+      const blobName = `${folder}/${originalName}`;
+      
+      const buffer = await fs.readFile(file.filepath);
+      
+      const result = await put(blobName, buffer, {
+        access: 'public',
+        contentType: file.mimetype || 'image/png',
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+        addRandomSuffix: false,
+      });
 
-        res.json({
-          success: true,
-          url: result.url,
-          blobName,
-          folder,
-          filename: originalName,
-          size: buffer.length,
-        });
+      // Cleanup
+      fs.unlink(file.filepath).catch(console.warn);
+
+      res.json({
+        success: true,
+        url: result.url,
+        blobName,
+        folder,
+        filename: originalName,
+        size: buffer.length,
       });
 
     } catch (error) {
