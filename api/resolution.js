@@ -8,7 +8,7 @@ module.exports = async (req, res) => {
     let { url } = req.query;
     if (!url || !url.startsWith('http')) {
       console.error('URL inválida:', url);
-      return res.status(400).json({ error: 'URL inválida, debe empezar con http o https' });
+      return res.status(400).json({ error: 'URL inválida, debe empezar con http o https', content: null, redirects: [url] });
     }
 
     try {
@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
       const customFetch = async (fetchUrl) => {
         const response = await fetch(fetchUrl, {
           headers: { 'User-Agent': 'Mozilla/5.0' },
-          redirect: 'manual', // No seguir redirecciones automáticamente
+          redirect: 'manual',
         });
         if (response.status >= 300 && response.status < 400) {
           const location = response.headers.get('location');
@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
             const nextUrl = new URL(location, fetchUrl).href;
             console.log('Redirección detectada:', nextUrl);
             redirects.push(nextUrl);
-            return await customFetch(nextUrl); // Seguir la redirección
+            return await customFetch(nextUrl);
           }
         }
         return response;
@@ -41,37 +41,60 @@ module.exports = async (req, res) => {
       // Obtener la URL final
       let finalUrl = redirects[redirects.length - 1];
       console.log('URL final:', finalUrl);
-      let text = await response.text();
+
+      // Verificar tipo MIME para evitar leer contenido binario
+      const contentType = response.headers.get('content-type') || '';
+      let text = null;
+      if (contentType.includes('text') || contentType.includes('application/vnd.apple.mpegurl')) {
+        text = await response.text();
+        console.log('Contenido recibido (primeros 5000 chars):', text.slice(0, 5000));
+      } else {
+        console.log('Contenido no es texto (tipo MIME:', contentType, '), omitiendo lectura');
+        text = '[Contenido no legible, probablemente archivo binario (.ts)]';
+      }
 
       // Si la URL final no termina en .m3u8, intentar extraer una URL .m3u8 del contenido
       if (!finalUrl.endsWith('.m3u8')) {
         console.log('No es un archivo .m3u8, buscando URL .m3u8 en el contenido');
-        const m3u8Regex = /(https?:\/\/[^\s"']+\.m3u8)/i;
-        const match = text.match(m3u8Regex);
-        if (match) {
-          url = match[1];
-          console.log('URL .m3u8 encontrada:', url);
-          redirects.push(url);
-          response = await fetch(url, {
-            headers: { 'User-Agent': 'Mozilla/5.0' },
-          });
-          if (!response.ok) {
-            console.error('Error HTTP al obtener .m3u8:', response.status, response.statusText);
-            throw new Error(`Error HTTP al obtener .m3u8: ${response.status}`);
+        if (text && text !== '[Contenido no legible, probablemente archivo binario (.ts)]') {
+          const m3u8Regex = /(https?:\/\/[^\s"']+\.m3u8)/i;
+          const match = text.match(m3u8Regex);
+          if (match) {
+            url = match[1];
+            console.log('URL .m3u8 encontrada:', url);
+            redirects.push(url);
+            response = await fetch(url, {
+              headers: { 'User-Agent': 'Mozilla/5.0' },
+            });
+            if (!response.ok) {
+              console.error('Error HTTP al obtener .m3u8:', response.status, response.statusText);
+              throw new Error(`Error HTTP al obtener .m3u8: ${response.status}`);
+            }
+            finalUrl = url;
+            const newContentType = response.headers.get('content-type') || '';
+            if (newContentType.includes('text') || newContentType.includes('application/vnd.apple.mpegurl')) {
+              text = await response.text();
+              console.log('Contenido recibido (primeros 5000 chars):', text.slice(0, 5000));
+            } else {
+              text = '[Contenido no legible, probablemente archivo binario (.ts)]';
+            }
+          } else {
+            console.error('No se encontró una URL .m3u8 en el contenido');
+            return res.json({
+              error: 'No se encontró un archivo .m3u8 en la URL proporcionada',
+              content: text.slice(0, 5000),
+              redirects,
+            });
           }
-          text = await response.text();
-          finalUrl = url;
         } else {
-          console.error('No se encontró una URL .m3u8 en el contenido');
+          console.error('No se encontró una URL .m3u8 y el contenido no es legible');
           return res.json({
             error: 'No se encontró un archivo .m3u8 en la URL proporcionada',
-            content: text.slice(0, 5000),
+            content: text,
             redirects,
           });
         }
       }
-
-      console.log('Contenido recibido (primeros 5000 chars):', text.slice(0, 5000));
 
       const results = [];
       const lines = text.split('\n');
@@ -287,11 +310,12 @@ module.exports = async (req, res) => {
             if (!res.ok) {
               const text = await res.text();
               resultDiv.innerHTML = \`<p class="error">Error del servidor: HTTP \${res.status} - \${text.slice(0, 80)}</p>\`;
-              throw new Error(\`Error del servidor: HTTP \${res.status}\`);
+              return; // No lanzar error para evitar sobrescribir
             }
             const data = await res.json();
+            let errorHtml = '';
             if (data.error) {
-              let errorHtml = \`<p class="error">❌ \${data.error}</p>\`;
+              errorHtml = \`<p class="error">❌ \${data.error}</p>\`;
               if (data.content) {
                 errorHtml += \`<pre>Contenido del archivo (primeros 5000 caracteres):\n\${data.content}</pre>\`;
               }
@@ -299,11 +323,11 @@ module.exports = async (req, res) => {
                 errorHtml += \`<pre>Cadena de redirecciones:\n\${data.redirects.join(' → ')}</pre>\`;
               }
               resultDiv.innerHTML = errorHtml;
-              throw new Error(data.error);
+              return;
             }
 
             if (data.resolutions[0].label === 'No se detectaron resoluciones') {
-              let errorHtml = '<p class="error">❌ No se detectaron resoluciones</p>';
+              errorHtml = '<p class="error">❌ No se detectaron resoluciones</p>';
               if (data.content) {
                 errorHtml += \`<pre>Contenido del archivo (primeros 5000 caracteres):\n\${data.content}</pre>\`;
               }
@@ -331,7 +355,8 @@ module.exports = async (req, res) => {
             }
             resultDiv.innerHTML = table;
           } catch (err) {
-            resultDiv.innerHTML = \`<p class="error">❌ Error: \${err.message}</p>\`;
+            let errorHtml = \`<p class="error">❌ Error: \${err.message}</p>\`;
+            resultDiv.innerHTML = errorHtml;
           }
         }
       </script>
