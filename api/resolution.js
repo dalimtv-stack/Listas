@@ -4,50 +4,76 @@
 const fetch = require('node-fetch');
 
 module.exports = async (req, res) => {
-  // Si es llamada API → ?url=...
   if (req.method === 'GET' && req.query.url) {
     const { url } = req.query;
-    if (!url || !/^https?:\/\//.test(url)) {
-      return res.status(400).json({ error: 'Parámetro URL inválido' });
+    if (!url || !/^https?:\/\//.test(url) || !url.endsWith('.m3u8')) {
+      return res.status(400).json({ error: 'Invalid .m3u8 URL' });
     }
 
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        },
+      });
+      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
       const text = await response.text();
 
-      // Regex que captura RESOLUTION, BANDWIDTH y CODECS si están en la misma línea o cercanas
-      const regex = /BANDWIDTH=(\d+).*?RESOLUTION=(\d+)x(\d+).*?(?:CODECS="([^"]+)")?/g;
-
       const results = [];
-      let match;
-      while ((match = regex.exec(text)) !== null) {
-        const bandwidth = parseInt(match[1]);
-        const width = parseInt(match[2]);
-        const height = parseInt(match[3]);
-        const codecs = match[4] || null;
+      const regex = /#EXT-X-STREAM-INF:.*?BANDWIDTH=(\d+)(?:.*?RESOLUTION=(\d+)x(\d+))?(?:.*?CODECS="([^"]+)")?/g;
 
-        results.push({
-          label: `${height}p`,
-          width,
-          height,
-          bandwidth,
-          codecs,
-        });
+      // Handle master playlist
+      if (text.includes('#EXT-X-STREAM-INF')) {
+        const lines = text.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].startsWith('#EXT-X-STREAM-INF')) {
+            const variantUrl = lines[i + 1];
+            if (variantUrl && !variantUrl.startsWith('#')) {
+              const absoluteUrl = new URL(variantUrl, url).href;
+              const variantResponse = await fetch(absoluteUrl, {
+                headers: {
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                },
+              });
+              const variantText = await variantResponse.text();
+              let match;
+              while ((match = regex.exec(variantText)) !== null) {
+                results.push({
+                  label: `${match[3] || 'unknown'}p`,
+                  width: parseInt(match[2]) || null,
+                  height: parseInt(match[3]) || null,
+                  bandwidth: parseInt(match[1]),
+                  codecs: match[4] || null,
+                });
+              }
+            }
+          }
+        }
+      } else {
+        // Handle media playlist
+        let match;
+        while ((match = regex.exec(text)) !== null) {
+          results.push({
+            label: `${match[3] || 'unknown'}p`,
+            width: parseInt(match[2]) || null,
+            height: parseInt(match[3]) || null,
+            bandwidth: parseInt(match[1]),
+            codecs: match[4] || null,
+          });
+        }
       }
 
       const unique = [...new Map(results.map(r => [r.label, r])).values()];
 
       if (!unique.length) {
         return res.json({
-          resolutions: [
-            { label: 'No se detectaron resoluciones', width: null, height: null },
-          ],
+          resolutions: [{ label: 'No resolutions detected', width: null, height: null }],
         });
       }
 
       return res.json({ resolutions: unique });
     } catch (err) {
+      console.error('Error:', err);
       return res.status(500).json({ error: err.message });
     }
   }
