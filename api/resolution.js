@@ -98,6 +98,7 @@ module.exports = async (req, res) => {
                 headers: { 'User-Agent': 'Mozilla/5.0' },
               });
               if (derivedResponse.ok) {
+                console.log('Respuesta OK para URL derivada:', candidate, 'HTTP:', derivedResponse.status);
                 const derivedContentType = derivedResponse.headers.get('content-type') || '';
                 if (derivedContentType.includes('text') || derivedContentType.includes('application/vnd.apple.mpegurl')) {
                   url = candidate;
@@ -106,7 +107,11 @@ module.exports = async (req, res) => {
                   console.log('URL .m3u8 derivada encontrada:', url);
                   redirects.push(url);
                   break;
+                } else {
+                  console.log('URL derivada no es .m3u8 (tipo MIME:', derivedContentType, ')');
                 }
+              } else {
+                console.log('Error al probar URL derivada:', candidate, 'HTTP:', derivedResponse.status);
               }
             }
             if (finalUrl !== url) {
@@ -341,39 +346,41 @@ module.exports = async (req, res) => {
           }
           resultDiv.innerHTML = '<p>Analizando...</p>';
           try {
-            const res = await fetch(\`/Resolution?url=\${encodeURIComponent(url)}\`);
+            const res = await fetch('/Resolution?url=' + encodeURIComponent(url));
             if (!res.ok) {
               const text = await res.text();
-              resultDiv.innerHTML = \`<p class="error">Error del servidor: HTTP \${res.status} - \${text.slice(0, 80)}</p>\`;
+              resultDiv.innerHTML = `<p class="error">Error del servidor: HTTP ${res.status} - ${text.slice(0, 80)}</p>`;
+              console.error('Error HTTP en el cliente:', res.status, text);
               return;
             }
             const data = await res.json();
+            console.log('Respuesta del servidor:', data);
             let errorHtml = '';
             if (data.error) {
-              errorHtml = \`<p class="error">❌ \${data.error}</p>\`;
+              errorHtml = `<p class="error">❌ ${data.error}</p>`;
               if (data.content) {
-                errorHtml += \`<pre>Contenido del archivo (primeros 5000 caracteres):\n\${data.content}</pre>\`;
+                errorHtml += `<pre>Contenido del archivo (primeros 5000 caracteres):\n${data.content}</pre>`;
               }
-              if (data.redirects && data.redirects.length > 1) {
-                errorHtml += \`<pre>Cadena de redirecciones:\n\${data.redirects.join(' → ')}</pre>\`;
+              if (data.redirects && data.redirects.length > 0) {
+                errorHtml += `<pre>Cadena de redirecciones:\n${data.redirects.join(' → ')}</pre>`;
               }
               if (data.derivedUrls && data.derivedUrls.length > 0) {
-                errorHtml += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.map(url => '<a href="' + url + '" target="_blank">' + url + '</a>').join('<br>')}</pre>\`;
+                errorHtml += `<pre>URLs derivadas sugeridas (prueba manualmente):\n${data.derivedUrls.map(url => '<a href="' + url + '" target="_blank">' + url + '</a>').join('<br>')}</pre>`;
               }
               resultDiv.innerHTML = errorHtml;
               return;
             }
 
-            if (data.resolutions[0].label === 'No se detectaron resoluciones') {
+            if (data.resolutions && data.resolutions[0].label === 'No se detectaron resoluciones') {
               errorHtml = '<p class="error">❌ No se detectaron resoluciones</p>';
               if (data.content) {
-                errorHtml += \`<pre>Contenido del archivo (primeros 5000 caracteres):\n\${data.content}</pre>\`;
+                errorHtml += `<pre>Contenido del archivo (primeros 5000 caracteres):\n${data.content}</pre>`;
               }
-              if (data.redirects && data.redirects.length > 1) {
-                errorHtml += \`<pre>Cadena de redirecciones:\n\${data.redirects.join(' → ')}</pre>\`;
+              if (data.redirects && data.redirects.length > 0) {
+                errorHtml += `<pre>Cadena de redirecciones:\n${data.redirects.join(' → ')}</pre>`;
               }
               if (data.derivedUrls && data.derivedUrls.length > 0) {
-                errorHtml += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.map(url => '<a href="' + url + '" target="_blank">' + url + '</a>').join('<br>')}</pre>\`;
+                errorHtml += `<pre>URLs derivadas sugeridas (prueba manualmente):\n${data.derivedUrls.map(url => '<a href="' + url + '" target="_blank">' + url + '</a>').join('<br>')}</pre>`;
               }
               resultDiv.innerHTML = errorHtml;
               return;
@@ -381,25 +388,25 @@ module.exports = async (req, res) => {
 
             let table = '<table><tr><th>Resolución</th><th>Ancho</th><th>Alto</th><th>Bitrate</th><th>Codecs</th><th>URL</th></tr>';
             data.resolutions.forEach(r => {
-              table += \`<tr>
-                <td>\${r.label}</td>
-                <td>\${r.width || '-'}</td>
-                <td>\${r.height || '-'}</td>
-                <td>\${r.bandwidth ? (r.bandwidth / 1000).toFixed(0) + ' kbps' : '-'}</td>
-                <td>\${r.codecs || '-'}</td>
-                <td>\${r.url ? '<a href="' + r.url + '" target="_blank">Ver</a>' : '-'}</td>
-              </tr>\`;
+              table += `<tr>
+                <td>${r.label}</td>
+                <td>${r.width || '-'}</td>
+                <td>${r.height || '-'}</td>
+                <td>${r.bandwidth ? (r.bandwidth / 1000).toFixed(0) + ' kbps' : '-'}</td>
+                <td>${r.codecs || '-'}</td>
+                <td>${r.url ? '<a href="' + r.url + '" target="_blank">Ver</a>' : '-'}</td>
+              </tr>`;
             });
             table += '</table>';
-            if (data.redirects && data.redirects.length > 1) {
-              table += \`<pre>Cadena de redirecciones:\n\${data.redirects.join(' → ')}</pre>\`;
+            if (data.redirects && data.redirects.length > 0) {
+              table += `<pre>Cadena de redirecciones:\n${data.redirects.join(' → ')}</pre>`;
             }
             if (data.derivedUrls && data.derivedUrls.length > 0) {
-              table += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.map(url => '<a href="' + url + '" target="_blank">' + url + '</a>').join('<br>')}</pre>\`;
+              table += `<pre>URLs derivadas sugeridas (prueba manualmente):\n${data.derivedUrls.map(url => '<a href="' + url + '" target="_blank">' + url + '</a>').join('<br>')}</pre>`;
             }
             resultDiv.innerHTML = table;
           } catch (err) {
-            resultDiv.innerHTML = \`<p class="error">❌ Error: \${err.message}</p>\`;
+            resultDiv.innerHTML = `<p class="error">❌ Error en el cliente: ${err.message}</p>`;
             console.error('Error en el cliente:', err);
           }
         }
