@@ -7,9 +7,7 @@
     { "src": "api/cleanupposters.js", "use": "@vercel/node" },
     { "src": "api/regenerate-posters.js", "use": "@vercel/node" },
     { "src": "api/resolution.js", "use": "@vercel/node" },
-    { "src": "api/upload-image.js", "use": "@vercel/node", 
-      "config": { "maxDuration": 30, "memory": 1024, "maxBodySize": "10mb" } 
-    }
+    { "src": "api/upload-image.js", "use": "@vercel/node" }
   ],
   "crons": [
     { "path": "/api/regenerate-posters", "schedule": "00 4 * * *" },
