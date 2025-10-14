@@ -91,6 +91,7 @@ async function getStreams(id, configId) {
   const canalMap = {
     'Teledeporte': 'Teledeporte.es',
     'Esport 3': 'Esport3.cat',
+    'TV3': 'TV3.cat',
     'Movistar Plus+': 'Movistar.Plus.es',
     'Movistar Plus+ 2': 'Movistar.Plus.2.es',
     'M+ Ellas V': 'Movistar.Ellas.Vamos.es',
@@ -114,6 +115,7 @@ async function getStreams(id, configId) {
     'LALIGA TV HYPERMOTION 3': 'LaLiga.Hypermotion.3.es',
     'LA 1': 'LA1.es',
     'Aragón TV': 'Aragon.TV.es',
+    'TVG 2': 'TVG.2.gal',
     'M+ Vamos': 'Movistar.Vamos.es'
   };
 
