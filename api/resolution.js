@@ -5,23 +5,56 @@ const fetch = require('node-fetch');
 
 module.exports = async (req, res) => {
   if (req.method === 'GET' && req.query.url) {
-    const { url } = req.query;
-    if (!url || !url.startsWith('http') || !url.endsWith('.m3u8')) {
+    let { url } = req.query;
+    if (!url || !url.startsWith('http')) {
       console.error('URL inválida:', url);
-      return res.status(400).json({ error: 'URL inválida, debe ser un .m3u8' });
+      return res.status(400).json({ error: 'URL inválida, debe empezar con http o https' });
     }
 
     try {
-      console.log('Solicitando URL:', url);
-      const response = await fetch(url, {
+      console.log('Solicitando URL inicial:', url);
+      // Hacer solicitud inicial con redirecciones habilitadas
+      let response = await fetch(url, {
         headers: { 'User-Agent': 'Mozilla/5.0' },
+        redirect: 'follow',
       });
       if (!response.ok) {
         console.error('Error HTTP:', response.status, response.statusText);
         throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
       }
-      const text = await response.text();
-      console.log('Contenido recibido (primeros 500 chars):', text.slice(0, 500));
+
+      // Obtener la URL final después de redirecciones
+      let finalUrl = response.url;
+      console.log('URL final después de redirecciones:', finalUrl);
+      let text = await response.text();
+
+      // Si la URL final no termina en .m3u8, intentar extraer una URL .m3u8 del contenido
+      if (!finalUrl.endsWith('.m3u8')) {
+        console.log('No es un archivo .m3u8, buscando URL .m3u8 en el contenido');
+        const m3u8Regex = /(https?:\/\/[^\s"']+\.m3u8)/i;
+        const match = text.match(m3u8Regex);
+        if (match) {
+          url = match[1];
+          console.log('URL .m3u8 encontrada:', url);
+          response = await fetch(url, {
+            headers: { 'User-Agent': 'Mozilla/5.0' },
+          });
+          if (!response.ok) {
+            console.error('Error HTTP al obtener .m3u8:', response.status, response.statusText);
+            throw new Error(`Error HTTP al obtener .m3u8: ${response.status}`);
+          }
+          text = await response.text();
+          finalUrl = url;
+        } else {
+          console.error('No se encontró una URL .m3u8 en el contenido');
+          return res.json({
+            error: 'No se encontró un archivo .m3u8 en la URL proporcionada',
+            content: text.slice(0, 1000),
+          });
+        }
+      }
+
+      console.log('Contenido recibido (primeros 1000 chars):', text.slice(0, 1000));
 
       const results = [];
       const lines = text.split('\n');
@@ -50,7 +83,7 @@ module.exports = async (req, res) => {
             let variantUrl = null;
             if (i + 1 < lines.length && !lines[i + 1].startsWith('#') && lines[i + 1].trim()) {
               try {
-                variantUrl = new URL(lines[i + 1], url).href;
+                variantUrl = new URL(lines[i + 1], finalUrl).href;
               } catch (e) {
                 console.warn('No se pudo resolver la URL variante:', lines[i + 1], e.message);
               }
@@ -107,7 +140,7 @@ module.exports = async (req, res) => {
         console.log('No se detectaron resoluciones');
         return res.json({
           resolutions: [{ label: 'No se detectaron resoluciones', width: null, height: null, bandwidth: null, codecs: null, url: null }],
-          content: text.slice(0, 5000), // Incluir los primeros 5000 caracteres
+          content: text.slice(0, 1000),
         });
       }
 
@@ -217,8 +250,8 @@ module.exports = async (req, res) => {
     </head>
     <body>
       <h1>M3U8 Resolution Checker</h1>
-      <p>Introduce la URL del stream (.m3u8):</p>
-      <input type="text" id="streamUrl" placeholder="https://example.com/playlist.m3u8" />
+      <p>Introduce la URL del stream (.m3u8 o enlace HLS):</p>
+      <input type="text" id="streamUrl" placeholder="https://example.com/playlist.m3u8 o /play/a02c" />
       <button onclick="checkResolution()">Analizar resolución</button>
       <div id="result"></div>
 
@@ -226,8 +259,8 @@ module.exports = async (req, res) => {
         async function checkResolution() {
           const url = document.getElementById('streamUrl').value.trim();
           const resultDiv = document.getElementById('result');
-          if (!url || !url.endsWith('.m3u8')) {
-            resultDiv.innerHTML = '<p class="error">❌ Introduce una URL válida que termine en .m3u8</p>';
+          if (!url || !url.startsWith('http')) {
+            resultDiv.innerHTML = '<p class="error">❌ Introduce una URL válida que empiece con http o https</p>';
             return;
           }
           resultDiv.innerHTML = '<p>Analizando...</p>';
@@ -242,7 +275,7 @@ module.exports = async (req, res) => {
             if (data.error) {
               let errorHtml = \`<p class="error">❌ \${data.error}</p>\`;
               if (data.content) {
-                errorHtml += \`<pre>Contenido del archivo (primeros 5000 caracteres):\n\${data.content}</pre>\`;
+                errorHtml += \`<pre>Contenido del archivo (primeros 1000 caracteres):\n\${data.content}</pre>\`;
               }
               resultDiv.innerHTML = errorHtml;
               throw new Error(data.error);
@@ -251,7 +284,7 @@ module.exports = async (req, res) => {
             if (data.resolutions[0].label === 'No se detectaron resoluciones') {
               let errorHtml = '<p class="error">❌ No se detectaron resoluciones</p>';
               if (data.content) {
-                errorHtml += \`<pre>Contenido del archivo (primeros 5000 caracteres):\n\${data.content}</pre>\`;
+                errorHtml += \`<pre>Contenido del archivo (primeros 1000 caracteres):\n\${data.content}</pre>\`;
               }
               resultDiv.innerHTML = errorHtml;
               return;
