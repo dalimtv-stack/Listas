@@ -86,7 +86,10 @@ module.exports = async (req, res) => {
             const candidates = [
               `${baseUrl}/index.m3u8`,
               `${baseUrl}/playlist.m3u8`,
-              finalUrl.replace(/\/[^\/]+\.(ts|mp4)$/, '/master.m3u8'),
+              `${baseUrl}/master.m3u8`,
+              `${baseUrl}/live.m3u8`,
+              `${baseUrl}/hls/index.m3u8`,
+              finalUrl.replace(/\/[^\/]+\.(ts|mp4)$/, '/stream.m3u8'),
             ];
             derivedUrls.push(...candidates);
             for (const candidate of candidates) {
@@ -109,7 +112,7 @@ module.exports = async (req, res) => {
             if (finalUrl !== url) {
               console.error('No se encontró una URL .m3u8 en el contenido ni en URLs derivadas');
               return res.json({
-                error: 'No se encontró un archivo .m3u8 en la URL proporcionada',
+                error: 'No se encontró un archivo .m3u8. Los archivos .mp4 o .ts no contienen información de resoluciones directamente. Intenta con un archivo .m3u8 o usa un reproductor como VLC para encontrar el playlist.',
                 content: text.slice(0, 5000),
                 redirects,
                 derivedUrls,
@@ -119,7 +122,7 @@ module.exports = async (req, res) => {
         } else {
           console.error('No se encontró una URL .m3u8 y el contenido no es legible');
           return res.json({
-            error: 'No se encontró un archivo .m3u8 en la URL proporcionada',
+            error: 'No se encontró un archivo .m3u8. Los archivos .mp4 o .ts no contienen información de resoluciones directamente. Intenta con un archivo .m3u8 o usa un reproductor como VLC para encontrar el playlist.',
             content: text,
             redirects,
             derivedUrls,
@@ -323,8 +326,8 @@ module.exports = async (req, res) => {
     </head>
     <body>
       <h1>M3U8 Resolution Checker</h1>
-      <p>Introduce la URL del stream (.m3u8 o enlace HLS):</p>
-      <input type="text" id="streamUrl" placeholder="https://example.com/playlist.m3u8 o /play/a02c" />
+      <p>Introduce la URL del stream (.m3u8, .mp4, .ts o enlace HLS):</p>
+      <input type="text" id="streamUrl" placeholder="https://example.com/playlist.m3u8 o /stream.mp4" />
       <button onclick="checkResolution()">Analizar resolución</button>
       <div id="result"></div>
 
@@ -355,7 +358,7 @@ module.exports = async (req, res) => {
                 errorHtml += \`<pre>Cadena de redirecciones:\n\${data.redirects.join(' → ')}</pre>\`;
               }
               if (data.derivedUrls && data.derivedUrls.length > 0) {
-                errorHtml += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.join('\n')}</pre>\`;
+                errorHtml += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.map(url => `<a href="${url}" target="_blank">${url}</a>`).join('<br>')}</pre>\`;
               }
               resultDiv.innerHTML = errorHtml;
               return;
@@ -370,7 +373,7 @@ module.exports = async (req, res) => {
                 errorHtml += \`<pre>Cadena de redirecciones:\n\${data.redirects.join(' → ')}</pre>\`;
               }
               if (data.derivedUrls && data.derivedUrls.length > 0) {
-                errorHtml += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.join('\n')}</pre>\`;
+                errorHtml += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.map(url => `<a href="${url}" target="_blank">${url}</a>`).join('<br>')}</pre>\`;
               }
               resultDiv.innerHTML = errorHtml;
               return;
@@ -392,7 +395,7 @@ module.exports = async (req, res) => {
               table += \`<pre>Cadena de redirecciones:\n\${data.redirects.join(' → ')}</pre>\`;
             }
             if (data.derivedUrls && data.derivedUrls.length > 0) {
-              table += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.join('\n')}</pre>\`;
+              table += \`<pre>URLs derivadas sugeridas (prueba manualmente):\n\${data.derivedUrls.map(url => `<a href="${url}" target="_blank">${url}</a>`).join('<br>')}</pre>\`;
             }
             resultDiv.innerHTML = table;
           } catch (err) {
