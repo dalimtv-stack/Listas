@@ -243,155 +243,91 @@ module.exports = async (req, res) => {
     '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
     '<title>M3U8 Resolution Checker</title>' +
     '<style>' +
-    'body {' +
-    'background-color: #111;' +
-    'color: #eee;' +
-    'font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;' +
-    'max-width: 900px;' +
-    'margin: 2rem auto;' +
-    'padding: 1rem;' +
-    'text-align: center;' +
-    '}' +
-    'input {' +
-    'width: 100%;' +
-    'max-width: 700px;' +
-    'padding: 0.7rem;' +
-    'margin-bottom: 1rem;' +
-    'border-radius: 6px;' +
-    'border: 1px solid #333;' +
-    'background: #222;' +
-    'color: #fff;' +
-    'font-size: 1rem;' +
-    '}' +
-    'button {' +
-    'background: #0070f3;' +
-    'color: white;' +
-    'border: none;' +
-    'padding: 0.7rem 1.2rem;' +
-    'border-radius: 6px;' +
-    'cursor: pointer;' +
-    'font-size: 1rem;' +
-    'transition: background 0.2s;' +
-    '}' +
-    'button:hover { background: #0059c9; }' +
-    '#result {' +
-    'margin-top: 1.5rem;' +
-    'background: #1a1a1a;' +
-    'padding: 1rem;' +
-    'border-radius: 8px;' +
-    'text-align: left;' +
-    '}' +
-    'table {' +
-    'width: 100%;' +
-    'border-collapse: collapse;' +
-    'margin-top: 1rem;' +
-    '}' +
-    'th, td {' +
-    'padding: 0.8rem;' +
-    'border: 1px solid #333;' +
-    'text-align: left;' +
-    'font-size: 0.9rem;' +
-    '}' +
-    'th {' +
-    'background: #222;' +
-    'font-weight: bold;' +
-    '}' +
-    'td {' +
-    'background: #1a1a1a;' +
-    '}' +
-    'a {' +
-    'color: #0070f3;' +
-    'text-decoration: none;' +
-    'word-break: break-all;' +
-    '}' +
-    'a:hover {' +
-    'text-decoration: underline;' +
-    '}' +
-    '.error {' +
-    'color: #ff4444;' +
-    'font-weight: bold;' +
-    '}' +
-    'pre {' +
-    'background: #222;' +
-    'padding: 1rem;' +
-    'border-radius: 6px;' +
-    'margin-top: 1rem;' +
-    'white-space: pre-wrap;' +
-    'word-break: break-all;' +
-    'font-size: 0.85rem;' +
-    'color: #ccc;' +
-    '}' +
-    '@media (max-width: 600px) {' +
-    'table, th, td, pre {' +
-    'font-size: 0.8rem;' +
-    'padding: 0.5rem;' +
-    '}' +
-    '}' +
+    'body {background-color: #111; color: #eee; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 900px; margin: 2rem auto; padding: 1rem; text-align: center;}' +
+    'input {width: 100%; max-width: 700px; padding: 0.7rem; margin-bottom: 1rem; border-radius: 6px; border: 1px solid #333; background: #222; color: #fff; font-size: 1rem;}' +
+    'button {background: #0070f3; color: white; border: none; padding: 0.7rem 1.2rem; border-radius: 6px; cursor: pointer; font-size: 1rem; transition: background 0.2s;}' +
+    'button:hover {background: #0059c9;}' +
+    '#result {margin-top: 1.5rem; background: #1a1a1a; padding: 1rem; border-radius: 8px; text-align: left;}' +
+    'table {width: 100%; border-collapse: collapse; margin-top: 1rem;}' +
+    'th, td {padding: 0.8rem; border: 1px solid #333; text-align: left; font-size: 0.9rem;}' +
+    'th {background: #222; font-weight: bold;}' +
+    'td {background: #1a1a1a;}' +
+    'a {color: #0070f3; text-decoration: none; word-break: break-all;}' +
+    'a:hover {text-decoration: underline;}' +
+    '.error {color: #ff4444; font-weight: bold;}' +
+    'pre {background: #222; padding: 1rem; border-radius: 6px; margin-top: 1rem; white-space: pre-wrap; word-break: break-all; font-size: 0.85rem; color: #ccc;}' +
+    '@media (max-width: 600px) {table, th, td, pre {font-size: 0.8rem; padding: 0.5rem;}}' +
     '</style>' +
     '</head>' +
     '<body>' +
     '<h1>M3U8 Resolution Checker</h1>' +
     '<p>Introduce la URL del stream (.m3u8, .mp4, .ts o enlace HLS):</p>' +
-    '<input type="text" id="streamUrl" placeholder="https://example.com/playlist.m3u8 o /stream.mp4" />' +
+    '<input type="text" id="streamUrl" placeholder="https://example.com/playlist.m3u8 o /stream.mp4">' +
     '<button onclick="checkResolution()">Analizar resolución</button>' +
     '<div id="result"></div>' +
     '<script>' +
-    'async function checkResolution() {' +
-    'const url = document.getElementById("streamUrl").value.trim();' +
-    'const resultDiv = document.getElementById("result");' +
+    'console.log("Script cargado correctamente");' +
+    'function checkResolution() {' +
+    'console.log("Botón clicado");' +
+    'var url = document.getElementById("streamUrl").value.trim();' +
+    'var resultDiv = document.getElementById("result");' +
     'if (!url || !url.startsWith("http")) {' +
-    'resultDiv.innerHTML = \'<p class="error">❌ Introduce una URL válida que empiece con http o https</p>\';' +
+    'resultDiv.innerHTML = "<p class=\\"error\\">❌ Introduce una URL válida que empiece con http o https</p>";' +
+    'console.log("URL inválida:", url);' +
     'return;' +
     '}' +
     'resultDiv.innerHTML = "<p>Analizando...</p>";' +
-    'try {' +
-    'const res = await fetch("/Resolution?url=" + encodeURIComponent(url));' +
+    'console.log("Solicitando URL:", url);' +
+    'fetch("/Resolution?url=" + encodeURIComponent(url))' +
+    '.then(function(res) {' +
+    'console.log("Respuesta recibida, estado:", res.status);' +
     'if (!res.ok) {' +
-    'const text = await res.text();' +
-    'resultDiv.innerHTML = "<p class=\"error\">Error del servidor: HTTP " + res.status + " - " + text.slice(0, 80).replace(/[<>"\']/g, "") + "</p>";' +
-    'console.error("Error HTTP en el cliente:", res.status, text);' +
-    'return;' +
+    'return res.text().then(function(text) {' +
+    'throw new Error("HTTP " + res.status + ": " + text.slice(0, 80).replace(/[<>\\"\\\']/g, ""));' +
+    '});' +
     '}' +
-    'const data = await res.json();' +
+    'return res.json();' +
+    '})' +
+    '.then(function(data) {' +
     'console.log("Respuesta del servidor:", data);' +
-    'let errorHtml = "";' +
+    'var html = "";' +
     'if (data.error) {' +
-    'errorHtml = "<p class=\"error\">❌ " + data.error.replace(/[<>"\']/g, "") + "</p>";' +
+    'html = "<p class=\\"error\\">❌ " + data.error.replace(/[<>\\"\\\']/g, "") + "</p>";' +
     'if (data.content) {' +
-    'errorHtml += "<pre>Contenido del archivo (primeros 5000 caracteres):\n" + data.content.replace(/[<>"\']/g, "") + "</pre>";' +
+    'html += "<pre>Contenido del archivo (primeros 5000 caracteres):\n" + data.content.replace(/[<>\\"\\\']/g, "") + "</pre>";' +
     '}' +
     'if (data.redirects && data.redirects.length > 0) {' +
-    'errorHtml += "<pre>Cadena de redirecciones:\n" + data.redirects.join(" → ") + "</pre>";' +
+    'html += "<pre>Cadena de redirecciones:\n" + data.redirects.join(" → ") + "</pre>";' +
     '}' +
     'if (data.derivedUrls && data.derivedUrls.length > 0) {' +
-    'errorHtml += "<pre>URLs derivadas sugeridas (prueba manualmente):\n" + data.derivedUrls.map(url => "<a href=\"" + url + "\" target=\"_blank\">" + url + "</a>").join("<br>") + "</pre>";' +
+    'html += "<pre>URLs derivadas sugeridas (prueba manualmente):\n" + data.derivedUrls.map(function(url) { return "<a href=\\"" + url + "\\" target=\\"_blank\\">" + url + "</a>"; }).join("<br>") + "</pre>";' +
     '}' +
-    'resultDiv.innerHTML = errorHtml;' +
+    'resultDiv.innerHTML = html;' +
     'return;' +
     '}' +
     'if (data.resolutions && data.resolutions[0].label === "No se detectaron resoluciones") {' +
-    'errorHtml = "<p class=\"error\">❌ No se detectaron resoluciones</p>";' +
+    'html = "<p class=\\"error\\">❌ No se detectaron resoluciones</p>";' +
     'if (data.content) {' +
-    'errorHtml += "<pre>Contenido del archivo (primeros 5000 caracteres):\n" + data.content.replace(/[<>"\']/g, "") + "</pre>";' +
+    'html += "<pre>Contenido del archivo (primeros 5000 caracteres):\n" + data.content.replace(/[<>\\"\\\']/g, "") + "</pre>";' +
     '}' +
     'if (data.redirects && data.redirects.length > 0) {' +
-    'errorHtml += "<pre>Cadena de redirecciones:\n" + data.redirects.join(" → ") + "</pre>";' +
+    'html += "<pre>Cadena de redirecciones:\n" + data.redirects.join(" → ") + "</pre>";' +
     '}' +
     'if (data.derivedUrls && data.derivedUrls.length > 0) {' +
-    'errorHtml += "<pre>URLs derivadas sugeridas (prueba manualmente):\n" + data.derivedUrls.map(url => "<a href=\"" + url + "\" target=\"_blank\">" + url + "</a>").join("<br>") + "</pre>";' +
+    'html += "<pre>URLs derivadas sugeridas (prueba manualmente):\n" + data.derivedUrls.map(function(url) { return "<a href=\\"" + url + "\\" target=\\"_blank\\">" + url + "</a>"; }).join("<br>") + "</pre>";' +
     '}' +
-    'resultDiv.innerHTML = errorHtml;' +
+    'resultDiv.innerHTML = html;' +
     'return;' +
     '}' +
-    'let table = "<table><tr><th>Resolución</th><th>Ancho</th><th>Alto</th><th>Bitrate</th><th>Codecs</th><th>URL</th></tr>";' +
-    'data.resolutions.forEach(r => {' +
+    'var table = "<table><tr><th>Resolución</th><th>Ancho</th><th>Alto</th><th>Bitrate</th><th>Codecs</th><th>URL</th></tr>";' +
+    'data.resolutions.forEach(function(r) {' +
     'table += "<tr>" +' +
     '"<td>" + (r.label || "-") + "</td>" +' +
     '"<td>" + (r.width || "-") + "</td>" +' +
     '"<td>" + (r.height || "-") + "</td>" +' +
     '"<td>" + (r.bandwidth ? (r.bandwidth / 1000).toFixed(0) + " kbps" : "-") + "</td>" +' +
     '"<td>" + (r.codecs || "-") + "</td>" +' +
-    '"<td>" + (r.url ? "<a href=\"" + r.url + "\" target=\"_blank\">Ver</a>" : "-") + "</td>" +' +
+    '"<td>" + (r.url ? "<a href=\\"" + r.url + "\\" target=\\"_blank\\">Ver</a>" : "-") + "</td>" +' +
     '"</tr>";' +
     '});' +
     'table += "</table>";' +
@@ -399,13 +335,14 @@ module.exports = async (req, res) => {
     'table += "<pre>Cadena de redirecciones:\n" + data.redirects.join(" → ") + "</pre>";' +
     '}' +
     'if (data.derivedUrls && data.derivedUrls.length > 0) {' +
-    'table += "<pre>URLs derivadas sugeridas (prueba manualmente):\n" + data.derivedUrls.map(url => "<a href=\"" + url + "\" target=\"_blank\">" + url + "</a>").join("<br>") + "</pre>";' +
+    'table += "<pre>URLs derivadas sugeridas (prueba manualmente):\n" + data.derivedUrls.map(function(url) { return "<a href=\\"" + url + "\\" target=\\"_blank\\">" + url + "</a>"; }).join("<br>") + "</pre>";' +
     '}' +
     'resultDiv.innerHTML = table;' +
-    '} catch (err) {' +
-    'resultDiv.innerHTML = "<p class=\"error\">❌ Error en el cliente: " + err.message.replace(/[<>"\']/g, "") + "</p>";' +
+    '})' +
+    '.catch(function(err) {' +
+    'resultDiv.innerHTML = "<p class=\\"error\\">❌ Error en el cliente: " + err.message.replace(/[<>\\"\\\']/g, "") + "</p>";' +
     'console.error("Error en el cliente:", err);' +
-    '}' +
+    '});' +
     '}' +
     '</script>' +
     '</body>' +
