@@ -113,6 +113,7 @@ async function getStreams(id, configId) {
     'LALIGA TV HYPERMOTION 2': 'LaLiga.Hypermotion.2.es',
     'LALIGA TV HYPERMOTION 3': 'LaLiga.Hypermotion.3.es',
     'LA 1': 'LA1.es',
+    'Aragon TV': 'Aragon.TV.es',
     'M+ Vamos': 'Movistar.Vamos.es'
   };
 
