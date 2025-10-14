@@ -6,7 +6,8 @@
     { "src": "api/poster-con-hora.js", "use": "@vercel/node" },
     { "src": "api/cleanupposters.js", "use": "@vercel/node" },
     { "src": "api/regenerate-posters.js", "use": "@vercel/node" },
-    { "src": "api/resolution.js", "use": "@vercel/node" }
+    { "src": "api/resolution.js", "use": "@vercel/node" },
+    { "src": "api/upload-image.js", "use": "@vercel/node" }
   ],
   "crons": [
     { "path": "/api/regenerate-posters", "schedule": "00 4 * * *" },
@@ -23,6 +24,7 @@
     { "src": "/stream/:type/:id.json", "dest": "/api/index.js" },
     { "src": "/configure", "dest": "/api/index.js" },
     { "src": "/Resolution", "dest": "/api/resolution.js" },
+    { "src": "/upload-image", "dest": "/api/upload-image.js" },
     { "src": "/generate-url", "dest": "/api/index.js" },
     { "src": "/debug-kv/([0-9a-f-]+)", "dest": "/api/index.js" },
 
