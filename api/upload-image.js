@@ -16,62 +16,72 @@ module.exports = async (req, res) => {
       filter: ({ mimetype }) => mimetype?.startsWith('image/') ?? false,
     });
 
-    try {
-      console.log('📥 Parseando con formidable v2...');
-      
-      // V2: await form.parse(req) DEVUELVE [fields, files]
-      const [fields, files] = await form.parse(req);
-      
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        console.error('❌ Formidable error:', err);
+        res.status(500).json({ error: err.message, type: 'PARSE_ERROR' });
+        return;
+      }
+
       console.log('✅ Parseado v2:', Object.keys(fields), Object.keys(files));
-      console.log('🔍 Fields debug:', JSON.stringify(fields));
+      console.log('🔍 Fields:', fields);
+      console.log('🔍 Files:', files);
+
+      const folder = fields.folder; // v2: string directo
+      const file = files.file; // v2: objeto File
       
-      const folder = fields.folder; // V2: string directo, no array
-      const file = files.file; // V2: objeto directo
-      
-      console.log('📁 Folder:', folder);
-      console.log('📄 File:', file?.originalFilename);
+      console.log('📁 Folder recibido:', folder);
+      console.log('📄 File recibido:', file?.originalFilename);
 
       if (!file) {
-        return res.status(400).json({ error: 'No image file', type: 'NO_FILE' });
+        res.status(400).json({ error: 'No image file', type: 'NO_FILE' });
+        return;
       }
 
       if (!folder || !['plantillas', 'Canales'].includes(folder)) {
         console.error('❌ Invalid folder:', folder);
-        return res.status(400).json({ 
+        res.status(400).json({ 
           error: `Invalid folder: "${folder}"`, 
           type: 'INVALID_FOLDER',
           received: folder 
         });
+        return;
       }
 
       const originalName = file.originalFilename || `${Date.now()}.png`;
       const blobName = `${folder}/${originalName}`;
       
-      const buffer = await fs.readFile(file.filepath);
-      
-      const result = await put(blobName, buffer, {
-        access: 'public',
-        contentType: file.mimetype || 'image/png',
-        token: process.env.BLOB_READ_WRITE_TOKEN,
-        addRandomSuffix: false,
-      });
+      try {
+        const buffer = await fs.readFile(file.filepath);
+        console.log(`📊 Buffer: ${(buffer.length / 1024).toFixed(1)} KB`);
 
-      // Cleanup
-      fs.unlink(file.filepath).catch(console.warn);
+        if (!process.env.BLOB_READ_WRITE_TOKEN) {
+          throw new Error('BLOB_READ_WRITE_TOKEN missing');
+        }
 
-      res.json({
-        success: true,
-        url: result.url,
-        blobName,
-        folder,
-        filename: originalName,
-        size: buffer.length,
-      });
+        const result = await put(blobName, buffer, {
+          access: 'public',
+          contentType: file.mimetype || 'image/png',
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+          addRandomSuffix: false,
+        });
 
-    } catch (error) {
-      console.error('Error:', error);
-      res.status(500).json({ error: error.message, type: 'SERVER_ERROR' });
-    }
+        // Cleanup
+        fs.unlink(file.filepath).catch(console.warn);
+
+        res.json({
+          success: true,
+          url: result.url,
+          blobName,
+          folder,
+          filename: originalName,
+          size: buffer.length,
+        });
+      } catch (uploadError) {
+        console.error('Upload error:', uploadError);
+        res.status(500).json({ error: uploadError.message, type: 'UPLOAD_ERROR' });
+      }
+    });
     return;
   }
 
