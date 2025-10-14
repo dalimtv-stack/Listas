@@ -180,8 +180,8 @@ module.exports = async (req, res) => {
       <div class="folder-selector">
         <label>Carpeta destino:</label>
         <select id="folder">
-          <option value="plantillas">📋 Plantillas</option>
           <option value="Canales">📺 Canales</option>
+          <option value="plantillas">📋 Plantillas</option>
         </select>
       </div>
       
