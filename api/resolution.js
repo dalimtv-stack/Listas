@@ -24,37 +24,41 @@ module.exports = async (req, res) => {
       console.log('Contenido recibido (primeros 500 chars):', text.slice(0, 500));
 
       const results = [];
-      // Regex más flexible: captura BANDWIDTH, RESOLUTION y CODECS en cualquier orden
-      const regex = /#EXT-X-STREAM-INF:(.*?)(?:$|\n)/g;
+      const regex = /#EXT-X-STREAM-INF:(.*?)(?:\n|$)/g;
       const attrRegex = /BANDWIDTH=(\d+)|RESOLUTION=(\d+)x(\d+)|CODECS="([^"]+)"/g;
 
       if (text.includes('#EXT-X-STREAM-INF')) {
         console.log('Detectado master playlist - parseando directamente');
-        let streamInfMatch;
-        while ((streamInfMatch = regex.exec(text)) !== null) {
-          const attributes = streamInfMatch[1]; // Captura todos los atributos de la línea
-          console.log('Línea #EXT-X-STREAM-INF:', attributes);
-          let bandwidth, width, height, codecs;
-          
-          // Parsear los atributos individuales
-          let attrMatch;
-          while ((attrMatch = attrRegex.exec(attributes)) !== null) {
-            if (attrMatch[1]) bandwidth = parseInt(attrMatch[1]);
-            if (attrMatch[2] && attrMatch[3]) {
-              width = parseInt(attrMatch[2]);
-              height = parseInt(attrMatch[3]);
+        const lines = text.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+          let streamInfMatch = regex.exec(text);
+          if (lines[i].startsWith('#EXT-X-STREAM-INF')) {
+            const attributes = lines[i].replace('#EXT-X-STREAM-INF:', '');
+            console.log('Línea #EXT-X-STREAM-INF:', attributes);
+            let bandwidth, width, height, codecs;
+            
+            while ((attrMatch = attrRegex.exec(attributes)) !== null) {
+              if (attrMatch[1]) bandwidth = parseInt(attrMatch[1]);
+              if (attrMatch[2] && attrMatch[3]) {
+                width = parseInt(attrMatch[2]);
+                height = parseInt(attrMatch[3]);
+              }
+              if (attrMatch[4]) codecs = attrMatch[4];
             }
-            if (attrMatch[4]) codecs = attrMatch[4];
-          }
 
-          if (bandwidth) { // Solo agregar si hay BANDWIDTH
-            results.push({
-              label: `${height || 'desconocido'}p`,
-              width: width || null,
-              height: height || null,
-              bandwidth,
-              codecs: codecs || null,
-            });
+            // Capturar la URL de la playlist variante (línea siguiente)
+            const variantUrl = lines[i + 1] && !lines[i + 1].startsWith('#') ? new URL(lines[i + 1], url).href : null;
+
+            if (bandwidth) {
+              results.push({
+                label: `${height || 'desconocido'}p`,
+                width: width || null,
+                height: height || null,
+                bandwidth,
+                codecs: codecs || null,
+                url: variantUrl || null,
+              });
+            }
           }
         }
       } else {
@@ -81,18 +85,18 @@ module.exports = async (req, res) => {
               height: height || null,
               bandwidth,
               codecs: codecs || null,
+              url: null, // Media playlists no tienen URLs variantes
             });
           }
         }
       }
 
-      // Eliminar duplicados basados en label
       const unique = [...new Map(results.map(r => [r.label, r])).values()];
 
       if (!unique.length) {
         console.log('No se detectaron resoluciones');
         return res.json({
-          resolutions: [{ label: 'No se detectaron resoluciones', width: null, height: null }],
+          resolutions: [{ label: 'No se detectaron resoluciones', width: null, height: null, bandwidth: null, codecs: null, url: null }],
         });
       }
 
@@ -118,14 +122,14 @@ module.exports = async (req, res) => {
           background-color: #111;
           color: #eee;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          max-width: 700px;
+          max-width: 900px;
           margin: 2rem auto;
           padding: 1rem;
           text-align: center;
         }
         input {
           width: 100%;
-          max-width: 600px;
+          max-width: 700px;
           padding: 0.7rem;
           margin-bottom: 1rem;
           border-radius: 6px;
@@ -142,6 +146,7 @@ module.exports = async (req, res) => {
           border-radius: 6px;
           cursor: pointer;
           font-size: 1rem;
+          transition: background 0.2s;
         }
         button:hover { background: #0059c9; }
         #result {
@@ -150,8 +155,42 @@ module.exports = async (req, res) => {
           padding: 1rem;
           border-radius: 8px;
           text-align: left;
-          white-space: pre-line;
-          line-height: 1.4;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 1rem;
+        }
+        th, td {
+          padding: 0.8rem;
+          border: 1px solid #333;
+          text-align: left;
+          font-size: 0.9rem;
+        }
+        th {
+          background: #222;
+          font-weight: bold;
+        }
+        td {
+          background: #1a1a1a;
+        }
+        a {
+          color: #0070f3;
+          text-decoration: none;
+          word-break: break-all;
+        }
+        a:hover {
+          text-decoration: underline;
+        }
+        .error {
+          color: #ff4444;
+          font-weight: bold;
+        }
+        @media (max-width: 600px) {
+          table, th, td {
+            font-size: 0.8rem;
+            padding: 0.5rem;
+          }
         }
       </style>
     </head>
@@ -167,31 +206,44 @@ module.exports = async (req, res) => {
           const url = document.getElementById('streamUrl').value.trim();
           const resultDiv = document.getElementById('result');
           if (!url || !url.endsWith('.m3u8')) {
-            resultDiv.textContent = '❌ Introduce una URL válida que termine en .m3u8';
+            resultDiv.innerHTML = '<p class="error">❌ Introduce una URL válida que termine en .m3u8</p>';
             return;
           }
-          resultDiv.textContent = 'Analizando...';
+          resultDiv.innerHTML = '<p>Analizando...</p>';
           try {
             const res = await fetch(\`/Resolution?url=\${encodeURIComponent(url)}\`);
             if (!res.ok) {
               const text = await res.text();
-              throw new Error(\`Error del servidor: HTTP \${res.status} - \${text.slice(0, 80)}\`);
+              resultiv.innerHTML = \`<p class="error">Error del servidor: HTTP \${res.status} - \${text.slice(0, 80)}</p>\`;
+              throw new Error(\`Error del servidor: HTTP \${res.status}\`);
             }
             const data = await res.json();
-            if (data.error) throw new Error(data.error);
+            if (data.error) {
+              resultDiv.innerHTML = \`<p class="error">❌ \${data.error}</p>\`;
+              throw new Error(data.error);
+            }
 
-            resultDiv.innerHTML = data.resolutions
-              .map(r => {
-                const parts = [
-                  \`\${r.label} (\${r.width}x\${r.height})\`,
-                  r.bandwidth ? \`BANDWIDTH: \${r.bandwidth}\` : null,
-                  r.codecs ? \`CODECS: \${r.codecs}\` : null
-                ].filter(Boolean);
-                return parts.join(' | ');
-              })
-              .join('\\n');
+            if (data.resolutions[0].label === 'No se detectaron resoluciones') {
+              resultDiv.innerHTML = '<p class="error">❌ No se detectaron resoluciones</p>';
+              return;
+            }
+
+            // Crear tabla para mostrar resultados
+            let table = '<table><tr><th>Resolución</th><th>Ancho</th><th>Alto</th><th>Bitrate</th><th>Codecs</th><th>URL</th></tr>';
+            data.resolutions.forEach(r => {
+              table += \`<tr>
+                <td>\${r.label}</td>
+                <td>\${r.width || '-'}</td>
+                <td>\${r.height || '-'}</td>
+                <td>\${r.bandwidth ? (r.bandwidth / 1000).toFixed(0) + ' kbps' : '-'}</td>
+                <td>\${r.codecs || '-'}</td>
+                <td>\${r.url ? \`<a href="\${r.url}" target="_blank">Ver</a>\` : '-'}</td>
+              </tr>\`;
+            });
+            table += '</table>';
+            resultDiv.innerHTML = table;
           } catch (err) {
-            resultDiv.textContent = '❌ Error: ' + err.message;
+            resultDiv.innerHTML = \`<p class="error">❌ Error: \${err.message}</p>\`;
           }
         }
       </script>
