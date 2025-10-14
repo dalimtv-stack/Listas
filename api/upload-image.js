@@ -2,107 +2,158 @@
 'use strict';
 
 const { put } = require('@vercel/blob');
-const formidable = require('formidable');
 const fs = require('fs');
 
 module.exports = async (req, res) => {
   if (req.method === 'POST') {
-    let fields, files;
-    const uploadedFilepaths = [];
-    const form = formidable({
-      maxFileSize: 4 * 1024 * 1024, // 4MB safe limit (under Vercel's 4.5MB)
-      keepExtensions: true,
-      multiples: false,
-      filter: ({ mimetype }) => mimetype?.startsWith('image/') ?? false,
-    });
-
     try {
-      [fields, files] = await form.parse(req);
-      const file = files.file?.[0];
-      if (Array.isArray(files.file)) uploadedFilepaths.push(...files.file.map(f => f.filepath));
-      else if (file) uploadedFilepaths.push(file.filepath);
+      // Deshabilitar body parsing automático de Vercel
+      req.disableBodyParser = true;
 
-      const folder = fields.folder?.[0];
-      if (!file) {
+      // Leer RAW body como Buffer
+      const chunks = [];
+      for await (const chunk of req) {
+        chunks.push(chunk);
+      }
+      const rawBody = Buffer.concat(chunks);
+
+      // Parsear multipart/form-data manualmente
+      const contentType = req.headers['content-type'] || '';
+      const boundaryMatch = contentType.match(/boundary=([^;]+)/);
+      if (!boundaryMatch) {
+        return res.status(400).json({ error: 'No multipart boundary found', type: 'PARSE_ERROR' });
+      }
+
+      const boundary = boundaryMatch[1];
+      const boundaryStr = `--${boundary}`;
+      const parts = rawBody.toString('binary').split(boundaryStr);
+
+      let fileData = null;
+      let folder = null;
+
+      for (const part of parts) {
+        if (part.includes('name="file"') && part.includes('filename=')) {
+          // Extraer headers del part
+          const headerEnd = part.indexOf('\r\n\r\n');
+          if (headerEnd === -1) continue;
+
+          const headers = part.slice(0, headerEnd);
+          const body = part.slice(headerEnd + 4);
+
+          // Extraer filename
+          const filenameMatch = headers.match(/filename="([^"]+)"/);
+          const contentTypeMatch = headers.match(/Content-Type:\s*([^\r\n]+)/i);
+
+          if (filenameMatch) {
+            const filename = filenameMatch[1];
+            const contentType = contentTypeMatch ? contentTypeMatch[1].trim() : 'image/png';
+
+            // Extraer body del archivo (hasta el siguiente boundary)
+            const bodyEnd = body.indexOf(`\r\n--`);
+            if (bodyEnd !== -1) {
+              const fileBuffer = Buffer.from(body.slice(0, bodyEnd), 'binary');
+
+              if (fileBuffer.length > 0 && fileBuffer.length <= 4 * 1024 * 1024) {
+                if (contentType.startsWith('image/')) {
+                  fileData = {
+                    name: filename,
+                    buffer: fileBuffer,
+                    contentType,
+                    size: fileBuffer.length
+                  };
+                }
+              }
+            }
+          }
+        }
+
+        if (part.includes('name="folder"')) {
+          const valueStart = part.indexOf('\r\n\r\n') + 4;
+          const valueEnd = part.indexOf('\r\n', valueStart);
+          if (valueStart > 3 && valueEnd > valueStart) {
+            folder = part.slice(valueStart, valueEnd).toString().trim();
+          }
+        }
+      }
+
+      if (!fileData) {
         return res.status(400).json({ error: 'No image file received', type: 'NO_FILE' });
       }
+
       if (!folder || !['plantillas', 'Canales'].includes(folder)) {
-        return res.status(400).json({ error: 'Invalid folder: use "plantillas" or "Canales"', type: 'INVALID_FOLDER' });
+        return res.status(400).json({ 
+          error: 'Invalid folder: use "plantillas" or "Canales"', 
+          type: 'INVALID_FOLDER' 
+        });
       }
 
-      const originalName = file.originalFilename || `${Date.now()}.png`;
+      const originalName = fileData.name;
       const blobName = `${folder}/${originalName}`;
 
-      const buffer = await fs.promises.readFile(file.filepath);
-      if (buffer.length === 0) {
-        throw new Error('Empty file');
-      }
-
       if (!process.env.BLOB_READ_WRITE_TOKEN) {
-        throw new Error('BLOB_READ_WRITE_TOKEN missing');
+        return res.status(500).json({ 
+          error: 'Vercel Blob token not configured', 
+          type: 'CONFIG_ERROR' 
+        });
       }
 
-      console.log(`Uploading ${originalName} (${(buffer.length / 1024).toFixed(1)} KB) to ${blobName}`);
+      console.log(`Uploading ${originalName} (${(fileData.size / 1024).toFixed(1)} KB) to ${blobName}`);
 
-      const result = await put(blobName, buffer, {
+      const result = await put(blobName, fileData.buffer, {
         access: 'public',
-        contentType: file.mimetype || 'image/png',
+        contentType: fileData.contentType,
         token: process.env.BLOB_READ_WRITE_TOKEN,
-        addRandomSuffix: false, // Keep original name
+        addRandomSuffix: false
       });
 
-      if (!result.url) {
-        throw new Error('No URL returned from Blob');
+      if (!result || !result.url) {
+        throw new Error('No URL returned from Vercel Blob');
       }
 
-      res.setHeader('Content-Type', 'application/json');
-      res.json({
+      console.log(`✅ Upload successful: ${result.url}`);
+
+      res.status(200).json({
         success: true,
         url: result.url,
         blobName,
         folder,
         filename: originalName,
-        size: buffer.length,
+        size: fileData.size,
+        mimetype: fileData.contentType
       });
 
     } catch (error) {
-      console.error('[Upload Error]', error.message);
+      console.error('[Upload Error]', error);
       let type = 'UNKNOWN_ERROR';
-      let userMessage = error.message;
+      let userMessage = 'Upload failed';
 
-      if (error.message.includes('maxFileSize') || error.message.includes('File too large')) {
+      if (error.message.includes('maxFileSize') || error.message.includes('too large')) {
         type = 'FILE_TOO_LARGE';
-        userMessage = 'File exceeds 4MB limit (Vercel Functions restriction)';
+        userMessage = 'File exceeds 4MB limit';
       } else if (error.message.includes('BLOB_READ_WRITE_TOKEN')) {
         type = 'CONFIG_ERROR';
-        userMessage = 'Vercel Blob token not configured';
+        userMessage = 'Vercel Blob not configured';
       } else if (error.message.includes('network') || error.message.includes('fetch')) {
         type = 'NETWORK_ERROR';
-      } else if (error.message.includes('permission') || error.message.includes('access denied')) {
+        userMessage = 'Network error with Vercel Blob';
+      } else if (error.message.includes('permission') || error.message.includes('access')) {
         type = 'PERMISSION_ERROR';
+        userMessage = 'Permission denied';
       } else if (error.message.includes('quota') || error.message.includes('limit')) {
         type = 'QUOTA_ERROR';
+        userMessage = 'Storage quota exceeded';
       }
 
-      res.status(500).setHeader('Content-Type', 'application/json');
-      res.json({
+      res.status(500).json({
         error: userMessage,
         type,
-        filename: files?.file?.[0]?.originalFilename,
-        folder: fields?.folder?.[0],
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
-      });
-    } finally {
-      uploadedFilepaths.forEach((filepath) => {
-        fs.unlink(filepath, (err) => {
-          if (err) console.warn('[Cleanup Warn]', filepath, err.message);
-        });
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
     return;
   }
 
-  // Página HTML principal
+  // GET: Página HTML (tu UI original)
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.end(`
     <!DOCTYPE html>
@@ -213,7 +264,7 @@ module.exports = async (req, res) => {
         <div class="progress-bar" id="progressBar"></div>
       </div>
       <div id="result"></div>
-      <div class="warning">⚠️ Archivos mayores a 10MB serán rechazados</div>
+      <div class="warning">⚠️ Archivos mayores a 4MB serán rechazados</div>
 
       <script>
         const uploadArea = document.getElementById('uploadArea');
@@ -228,11 +279,9 @@ module.exports = async (req, res) => {
 
         const MAX_SIZE = 4 * 1024 * 1024; // 4MB
 
-        // Click para seleccionar archivo
         uploadArea.addEventListener('click', () => fileInput.click());
         clickToUpload.addEventListener('click', () => fileInput.click());
 
-        // Drag & Drop
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
           uploadArea.addEventListener(eventName, preventDefaults, false);
         });
@@ -273,7 +322,6 @@ module.exports = async (req, res) => {
           if (files.length > 0) {
             currentFile = files[0];
             
-            // Validar tamaño
             if (currentFile.size > MAX_SIZE) {
               showResult('error', '<h3>❌ Archivo demasiado grande</h3><p>Máximo 4MB permitido. Tu archivo tiene ' + (currentFile.size / 1024 / 1024).toFixed(1) + 'MB</p>');
               return;
@@ -309,7 +357,6 @@ module.exports = async (req, res) => {
               body: formData
             });
             
-            // Actualizar progreso (simulado)
             const updateProgress = (percent) => {
               progressBar.style.width = percent + '%';
             };
