@@ -32,7 +32,7 @@ async function getMeta(id, configId) {
 
   const nombre = evento.partido || 'Evento';
   const deporte = evento.deporte ? ` (${evento.deporte})` : '';
-  const competicion = evento.competicion ? ` • ${evento.competicion}` : '';
+  const competicion = evento.competicion ? `${evento.competicion}` : '';
   const fechaHora = [evento.hora, evento.dia].filter(Boolean).join('  •  ');
 
   //console.log('[Meta]', { canal: evento.canal, canales: evento.canales });
