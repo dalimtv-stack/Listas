@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
         throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
       }
       const text = await response.text();
-      console.log('Contenido recibido (primeros 1000 chars):', text.slice(0, 1000));
+      console.log('Contenido recibido (primeros 500 chars):', text.slice(0, 500));
 
       const results = [];
       const lines = text.split('\n');
@@ -242,7 +242,7 @@ module.exports = async (req, res) => {
             if (data.error) {
               let errorHtml = \`<p class="error">❌ \${data.error}</p>\`;
               if (data.content) {
-                errorHtml += \`<pre>Contenido del archivo (primeros 1000 caracteres):\n\${data.content}</pre>\`;
+                errorHtml += \`<pre>Contenido del archivo (primeros 5000 caracteres):\n\${data.content}</pre>\`;
               }
               resultDiv.innerHTML = errorHtml;
               throw new Error(data.error);
@@ -251,7 +251,7 @@ module.exports = async (req, res) => {
             if (data.resolutions[0].label === 'No se detectaron resoluciones') {
               let errorHtml = '<p class="error">❌ No se detectaron resoluciones</p>';
               if (data.content) {
-                errorHtml += \`<pre>Contenido del archivo (primeros 1000 caracteres):\n\${data.content}</pre>\`;
+                errorHtml += \`<pre>Contenido del archivo (primeros 5000 caracteres):\n\${data.content}</pre>\`;
               }
               resultDiv.innerHTML = errorHtml;
               return;
