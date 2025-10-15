@@ -2,7 +2,8 @@
 #EXTM3U url-tvg="https://raw.githubusercontent.com/davidmuma/EPG_dobleM/refs/heads/master/guiatv.xml, https://epgshare01.online/epgshare01/epg_ripper_NL1.xml.gz"
 #EXTVLCOPT:network-caching=1000
 
-#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Hollywood.jpg" group-title="Telegram", Hollywood (FHD)
+#https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Hollywood.jpg
+#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/c_fill,g_auto,h_600,w_405/q_auto/f_auto/v1/Canales/Hollywood" group-title="Telegram", Hollywood (FHD)
 http://172.93.102.112:8989/278839_.m3u8
 #EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Acestream", Hollywood (FHD)
 acestream://b0405501919792a8c5f7ca89a3b3b0a7186ce49e
