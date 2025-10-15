@@ -378,7 +378,7 @@ acestream://2752dee68a7faa9c847216dc22a6821661db891a
 #EXTINF:-1 tvg-id="Invitado.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405/Canales/INVITADO" group-title="Telegram", Canal Invitado
 http://172.93.102.112:8989/278847_.m3u8
 
-#EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405/Canales/Dark" group-title="Acestream", Dark (FHD)
+#EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_transparent,c_pad,w_405/Canales/Dark" group-title="Acestream", Dark (FHD)
 acestream://25465ea2deba65c623b7659136abf6fcc9f5dc20
 #EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://i.ibb.co/pvSNFSfp/IMG-2338.jpg" group-title="Acestream", Dark (FHD)
 acestream://77aa26a614522c3845bdda1fa1f0e15dbe97c877
