@@ -1,4 +1,4 @@
-// api/upload-image.js
+// api/upload-image.js - CON ESTILO VISUAL ORIGINAL
 'use strict';
 
 const { put } = require('@vercel/blob');
@@ -27,20 +27,17 @@ module.exports = async (req, res) => {
       }
 
       console.log('✅ Parseado v2:', Object.keys(fields), Object.keys(files));
-      console.log('🔍 Fields:', fields);
-      console.log('🔍 Files:', files);
 
-      const folder = fields.folder; // v2: string directo
+      const folder = fields.folder;
       const target = fields.target || 'cloudinary';
       const customName = fields.customName || null;
       const urlSource = fields.urlSource || null;
-      const file = files.file; // v2: objeto File
+      const file = files.file;
       
-      console.log('📁 Folder recibido:', folder);
-      console.log('🎯 Target recibido:', target);
+      console.log('📁 Folder:', folder, '🎯 Target:', target);
       console.log('📝 Custom name:', customName);
       console.log('🌐 URL source:', urlSource);
-      console.log('📄 File recibido:', file?.originalFilename);
+      console.log('📄 File:', file?.originalFilename);
 
       if (!file && !urlSource) {
         res.status(400).json({ error: 'No file or URL provided', type: 'NO_SOURCE' });
@@ -48,39 +45,25 @@ module.exports = async (req, res) => {
       }
 
       if (!folder || !['plantillas', 'Canales'].includes(folder)) {
-        console.error('❌ Invalid folder:', folder);
-        res.status(400).json({ 
-          error: `Invalid folder: "${folder}"`, 
-          type: 'INVALID_FOLDER',
-          received: folder 
-        });
+        res.status(400).json({ error: `Invalid folder: "${folder}"`, type: 'INVALID_FOLDER' });
         return;
       }
 
       if (!['cloudinary', 'blob'].includes(target)) {
-        console.error('❌ Invalid target:', target);
-        res.status(400).json({ 
-          error: `Invalid target: "${target}". Use "cloudinary" or "blob"`, 
-          type: 'INVALID_TARGET' 
-        });
+        res.status(400).json({ error: `Invalid target: "${target}"`, type: 'INVALID_TARGET' });
         return;
       }
 
-      let originalName;
-      let buffer;
+      let originalName, buffer;
 
       if (file) {
-        // Subida desde archivo
         originalName = customName || file.originalFilename || `${Date.now()}.png`;
         buffer = await fs.readFile(file.filepath);
-        // Cleanup temporal
         fs.unlink(file.filepath).catch(console.warn);
       } else {
-        // Subida desde URL
         console.log('📥 Fetching URL:', urlSource);
         const response = await fetch(urlSource);
         if (!response.ok) {
-          console.error('❌ Fetch failed:', response.status);
           res.status(400).json({ error: `Failed to fetch URL: ${response.status}`, type: 'URL_FETCH_ERROR' });
           return;
         }
@@ -93,40 +76,34 @@ module.exports = async (req, res) => {
       let result;
       try {
         if (target === 'cloudinary') {
-          if (!process.env.CLOUDINARY_CLOUD_NAME) {
-            throw new Error('Cloudinary not configured');
-          }
           result = await uploadImageCloudinary(buffer, originalName, folder);
-          console.log('☁️ Cloudinary upload OK');
+          console.log('☁️ Cloudinary OK');
         } else {
-          if (!process.env.BLOB_READ_WRITE_TOKEN) {
-            throw new Error('BLOB_READ_WRITE_TOKEN missing');
-          }
           result = await uploadImageBlob(buffer, originalName, folder);
-          console.log('📦 Vercel Blob upload OK');
+          console.log('📦 Blob OK');
         }
 
         res.json({
           success: true,
           url: result.url, // Transformada
-          originalUrl: result.originalUrl, // Original
+          originalUrl: result.originalUrl || result.url, // Original (fallback)
           target,
           folder,
-          filename: originalName,
+          filename: result.filename || originalName,
           size: result.size || buffer.length,
           ...(result.public_id && { public_id: result.public_id }),
           ...(result.width && { width: result.width, height: result.height }),
           source: file ? 'file' : 'url'
         });
-      } catch (uploadError) {
-        console.error('Upload error:', uploadError);
-        res.status(500).json({ error: uploadError.message, type: 'UPLOAD_ERROR', target });
+      } catch (error) {
+        console.error('Upload error:', error);
+        res.status(500).json({ error: error.message, type: 'UPLOAD_ERROR', target });
       }
     });
     return;
   }
 
-  // HTML con orden solicitado
+  // TU ESTILO VISUAL ORIGINAL
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.end(`
     <!DOCTYPE html>
@@ -145,7 +122,7 @@ module.exports = async (req, res) => {
           padding: 1rem;
           text-align: center;
         }
-        .upload-area {
+        .upload-area, .url-area {
           background: #1a1a1a;
           padding: 2rem;
           border-radius: 8px;
@@ -154,10 +131,19 @@ module.exports = async (req, res) => {
           cursor: pointer;
           transition: border-color 0.3s;
         }
-        .upload-area:hover { border-color: #0070f3; }
-        .upload-area.dragover { border-color: #0070f3; background: #222; }
-        input[type="file"] { display: none; }
-        select {
+        .upload-area:hover, .url-area:hover { border-color: #0070f3; }
+        .upload-area.dragover, .url-area.dragover { border-color: #0070f3; background: #222; }
+        input[type="file"], input[type="url"] { 
+          display: block; 
+          width: 100%; 
+          padding: 0.5rem; 
+          margin-top: 0.5rem; 
+          background: #222; 
+          color: #fff; 
+          border: 1px solid #333; 
+          border-radius: 4px; 
+        }
+        select, input[type="text"] {
           width: 100%;
           max-width: 400px;
           padding: 0.7rem;
@@ -169,6 +155,21 @@ module.exports = async (req, res) => {
           font-size: 1rem;
           box-sizing: border-box;
         }
+        .target-selector {
+          background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+          padding: 1rem;
+          border-radius: 8px;
+          margin: 1rem 0;
+        }
+        .rename-section {
+          display: none;
+          margin: 1rem 0;
+          padding: 1rem;
+          background: #222;
+          border-radius: 8px;
+          border: 1px solid #333;
+        }
+        .rename-section.active { display: block; }
         button {
           background: #0070f3;
           color: white;
@@ -182,6 +183,8 @@ module.exports = async (req, res) => {
         }
         button:hover:not(:disabled) { background: #0059c9; }
         button:disabled { background: #666; cursor: not-allowed; }
+        .rename-btn { background: #ff9500; margin-right: 1rem; }
+        .rename-btn:hover { background: #e68900; }
         #result {
           margin-top: 1.5rem;
           padding: 1rem;
@@ -205,20 +208,30 @@ module.exports = async (req, res) => {
           border-radius: 6px;
           margin-top: 1rem;
         }
-        .file-info { font-size: 0.9rem; color: #aaa; margin-top: 0.5rem; }
-        .folder-selector { margin-bottom: 1rem; }
+        .file-info, .url-info { font-size: 0.9rem; color: #aaa; margin-top: 0.5rem; }
+        .folder-selector, .target-selector { margin-bottom: 1rem; }
         label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
         .progress { width: 100%; height: 20px; background: #333; border-radius: 10px; overflow: hidden; margin: 1rem 0; }
         .progress-bar { height: 100%; background: #0070f3; width: 0%; transition: width 0.3s; }
         .warning { color: #ffaa00; font-size: 0.9rem; margin-top: 0.5rem; }
+        .source-tabs { display: flex; justify-content: center; margin: 1rem 0; }
+        .source-tab { padding: 0.5rem 1rem; margin: 0 0.5rem; background: #333; border: none; border-radius: 20px; cursor: pointer; }
+        .source-tab.active { background: #0070f3; }
+        input[type="file"] { display: none; } /* Ocultar file input */
       </style>
     </head>
     <body>
-      <h1>🖼️ Subir Imagen a Vercel Blob</h1>
-      <p><strong>Máximo 4MB por imagen (límite de Vercel)</strong></p>
-      <p>Selecciona carpeta y arrastra o selecciona una imagen para subir</p>
+      <h1>🖼️ Subir Imagen - Cloudinary/Blob</h1>
+      <p><strong>Máximo 4MB por imagen</strong></p>
       
-      <div class="folder-selector">
+      <!-- TABS PARA ARCHIVO/URL -->
+      <div class="source-tabs">
+        <button class="source-tab active" onclick="switchSource('file')">📁 Desde Archivo</button>
+        <button class="source-tab" onclick="switchSource('url')">🌐 Desde URL</button>
+      </div>
+
+      <!-- DESTINO DE SUBIDA -->
+      <div class="target-selector">
         <label>Destino de subida:</label>
         <select id="target">
           <option value="cloudinary" selected>☁️ Cloudinary (Optimizado - Recomendado)</option>
@@ -226,39 +239,38 @@ module.exports = async (req, res) => {
         </select>
       </div>
       
+      <!-- CARPETA DESTINO -->
       <div class="folder-selector">
         <label>Carpeta destino:</label>
         <select id="folder">
+          <option value="Canales" selected>📺 Canales</option>
           <option value="plantillas">📋 Plantillas</option>
-          <option value="Canales">📺 Canales</option>
         </select>
       </div>
-      
-      <div class="folder-selector">
-        <label>Origen:</label>
-        <select id="source">
-          <option value="file" selected>📁 Archivo</option>
-          <option value="url">🌐 URL</option>
-        </select>
-      </div>
-      
-      <div class="upload-area" id="uploadArea">
+
+      <!-- AREA ARCHIVO -->
+      <div id="fileSource" class="upload-area">
         <p>📁 Arrastra una imagen aquí o <span id="clickToUpload">haz clic para seleccionar</span></p>
         <div id="fileInfo" class="file-info" style="display: none;"></div>
         <input type="file" id="fileInput" accept="image/*" />
       </div>
-      
-      <div id="urlSection" style="display: none;">
-        <input type="text" id="urlInput" placeholder="https://ejemplo.com/imagen.jpg" />
-        <button onclick="validateUrl()">Verificar</button>
+
+      <!-- AREA URL -->
+      <div id="urlSource" class="url-area" style="display: none;">
+        <label>URL de la imagen:</label>
+        <input type="url" id="urlInput" placeholder="https://ejemplo.com/imagen.jpg" />
+        <div id="urlInfo" class="url-info" style="display: none;"></div>
+        <button onclick="fetchUrlPreview()">🔍 Verificar URL</button>
       </div>
       
+      <!-- RENOMBRAR -->
       <div id="renameSection" class="rename-section">
         <label>Nombre personalizado:</label>
         <input type="text" id="customName" placeholder="NombreParaLaImagen.jpg" />
         <small>Deja vacío para usar nombre original</small>
       </div>
       
+      <!-- BOTONES -->
       <button id="renameBtn" class="rename-btn" onclick="toggleRename()">✏️ Renombrar imagen</button>
       <button id="uploadBtn" disabled>🚀 Subir Imagen</button>
       
@@ -266,82 +278,119 @@ module.exports = async (req, res) => {
         <div class="progress-bar" id="progressBar"></div>
       </div>
       <div id="result"></div>
-      <div class="warning">⚠️ Archivos mayores a 4MB serán rechazados</div>
+      <div class="warning">⚠️ Cloudinary optimiza automáticamente (WebP, resize, CDN global)</div>
 
       <script>
-        // TU JS ORIGINAL + FIXES
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const folderSelect = document.getElementById('folder');
-        const targetSelect = document.getElementById('target');
-        const sourceSelect = document.getElementById('source');
-        const urlSection = document.getElementById('urlSection');
-        const urlInput = document.getElementById('urlInput');
-        const renameSection = document.getElementById('renameSection');
-        const renameBtn = document.getElementById('renameBtn');
-        const customName = document.getElementById('customName');
-        const resultDiv = document.getElementById('result');
-        const progressDiv = document.getElementById('progress');
-        const progressBar = document.getElementById('progressBar');
+        let currentSource = 'file';
         let currentFile = null;
         let currentUrl = null;
+        const MAX_SIZE = 4 * 1024 * 1024;
 
-        const MAX_SIZE = 4 * 1024 * 1024; // 4MB
-
-        // Switch source
-        sourceSelect.addEventListener('change', () => {
-          const source = sourceSelect.value;
-          uploadArea.style.display = source === 'file' ? 'block' : 'none';
-          urlSection.style.display = source === 'url' ? 'block' : 'none';
+        function switchSource(source) {
+          currentSource = source;
+          document.querySelectorAll('.source-tab').forEach(tab => tab.classList.remove('active'));
+          event.target.classList.add('active');
+          
+          document.getElementById('fileSource').style.display = source === 'file' ? 'block' : 'none';
+          document.getElementById('urlSource').style.display = source === 'url' ? 'block' : 'none';
+          document.getElementById('renameSection').classList.remove('active');
+          document.getElementById('renameBtn').textContent = '✏️ Renombrar imagen';
           resetUpload();
-        });
+        }
 
         function toggleRename() {
-          renameSection.style.display = renameSection.style.display === 'none' ? 'block' : 'none';
+          const section = document.getElementById('renameSection');
+          section.classList.toggle('active');
+          if (section.classList.contains('active')) {
+            document.getElementById('renameBtn').textContent = '❌ Cancelar';
+          } else {
+            document.getElementById('renameBtn').textContent = '✏️ Renombrar imagen';
+          }
         }
 
-        function validateUrl() {
+        async function fetchUrlPreview() {
+          const urlInput = document.getElementById('urlInput');
+          const urlInfo = document.getElementById('urlInfo');
           const url = urlInput.value.trim();
-          if (!url) return;
+          
+          if (!url) {
+            urlInfo.innerHTML = '<span style="color: #ff6b6b;">❌ Ingresa una URL válida</span>';
+            urlInfo.style.display = 'block';
+            return;
+          }
 
-          // Simula validación (backend hace el real fetch)
-          uploadBtn.disabled = false;
-          currentUrl = url;
-          currentFile = null;
-          document.getElementById('fileInfo').style.display = 'none';
+          try {
+            urlInfo.innerHTML = '⏳ Verificando URL...';
+            urlInfo.style.display = 'block';
+            
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('URL no accesible');
+            
+            const contentType = response.headers.get('content-type');
+            if (!contentType?.startsWith('image/')) {
+              throw new Error('No es una imagen válida');
+            }
+
+            const blob = await response.blob();
+            if (blob.size > MAX_SIZE) {
+              throw new Error('Imagen demasiado grande (>4MB)');
+            }
+
+            currentUrl = url;
+            urlInfo.innerHTML = \`
+              ✅ URL válida<br>
+              Tamaño: \${(blob.size / 1024).toFixed(1)} KB<br>
+              Tipo: \${contentType}
+            \`;
+            urlInfo.style.color = '#4ecdc4';
+            document.getElementById('uploadBtn').disabled = false;
+          } catch (error) {
+            urlInfo.innerHTML = \`<span style="color: #ff6b6b;">❌ Error: \${error.message}</span>\`;
+            currentUrl = null;
+            document.getElementById('uploadBtn').disabled = true;
+          }
         }
 
-        // Drag & Drop y click original
-        uploadArea.addEventListener('click', () => fileInput.click());
+        // FILE HANDLERS
+        const fileSource = document.getElementById('fileSource');
+        const fileInput = document.getElementById('fileInput');
+        const clickToUpload = document.getElementById('clickToUpload');
 
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-          uploadArea.addEventListener(eventName, preventDefaults, false);
+        // Click en área de archivo
+        fileSource.addEventListener('click', (e) => {
+          if (e.target === clickToUpload || e.target === fileSource) {
+            fileInput.click();
+          }
         });
-        
+
+        // Drag & Drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+          fileSource.addEventListener(eventName, preventDefaults, false);
+        });
+
         function preventDefaults(e) {
           e.preventDefault();
           e.stopPropagation();
         }
 
         ['dragenter', 'dragover'].forEach(eventName => {
-          uploadArea.addEventListener(eventName, highlight, false);
+          fileSource.addEventListener(eventName, highlight, false);
         });
         
         ['dragleave', 'drop'].forEach(eventName => {
-          uploadArea.addEventListener(eventName, unhighlight, false);
+          fileSource.addEventListener(eventName, unhighlight, false);
         });
 
         function highlight(e) {
-          uploadArea.classList.add('dragover');
+          fileSource.classList.add('dragover');
         }
 
         function unhighlight(e) {
-          uploadArea.classList.remove('dragover');
+          fileSource.classList.remove('dragover');
         }
 
         fileInput.addEventListener('change', handleFileSelect);
-        uploadArea.addEventListener('drop', handleDrop);
+        fileSource.addEventListener('drop', handleDrop);
 
         function handleFileSelect(e) {
           handleFiles(e.target.files);
@@ -354,27 +403,30 @@ module.exports = async (req, res) => {
         function handleFiles(files) {
           if (files.length > 0) {
             currentFile = files[0];
-            
             if (currentFile.size > MAX_SIZE) {
-              showResult('error', '<h3>❌ Archivo demasiado grande</h3><p>Máximo 4MB permitido. Tu archivo tiene ' + (currentFile.size / 1024 / 1024).toFixed(1) + 'MB</p>');
+              showResult('error', '<h3>❌ Archivo demasiado grande</h3><p>Máximo 4MB</p>');
               return;
             }
-            
-            const fileInfo = document.getElementById('fileInfo');
-            fileInfo.innerHTML = \`
+            document.getElementById('fileInfo').innerHTML = \`
               <strong>\${currentFile.name}</strong><br>
               \${(currentFile.size / 1024).toFixed(1)} KB - \${currentFile.type}
             \`;
-            fileInfo.style.display = 'block';
-            uploadBtn.disabled = false;
+            document.getElementById('fileInfo').style.display = 'block';
+            document.getElementById('uploadBtn').disabled = false;
             currentUrl = null;
           }
         }
 
-        uploadBtn.addEventListener('click', uploadFile);
+        document.getElementById('uploadBtn').addEventListener('click', uploadFile);
 
         async function uploadFile() {
-          if (!currentFile && !currentUrl) return;
+          if (currentSource === 'file' && !currentFile) return;
+          if (currentSource === 'url' && !currentUrl) return;
+          
+          const uploadBtn = document.getElementById('uploadBtn');
+          const progressDiv = document.getElementById('progress');
+          const resultDiv = document.getElementById('result');
+          const progressBar = document.getElementById('progressBar');
           
           uploadBtn.disabled = true;
           uploadBtn.textContent = '⏳ Subiendo...';
@@ -382,12 +434,13 @@ module.exports = async (req, res) => {
           resultDiv.style.display = 'none';
           
           const formData = new FormData();
-          formData.append('folder', folderSelect.value);
-          formData.append('target', targetSelect.value);
-          const customNameValue = customName.value.trim();
+          formData.append('folder', document.getElementById('folder').value);
+          formData.append('target', document.getElementById('target').value);
+          
+          const customNameValue = document.getElementById('customName').value.trim();
           if (customNameValue) formData.append('customName', customNameValue);
           
-          if (currentFile) {
+          if (currentSource === 'file') {
             formData.append('file', currentFile);
           } else {
             formData.append('urlSource', currentUrl);
@@ -395,40 +448,39 @@ module.exports = async (req, res) => {
           
           let progressInterval;
           try {
-            const response = await fetch('/upload-image', {
-              method: 'POST',
-              body: formData
-            });
+            const response = await fetch('/upload-image', { method: 'POST', body: formData });
+            const data = await response.json();
             
-            const updateProgress = (percent) => {
-              progressBar.style.width = percent + '%';
-            };
             progressInterval = setInterval(() => {
-              updateProgress(Math.min(95, parseInt(progressBar.style.width) + 5));
+              const width = parseInt(progressBar.style.width) || 0;
+              progressBar.style.width = Math.min(95, width + 5) + '%';
             }, 200);
             
-            const data = await response.json();
             clearInterval(progressInterval);
-            updateProgress(100);
+            progressBar.style.width = '100%';
             
             if (response.ok && data.success) {
+              let sourceText = data.source === 'url' ? '🌐 URL' : '📁 Archivo';
+              let targetText = data.target === 'cloudinary' ? '☁️ Cloudinary' : '📦 Vercel Blob';
+              
               showResult('success', \`
-                <h3>✅ Subida exitosa a \${data.target === 'cloudinary' ? '☁️ Cloudinary' : '📦 Vercel Blob'}</h3>
-                <p><strong>Original URL:</strong> <a href="\${data.originalUrl}" target="_blank">\${data.originalUrl}</a></p>
-                <p><strong>Transformada URL:</strong> <a href="\${data.url}" target="_blank">\${data.url}</a></p>
+                <h3>✅ Subida exitosa desde \${sourceText} a \${targetText}</h3>
+                <p><strong>Origen:</strong> \${sourceText}</p>
+                <p><strong>Destino:</strong> \${targetText}</p>
                 <p><strong>Carpeta:</strong> \${data.folder}</p>
                 <p><strong>Archivo:</strong> \${data.filename}</p>
                 <p><strong>Tamaño:</strong> \${(data.size / 1024).toFixed(1)} KB</p>
+                \${data.originalUrl && data.originalUrl !== data.url ? 
+                  '<p><strong>URL Original:</strong> <a href="' + data.originalUrl + '" target="_blank">' + data.originalUrl + '</a></p>' : ''
+                }
+                <div class="url-box">
+                  <strong>URL Transformada:</strong><br>
+                  <a href="\${data.url}" target="_blank">\${data.url}</a>
+                </div>
                 <img src="\${data.url}" alt="Preview" class="preview" onload="this.style.display='block'" style="display:none;">
               \`);
             } else {
-              showResult('error', \`
-                <h3>❌ Error: \${data.error}</h3>
-                <p><strong>Tipo:</strong> \${data.type || 'UNKNOWN'}</p>
-                \${data.details ? '<p><strong>Detalles:</strong> ' + data.details + '</p>' : ''}
-                <p><strong>Archivo:</strong> \${data.filename || currentFile.name}</p>
-                <p><strong>Carpeta:</strong> \${data.folder || folderSelect.value}</p>
-              \`);
+              showResult('error', \`<h3>❌ Error: \${data.error}</h3><p><strong>Tipo:</strong> \${data.type}</p>\`);
             }
           } catch (err) {
             if (progressInterval) clearInterval(progressInterval);
@@ -443,10 +495,23 @@ module.exports = async (req, res) => {
         }
 
         function showResult(type, html) {
+          const resultDiv = document.getElementById('result');
           resultDiv.className = type;
           resultDiv.innerHTML = html;
           resultDiv.style.display = 'block';
-          progressDiv.style.display = 'none';
+          document.getElementById('progress').style.display = 'none';
+        }
+
+        function resetUpload() {
+          currentFile = null;
+          currentUrl = null;
+          document.getElementById('fileInfo').style.display = 'none';
+          document.getElementById('urlInfo').style.display = 'none';
+          document.getElementById('uploadBtn').disabled = true;
+          document.getElementById('renameSection').classList.remove('active');
+          document.getElementById('renameBtn').textContent = '✏️ Renombrar imagen';
+          document.getElementById('customName').value = '';
+          document.getElementById('urlInput').value = '';
         }
       </script>
     </body>
