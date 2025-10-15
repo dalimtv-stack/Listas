@@ -459,7 +459,7 @@ module.exports = async (req, res) => {
               let sourceText = data.source === 'url' ? '🌐 URL' : '📁 Archivo';
               let targetText = data.target === 'cloudinary' ? '☁️ Cloudinary' : '📦 Vercel Blob';
               
-              showResult('success', `
+              showResult('success', '
                 <h3>✅ Subida exitosa</h3>
                 <p><strong>Archivo:</strong> ${data.filename}</p>
                 <p><strong>Carpeta:</strong> ${data.folder}</p>
@@ -469,20 +469,20 @@ module.exports = async (req, res) => {
                   <a href="${data.url}" target="_blank">${data.url}</a>
                 </div>
                 
-                ${data.formats ? `
+                ${data.formats ? '
                   <details>
                     <summary>📋 Otros formatos disponibles</summary>
-                    ${Object.entries(data.formats).map(([key, url]) => `
+                    ${Object.entries(data.formats).map(([key, url]) => '
                       <div style="margin: 0.5rem 0;">
                         <strong>${key.replace('_', ' ').toUpperCase()}:</strong><br>
                         <a href="${url}" target="_blank">${url}</a>
                       </div>
                     `).join('')}
                   </details>
-                ` : ''}
+                ' : ''}
                 
                 <img src="${data.url}" class="preview" style="display:none;" onload="this.style.display='block'">
-              `);
+              ');
             } else {
               showResult('error', \`<h3>❌ Error: \${data.error}</h3><p><strong>Tipo:</strong> \${data.type}</p>\`);
             }
