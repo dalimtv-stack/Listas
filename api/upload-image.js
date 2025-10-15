@@ -459,22 +459,30 @@ module.exports = async (req, res) => {
               let sourceText = data.source === 'url' ? '🌐 URL' : '📁 Archivo';
               let targetText = data.target === 'cloudinary' ? '☁️ Cloudinary' : '📦 Vercel Blob';
               
-              showResult('success', \`
-                <h3>✅ Subida exitosa desde \${sourceText} a \${targetText}</h3>
-                <p><strong>Origen:</strong> \${sourceText}</p>
-                <p><strong>Destino:</strong> \${targetText}</p>
-                <p><strong>Carpeta:</strong> \${data.folder}</p>
-                <p><strong>Archivo:</strong> \${data.filename}</p>
-                <p><strong>Tamaño:</strong> \${(data.size / 1024).toFixed(1)} KB</p>
-                \${data.originalUrl && data.originalUrl !== data.url ? 
-                  '<p><strong>URL Original:</strong> <a href="' + data.originalUrl + '" target="_blank">' + data.originalUrl + '</a></p>' : ''
-                }
+              showResult('success', `
+                <h3>✅ Subida exitosa</h3>
+                <p><strong>Archivo:</strong> ${data.filename}</p>
+                <p><strong>Carpeta:</strong> ${data.folder}</p>
+                
                 <div class="url-box">
-                  <strong>URL Transformada:</strong><br>
-                  <a href="\${data.url}" target="_blank">\${data.url}</a>
+                  <strong>🌟 URL Principal (Stremio):</strong><br>
+                  <a href="${data.url}" target="_blank">${data.url}</a>
                 </div>
-                <img src="\${data.url}" alt="Preview" class="preview" onload="this.style.display='block'" style="display:none;">
-              \`);
+                
+                ${data.formats ? `
+                  <details>
+                    <summary>📋 Otros formatos disponibles</summary>
+                    ${Object.entries(data.formats).map(([key, url]) => `
+                      <div style="margin: 0.5rem 0;">
+                        <strong>${key.replace('_', ' ').toUpperCase()}:</strong><br>
+                        <a href="${url}" target="_blank">${url}</a>
+                      </div>
+                    `).join('')}
+                  </details>
+                ` : ''}
+                
+                <img src="${data.url}" class="preview" style="display:none;" onload="this.style.display='block'">
+              `);
             } else {
               showResult('error', \`<h3>❌ Error: \${data.error}</h3><p><strong>Tipo:</strong> \${data.type}</p>\`);
             }
