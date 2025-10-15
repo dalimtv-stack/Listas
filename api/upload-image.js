@@ -45,33 +45,33 @@ module.exports = async (req, res) => {
       }
 
       if (!folder || !['plantillas', 'Canales'].includes(folder)) {
-        res.status(400).json({ error: `Invalid folder: "${folder}"`, type: 'INVALID_FOLDER' });
+        res.status(400).json({ error: 'Invalid folder: "${folder}"', type: 'INVALID_FOLDER' });
         return;
       }
 
       if (!['cloudinary', 'blob'].includes(target)) {
-        res.status(400).json({ error: `Invalid target: "${target}"`, type: 'INVALID_TARGET' });
+        res.status(400).json({ error: 'Invalid target: "${target}"', type: 'INVALID_TARGET' });
         return;
       }
 
       let originalName, buffer;
 
       if (file) {
-        originalName = customName || file.originalFilename || `${Date.now()}.png`;
+        originalName = customName || file.originalFilename || '${Date.now()}.png';
         buffer = await fs.readFile(file.filepath);
         fs.unlink(file.filepath).catch(console.warn);
       } else {
         console.log('📥 Fetching URL:', urlSource);
         const response = await fetch(urlSource);
         if (!response.ok) {
-          res.status(400).json({ error: `Failed to fetch URL: ${response.status}`, type: 'URL_FETCH_ERROR' });
+          res.status(400).json({ error: 'Failed to fetch URL: ${response.status}', type: 'URL_FETCH_ERROR' });
           return;
         }
-        originalName = customName || urlSource.split('/').pop() || `${Date.now()}.jpg`;
+        originalName = customName || urlSource.split('/').pop() || '${Date.now()}.jpg';
         buffer = await response.buffer();
       }
 
-      console.log(`📊 Buffer: ${(buffer.length / 1024).toFixed(1)} KB`);
+      console.log('📊 Buffer: ${(buffer.length / 1024).toFixed(1)} KB');
 
       let result;
       try {
@@ -104,7 +104,7 @@ module.exports = async (req, res) => {
   }
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.end(`
+  res.end('
     <!DOCTYPE html>
     <html lang="es">
     <head>
@@ -336,15 +336,15 @@ module.exports = async (req, res) => {
             }
 
             currentUrl = url;
-            urlInfo.innerHTML = \`
+            urlInfo.innerHTML = \'
               ✅ URL válida<br>
               Tamaño: \${(blob.size / 1024).toFixed(1)} KB<br>
               Tipo: \${contentType}
-            \`;
+            \';
             urlInfo.style.color = '#4ecdc4';
             document.getElementById('uploadBtn').disabled = false;
           } catch (error) {
-            urlInfo.innerHTML = \`<span style="color: #ff6b6b;">❌ Error: \${error.message}</span>\`;
+            urlInfo.innerHTML = \'<span style="color: #ff6b6b;">❌ Error: \${error.message}</span>\';
             currentUrl = null;
             document.getElementById('uploadBtn').disabled = true;
           }
@@ -403,10 +403,10 @@ module.exports = async (req, res) => {
               showResult('error', '<h3>❌ Archivo demasiado grande</h3><p>Máximo 4MB</p>');
               return;
             }
-            document.getElementById('fileInfo').innerHTML = \`
+            document.getElementById('fileInfo').innerHTML = \'
               <strong>\${currentFile.name}</strong><br>
               \${(currentFile.size / 1024).toFixed(1)} KB - \${currentFile.type}
-            \`;
+            \';
             document.getElementById('fileInfo').style.display = 'block';
             document.getElementById('uploadBtn').disabled = false;
             currentUrl = null;
@@ -477,14 +477,14 @@ module.exports = async (req, res) => {
                         <strong>${key.replace('_', ' ').toUpperCase()}:</strong><br>
                         <a href="${url}" target="_blank">${url}</a>
                       </div>
-                    `).join('')}
+                    ').join('')}
                   </details>
                 ' : ''}
                 
                 <img src="${data.url}" class="preview" style="display:none;" onload="this.style.display='block'">
               ');
             } else {
-              showResult('error', \`<h3>❌ Error: \${data.error}</h3><p><strong>Tipo:</strong> \${data.type}</p>\`);
+              showResult('error', \'<h3>❌ Error: \${data.error}</h3><p><strong>Tipo:</strong> \${data.type}</p>\');
             }
           } catch (err) {
             if (progressInterval) clearInterval(progressInterval);
@@ -520,5 +520,5 @@ module.exports = async (req, res) => {
       </script>
     </body>
     </html>
-  `);
+  ');
 };
