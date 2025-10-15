@@ -1,4 +1,4 @@
-// api/upload-image.js - CON ESTILO VISUAL ORIGINAL
+// api/upload-image.js
 'use strict';
 
 const { put } = require('@vercel/blob');
@@ -103,7 +103,6 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // TU ESTILO VISUAL ORIGINAL
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.end(`
     <!DOCTYPE html>
@@ -217,19 +216,13 @@ module.exports = async (req, res) => {
         .source-tabs { display: flex; justify-content: center; margin: 1rem 0; }
         .source-tab { padding: 0.5rem 1rem; margin: 0 0.5rem; background: #333; border: none; border-radius: 20px; cursor: pointer; }
         .source-tab.active { background: #0070f3; }
-        input[type="file"] { display: none; } /* Ocultar file input */
+        input[type="file"] { display: none; }
       </style>
     </head>
     <body>
       <h1>🖼️ Subir Imagen - Cloudinary/Blob</h1>
       <p><strong>Máximo 4MB por imagen</strong></p>
       
-      <!-- TABS PARA ARCHIVO/URL -->
-      <div class="source-tabs">
-        <button class="source-tab active" onclick="switchSource('file')">📁 Desde Archivo</button>
-        <button class="source-tab" onclick="switchSource('url')">🌐 Desde URL</button>
-      </div>
-
       <!-- DESTINO DE SUBIDA -->
       <div class="target-selector">
         <label>Destino de subida:</label>
@@ -246,6 +239,12 @@ module.exports = async (req, res) => {
           <option value="Canales" selected>📺 Canales</option>
           <option value="plantillas">📋 Plantillas</option>
         </select>
+      </div>
+
+      <!-- TABS MOVIDOS AQUÍ - DEBAJO DE CARPETA -->
+      <div class="source-tabs">
+        <button class="source-tab active" onclick="switchSource('file')">📁 Desde Archivo</button>
+        <button class="source-tab" onclick="switchSource('url')">🌐 Desde URL</button>
       </div>
 
       <!-- AREA ARCHIVO -->
@@ -351,19 +350,16 @@ module.exports = async (req, res) => {
           }
         }
 
-        // FILE HANDLERS
         const fileSource = document.getElementById('fileSource');
         const fileInput = document.getElementById('fileInput');
         const clickToUpload = document.getElementById('clickToUpload');
 
-        // Click en área de archivo
         fileSource.addEventListener('click', (e) => {
           if (e.target === clickToUpload || e.target === fileSource) {
             fileInput.click();
           }
         });
 
-        // Drag & Drop
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
           fileSource.addEventListener(eventName, preventDefaults, false);
         });
