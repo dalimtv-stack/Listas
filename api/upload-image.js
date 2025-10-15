@@ -1,8 +1,10 @@
-// api/upload-image.js - TU CÓDIGO ORIGINAL + FIXES MÍNIMOS
+// api/upload-image.js
 'use strict';
 
+const { put } = require('@vercel/blob');
 const formidable = require('formidable');
 const fs = require('fs').promises;
+const fetch = require('node-fetch');
 const { uploadImageBlob } = require('../lib/upload-to-blob');
 const { uploadImageCloudinary } = require('../lib/upload-to-cloudinary');
 
@@ -28,17 +30,20 @@ module.exports = async (req, res) => {
       console.log('🔍 Fields:', fields);
       console.log('🔍 Files:', files);
 
-      const folder = fields.folder;
-      const target = fields.target || 'cloudinary'; // ← AÑADIDO
+      const folder = fields.folder; // v2: string directo
+      const target = fields.target || 'cloudinary';
       const customName = fields.customName || null;
-      const file = files.file;
+      const urlSource = fields.urlSource || null;
+      const file = files.file; // v2: objeto File
       
       console.log('📁 Folder recibido:', folder);
       console.log('🎯 Target recibido:', target);
+      console.log('📝 Custom name:', customName);
+      console.log('🌐 URL source:', urlSource);
       console.log('📄 File recibido:', file?.originalFilename);
 
-      if (!file) {
-        res.status(400).json({ error: 'No image file', type: 'NO_FILE' });
+      if (!file && !urlSource) {
+        res.status(400).json({ error: 'No file or URL provided', type: 'NO_SOURCE' });
         return;
       }
 
@@ -52,32 +57,66 @@ module.exports = async (req, res) => {
         return;
       }
 
-      const originalName = customName || file.originalFilename || `${Date.now()}.png`;
-      
-      try {
-        const buffer = await fs.readFile(file.filepath);
-        console.log(`📊 Buffer: ${(buffer.length / 1024).toFixed(1)} KB`);
-        console.log(`🚀 Subiendo a: ${target}`);
+      if (!['cloudinary', 'blob'].includes(target)) {
+        console.error('❌ Invalid target:', target);
+        res.status(400).json({ 
+          error: `Invalid target: "${target}". Use "cloudinary" or "blob"`, 
+          type: 'INVALID_TARGET' 
+        });
+        return;
+      }
 
-        let result;
-        if (target === 'cloudinary') {
-          result = await uploadImageCloudinary(buffer, originalName, folder);
-        } else {
-          result = await uploadImageBlob(buffer, originalName, folder);
-        }
+      let originalName;
+      let buffer;
 
-        // Cleanup
+      if (file) {
+        // Subida desde archivo
+        originalName = customName || file.originalFilename || `${Date.now()}.png`;
+        buffer = await fs.readFile(file.filepath);
+        // Cleanup temporal
         fs.unlink(file.filepath).catch(console.warn);
+      } else {
+        // Subida desde URL
+        console.log('📥 Fetching URL:', urlSource);
+        const response = await fetch(urlSource);
+        if (!response.ok) {
+          console.error('❌ Fetch failed:', response.status);
+          res.status(400).json({ error: `Failed to fetch URL: ${response.status}`, type: 'URL_FETCH_ERROR' });
+          return;
+        }
+        originalName = customName || urlSource.split('/').pop() || `${Date.now()}.jpg`;
+        buffer = await response.buffer();
+      }
+
+      console.log(`📊 Buffer: ${(buffer.length / 1024).toFixed(1)} KB`);
+
+      let result;
+      try {
+        if (target === 'cloudinary') {
+          if (!process.env.CLOUDINARY_CLOUD_NAME) {
+            throw new Error('Cloudinary not configured');
+          }
+          result = await uploadImageCloudinary(buffer, originalName, folder);
+          console.log('☁️ Cloudinary upload OK');
+        } else {
+          if (!process.env.BLOB_READ_WRITE_TOKEN) {
+            throw new Error('BLOB_READ_WRITE_TOKEN missing');
+          }
+          result = await uploadImageBlob(buffer, originalName, folder);
+          console.log('📦 Vercel Blob upload OK');
+        }
 
         res.json({
           success: true,
-          url: result.url,
-          target, // ← AÑADIDO
+          url: result.url, // Transformada
+          originalUrl: result.originalUrl, // Original
+          target,
           folder,
           filename: originalName,
           size: result.size || buffer.length,
           ...(result.public_id && { public_id: result.public_id }),
           ...(result.width && { width: result.width, height: result.height }),
+          source: file ? 'file' : 'url'
         });
       } catch (uploadError) {
         console.error('Upload error:', uploadError);
@@ -87,7 +126,7 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // TU HTML ORIGINAL + SELECTOR TARGET + URL UPLOAD
+  // HTML con orden solicitado
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.end(`
     <!DOCTYPE html>
@@ -95,9 +134,8 @@ module.exports = async (req, res) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Subir Imagen a Vercel Blob</title>
+      <title>Subir Imagen - Cloudinary/Blob</title>
       <style>
-        /* TU CSS ORIGINAL EXACTO */
         body {
           background-color: #111;
           color: #eee;
@@ -173,10 +211,6 @@ module.exports = async (req, res) => {
         .progress { width: 100%; height: 20px; background: #333; border-radius: 10px; overflow: hidden; margin: 1rem 0; }
         .progress-bar { height: 100%; background: #0070f3; width: 0%; transition: width 0.3s; }
         .warning { color: #ffaa00; font-size: 0.9rem; margin-top: 0.5rem; }
-        .target-selector { background: linear-gradient(90deg, #ff6b6b, #4ecdc4); padding: 1rem; border-radius: 8px; margin: 1rem 0; }
-        .rename-section { display: none; margin: 1rem 0; padding: 1rem; background: #222; border-radius: 8px; border: 1px solid #333; }
-        .rename-btn { background: #ff9500; margin-right: 1rem; }
-        .rename-btn:hover { background: #e68900; }
       </style>
     </head>
     <body>
@@ -184,17 +218,7 @@ module.exports = async (req, res) => {
       <p><strong>Máximo 4MB por imagen (límite de Vercel)</strong></p>
       <p>Selecciona carpeta y arrastra o selecciona una imagen para subir</p>
       
-      <!-- TU ORDEN ORIGINAL: FOLDER PRIMERO -->
       <div class="folder-selector">
-        <label>Carpeta destino:</label>
-        <select id="folder">
-          <option value="Canales" selected>📺 Canales</option>
-          <option value="plantillas">📋 Plantillas</option>
-        </select>
-      </div>
-
-      <!-- SELECTOR TARGET AQUÍ (NUEVO) -->
-      <div class="target-selector">
         <label>Destino de subida:</label>
         <select id="target">
           <option value="cloudinary" selected>☁️ Cloudinary (Optimizado - Recomendado)</option>
@@ -202,14 +226,33 @@ module.exports = async (req, res) => {
         </select>
       </div>
       
-      <!-- TU UPLOAD AREA ORIGINAL -->
+      <div class="folder-selector">
+        <label>Carpeta destino:</label>
+        <select id="folder">
+          <option value="plantillas">📋 Plantillas</option>
+          <option value="Canales">📺 Canales</option>
+        </select>
+      </div>
+      
+      <div class="folder-selector">
+        <label>Origen:</label>
+        <select id="source">
+          <option value="file" selected>📁 Archivo</option>
+          <option value="url">🌐 URL</option>
+        </select>
+      </div>
+      
       <div class="upload-area" id="uploadArea">
         <p>📁 Arrastra una imagen aquí o <span id="clickToUpload">haz clic para seleccionar</span></p>
         <div id="fileInfo" class="file-info" style="display: none;"></div>
         <input type="file" id="fileInput" accept="image/*" />
       </div>
       
-      <!-- RENOMBRAR (NUEVO) -->
+      <div id="urlSection" style="display: none;">
+        <input type="text" id="urlInput" placeholder="https://ejemplo.com/imagen.jpg" />
+        <button onclick="validateUrl()">Verificar</button>
+      </div>
+      
       <div id="renameSection" class="rename-section">
         <label>Nombre personalizado:</label>
         <input type="text" id="customName" placeholder="NombreParaLaImagen.jpg" />
@@ -226,23 +269,51 @@ module.exports = async (req, res) => {
       <div class="warning">⚠️ Archivos mayores a 4MB serán rechazados</div>
 
       <script>
-        // TU JAVASCRIPT ORIGINAL + target
+        // TU JS ORIGINAL + FIXES
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const uploadBtn = document.getElementById('uploadBtn');
         const folderSelect = document.getElementById('folder');
-        const targetSelect = document.getElementById('target'); // ← AÑADIDO
+        const targetSelect = document.getElementById('target');
+        const sourceSelect = document.getElementById('source');
+        const urlSection = document.getElementById('urlSection');
+        const urlInput = document.getElementById('urlInput');
+        const renameSection = document.getElementById('renameSection');
+        const renameBtn = document.getElementById('renameBtn');
+        const customName = document.getElementById('customName');
         const resultDiv = document.getElementById('result');
         const progressDiv = document.getElementById('progress');
         const progressBar = document.getElementById('progressBar');
-        const clickToUpload = document.getElementById('clickToUpload');
         let currentFile = null;
+        let currentUrl = null;
 
-        const MAX_SIZE = 4 * 1024 * 1024;
+        const MAX_SIZE = 4 * 1024 * 1024; // 4MB
 
-        // TU DRAG & DROP ORIGINAL
+        // Switch source
+        sourceSelect.addEventListener('change', () => {
+          const source = sourceSelect.value;
+          uploadArea.style.display = source === 'file' ? 'block' : 'none';
+          urlSection.style.display = source === 'url' ? 'block' : 'none';
+          resetUpload();
+        });
+
+        function toggleRename() {
+          renameSection.style.display = renameSection.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function validateUrl() {
+          const url = urlInput.value.trim();
+          if (!url) return;
+
+          // Simula validación (backend hace el real fetch)
+          uploadBtn.disabled = false;
+          currentUrl = url;
+          currentFile = null;
+          document.getElementById('fileInfo').style.display = 'none';
+        }
+
+        // Drag & Drop y click original
         uploadArea.addEventListener('click', () => fileInput.click());
-        clickToUpload.addEventListener('click', () => fileInput.click());
 
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
           uploadArea.addEventListener(eventName, preventDefaults, false);
@@ -296,18 +367,14 @@ module.exports = async (req, res) => {
             \`;
             fileInfo.style.display = 'block';
             uploadBtn.disabled = false;
+            currentUrl = null;
           }
-        }
-
-        function toggleRename() {
-          const section = document.getElementById('renameSection');
-          section.style.display = section.style.display === 'none' ? 'block' : 'none';
         }
 
         uploadBtn.addEventListener('click', uploadFile);
 
         async function uploadFile() {
-          if (!currentFile) return;
+          if (!currentFile && !currentUrl) return;
           
           uploadBtn.disabled = true;
           uploadBtn.textContent = '⏳ Subiendo...';
@@ -315,12 +382,16 @@ module.exports = async (req, res) => {
           resultDiv.style.display = 'none';
           
           const formData = new FormData();
-          formData.append('file', currentFile);
           formData.append('folder', folderSelect.value);
-          formData.append('target', targetSelect.value); // ← CLAVE: ESTO FALTABA
+          formData.append('target', targetSelect.value);
+          const customNameValue = customName.value.trim();
+          if (customNameValue) formData.append('customName', customNameValue);
           
-          const customName = document.getElementById('customName').value.trim();
-          if (customName) formData.append('customName', customName);
+          if (currentFile) {
+            formData.append('file', currentFile);
+          } else {
+            formData.append('urlSource', currentUrl);
+          }
           
           let progressInterval;
           try {
@@ -341,17 +412,13 @@ module.exports = async (req, res) => {
             updateProgress(100);
             
             if (response.ok && data.success) {
-              let targetText = data.target === 'cloudinary' ? '☁️ Cloudinary' : '📦 Vercel Blob';
               showResult('success', \`
-                <h3>✅ Subida exitosa a \${targetText}</h3>
-                <p><strong>Destino:</strong> \${targetText}</p>
+                <h3>✅ Subida exitosa a \${data.target === 'cloudinary' ? '☁️ Cloudinary' : '📦 Vercel Blob'}</h3>
+                <p><strong>Original URL:</strong> <a href="\${data.originalUrl}" target="_blank">\${data.originalUrl}</a></p>
+                <p><strong>Transformada URL:</strong> <a href="\${data.url}" target="_blank">\${data.url}</a></p>
                 <p><strong>Carpeta:</strong> \${data.folder}</p>
                 <p><strong>Archivo:</strong> \${data.filename}</p>
                 <p><strong>Tamaño:</strong> \${(data.size / 1024).toFixed(1)} KB</p>
-                <div class="url-box">
-                  <strong>URL:</strong><br>
-                  <a href="\${data.url}" target="_blank">\${data.url}</a>
-                </div>
                 <img src="\${data.url}" alt="Preview" class="preview" onload="this.style.display='block'" style="display:none;">
               \`);
             } else {
