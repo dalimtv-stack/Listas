@@ -413,16 +413,17 @@ http://172.93.102.112:8989/278866_.m3u8
 #EXTINF:-1 tvg-id="Discovery.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_white,c_pad,w_405,q_auto,f_auto/Canales/Discovery_Channel_-_Logo" group-title="Telegram", Discovery
 http://172.93.102.112:8989/278830_.m3u8
 
-#EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://i.ibb.co/4wVnPgDk/Primera-RFEF-2021.png" group-title="NEW ERA", Canal 1 [1RFEF] (SOLO EVENTOS)
+#EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/1RFEF" group-title="NEW ERA", Canal 1 [1RFEF] (SOLO EVENTOS)
 acestream://0a56c3f215071f5d21a71e6dca8383aa64eb9b2f
 //acestream://c1ee6e1e0ef5928d8261f855c417de21794f437d
 #EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://i.ibb.co/4wVnPgDk/Primera-RFEF-2021.png" group-title="Shickat.me", Canal 1 [1RFEF] (SOLO EVENTOS)
 acestream://b40212c43e96e97542ea00f2129212a054853a57
 
-#EXTINF:-1 tvg-id="Canal.2.1RFEF" tvg-logo="https://i.ibb.co/4wVnPgDk/Primera-RFEF-2021.png" group-title="NEW ERA", Canal 2 [1RFEF] (SOLO EVENTOS)
+#EXTINF:-1 tvg-id="Canal.2.1RFEF" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/1RFEF-logo" group-title="NEW ERA", Canal 2 [1RFEF] (SOLO EVENTOS)
 acestream://8677d339ecddd75165c0015025f598b6215974cf
 
-#EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://stremio.shickat.me/Images/Channels/GOLF.jpg" group-title="Telegram", Movistar Golf (720)
+# https://stremio.shickat.me/Images/Channels/GOLF.jpg
+#EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/GOLF" group-title="Telegram", Movistar Golf (720)
 http://172.93.102.112:8989/278851_.m3u8
 #EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://stremio.shickat.me/Images/Channels/GOLF.jpg" group-title="VLC", Movistar Golf
 http://vlc.shickat.me:8000/pid/9ed46050217ee6ed8236a64b72d7992f7b3b37f2/stream.mp4
@@ -433,7 +434,8 @@ acestream://8546cff89e4ee8bf3ad31cf6457c3bc2c4341031
 #EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://i.ibb.co/Vp04N3pT/golf.png" group-title="NEW LOOP", Movistar Golf (HD)
 acestream://872608e734992db636eb79426802cd08f4029afb
 
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://cdn.sincroguia.tv/uploads/series/laliga-hypermotion-poster-1272157_V.jpg" group-title="Telegram", LaLiga Hypermotion (720)
+# https://cdn.sincroguia.tv/uploads/series/laliga-hypermotion-poster-1272157_V.jpg
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="Telegram", LaLiga Hypermotion (720)
 http://172.93.102.112:8989/278842_.m3u8
 #EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://cdn.sincroguia.tv/uploads/series/laliga-hypermotion-poster-1272157_V.jpg" group-title="Elcano.top", LaLiga Hypermotion (1080)
 acestream://87bb542f974b6b9e89d0f2e20ed6dc93426f4be0
@@ -448,19 +450,22 @@ acestream://b2706a7ffbea236a3b398139a3a606ada664c0eb
 #EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://i.ibb.co/CBdGc9f/hypermotion1.png" group-title="ELCANO", LaLiga Hypermotion SD
 acestream://121f719ebb94193c6086ef92865cf9b197750980
 
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.2.es" tvg-logo="https://i.ibb.co/GfMxrwWy/M-laliga-hypermotion2.png" group-title="Elcano.top", LaLiga Hypermotion 2 (1080)
+#https://i.ibb.co/GfMxrwWy/M-laliga-hypermotion2.png
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion2" group-title="Elcano.top", LaLiga Hypermotion 2 (1080)
 acestream://709075831bf5c41ed0a20dfbd640aab6c28971f8
 #EXTINF:-1 tvg-id="LaLiga.Hypermotion.2.es" tvg-logo="https://i.ibb.co/8K0VrQV/hypermotion2.png" group-title="ELCANO", LaLiga Hypermotion 2 (FHD)
 acestream://0cfdfde1b70623b8c210b0f7301be2a87456481d
 #EXTINF:-1 tvg-id="LaLiga.Hypermotion.2.es" tvg-logo="https://i.ibb.co/8K0VrQV/hypermotion2.png" group-title="ELCANO", LaLiga Hypermotion 2 SD
 acestream://0a335406bad0b658aeddb2d38f8c0614b2e5623a
 
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.3.es" tvg-logo="https://i.ibb.co/PG79d2LF/M-laliga-hypermotion3.png" group-title="Elcano.top", LaLiga Hypermotion 3
+# https://i.ibb.co/PG79d2LF/M-laliga-hypermotion3.png
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.3.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion3" group-title="Elcano.top", LaLiga Hypermotion 3
 acestream://778d2f60bb7207addedcca0b9aed98f41529724e
 #EXTINF:-1 tvg-id="LaLiga.Hypermotion.3.es" tvg-logo="https://i.ibb.co/826y2Yv/Hypermotion3.png" group-title="ELCANO", LaLiga Hypermotion 3
 acestream://fefd45ed6ff415e05f1341b7d9da2988eacd13ea
 
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://m.media-amazon.com/images/M/MV5BODU5ZTc3MjctNDE1My00OTkyLTkxYjMtNWU4NGJhNTcyZjc4XkEyXkFqcGc@._V1_QL75_UX190_CR0,2,190,281_.jpg" group-title="Elcano.top", DAZN F1 (1080)
+# https://m.media-amazon.com/images/M/MV5BODU5ZTc3MjctNDE1My00OTkyLTkxYjMtNWU4NGJhNTcyZjc4XkEyXkFqcGc@._V1_QL75_UX190_CR0,2,190,281_.jpg
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="Elcano.top", DAZN F1 (1080)
 acestream://b08e158ea3f5c72084f5ff8e3c30ca2e4d1ff6d1
 #EXTINF:-1 tvg-id="DAZN.F1.es" group-title="Elcano.top", DAZN F1 (1080) (Opcion 2)
 acestream://bcf9dc38f92e90a71b87bd54b3bac91b76d09a69
@@ -487,16 +492,16 @@ acestream://71eef80158aa8b37f3dc59f6793c6696df9a2dfa
 #EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://i.ibb.co/2Ndmtbp/f1.png" group-title="ELCANO", DAZN F1 (SD)
 acestream://268289e7a3c5209960b53b4d43c8c65fab294b85
 
-#EXTINF:-1 tvg-id="beIN.SPORTS.1.fr" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/beIN%20SPORTS%201.png" group-title="NEW ERA", BEIN SPORTS 1 [FR] (FHD)
+#EXTINF:-1 tvg-id="beIN.SPORTS.1.fr" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/BEIN_SPORTS1_FR" group-title="NEW ERA", BEIN SPORTS 1 [FR] (FHD)
 acestream://eb882a774ddf9f4cf83f3d50fc9a8d3c629f6659
 
-#EXTINF:-1 tvg-id="beIN.SPORTS.2.fr" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/beIN%20SPORTS%202.png" group-title="NEW ERA", BEIN SPORTS 2 [FR] (FHD)
+#EXTINF:-1 tvg-id="beIN.SPORTS.2.fr" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/BEIN_SPORTS2_FR" group-title="NEW ERA", BEIN SPORTS 2 [FR] (FHD)
 acestream://c1fb3fd5e4a6b6c6d4a463834841f1d66518d061
 
-#EXTINF:-1 tvg-id="beIN.SPORTS.3.fr" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/beIN%20SPORTS%203.png" group-title="NEW ERA", BEIN SPORTS 3 [FR] (FHD)
+#EXTINF:-1 tvg-id="beIN.SPORTS.3.fr" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/BEIN_SPORTS3_FR" group-title="NEW ERA", BEIN SPORTS 3 [FR] (FHD)
 acestream://ea6dd2fbd792fe4fb5d372f5d8b84d03792e6e7a
 
-#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://i.ibb.co/m54QH9Gt/copa.png" group-title="NEW ERA", M+ Copa del Rey (FHD)
+#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/M-Copa_del_Rey" group-title="NEW ERA", M+ Copa del Rey (FHD)
 acestream://28205d7c9776b96a1f479c9082e80bd1e18f5afd
 #EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://i.ibb.co/m54QH9Gt/copa.png" group-title="NEW ERA", M+ Copa del Rey
 acestream://4b9f813f30b4345fe555f9e218d828d76cd6ee88
@@ -505,15 +510,15 @@ acestream://63ad519ec9602ea12f7867cf15914b2537bbf04a
 #EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://i.ibb.co/m54QH9Gt/copa.png" group-title="ELCANO", M+ Copa del Rey
 acestream://b51f2d9a15b6956a44385b6be531bcabeb099d9d
 
-#EXTINF:-1 tvg-id="DAZN.1.BAR.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/DAZN%201%20BAR.png" group-title="NEW ERA", DAZN 1 BAR (FHD)
+#EXTINF:-1 tvg-id="DAZN.1.BAR.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN1_BAR" group-title="NEW ERA", DAZN 1 BAR (FHD)
 acestream://688e785893b50acc1d00cb37f15bfc42e72f5ae3
 #EXTINF:-1 tvg-id="DAZN.1.BAR.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/DAZN%201%20BAR.png" group-title="NEW ERA", DAZN 1 BAR (FHD) (Opcion 2)
 acestream://448a647ba8cd8885588572d609ce02b961238121
 
-#EXTINF:-1 tvg-id="DAZN.2.BAR.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/DAZN%202%20BAR.png" group-title="NEW ERA", DAZN 2 BAR (FHD)
+#EXTINF:-1 tvg-id="DAZN.2.BAR.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN2_BAR" group-title="NEW ERA", DAZN 2 BAR (FHD)
 acestream://2f9211669499f413dab1a490198afab2a9b4b57c
 
-#EXTINF:-1 tvg-id="DAZN.4.es" tvg-logo="https://i.ibb.co/R4LBVWP/dazn4.png" group-title="NEW ERA", DAZN 4 (FHD)
+#EXTINF:-1 tvg-id="DAZN.4.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN4" group-title="NEW ERA", DAZN 4 (FHD)
 acestream://7e27e46c25d4308d16098d9dc67fcd8736e8c1f0
 #EXTINF:-1 tvg-id="DAZN.4.es" tvg-logo="https://i.ibb.co/R4LBVWP/dazn4.png" group-title="NEW ERA", DAZN 4 (FHD) (Opcion 2)
 acestream://75306ac6ffbe33b08c5c28487674f75f012c7f50
