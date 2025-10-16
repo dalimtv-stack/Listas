@@ -636,9 +636,10 @@ acestream://e8e459656f964f601ad4bcda8b81a43ba41c68f9
 acestream://fc5089d8e1519872fdf951779ccbca913acc9bce
 #EXTINF:-1 tvg-id="TNT.Sports.1.uk" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/TNT%20Sports%201.png" group-title="NEW LOOP", BT Sport 1 [UK] (Opcion 2)
 acestream://efc60cfe5e3a349baa02bcc49f6647c21a9c3c5b
-#EXTINF:-1 tvg-id="Premier.Sports.1.uk" tvg-logo="https://i.ibb.co/10xGrD4/Premier1.png" group-title="NEW LOOP", PREMIER SPORTS 1 [UK]
+
+#EXTINF:-1 tvg-id="Premier.Sports.1.uk" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/PREMIER_SPORTS1" group-title="NEW LOOP", PREMIER SPORTS 1 [UK]
 acestream://75a56863b6fe0407ad4305b4d7ee5643c3923565
-#EXTINF:-1 tvg-id="Premier.Sports.1.uk" tvg-logo="https://i.ibb.co/10xGrD4/Premier2.png" group-title="NEW LOOP", PREMIER SPORTS 2 [UK]
+#EXTINF:-1 tvg-id="Premier.Sports.1.uk" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/PREMIER_SPORTS2" group-title="NEW LOOP", PREMIER SPORTS 2 [UK]
 acestream://4903ca695edb64bc72ae29eb85a5333ba0139537
 
 #EXTINF:-1 tvg-id="TNT.Sports.2.uk" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/TNT%20Sports%202.png" group-title="NEW LOOP", BT Sport 2 [UK]
