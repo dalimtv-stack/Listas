@@ -102,7 +102,7 @@ acestream://51dbbfb42f8091e4ea7a2186b566a40e780953d9
 # https://i.imgur.com/champions-league-logo.png
 # https://comparaiso.es/sites/comparaiso.es/files/styles/_default/public/images/movistar-liga-campeones-200x300.png
 # https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/LIGADECAMPEONES.jpg
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="Telegram", Movistar Liga de Campeones
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="Telegram", Movistar Liga de Campeones (720)
 http://172.93.102.112:8989/278845_.m3u8
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/MREALMP3352101" group-title="Elcano.top", Movistar Liga de Campeones (1080)
 acestream://97df5b7824948972d041d8ca2a4d29c90b641bc9
