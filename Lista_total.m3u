@@ -760,7 +760,7 @@ https://crtvg-europa.flumotion.cloud/playlist_dvr.m3u8
 #EXTINF:-1 tvg-id="TVG.2.gal" tvg-logo="https://graph.facebook.com/CRTVG/picture?width=200&height=200" group-title="Oficial", TVG 2 (720)
 https://crtvg-tvg2.flumotion.cloud/playlist.m3u8
 
-#EXTINF:-1 tvg-id="LA1.es" tvg-logo="https://pbs.twimg.com/profile_images/1921959108862709760/fe5Tqhlh_200x200.jpg" group-title="Oficial", LA 1 (1080)
+#EXTINF:-1 tvg-id="LA1.es" tvg-logo="https://pbs.twimg.com/profile_images/1921959108862709760/fe5Tqhlh.jpg" group-title="Oficial", LA 1 (1080)
 https://d2jws8nf49xuk0.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-3ikffw175xm6u/La1ES.m3u8
 #EXTINF:-1 tvg-id="LA1.es" tvg-logo="https://pbs.twimg.com/profile_images/1921959108862709760/fe5Tqhlh_200x200.jpg" group-title="Oficial", LA 1 (1080)
 https://d2jws8nf49xuk0.cloudfront.net/v1/manifest/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-3ikffw175xm6u/7c9b5813-1b5e-44c7-a94f-e729c391b11f/4.m3u8
