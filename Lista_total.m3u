@@ -532,7 +532,7 @@ acestream://8bdeb6055da0be3bd1e1977dbf3640408f7d0267
 #EXTINF:-1 tvg-id="DAZN.EVENTOS.3.es" tvg-logo="https://i.ibb.co/2vkThM3/dazn3.png" group-title="NEW ERA", DAZN EVENTOS 3
 acestream://4b048bcfaed7daec454e88f0e29b56756300447d
 
-#EXTINF:-1 tvg-id="GOL.PLAY.es" tvg-logo="https://assets.laliga.com/assets/2023/07/13/medium/60e1502d7d6098162828bb002e98bdb4.png" group-title="Telegram", GOL PLAY
+#EXTINF:-1 tvg-id="GOL.PLAY.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/GOL_PLAY" group-title="Telegram", GOL PLAY
 http://172.93.102.112:8989/278838_.m3u8
 #EXTINF:-1 tvg-id="GOL.PLAY.es" tvg-logo="https://assets.laliga.com/assets/2023/07/13/medium/60e1502d7d6098162828bb002e98bdb4.png" group-title="NEW ERA", GOL PLAY (FHD)
 acestream://b2d560741c006fc5e4a42412bb52dbd25a6a4a3a
@@ -591,7 +591,8 @@ acestream://ab0d8baaf889017c5e87b2e484203a359585c9dc
 #EXTINF:-1 tvg-id="Movistar.Ellas.Vamos.es" tvg-logo="https://i.ibb.co/rx9hnHz/ellas.png" group-title="ELCANO", Movistar Ellas Vamos
 acestream://d8c2ed470e847154a88f011137cc206319f6bed5
 
-#EXTINF:-1 tvg-id="Movistar.Golf.2.es" tvg-logo="https://i.ibb.co/BHXHhN2b/M-Golf-2.png" group-title="NEW ERA", Movistar Golf (FHD)
+# https://i.ibb.co/BHXHhN2b/M-Golf-2.png
+#EXTINF:-1 tvg-id="Movistar.Golf.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/GOLF2" group-title="NEW ERA", Movistar Golf 2 (FHD)
 acestream://96e82321c731e41768a806992ee4d3b9b7a0e7d7
 
 #EXTINF:-1 tvg-id="Movistar.Plus.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/Movistar_PLUS2" group-title="Telegram", Movistar Plus 2
