@@ -397,14 +397,14 @@ http://172.93.102.112:8989/278811_.m3u8
 #EXTINF:-1 tvg-id="Calle.13.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto,q_auto,f_auto/Canales/CAlle-trece" group-title="Telegram", Calle 13
 http://172.93.102.112:8989/278817_.m3u8
 
-#EXTINF:-1 tvg-id="Cosmo.es" tvg-logo="https://i.ibb.co/7mC1gSZ/Cosmo.png" group-title="Telegram", Cosmo
+#EXTINF:-1 tvg-id="Cosmo.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/Cosmo" group-title="Telegram", Cosmo
 http://172.93.102.112:8989/278821_.m3u8
 
-#EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://i.ibb.co/FLdc03Rq/OD-SEA.png" group-title="Telegram", Odisea
+#EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/ODISEA" group-title="Telegram", Odisea
 http://172.93.102.112:8989/278818_.m3u8
 
 #https://i.ibb.co/4wKt4tkT/NAT-GEO-WILD-alt.jpg
-#EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://i.ibb.co/JF2dY3Gw/NAT-GEO-WILD.png" group-title="Telegram", National Geographic Wild
+#EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NAT-GEO-WILD" group-title="Telegram", National Geographic Wild
 http://172.93.102.112:8989/278852_.m3u8
 
 #EXTINF:-1 tvg-id="Crime.es" tvg-logo="http://imgfz.com/i/KIdubq4.jpeg" group-title="Telegram", Crime
