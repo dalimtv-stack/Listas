@@ -1,4 +1,4 @@
-// api/upload-image.js - COMPLETO CON FIX SINTAXIS Y MÚLTIPLES FORMATO
+// api/upload-image.js - FIX FORMIDABLE V2 PARSING
 'use strict';
 
 const { put } = require('@vercel/blob');
@@ -28,11 +28,20 @@ module.exports = async (req, res) => {
 
       console.log('✅ Parseado v2:', Object.keys(fields), Object.keys(files));
 
-      const folder = fields.folder?.[0]; // Formidable arrays
-      const target = fields.target?.[0] || 'cloudinary';
-      const customName = fields.customName?.[0] || null;
-      const urlSource = fields.urlSource?.[0] || null;
-      const file = files.file?.[0];
+      // ✅ FIX: Función helper para extraer valores de Formidable v2
+      const getFieldValue = (field) => {
+        if (!field) return null;
+        if (Array.isArray(field)) {
+          return field[0] || null; // Primer valor del array
+        }
+        return field;
+      };
+
+      const folder = getFieldValue(fields.folder);
+      const target = getFieldValue(fields.target) || 'cloudinary';
+      const customName = getFieldValue(fields.customName);
+      const urlSource = getFieldValue(fields.urlSource);
+      const file = files.file?.[0]; // Files siempre array en v2
       
       console.log('📁 Folder:', folder, '🎯 Target:', target);
       console.log('📝 Custom name:', customName);
@@ -59,7 +68,7 @@ module.exports = async (req, res) => {
       if (file) {
         originalName = customName || file.originalFilename || `${Date.now()}.png`;
         buffer = await fs.readFile(file.filepath);
-        fs.unlink(file.filepath).catch(console.warn);
+        await fs.unlink(file.filepath).catch(console.warn);
       } else {
         console.log('📥 Fetching URL:', urlSource);
         const response = await fetch(urlSource);
@@ -83,7 +92,6 @@ module.exports = async (req, res) => {
           console.log('📦 Blob OK');
         }
 
-        // Soporte para formatos múltiples de Cloudinary
         const responseData = {
           success: true,
           url: result.url,
@@ -95,7 +103,7 @@ module.exports = async (req, res) => {
           ...(result.public_id && { public_id: result.public_id }),
           ...(result.width && { width: result.width, height: result.height }),
           source: file ? 'file' : 'url',
-          ...(result.formats && { formats: result.formats }) // ← MÚLTIPLES FORMATO
+          ...(result.formats && { formats: result.formats })
         };
 
         res.json(responseData);
