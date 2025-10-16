@@ -537,53 +537,54 @@ http://172.93.102.112:8989/278838_.m3u8
 #EXTINF:-1 tvg-id="GOL.PLAY.es" tvg-logo="https://assets.laliga.com/assets/2023/07/13/medium/60e1502d7d6098162828bb002e98bdb4.png" group-title="NEW ERA", GOL PLAY (FHD)
 acestream://b2d560741c006fc5e4a42412bb52dbd25a6a4a3a
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.5.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%205.png" group-title="Elcano.top", Movistar Liga de Campeones 5 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.5.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES5" group-title="Elcano.top", Movistar Liga de Campeones 5 (FHD)
 acestream://5620c0ce3dcbf14a6375cb2c2d681207f45eb97d
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.5.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%205.png" group-title="NEW ERA", Movistar Liga de Campeones 5 (FHD)
 acestream://cb6410a6355a645cfc6f6f5a7c7d71298fcbc2c5
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.5.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%205.png" group-title="NEW ERA", Movistar Liga de Campeones 5 (FHD) (Opcion 2)
 acestream://d2cf12b65c8a540a50bd74c3db1ce59ae8d05623
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.6.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%206.png" group-title="NEW ERA", Movistar Liga de Campeones 6 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.6.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES6" group-title="NEW ERA", Movistar Liga de Campeones 6 (FHD)
 acestream://976983697790ab8a07b764b08843529d38bc6444
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.7.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%207.png" group-title="NEW ERA", Movistar Liga de Campeones 7 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.7.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES7" group-title="NEW ERA", Movistar Liga de Campeones 7 (FHD)
 acestream://83c02982581a536d1321e38a77dc0c520b1cb842
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.8.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%208.png" group-title="NEW ERA", Movistar Liga de Campeones 8 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.8.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES8" group-title="NEW ERA", Movistar Liga de Campeones 8 (FHD)
 acestream://97f8a84212fe6b3d2ab15aadc83c7b5e6af656c9
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.9.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%209.png" group-title="NEW ERA", Movistar Liga de Campeones 9 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.9.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES9" group-title="NEW ERA", Movistar Liga de Campeones 9 (FHD)
 acestream://80abcb38122c25fefb4dffeb57086998447ff49b
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.10.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%2010.png" group-title="NEW ERA", Movistar Liga de Campeones 10 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.10.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES10" group-title="NEW ERA", Movistar Liga de Campeones 10 (FHD)
 acestream://0103373118989085dd0d02667c629ee36d462cb1
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.11.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%2011.png" group-title="NEW ERA", Movistar Liga de Campeones 11 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.11.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES11" group-title="NEW ERA", Movistar Liga de Campeones 11 (FHD)
 acestream://6e12a5849a4edea248ed9c8689e58bd66fc9f8fa
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.12.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%2012.png" group-title="NEW ERA", Movistar Liga de Campeones 12 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.12.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES12" group-title="NEW ERA", Movistar Liga de Campeones 12 (FHD)
 acestream://130d37f9a68bd8f29f0d636dcde522a1e91d1cb7
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.13.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%2013.png" group-title="NEW ERA", Movistar Liga de Campeones 13 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.13.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES13" group-title="NEW ERA", Movistar Liga de Campeones 13 (FHD)
 acestream://9c246c5e6a153ba2b765e4b84f4d50e0836b3556
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.14.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%2014.png" group-title="NEW ERA", Movistar Liga de Campeones 14 (SD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.14.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES14" group-title="NEW ERA", Movistar Liga de Campeones 14 (SD)
 acestream://773ef9e2d2feb4f80ef558b253c72fda8d8e53cf
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.15.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%2015.png" group-title="NEW ERA", Movistar Liga de Campeones 15 (SD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.15.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES15" group-title="NEW ERA", Movistar Liga de Campeones 15 (SD)
 acestream://47ce8fe15adfcf4e1749b0c0dee1fc79a3d5ca6d
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.16.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%2016.png" group-title="NEW ERA", Movistar Liga de Campeones 16 (SD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.16.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES16" group-title="NEW ERA", Movistar Liga de Campeones 16 (SD)
 acestream://348cc65d5cbd5a77da0fe006ce97eff6ad72b9da
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.17.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%2018.png" group-title="NEW ERA", Movistar Liga de Campeones 17 (SD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.17.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES17" group-title="NEW ERA", Movistar Liga de Campeones 17 (SD)
 acestream://a15a132ffe7867a2b61b49617df39a8309cce27c
 
-#EXTINF:-1 tvg-id="Movistar.LaLiga.4.es" tvg-logo="https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/M-LALIGA4-black.jpg" group-title="NEW ERA", Movistar LaLiga 4 (FHD)
+# https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/M-LALIGA4-black.jpg
+#EXTINF:-1 tvg-id="Movistar.LaLiga.4.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/M-LALIGA4-black" group-title="NEW ERA", Movistar LaLiga 4 (FHD)
 acestream://68697ea4f261289d97bbc3418ad3cbc4180aa32f
 
-#EXTINF:-1 tvg-id="Movistar.Ellas.Vamos.es" tvg-logo="https://i.ibb.co/rx9hnHz/ellas.png" group-title="NEW ERA", Movistar Ellas Vamos (FHD)
+#EXTINF:-1 tvg-id="Movistar.Ellas.Vamos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/Vamos_ellas" group-title="NEW ERA", Movistar Ellas Vamos (FHD)
 acestream://9b84af74b2fa3690c519199326fc2f181b025cdd
 #EXTINF:-1 tvg-id="Movistar.Ellas.Vamos.es" tvg-logo="https://i.ibb.co/rx9hnHz/ellas.png" group-title="NEW ERA II", Movistar Ellas Vamos (FHD)
 acestream://ab0d8baaf889017c5e87b2e484203a359585c9dc
@@ -593,7 +594,7 @@ acestream://d8c2ed470e847154a88f011137cc206319f6bed5
 #EXTINF:-1 tvg-id="Movistar.Golf.2.es" tvg-logo="https://i.ibb.co/BHXHhN2b/M-Golf-2.png" group-title="NEW ERA", Movistar Golf (FHD)
 acestream://96e82321c731e41768a806992ee4d3b9b7a0e7d7
 
-#EXTINF:-1 tvg-id="Movistar.Plus.2.es" tvg-logo="https://i.ibb.co/gL8rx1B7/plus2.png" group-title="Telegram", Movistar Plus 2
+#EXTINF:-1 tvg-id="Movistar.Plus.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/Movistar_PLUS2" group-title="Telegram", Movistar Plus 2
 http://172.93.102.112:8989/278851_.m3u8
 #EXTINF:-1 tvg-id="Movistar.Plus.2.es" tvg-logo="https://i.ibb.co/gL8rx1B7/plus2.png" group-title="NEW ERA", Movistar Plus 2 (FHD)
 acestream://fbc39d8a9e5d7c9ac6a1438d440104620f54e09c
