@@ -116,7 +116,7 @@ module.exports = async (req, res) => {
   }
 
   // ✅ HTML CON BACKTICKS CORRECTOS
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.end(`<!DOCTYPE html>
     <html lang="es">
     <head>
@@ -213,12 +213,6 @@ module.exports = async (req, res) => {
           word-break: break-all;
           font-family: monospace;
         }
-        img.preview {
-          max-width: 300px;
-          max-height: 400px;
-          border-radius: 6px;
-          margin-top: 1rem;
-        }
         .file-info, .url-info { font-size: 0.9rem; color: #aaa; margin-top: 0.5rem; }
         .folder-selector, .target-selector { margin-bottom: 1rem; }
         label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
@@ -229,16 +223,80 @@ module.exports = async (req, res) => {
         .source-tab { padding: 0.5rem 1rem; margin: 0 0.5rem; background: #333; border: none; border-radius: 20px; cursor: pointer; }
         .source-tab.active { background: #0070f3; }
         input[type="file"] { display: none; }
-        details { margin: 1rem 0; }
-        summary { cursor: pointer; padding: 0.5rem; background: #333; border-radius: 4px; }
-        .format-box { 
-          margin: 0.5rem 0; 
-          padding: 0.5rem; 
-          background: #1a1a1a; 
-          border-radius: 4px; 
-          border-left: 3px solid #0070f3;
+
+        /* ✅ FIX: ESTILOS PARA ENLACES LEGIBLES */
+        a { 
+          color: #4ecdc4 !important; 
+          text-decoration: none; 
+        }
+        a:hover { 
+          color: #66ffcc !important; 
+          text-decoration: underline; 
+        }
+        .url-box a, .format-box a {
+          color: #4ecdc4 !important;
+          font-family: 'Courier New', monospace;
+          font-size: 0.9rem;
+          line-height: 1.4;
+        }
+        .url-box a:hover, .format-box a:hover {
+          color: #66ffcc !important;
+          background: rgba(78, 205, 196, 0.1);
+          padding: 2px 4px;
+          border-radius: 3px;
+        }
+
+        /* ✅ FIX: MÚLTIPLES PREVIEWS */
+        .previews-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          justify-content: center;
+          margin-top: 1rem;
+          padding: 1rem;
+          background: #1a1a1a;
+          border-radius: 8px;
+        }
+        .preview, .format-preview {
+          max-width: 200px;
+          max-height: 300px;
+          border-radius: 6px;
+          border: 2px solid #333;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+        .preview:hover, .format-preview:hover {
+          border-color: #4ecdc4;
+          transform: scale(1.02);
+          box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+        }
+        .format-preview {
+          max-width: 150px;
+          max-height: 225px;
+        }
+        .format-box {
+          margin: 0.5rem 0;
+          padding: 0.75rem;
+          background: #1a1a1a;
+          border-radius: 6px;
+          border-left: 4px solid #4ecdc4;
           text-align: left;
         }
+        details {
+          margin: 1rem 0;
+          background: #222;
+          border-radius: 6px;
+          border: 1px solid #333;
+        }
+        summary {
+          cursor: pointer;
+          padding: 0.75rem;
+          background: #333;
+          border-radius: 4px;
+          font-weight: bold;
+          color: #4ecdc4;
+        }
+        summary:hover { background: #444; }
       </style>
     </head>
     <body>
@@ -463,7 +521,6 @@ module.exports = async (req, res) => {
             const response = await fetch('/upload-image', { method: 'POST', body: formData });
             const data = await response.json();
             
-            // Simular progreso
             progressInterval = setInterval(() => {
               const width = parseInt(progressBar.style.width) || 0;
               progressBar.style.width = Math.min(95, width + 5) + '%';
@@ -476,7 +533,7 @@ module.exports = async (req, res) => {
               let sourceText = data.source === 'url' ? '🌐 URL' : '📁 Archivo';
               let targetText = data.target === 'cloudinary' ? '☁️ Cloudinary' : '📦 Vercel Blob';
               
-              // Construir HTML paso a paso
+              // ✅ FIX: HTML CON MÚLTIPLES PREVIEWS Y ENLACES LEGIBLES
               let htmlContent = \`
                 <h3>✅ Subida exitosa desde \${sourceText} a \${targetText}</h3>
                 <p><strong>Origen:</strong> \${sourceText}</p>
@@ -491,7 +548,7 @@ module.exports = async (req, res) => {
                 </div>
               \`;
               
-              // URL original si existe
+              // URL original
               if (data.originalUrl && data.originalUrl !== data.url) {
                 htmlContent += \`
                   <div class="url-box">
@@ -501,26 +558,46 @@ module.exports = async (req, res) => {
                 \`;
               }
               
-              // Múltiples formatos si Cloudinary
+              // ✅ FIX: Múltiples formatos con mini-previews
               if (data.formats) {
-                let formatsHtml = '<details><summary>📋 Otros formatos disponibles (' + Object.keys(data.formats).length + ')</summary>';
+                let formatsHtml = '<details><summary>📋 Formatos disponibles (' + Object.keys(data.formats).length + ')</summary>';
                 Object.entries(data.formats).forEach(([key, url]) => {
-                  if (url !== data.url && url !== data.originalUrl) {
-                    formatsHtml += \`
-                      <div class="format-box">
-                        <strong>\${key.replace(/_/g, ' ').toUpperCase()}:</strong><br>
-                        <small style="word-break: break-all;"><a href="\${url}" target="_blank">\${url}</a></small>
-                      </div>
-                    \`;
-                  }
+                  const displayKey = key.replace(/_/g, ' ').toUpperCase();
+                  formatsHtml += \`
+                    <div class="format-box">
+                      <strong>\${displayKey}:</strong><br>
+                      <small style="word-break: break-all;">
+                        <a href="\${url}" target="_blank">\${url}</a>
+                      </small>
+                      <br>
+                      <img src="\${url}" class="format-preview preview" 
+                           alt="\${displayKey}" 
+                           onload="this.style.display='block'" 
+                           style="display:none; margin-top: 5px;">
+                    </div>
+                  \`;
                 });
                 formatsHtml += '</details>';
                 htmlContent += formatsHtml;
               }
               
+              // ✅ FIX: Previews principales en grid
               htmlContent += \`
-                <img src="\${data.url}" alt="Preview" class="preview" onload="this.style.display='block'" style="display:none;">
+                <div class="previews-container">
+                  <img src="\${data.url}" alt="Preview Principal" class="preview" 
+                       onload="this.style.display='block'" 
+                       style="display:none;">
               \`;
+              
+              if (data.originalUrl && data.originalUrl !== data.url) {
+                htmlContent += \`
+                  <img src="\${data.originalUrl}" alt="Preview Original" class="preview" 
+                       onload="this.style.display='block'" 
+                       style="display:none;">
+                \`;
+              }
+              
+              htmlContent += '</div>';
               
               showResult('success', htmlContent);
             } else {
