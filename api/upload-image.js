@@ -1,4 +1,4 @@
-// api/upload-image.js - FIX FORMIDABLE V2 COMPLETO
+// api/upload-image.js - FIX CACHE + TOGGLE PREVIEWS
 'use strict';
 
 const { put } = require('@vercel/blob');
@@ -160,7 +160,7 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // ✅ HTML CON BACKTICKS CORRECTOS Y FIXES VISUALES
+  // ✅ HTML CON TOGGLE PREVIEWS + CACHE BUSTING
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.end(`<!DOCTYPE html>
     <html lang="es">
@@ -226,6 +226,26 @@ module.exports = async (req, res) => {
           border: 1px solid #333;
         }
         .rename-section.active { display: block; }
+        
+        /* ✅ TOGGLE PREVIEWS */
+        .previews-toggle {
+          margin: 1rem 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          background: #222;
+          padding: 0.75rem;
+          border-radius: 6px;
+        }
+        #showPreviews {
+          width: auto;
+          height: auto;
+          transform: scale(1.3);
+          accent-color: #4ecdc4;
+          cursor: pointer;
+        }
+        
         button {
           background: #0070f3;
           color: white;
@@ -328,6 +348,15 @@ module.exports = async (req, res) => {
           color: #4ecdc4;
         }
         summary:hover { background: #444; }
+        
+        .no-previews-info {
+          margin: 1rem 0;
+          padding: 1rem;
+          background: #2a2a2a;
+          border-radius: 6px;
+          color: #ffaa00;
+          text-align: center;
+        }
       </style>
     </head>
     <body>
@@ -372,6 +401,15 @@ module.exports = async (req, res) => {
         <label>Nombre personalizado:</label>
         <input type="text" id="customName" placeholder="NombreParaLaImagen.jpg" />
         <small>Deja vacío para usar nombre original</small>
+      </div>
+      
+      <!-- ✅ TOGGLE PREVIEWS -->
+      <div class="previews-toggle">
+        <input type="checkbox" id="showPreviews" checked>
+        <label for="showPreviews">
+          🖼️ Mostrar previews 
+          <small style="color: #ffaa00;">(genera transformaciones extra en Cloudinary)</small>
+        </label>
       </div>
       
       <button id="renameBtn" class="rename-btn" onclick="toggleRename()">✏️ Renombrar imagen</button>
@@ -557,6 +595,11 @@ module.exports = async (req, res) => {
               let sourceText = data.source === 'url' ? '🌐 URL' : '📁 Archivo';
               let targetText = data.target === 'cloudinary' ? '☁️ Cloudinary' : '📦 Vercel Blob';
               
+              // ✅ CACHE BUSTING + TOGGLE PREVIEWS
+              const showPreviews = document.getElementById('showPreviews').checked;
+              const timestamp = Date.now();
+              const cacheBustUrl = (url) => \`\${url}?v=\${timestamp}\`;
+              
               let htmlContent = \`
                 <h3>✅ Subida exitosa desde \${sourceText} a \${targetText}</h3>
                 <p><strong>Origen:</strong> \${sourceText}</p>
@@ -580,44 +623,63 @@ module.exports = async (req, res) => {
                 \`;
               }
               
+              // ✅ Previews principales (condicional)
+              if (showPreviews) {
+                htmlContent += \`
+                  <div class="previews-container">
+                    <img src="\${cacheBustUrl(data.url)}" alt="Preview Principal" class="preview" 
+                         onload="this.style.display='block'" 
+                         style="display:none;">
+                \`;
+                
+                if (data.originalUrl && data.originalUrl !== data.url) {
+                  htmlContent += \`
+                    <img src="\${cacheBustUrl(data.originalUrl)}" alt="Preview Original" class="preview" 
+                         onload="this.style.display='block'" 
+                         style="display:none;">
+                  \`;
+                }
+                
+                htmlContent += '</div>';
+              } else {
+                htmlContent += \`
+                  <div class="no-previews-info">
+                    <strong>ℹ️ Previews desactivados</strong><br>
+                    <small>Activa el checkbox para ver las imágenes (genera transformaciones extra en Cloudinary)</small>
+                  </div>
+                \`;
+              }
+              
+              // ✅ Formatos con previews condicionales
               if (data.formats) {
                 let formatsHtml = '<details><summary>📋 Formatos disponibles (' + Object.keys(data.formats).length + ')</summary>';
                 Object.entries(data.formats).forEach(([key, url]) => {
                   const displayKey = key.replace(/_/g, ' ').toUpperCase();
+                  let previewHtml = '';
+                  
+                  if (showPreviews) {
+                    previewHtml = \`
+                      <br>
+                      <img src="\${cacheBustUrl(url)}" class="format-preview preview" 
+                           alt="\${displayKey}" 
+                           onload="this.style.display='block'" 
+                           style="display:none; margin-top: 5px;">
+                    \`;
+                  }
+                  
                   formatsHtml += \`
                     <div class="format-box">
                       <strong>\${displayKey}:</strong><br>
                       <small style="word-break: break-all;">
                         <a href="\${url}" target="_blank">\${url}</a>
                       </small>
-                      <br>
-                      <img src="\${url}" class="format-preview preview" 
-                           alt="\${displayKey}" 
-                           onload="this.style.display='block'" 
-                           style="display:none; margin-top: 5px;">
+                      \${previewHtml}
                     </div>
                   \`;
                 });
                 formatsHtml += '</details>';
                 htmlContent += formatsHtml;
               }
-              
-              htmlContent += \`
-                <div class="previews-container">
-                  <img src="\${data.url}" alt="Preview Principal" class="preview" 
-                       onload="this.style.display='block'" 
-                       style="display:none;">
-              \`;
-              
-              if (data.originalUrl && data.originalUrl !== data.url) {
-                htmlContent += \`
-                  <img src="\${data.originalUrl}" alt="Preview Original" class="preview" 
-                       onload="this.style.display='block'" 
-                       style="display:none;">
-                \`;
-              }
-              
-              htmlContent += '</div>';
               
               showResult('success', htmlContent);
             } else {
