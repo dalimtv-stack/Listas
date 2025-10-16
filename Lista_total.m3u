@@ -619,11 +619,6 @@ acestream://cc5782d37ae6b6e0bab396dd64074982d0879046
 #EXTINF:-1 tvg-id="Movistar.Deportes.7.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/M_Deportes7" group-title="ELCANO", Movistar Deportes 7
 acestream://070f82d6443a52962d6a2ed9954c979b29404932
 
-#EXTINF:-1 tvg-id="Movistar.LaLiga.BAR.es" tvg-logo="https://comunidad.orange.es/waykc66935/attachments/waykc66935/futbol-series-cine/3971/339/LL_TV_BAR_NEG.png" group-title="ELCANO", Movistar LaLiga BAR (FHD)
-acestream://608b0faf7d3d25f6fe5dba13d5e4b4142949990e
-#EXTINF:-1 tvg-id="Movistar.LaLiga.BAR.es" tvg-logo="https://comunidad.orange.es/waykc66935/attachments/waykc66935/futbol-series-cine/3971/339/LL_TV_BAR_NEG.png" group-title="ELCANO", Movistar LaLiga BAR (FHD) (Opcion 2)
-acestream://94d34491106e00394835c8cb68aa94481339b53f
-
 #EXTINF:-1 tvg-id="AutomotorSport" tvg-logo="https://seeklogo.com/images/A/Automotor-logo-D99B43248F-seeklogo.com.gif" group-title="NEW LOOP", AUTOMOTORSPORT (HD)
 acestream://610993aea3a2bfd509594334b7461ce96900f54c
 
@@ -639,7 +634,8 @@ acestream://efc60cfe5e3a349baa02bcc49f6647c21a9c3c5b
 
 #EXTINF:-1 tvg-id="Premier.Sports.1.uk" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/PREMIER_SPORTS1" group-title="NEW LOOP", PREMIER SPORTS 1 [UK]
 acestream://75a56863b6fe0407ad4305b4d7ee5643c3923565
-#EXTINF:-1 tvg-id="Premier.Sports.1.uk" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/PREMIER_SPORTS2" group-title="NEW LOOP", PREMIER SPORTS 2 [UK]
+
+#EXTINF:-1 tvg-id="Premier.Sports.2.uk" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/PREMIER_SPORTS2" group-title="NEW LOOP", PREMIER SPORTS 2 [UK]
 acestream://4903ca695edb64bc72ae29eb85a5333ba0139537
 
 #EXTINF:-1 tvg-id="TNT.Sports.2.uk" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/TNT%20Sports%202.png" group-title="NEW LOOP", BT Sport 2 [UK]
