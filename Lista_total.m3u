@@ -595,7 +595,7 @@ acestream://d8c2ed470e847154a88f011137cc206319f6bed5
 #EXTINF:-1 tvg-id="Movistar.Golf.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/GOLF2" group-title="NEW ERA", Movistar Golf 2 (FHD)
 acestream://96e82321c731e41768a806992ee4d3b9b7a0e7d7
 
-#EXTINF:-1 tvg-id="Movistar.Plus.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/Movistar_PLUS2" group-title="Telegram", Movistar Plus 2
+#EXTINF:-1 tvg-id="Movistar.Plus.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Movistar_PLUS2" group-title="Telegram", Movistar Plus 2
 http://172.93.102.112:8989/278851_.m3u8
 #EXTINF:-1 tvg-id="Movistar.Plus.2.es" tvg-logo="https://i.ibb.co/gL8rx1B7/plus2.png" group-title="NEW ERA", Movistar Plus 2 (FHD)
 acestream://fbc39d8a9e5d7c9ac6a1438d440104620f54e09c
