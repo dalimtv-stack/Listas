@@ -1,4 +1,4 @@
-// api/upload-image.js - FIX FORMIDABLE V2 PARSING
+// api/upload-image.js - FIX FORMIDABLE V2 COMPLETO
 'use strict';
 
 const { put } = require('@vercel/blob');
@@ -28,25 +28,43 @@ module.exports = async (req, res) => {
 
       console.log('✅ Parseado v2:', Object.keys(fields), Object.keys(files));
 
-      // ✅ FIX: Función helper para extraer valores de Formidable v2
+      // ✅ Helper para campos de texto
       const getFieldValue = (field) => {
         if (!field) return null;
         if (Array.isArray(field)) {
-          return field[0] || null; // Primer valor del array
+          return field[0] || null;
         }
         return field;
       };
+
+      // ✅ FIX: Parsing robusto de files en Formidable v2
+      let file = null;
+      if (files.file) {
+        if (Array.isArray(files.file)) {
+          file = files.file[0];
+        } else if (files.file && files.file.filepath) {
+          file = files.file;
+        }
+      }
 
       const folder = getFieldValue(fields.folder);
       const target = getFieldValue(fields.target) || 'cloudinary';
       const customName = getFieldValue(fields.customName);
       const urlSource = getFieldValue(fields.urlSource);
-      const file = files.file?.[0]; // Files siempre array en v2
       
       console.log('📁 Folder:', folder, '🎯 Target:', target);
       console.log('📝 Custom name:', customName);
       console.log('🌐 URL source:', urlSource);
-      console.log('📄 File:', file?.originalFilename);
+      console.log('📄 File:', file?.originalFilename || 'NO FILE FOUND');
+      
+      if (file) {
+        console.log('🔍 File details:', {
+          filepath: file.filepath,
+          size: file.size,
+          mimetype: file.mimetype,
+          originalFilename: file.originalFilename
+        });
+      }
 
       if (!file && !urlSource) {
         res.status(400).json({ error: 'No file or URL provided', type: 'NO_SOURCE' });
@@ -66,9 +84,29 @@ module.exports = async (req, res) => {
       let originalName, buffer;
 
       if (file) {
+        // ✅ FIX: Verificación robusta del file
+        if (!file.filepath) {
+          console.error('❌ File missing filepath:', file);
+          res.status(500).json({ error: 'File path missing', type: 'FILE_ERROR' });
+          return;
+        }
+        
         originalName = customName || file.originalFilename || `${Date.now()}.png`;
-        buffer = await fs.readFile(file.filepath);
-        await fs.unlink(file.filepath).catch(console.warn);
+        console.log('📂 Reading file:', file.filepath);
+        
+        try {
+          buffer = await fs.readFile(file.filepath);
+          console.log(`📊 Buffer loaded: ${(buffer.length / 1024).toFixed(1)} KB`);
+          
+          // Limpiar archivo temporal
+          await fs.unlink(file.filepath).catch(err => {
+            console.warn('⚠️ Could not delete temp file:', err.message);
+          });
+        } catch (readError) {
+          console.error('❌ Error reading file:', readError);
+          res.status(500).json({ error: 'Failed to read file', type: 'READ_ERROR' });
+          return;
+        }
       } else {
         console.log('📥 Fetching URL:', urlSource);
         const response = await fetch(urlSource);
@@ -78,9 +116,10 @@ module.exports = async (req, res) => {
         }
         originalName = customName || urlSource.split('/').pop() || `${Date.now()}.jpg`;
         buffer = await response.buffer();
+        console.log(`📊 URL buffer: ${(buffer.length / 1024).toFixed(1)} KB`);
       }
 
-      console.log(`📊 Buffer: ${(buffer.length / 1024).toFixed(1)} KB`);
+      console.log(`📊 Final buffer: ${(buffer.length / 1024).toFixed(1)} KB`);
 
       let result;
       try {
@@ -106,17 +145,23 @@ module.exports = async (req, res) => {
           ...(result.formats && { formats: result.formats })
         };
 
+        console.log('✅ Response data:', {
+          url: responseData.url,
+          originalUrl: responseData.originalUrl,
+          formats: responseData.formats ? Object.keys(responseData.formats).length : 0
+        });
+
         res.json(responseData);
       } catch (error) {
-        console.error('Upload error:', error);
+        console.error('❌ Upload error:', error);
         res.status(500).json({ error: error.message, type: 'UPLOAD_ERROR', target });
       }
     });
     return;
   }
 
-  // ✅ HTML CON BACKTICKS CORRECTOS
-   res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  // ✅ HTML CON BACKTICKS CORRECTOS Y FIXES VISUALES
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.end(`<!DOCTYPE html>
     <html lang="es">
     <head>
@@ -224,15 +269,9 @@ module.exports = async (req, res) => {
         .source-tab.active { background: #0070f3; }
         input[type="file"] { display: none; }
 
-        /* ✅ FIX: ESTILOS PARA ENLACES LEGIBLES */
-        a { 
-          color: #4ecdc4 !important; 
-          text-decoration: none; 
-        }
-        a:hover { 
-          color: #66ffcc !important; 
-          text-decoration: underline; 
-        }
+        /* ✅ FIX: Enlaces legibles */
+        a { color: #4ecdc4 !important; text-decoration: none; }
+        a:hover { color: #66ffcc !important; text-decoration: underline; }
         .url-box a, .format-box a {
           color: #4ecdc4 !important;
           font-family: 'Courier New', monospace;
@@ -246,7 +285,7 @@ module.exports = async (req, res) => {
           border-radius: 3px;
         }
 
-        /* ✅ FIX: MÚLTIPLES PREVIEWS */
+        /* ✅ FIX: Múltiples previews */
         .previews-container {
           display: flex;
           flex-wrap: wrap;
@@ -270,10 +309,7 @@ module.exports = async (req, res) => {
           transform: scale(1.02);
           box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
         }
-        .format-preview {
-          max-width: 150px;
-          max-height: 225px;
-        }
+        .format-preview { max-width: 150px; max-height: 225px; }
         .format-box {
           margin: 0.5rem 0;
           padding: 0.75rem;
@@ -282,12 +318,7 @@ module.exports = async (req, res) => {
           border-left: 4px solid #4ecdc4;
           text-align: left;
         }
-        details {
-          margin: 1rem 0;
-          background: #222;
-          border-radius: 6px;
-          border: 1px solid #333;
-        }
+        details { margin: 1rem 0; background: #222; border-radius: 6px; border: 1px solid #333; }
         summary {
           cursor: pointer;
           padding: 0.75rem;
@@ -409,11 +440,7 @@ module.exports = async (req, res) => {
             }
 
             currentUrl = url;
-            urlInfo.innerHTML = \`
-              ✅ URL válida<br>
-              Tamaño: \${(blob.size / 1024).toFixed(1)} KB<br>
-              Tipo: \${contentType}
-            \`;
+            urlInfo.innerHTML = \`✅ URL válida<br>Tamaño: \${(blob.size / 1024).toFixed(1)} KB<br>Tipo: \${contentType}\`;
             urlInfo.style.color = '#4ecdc4';
             document.getElementById('uploadBtn').disabled = false;
           } catch (error) {
@@ -477,10 +504,7 @@ module.exports = async (req, res) => {
               showResult('error', '<h3>❌ Archivo demasiado grande</h3><p>Máximo 4MB</p>');
               return;
             }
-            document.getElementById('fileInfo').innerHTML = \`
-              <strong>\${currentFile.name}</strong><br>
-              \${(currentFile.size / 1024).toFixed(1)} KB - \${currentFile.type}
-            \`;
+            document.getElementById('fileInfo').innerHTML = \`<strong>\${currentFile.name}</strong><br>\${(currentFile.size / 1024).toFixed(1)} KB - \${currentFile.type}\`;
             document.getElementById('fileInfo').style.display = 'block';
             document.getElementById('uploadBtn').disabled = false;
             currentUrl = null;
@@ -533,7 +557,6 @@ module.exports = async (req, res) => {
               let sourceText = data.source === 'url' ? '🌐 URL' : '📁 Archivo';
               let targetText = data.target === 'cloudinary' ? '☁️ Cloudinary' : '📦 Vercel Blob';
               
-              // ✅ FIX: HTML CON MÚLTIPLES PREVIEWS Y ENLACES LEGIBLES
               let htmlContent = \`
                 <h3>✅ Subida exitosa desde \${sourceText} a \${targetText}</h3>
                 <p><strong>Origen:</strong> \${sourceText}</p>
@@ -548,7 +571,6 @@ module.exports = async (req, res) => {
                 </div>
               \`;
               
-              // URL original
               if (data.originalUrl && data.originalUrl !== data.url) {
                 htmlContent += \`
                   <div class="url-box">
@@ -558,7 +580,6 @@ module.exports = async (req, res) => {
                 \`;
               }
               
-              // ✅ FIX: Múltiples formatos con mini-previews
               if (data.formats) {
                 let formatsHtml = '<details><summary>📋 Formatos disponibles (' + Object.keys(data.formats).length + ')</summary>';
                 Object.entries(data.formats).forEach(([key, url]) => {
@@ -581,7 +602,6 @@ module.exports = async (req, res) => {
                 htmlContent += formatsHtml;
               }
               
-              // ✅ FIX: Previews principales en grid
               htmlContent += \`
                 <div class="previews-container">
                   <img src="\${data.url}" alt="Preview Principal" class="preview" 
