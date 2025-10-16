@@ -1,7 +1,7 @@
 #EXTM3U tvg-url="https://epgshare01.online/epgshare01/epg_ripper_ES1.xml.gz"
 #EXTM3U url-tvg="https://raw.githubusercontent.com/davidmuma/EPG_dobleM/refs/heads/master/guiatv.xml, https://epgshare01.online/epgshare01/epg_ripper_NL1.xml.gz"
 #EXTVLCOPT:network-caching=1000
-# https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/AMC-CRIME
+
 #https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Hollywood.jpg
 #EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Hollywood" group-title="Telegram", Hollywood (FHD)
 http://172.93.102.112:8989/278839_.m3u8
@@ -407,10 +407,10 @@ http://172.93.102.112:8989/278818_.m3u8
 #EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NAT-GEO-WILD" group-title="Telegram", National Geographic Wild
 http://172.93.102.112:8989/278852_.m3u8
 
-#EXTINF:-1 tvg-id="Crime.es" tvg-logo="http://imgfz.com/i/KIdubq4.jpeg" group-title="Telegram", Crime
+#EXTINF:-1 tvg-id="Crime.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/AMC-CRIME" group-title="Telegram", Crime
 http://172.93.102.112:8989/278866_.m3u8
 
-#EXTINF:-1 tvg-id="Crime.es" tvg-logo="" group-title="Telegram", Discovery
+#EXTINF:-1 tvg-id="Discovery.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_white,c_pad,w_405,q_auto,f_auto/Canales/Discovery_Channel_-_Logo" group-title="Telegram", Discovery
 http://172.93.102.112:8989/278830_.m3u8
 
 #EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://i.ibb.co/4wVnPgDk/Primera-RFEF-2021.png" group-title="NEW ERA", Canal 1 [1RFEF] (SOLO EVENTOS)
