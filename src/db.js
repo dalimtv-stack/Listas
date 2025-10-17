@@ -179,19 +179,25 @@ async function loadM3U(args = {}) {
         channelSeenUrls[tvgId] = new Set();
       } else {
         // Completar metadatos sin sobrescribir los principales
-        if (!channelMap[tvgId].website_url && isWebPage) {
-          channelMap[tvgId].website_url = rawUrl;
-        }
-        if (!channelMap[tvgId].acestream_id && stream.acestream_id) {
+        // ✅ PROTEGER ACE: solo si NO hay M3U8 NI Directo principal
+        if ((!channelMap[tvgId].m3u8_url && !channelMap[tvgId].stream_url) && stream.acestream_id) {
           channelMap[tvgId].acestream_id = stream.acestream_id;
-          // NUEVO: guardar el group_title del Ace principal
-          channelMap[tvgId].acestream_group_title = stream.group_title || channelMap[tvgId].acestream_group_title || null;
+          channelMap[tvgId].acestream_group_title = stream.group_title;
         }
+        
+        // ✅ PROTEGER M3U8: solo si NO hay Ace NI Directo principal (tu fix actual)
         if ((!channelMap[tvgId].acestream_id && !channelMap[tvgId].stream_url) && stream.url) {
           channelMap[tvgId].m3u8_url = stream.url;
         }
+        
+        // ✅ PROTEGER DIRECTO: mantener el primero siempre
         if (!channelMap[tvgId].stream_url && (!isAce && !isM3u8 && !isWebPage)) {
           channelMap[tvgId].stream_url = rawUrl;
+        }
+        
+        // ✅ WEBSITE: mantener el primero
+        if (!channelMap[tvgId].website_url && isWebPage) {
+          channelMap[tvgId].website_url = rawUrl;
         }
       }
 
