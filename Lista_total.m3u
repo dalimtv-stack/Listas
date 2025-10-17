@@ -826,8 +826,6 @@ https://wahyu1ptv.pages.dev/SkySportBundesliga-HD.m3u8
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="Run Time Español", Pruebas
 https://stream.ads.ottera.tv/playlist.m3u8?network_id=2649
 
-#EXTM3U
-
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="Run Time Familia", Pruebas
 https://stream.ads.ottera.tv/playlist.m3u8?network_id=3528
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="Run Time Terror", Pruebas
