@@ -116,7 +116,7 @@ async function getStreams(id, configId) {
     'LA 1': 'LA1.es',
     'Aragón TV': 'Aragon.TV.es',
     'TVG 2': 'TVG.2.gal',
-    'M+ LaLiga': 'Movistar.LaLiga.es'
+    'M+ LaLiga': 'Movistar.LaLiga.es',
     'M+ Vamos': 'Movistar.Vamos.es'
   };
 
