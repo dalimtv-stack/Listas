@@ -259,8 +259,8 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
 
   // --- Enriquecer títulos justo antes de devolver ---
   baseObj.streams = baseObj.streams.map(s => {
-    const canalName = baseObj.chName || '';
-    const calidadDetectada = extraerYLimpiarCalidad(canalName);
+    const originalTitle = s.title || '';
+    const calidadDetectada = extraerYLimpiarCalidad(originalTitle);
     const proveedor = (s.name || s.group_title || '').trim();
     const canal = normalizeCatalogName((baseObj.chName || '')).trim();
     const formato = s.externalUrl?.startsWith('acestream://')
@@ -334,4 +334,4 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
 }
 
 
-module.exports = { handleStream, handleStreamInternal, enrichWithExtra };
+module.exports = { handleStream, handleStreamInternal, enrichWithExtra }
