@@ -1,6 +1,9 @@
 #EXTM3U tvg-url="https://epgshare01.online/epgshare01/epg_ripper_ES1.xml.gz"
 #EXTM3U url-tvg="https://raw.githubusercontent.com/davidmuma/EPG_dobleM/refs/heads/master/guiatv.xml, https://epgshare01.online/epgshare01/epg_ripper_NL1.xml.gz"
 #EXTVLCOPT:network-caching=1000
+# Revisar: 
+# https://github.com/MrLonely14/world_repo/blob/f4659c98704dc85300bbad263a292235393fe43b/Updater_Matrix/XML2/%7BAllTelegram%7D2.txt#L383
+# https://github.com/tv289/20/blob/8e416a927ce751d0472195512cb04cd2eb7211a3/1g?h=1#L5477
 
 #https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Hollywood.jpg
 #EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Hollywood" group-title="Telegram", Hollywood (FHD)
@@ -295,8 +298,14 @@ acestream://dc4ccb9e72550bc72be9360aa7d77e337ad11ecc
 acestream://4b87a5b67f39dfc151a163ec8c08039520f0a372
 
 #https://i.ibb.co/99kQsDHs/Laliga-Inside.png
-#EXTINF:-1 tvg-id="LaligaInside.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Laliga-Inside" group-title="Telegram", Laliga Inside
+#EXTINF:-1 tvg-id="LaligaInside.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Laliga-Inside" group-title="Telegram", Laliga Inside (1080)
 https://is.gd/P9HFAg?LaligaInside.m3u8
+#EXTINF:-1 tvg-id="LaligaInside.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Laliga-Inside" group-title="Telegram", Laliga Inside (1080)
+https://daiconnect.com/live/hls/tvup/rk-ligainside/90358dc4f9a2bcc58260c53040284584/index.m3u8
+#EXTINF:-1 tvg-id="LaligaInside.es" tvg-logo="https://i.pinimg.com/736x/0e/96/3c/0e963cdb5e91944561a6ae37eace1f9c.jpg" group-title="Github", Laliga Inside
+https://d3bb58xoj568xi.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-don7i7nmbho0q/index.m3u8
+#EXTINF:-1 tvg-id="LaligaInside.es" tvg-logo="https://i.pinimg.com/736x/0e/96/3c/0e963cdb5e91944561a6ae37eace1f9c.jpg" group-title="Github", Laliga Inside
+https://d3bb58xoj568xi.cloudfront.net/v1/manifest/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-don7i7nmbho0q/8eb3cf07-8997-4ba1-8194-b9617ca72439/2.m3u8
 
 # Cine/Series
 # https://stremio.shickat.me/Images/Channels/ESTRENOS.jpg
@@ -776,20 +785,15 @@ https://d71gqtnep83vb.cloudfront.net/gol_classics/gol_classics.m3u8
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS" group-title="Github", Pruebas (1080)
 http://258540820214.d4ktv.info/DRFOURK234/j6914uju6w/50148
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="TRANS TV HD", Pruebas
-http://103.66.62.83:8000/play/a06i/index.m3u8
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="TRANS 7 HD", Pruebas
-http://103.66.62.83:8000/play/a06l/index.m3u8
+
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/PremieLeague.png" group-title="SkySports Premiere League [UK]", Pruebas
 https://wahyu1ptv.pages.dev/UKSkySportPL-HD.m3u8
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/SkySportsLaliga.png" group-title="SkySportsLaliga", Pruebas
 https://wahyu1ptv.pages.dev/SkySportLaliga-HD.m3u8
 
-
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/SkySportFootball.png" group-title="SkySportsFootball", Pruebas
 https://wahyu1ptv.pages.dev/SkySportFootball-HD.m3u8
-
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/BundesLiga4K.png" group-title="SkySportBundesliga", Pruebas
 https://wahyu1ptv.pages.dev/SkySportBundesliga-HD.m3u8
@@ -797,19 +801,14 @@ https://wahyu1ptv.pages.dev/SkySportBundesliga-HD.m3u8
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/SkySportBundesliga.png" group-title="SkySportBundesliga1", Pruebas
 https://wahyu1ptv.pages.dev/SkySportBundesliga1-HD.m3u8
 
-
-
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/SkySportBundesliga2.png" group-title="SkySportBundesliga2", Pruebas
 https://wahyu1ptv.pages.dev/SkySportBundesliga2-HD.m3u8
-
-
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/SkySportCalcio.png" group-title="SkySportCalcio", Pruebas
 https://wahyu1ptv.pages.dev/SkySportCalcio-HD.m3u8
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/DaznLaliga1.png" group-title="DaznLaliga1", Pruebas
 https://wahyu1ptv.pages.dev/DaznLaliga1-HD.m3u8
-
 
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/DaznLaliga2.png" group-title="DaznLaliga2", Pruebas
@@ -821,27 +820,7 @@ https://wahyu1ptv.pages.dev/MLaliga-HD.m3u8
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/SkySportsLaliga.png" group-title="SkySportsLaliga", Pruebas
 https://wahyu1ptv.pages.dev/SkySportLaliga-HD.m3u8
 
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/SkySportFootball.png" group-title="La liga española", Pruebas
-https://live-atv-cdn.izzigo.tv/2/out/u/dash/SKY-SPORTS-16-HD/default.mpd
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/SkySportFootball.png" group-title="La liga española", Pruebas
-https://a83aivottlinear-a.akamaihd.net/OTTB/syd-nitro/live/clients/dash/enc/gigxsk0lya/out/v1/df75d887bce4437b8fdf345ae455113b/cenc.mpd
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/SkySportFootball.png" group-title="La liga española", Pruebas
-https://ac-009.live.p7s1video.net/4cb9b4be/t_009/3sat-de-hd/cenc-default.mpd
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/SkySportFootball.png" group-title="La liga española", Pruebas
-https://live03p-seg.msf.cdn.mediaset.net/live/ch-c5/c5-dash-widevine.isml/manifest.mpd
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/SkySportFootball.png" group-title="La liga española", Pruebas
-https://live-atv-cdn.izzigo.tv/3/out/u/dash/SKY-SPORTS-21-HD/default.mpd
-
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/BundesLiga4K.png" group-title="SkySportBundesliga", Pruebas
 https://wahyu1ptv.pages.dev/SkySportBundesliga-HD.m3u8
 
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.pinimg.com/736x/0e/96/3c/0e963cdb5e91944561a6ae37eace1f9c.jpg" group-title="La liga Inside", Pruebas
-https://d3bb58xoj568xi.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-don7i7nmbho0q/index.m3u8
-
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.ibb.co.com/CtHSL6T/20241123-101150.png" group-title="ESPN 1.ar", Pruebas
-https://vcdn.mn10.entel.bo/Content/DASH/Live/Channel(8757cb0a-3584-40cd-901e-8937c7deba83)/master.mpd
-
-
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.ibb.co.com/qRhgT1D/20241123-095655.png" group-title="ESPN 2.ar", Pruebas
-https://vcdn.mn10.entel.bo/Content/DASH/Live/Channel(62567d5c-295c-4ffd-ac7e-c9749e874884)/master.mpd
 
