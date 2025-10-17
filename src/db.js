@@ -187,7 +187,7 @@ async function loadM3U(args = {}) {
           // NUEVO: guardar el group_title del Ace principal
           channelMap[tvgId].acestream_group_title = stream.group_title || channelMap[tvgId].acestream_group_title || null;
         }
-        if (!channelMap[tvgId].m3u8_url && stream.url) {
+        if ((!channelMap[tvgId].acestream_id && !channelMap[tvgId].stream_url) && stream.url) {
           channelMap[tvgId].m3u8_url = stream.url;
         }
         if (!channelMap[tvgId].stream_url && (!isAce && !isM3u8 && !isWebPage)) {
