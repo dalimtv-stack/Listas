@@ -782,9 +782,20 @@ https://d71gqtnep83vb.cloudfront.net/gol_classics/gol_classics.m3u8
 
 
 
-
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS" group-title="Github", Pruebas (1080)
+#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS" group-title="|FR| beIN Sports 1 ᴴᴰ", Pruebas (1080)
 http://258540820214.d4ktv.info/DRFOURK234/j6914uju6w/50148
+
+#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.postimg.cc/Gtgvyt29/IMG-2984.png" group-title="AMC (es)", Pruebas
+http://vegafibratv.com:8085/AMC/index.m3u8
+
+#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.postimg.cc/pXRYBBYz/IMG-2364.png" group-title="HBO2", Pruebas
+https://cors-proxy.cooks.fyi/https://streamer1.nexgen.bz/HBO2/index.m3u8
+
+#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.postimg.cc/Pxm2VTXK/IMG-2366.png" group-title="CINEMAX", Pruebas
+https://cors-proxy.cooks.fyi/https://streamer1.nexgen.bz/CINEMAX/index.m3u8
+
+#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.postimg.cc/SxD7npcP/IMG-2362.png" group-title="Comedy Central", Pruebas
+https://cors-proxy.cooks.fyi/https://streamer1.nexgen.bz/COMEDY_CENTRAL/index.m3u8
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://raw.githubusercontent.com/whs4030/Logo/refs/heads/main/PremieLeague.png" group-title="SkySports Premiere League [UK]", Pruebas
 https://wahyu1ptv.pages.dev/UKSkySportPL-HD.m3u8
@@ -1022,5 +1033,20 @@ http://190.102.246.93:9005/play/a02l
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="EUROSPORT 1 🇪🇸", Pruebas
 http://origi-JW-1.netvil43.store:80/RO-110/tracks-v1a1/mono.m3u8?token=c1lhc3Q1ZVhxcXJIZTU2c2ZhdTRtWlBiMkppd3k2K0EyNE9keU5xbG1YekRxb1d1Z1plV282T1dlNU9xZ3FxeGxaT3ZvNmFGbkxLSHZJV2ZrN3Fzbm93PQ%3D%3D
 
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQuLPPUaQuuMZ7EKxywIyWZ8O6vej4dcfL-9pR0-4JccA&s=10" group-title="AMC", Pruebas
-http://104.238.205.28:8989/278393_.m3u8
+#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.postimg.cc/t4fCsvry/IMG-2536.png" group-title="VH1", Pruebas
+https://cors-proxy.cooks.fyi/https://streamer1.nexgen.bz/VH1/index.m3u8
+
+#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.postimg.cc/j5Mr9K8z/IMG-2575.png" group-title="Miami TV", Pruebas
+https://59ec5453559f0.streamlock.net/miamitv/smil:WEB4141/chunklist_w1127109486_b1896000.m3u8
+
+#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.postimg.cc/2y77tL65/IMG-2490.png" group-title="Bein Sports xtra esp", Pruebas
+https://bein-esp-xumo.amagi.tv/playlist.m3u8
+
+#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.postimg.cc/Qx02gCBx/IMG-2761.png" group-title="DSports", Pruebas
+http://38.211.242.128:8001/play/a05g/index.m3u8
+
+#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.postimg.cc/9FH7DmYc/IMG-3003.png" group-title="Zona TUDN", Pruebas
+https://tinyurl.com/4f2j23a9
+
+#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.postimg.cc/DzKGtgjy/IMG-2790.png" group-title="World Poker Tour", Pruebas
+https://tinyurl.com/ymt52m6r
