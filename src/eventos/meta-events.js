@@ -39,7 +39,7 @@ async function getMeta(id, configId) {
 
   return {
     id, type: 'tv',
-    name: `${nombre}${deporte}`,
+    name: `${nombre}`,
     poster: evento.poster || null,
     background: evento.poster || null,
     //producer: evento.canal || (evento.canales?.map(c => c.label).join(', ') || 'Canal desconocido'),
