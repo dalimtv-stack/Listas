@@ -20,15 +20,7 @@ function generatePlaceholdPoster({ hora }) {
 }
 
 function isCacheablePosterUrl(url) {
-  return typeof url === 'string'
-    && url.toLowerCase().endsWith('.png')
-    && !url.includes('dummyimage.com');
-}
-
-function normalizeBlobUrl(url) {
-  if (!url) return null;
-  if (url.startsWith('http')) return url;
-  return `https://kb24ncicobqdaseh.public.blob.vercel-storage.com/${url.replace(/^\/+/, '')}`;
+  return typeof url === 'string' && !url.includes('dummyimage.com');
 }
 
 function generateFallbackNames(original, context = '') {
@@ -321,7 +313,7 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
   }
 
   const generado = generados.find(p => p.hora === hora);
-  const finalUrl = normalizeBlobUrl(generado?.url);
+  const finalUrl = generado?.url;
   return isCacheablePosterUrl(finalUrl) ? finalUrl : generatePlaceholdPoster({ hora });
 }
 
