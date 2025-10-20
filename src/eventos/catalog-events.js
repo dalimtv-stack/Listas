@@ -71,10 +71,11 @@ async function getCatalog(configId, genre = '') {
   const resultado = filteredEventos.map(ev => ({
     id: `Heimdallr_evt_${configId}_${normalizeId(ev)}`,
     type: 'tv',
-    name: `${ev.partido} (${ev.deporte})`,
+    name: `${ev.partido}`,
     poster: ev.poster || `https://dummyimage.com/300x450/000000/ffffff.png&text=${encodeURIComponent(ev.hora)}`,
-    description: `${ev.hora} • ${ev.dia} • ${ev.competicion} (${ev.deporte})`,
-    producer: `${ev.canal}`,
+    releaseInfo: ev.canal,
+    description: `${ev.hora} • ${ev.dia}\n \n${ev.competicion} (${ev.deporte})`,
+    //producer: `${ev.canal}`,
     background: null
   }));
 
