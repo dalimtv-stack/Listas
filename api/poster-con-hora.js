@@ -97,7 +97,7 @@ module.exports = async (req, res) => {
     let blobUrl = url; // fallback por defecto: la URL original
     const safeHora = slugify(hora);
     const todayKey = new Date().toISOString().slice(0,10).replace(/-/g, ''); // YYYYMMDD
-    const blobName = `posters/${slugify(originalBasename)}_${todayKey}_${safeHora}.png`;
+    const blobName = `${slugify(originalBasename)}_${todayKey}_${safeHora}`;
 
     try {
       // Generar la imagen con la hora (con Jimp sobre el baseImage)
@@ -115,17 +115,17 @@ module.exports = async (req, res) => {
       // Subir a Cloudinary
       try {
         console.info(`[Poster con hora] Subiendo imagen a Cloudinary: ${blobName}`);
-        const result = await uploadImageCloudinary(finalBuffer, blobName.replace('.png', ''), 'Posters');
+        const result = await uploadImageCloudinary(finalBuffer, blobName, 'Posters');
         if (result && result.url) {
           blobUrl = result.url;
           // Actualizar índice KV
           try {
             const indexKey = 'posters:index';
             const currentList = await kvGetJsonTTL(indexKey) || [];
-            const updatedList = [...new Set([...currentList, result.public_id])];
+            const updatedList = [...new Set([...currentList, blobName])];
             await kvSetJsonTTLIfChanged(indexKey, updatedList, 30 * 24 * 3600); // TTL de 30 días
           } catch (errKV) {
-            console.warn(`[Poster con hora] Error actualizando índice KV para "${result.public_id}":`, errKV.message);
+            console.warn(`[Poster con hora] Error actualizando índice KV para "${blobName}":`, errKV.message);
           }
           console.info('[Poster con hora] Imagen subida a Cloudinary:', blobUrl);
         } else {
