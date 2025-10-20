@@ -15,6 +15,8 @@ const { getStreams: getEventosStreams } = require('../../src/eventos/stream-even
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
 function extraerYLimpiarCalidad(label = '') {
+  const logPrefix = '[STREAM][CALIDAD]';
+  console.log(logPrefix, `Procesando calidad raw: "${label}"`);
   const calidadRaw = label.toLowerCase();
   const map = [
     { match: ['4320p', '4320'], nombre: 'Full UHD (4320p)' },
@@ -28,8 +30,12 @@ function extraerYLimpiarCalidad(label = '') {
   for (const { match, nombre } of map) {
     if (match.some(m => calidadRaw.includes(m))) {
       calidadDetectada = nombre;
+      console.log(logPrefix, `Calidad detectada: "${calidadDetectada}" para raw: "${label}"`);
       break;
     }
+  }
+  if (calidadDetectada === 'Sin especificar') {
+    console.log(logPrefix, `No se detectó calidad para: "${label}", asignando "Sin especificar"`);
   }
   return calidadDetectada;
 }
@@ -94,13 +100,31 @@ async function handleStream(req) {
   return enriched;
 }
 
-
 async function handleStreamInternal({ id, m3uUrl, configId }) {
   const logPrefix = '[STREAM]';
   const parts = id.split('_');
   const channelId = parts.slice(2).join('_');
 
   const ch = await getChannel(channelId, { m3uUrl });
+  console.log(logPrefix, `[AUDIT] Datos obtenidos de getChannel para ${channelId}:`, {
+    name: ch?.name,
+    calidad: ch?.calidad,
+    acestream_id: ch?.acestream_id,
+    m3u8_url: ch?.m3u8_url,
+    stream_url: ch?.stream_url,
+    url: ch?.url,
+    website_url: ch?.website_url,
+    additional_streams: ch?.additional_streams?.map(s => ({
+      name: s.name,
+      calidad: s.calidad,
+      acestream_id: s.acestream_id,
+      m3u8_url: s.m3u8_url,
+      stream_url: s.stream_url,
+      url: s.url,
+      group_title: s.group_title
+    }))
+  });
+
   if (!ch) {
     console.log(logPrefix, `canal no encontrado: ${channelId}`);
     return { streams: [], chName: '' };
@@ -145,6 +169,7 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
     const out = {
       name,
       title,
+      calidad: src.calidad, // Mantener calidad original para auditoría
       behaviorHints,
       // solo para auditoría/depuración; Stremio lo ignora
       group_title: group_title_for_audit
@@ -158,7 +183,14 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
 
     seenUrls.add(streamUrl);
     streams.push(out);
-    console.log(logPrefix, `Añadido stream: ${streamUrl}, behaviorHints=`, out.behaviorHints);
+    console.log(logPrefix, `[AUDIT] Añadido stream:`, {
+      streamUrl,
+      name,
+      title,
+      calidad: src.calidad,
+      group_title: group_title_for_audit,
+      behaviorHints
+    });
   };
 
   // Añadir posibles principales: Ace/M3U8/Directo/url
@@ -185,18 +217,7 @@ async function handleStreamInternal({ id, m3uUrl, configId }) {
 
   const resp = { streams, chName };
   console.log(logPrefix, `streams para ${channelId}: ${streams.length}`);
-  console.log('[AUDIT] Streams construidos en handleStreamInternal:');
-  streams.forEach(s => {
-    if (s.externalUrl && s.externalUrl.startsWith('acestream://')) {
-      console.log('[AUDIT] ACE', {
-        url: s.externalUrl,
-        name: s.name,
-        title: s.title,
-        group_title: s.group_title,
-        behaviorHints: s.behaviorHints
-      });
-    }
-  });
+  console.log(logPrefix, `[AUDIT] Streams construidos en handleStreamInternal:`, streams);
   return resp;
 }
 
@@ -208,7 +229,7 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
     try {
       console.log(logPrefix, `Llamando scrapeExtraWebs con forceScrape=${forceScrape} para ${chName}`);
       const extraStreams = await scrapeExtraWebs(chName, extraWebsList, forceScrape);
-      console.log(logPrefix, 'Streams extra devueltos por scraper:', extraStreams);
+      console.log(logPrefix, `[AUDIT] Streams extra devueltos por scraper:`, extraStreams);
       if (extraStreams.length > 0) {
         // Deduplicación: por URL o AceID
         const existingKeys = new Set(
@@ -243,25 +264,20 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
       console.error(logPrefix, `Error en scrapeExtraWebs para ${chName}:`, e.message);
     }
   }
-  console.log(logPrefix, 'Respuesta final con streams:', baseObj.streams);
-  console.log('[AUDIT] Streams antes de devolver en enrichWithExtra:');
-  baseObj.streams.forEach(s => {
-    if (s.externalUrl && s.externalUrl.startsWith('acestream://')) {
-      console.log('[AUDIT] ACE', {
-        url: s.externalUrl,
-        name: s.name,
-        title: s.title,
-        group_title: s.group_title,
-        behaviorHints: s.behaviorHints
-      });
-    }
-  });
 
   // --- Enriquecer títulos justo antes de devolver ---
   baseObj.streams = baseObj.streams.map(s => {
     // Mantener originalTitle para multiaudio
     const originalTitle = s.title || '';
     const calidadDetectada = s.calidad ? extraerYLimpiarCalidad(s.calidad) : 'Sin especificar';
+    console.log(logPrefix, `[AUDIT] Procesando título para stream:`, {
+      originalTitle,
+      calidadRaw: s.calidad,
+      calidadDetectada,
+      name: s.name,
+      group_title: s.group_title
+    });
+
     const proveedor = (s.name || s.group_title || '').trim();
     const canal = normalizeCatalogName((baseObj.chName || '')).trim();
     const formato = s.externalUrl?.startsWith('acestream://')
@@ -288,14 +304,25 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
       }
     }
 
+    const newTitle =
+      `Formato: 🔗 ${formato}\n` +
+      `Calidad: 🖥️ ${calidadDetectada}` +
+      (audioInfo ? `\nAudio: 🎧 ${audioInfo}` : '') + '\n' +
+      `Canal: 📡 ${canal}\n` +
+      `Proveedor: 🏴‍☠️${proveedor}🏴‍☠️`;
+
+    console.log(logPrefix, `[AUDIT] Título final para stream:`, {
+      newTitle,
+      formato,
+      calidadDetectada,
+      audioInfo,
+      canal,
+      proveedor
+    });
+
     return {
       ...s,
-      title:
-        `Formato: 🔗 ${formato}\n` +
-        `Calidad: 🖥️ ${calidadDetectada}` +
-        (audioInfo ? `\nAudio: 🎧 ${audioInfo}` : '') + '\n' +
-        `Canal: 📡 ${canal}\n` +
-        `Proveedor: 🏴‍☠️${proveedor}🏴‍☠️`
+      title: newTitle
     };
   });
 
@@ -325,14 +352,19 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
     const calidadA = Object.keys(calidadOrden).find(c => a.title.includes(c)) || 'Sin especificar';
     const calidadB = Object.keys(calidadOrden).find(c => b.title.includes(c)) || 'Sin especificar';
 
+    console.log(logPrefix, `[AUDIT] Ordenando streams:`, {
+      streamA: { title: a.title, formato: formatoA, calidad: calidadA },
+      streamB: { title: b.title, formato: formatoB, calidad: calidadB }
+    });
+
     if (formatoOrden[formatoA] !== formatoOrden[formatoB]) {
       return formatoOrden[formatoA] - formatoOrden[formatoB];
     }
     return calidadOrden[calidadA] - calidadOrden[calidadB];
   });
 
+  console.log(logPrefix, `[AUDIT] Streams finales tras enrichWithExtra:`, baseObj.streams);
   return baseObj;
 }
 
-
-module.exports = { handleStream, handleStreamInternal, enrichWithExtra }
+module.exports = { handleStream, handleStreamInternal, enrichWithExtra };
