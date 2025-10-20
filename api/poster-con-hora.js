@@ -7,6 +7,7 @@ const fetch = require('node-fetch');
 const path = require('path');
 const fs = require('fs');
 const { kvGetJsonTTL, kvSetJsonTTLIfChanged } = require('./kv');
+const { uploadImageCloudinary } = require('../lib/upload-to-cloudinary');
 
 function slugify(s) {
   return String(s || '')
@@ -25,23 +26,7 @@ module.exports = async (req, res) => {
     return res.end(JSON.stringify({ error: 'Faltan parámetros "url" y/o "horas[]"' }));
   }
 
-  //console.info('[Poster con hora] URL de imagen de entrada:', url);
-
-  // Intento de cargar SDK de Vercel Blob (si no está instalado no rompemos)
-  let putFn = null;
-  let headFn = null;
-  try {
-    const blobSdk = require('@vercel/blob');
-    // compatibilidad con posibles exportaciones default
-    putFn = blobSdk.put || (blobSdk.default && blobSdk.default.put);
-    headFn = blobSdk.head || (blobSdk.default && blobSdk.default.head);
-    if (typeof putFn !== 'function') putFn = null;
-    if (typeof headFn !== 'function') headFn = null;
-  } catch (e) {
-    console.warn('[Poster con hora] @vercel/blob no está disponible. Se usará fallback (no subirá archivos).', e.message);
-  }
-
-  // Coger basename de la imagen original para nombre determinista del blob
+  // Coger basename de la imagen original para nombre determinista
   let originalBasename = 'original';
   try {
     const p = new URL(url).pathname;
@@ -59,11 +44,10 @@ module.exports = async (req, res) => {
     buffer = await response.buffer();
     if (!buffer || buffer.length === 0) throw new Error('Buffer vacío recibido desde la URL');
 
-    // Solo convertir webp -> png si es necesario (como hacías)
+    // Solo convertir webp -> png si es necesario
     if (contentType.includes('webp') || Buffer.isBuffer(buffer) && buffer.slice(0, 4).toString() === 'RIFF') {
       try {
         buffer = await sharp(buffer).png().toBuffer();
-        //console.info('[Poster con hora] Conversión .webp -> PNG completada.');
       } catch (err) {
         // si falla la conversión, seguimos con el buffer original y Jimp intentará leerlo
         console.warn('[Poster con hora] Falló la conversión con sharp, se intentará con Jimp directamente:', err.message);
@@ -116,28 +100,7 @@ module.exports = async (req, res) => {
     const blobName = `posters/${slugify(originalBasename)}_${todayKey}_${safeHora}.png`;
 
     try {
-      // 1) Si tenemos headFn, comprobar si ya existe (si devuelve info con url la usamos)
-      if (headFn && putFn && process.env.BLOB_READ_WRITE_TOKEN) {
-        try {
-          const headRes = await headFn(blobName, { token: process.env.BLOB_READ_WRITE_TOKEN });
-          if (headRes && headRes.url) {
-            //console.info(`[Poster con hora] Ya existía en blob, se sobrescribirá: ${blobName}`);
-          }
-          // si headRes no tiene url puede que head no devuelva la url; seguimos a intentar put
-        } catch (errHead) {
-          // head puede fallar con 404 o con Access denied; si falla, vamos a intentar subir
-          // pero si es un error claro de permisos, lo registramos y seguiremos al fallback
-          if (errHead && /access|forbidden|token/i.test(String(errHead.message))) {
-            console.warn(`[Poster con hora] head() fallo por permisos para "${blobName}":`, errHead.message);
-            // no abortamos, seguiremos intentando subir (put puede fallar también)
-          } else {
-            // comúnmente será 404 (no existe): lo ignoramos y proseguimos a subir
-            // console.info('[Poster con hora] head() no encontró blob, se intentará subir.');
-          }
-        }
-      }
-
-      // 2) Generar la imagen con la hora (con Jimp sobre el baseImage)
+      // Generar la imagen con la hora (con Jimp sobre el baseImage)
       const image = baseImage.clone();
       const textWidth = Jimp.measureText(font, hora);
       const textHeight = Jimp.measureTextHeight(font, hora, textWidth);
@@ -149,40 +112,28 @@ module.exports = async (req, res) => {
 
       const finalBuffer = await image.getBufferAsync(Jimp.MIME_PNG);
 
-      // 3) Intentar subir via @vercel/blob.put si está disponible
-      if (putFn && process.env.BLOB_READ_WRITE_TOKEN) {
-        try {
-          //console.info(`[Poster con hora] Subiendo imagen a Blob: ${blobName}`);
-          // put acepta Buffer directamente
-          const putRes = await putFn(blobName, finalBuffer, {
-            access: 'public',
-            token: process.env.BLOB_READ_WRITE_TOKEN,
-            contentType: 'image/png',
-            addRandomSuffix: false
-          });
-          if (putRes && putRes.url) {
-            blobUrl = putRes.url;
-            // Actualizar índice KV
-            try {
-              const indexKey = 'posters:index';
-              const currentList = await kvGetJsonTTL(indexKey) || [];
-              const updatedList = [...new Set([...currentList, blobName])];
-              await kvSetJsonTTLIfChanged(indexKey, updatedList, 30 * 24 * 3600); // TTL de 30 días
-            } catch (errKV) {
-              console.warn(`[Poster con hora] Error actualizando índice KV para "${blobName}":`, errKV.message);
-            }
-            //console.info('[Poster con hora] Imagen subida a Blob:', blobUrl);
-          } else {
-            console.warn('[Poster con hora] put() no devolvió url, se usará fallback.');
+      // Subir a Cloudinary
+      try {
+        console.info(`[Poster con hora] Subiendo imagen a Cloudinary: ${blobName}`);
+        const result = await uploadImageCloudinary(finalBuffer, blobName.replace('.png', ''), 'Posters');
+        if (result && result.url) {
+          blobUrl = result.url;
+          // Actualizar índice KV
+          try {
+            const indexKey = 'posters:index';
+            const currentList = await kvGetJsonTTL(indexKey) || [];
+            const updatedList = [...new Set([...currentList, result.public_id])];
+            await kvSetJsonTTLIfChanged(indexKey, updatedList, 30 * 24 * 3600); // TTL de 30 días
+          } catch (errKV) {
+            console.warn(`[Poster con hora] Error actualizando índice KV para "${result.public_id}":`, errKV.message);
           }
-        } catch (errPut) {
-          console.warn(`[Poster con hora] Error subiendo a Blob para "${hora}":`, errPut?.message || errPut);
-          // Si falla la subida, dejamos blobUrl = url (fallback)
+          console.info('[Poster con hora] Imagen subida a Cloudinary:', blobUrl);
+        } else {
+          console.warn('[Poster con hora] uploadImageCloudinary no devolvió url, se usará fallback.');
         }
-      } else {
-        // SDK no disponible o token faltante -> no intentamos subir
-        if (!putFn) console.warn('[Poster con hora] SDK @vercel/blob no disponible; no se intentará subir.');
-        if (!process.env.BLOB_READ_WRITE_TOKEN) console.warn('[Poster con hora] BLOB_READ_WRITE_TOKEN no configurado; usando fallback.');
+      } catch (errUpload) {
+        console.warn(`[Poster con hora] Error subiendo a Cloudinary para "${hora}":`, errUpload?.message || errUpload);
+        // Si falla la subida, dejamos blobUrl = url (fallback)
       }
     } catch (errGenerate) {
       // Si al generar la imagen falla algo (Jimp o similar), devolvemos fallback (la url original)
