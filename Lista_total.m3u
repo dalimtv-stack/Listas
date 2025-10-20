@@ -15,9 +15,8 @@ acestream://b0405501919792a8c5f7ca89a3b3b0a7186ce49e
 # https://i.ibb.co/VcRYc75W/M-plus.png
 # https://www.movistarplus.es/recorte/m-DP/modmarcas/MPLUHD
 # https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Movistar_PLUS.jpg
-#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="VLC", Movistar Plus (FHD)
-http://vlc.shickat.me:8000/pid/199190e3f28c1de0be34bccf0d3568dc65209b99/stream.mp4
-#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://stremio.shickat.me/Images/Channels/PLUS.jpg" group-title="daddylivestream", Movistar Plus (1080)
+# https://stremio.shickat.me/Images/Channels/PLUS.jpg
+#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="daddylivestream", Movistar Plus (FHD)
 https://world-proxifier.xyz/daddylive_go/p/C4MWCOI7FMRTSNRGFI3XSYK6IZDRWEAYCNRXKAZVGMWTW6LFPBQWK3ICAVHVMVKUBACTMZTAOZVXEZTBOZVX2/index.m3u8
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://i.ibb.co/hFYPWbpJ/plus.png" group-title="NEW ERA", Movistar Plus (FHD)
 acestream://b2a4d1eba9b46df5f52a87105df779f9d39abeb4
