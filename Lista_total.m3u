@@ -1012,7 +1012,7 @@ http://181.78.117.219:8000/play/a00b/index.m3u8
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN VIVO 🇦🇷", Pruebas
 http://45.71.254.1:8000/play/a038/index.m3u8
 
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN VIVO 🇦🇷", Pruebas
+#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN VIVO 🇦🇷", Pruebas (720)
 https://cdn01.oplay.tv/espn/index.m3u8
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN 🇦🇷", Pruebas
