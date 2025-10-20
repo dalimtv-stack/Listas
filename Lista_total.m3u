@@ -1039,7 +1039,7 @@ http://origi-JW-1.netvil43.store:80/RO-110/tracks-v1a1/mono.m3u8?token=c1lhc3Q1Z
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.postimg.cc/t4fCsvry/IMG-2536.png" group-title="VH1", Pruebas
 https://cors-proxy.cooks.fyi/https://streamer1.nexgen.bz/VH1/index.m3u8
 
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.postimg.cc/2y77tL65/IMG-2490.png" group-title="Bein Sports xtra esp", Pruebas (1080)
+#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.postimg.cc/2y77tL65/IMG-2490.png" group-title="Bein Sports xtra esp", Pruebas (FHD)
 https://bein-esp-xumo.amagi.tv/playlist.m3u8
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.postimg.cc/Qx02gCBx/IMG-2761.png" group-title="DSports", Pruebas
