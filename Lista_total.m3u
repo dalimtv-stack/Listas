@@ -991,7 +991,7 @@ http://45.167.255.254:8010/play/a046/index.m3u8
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="FOX SPORTS 3 🇲🇽", Pruebas
 http://45.167.255.254:8010/play/a047/index.m3u8
 
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="BEIN SPORT EXTRA Ñ 🇪🇸", Pruebas
+#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="BEIN SPORT EXTRA Ñ 🇪🇸", Pruebas (1080)
 https://d35j504z0x2vu2.cloudfront.net/v1/master/0bc8e8376bd8417a1b6761138aa41c26c7309312/bein-sports-xtra-en-espanol/playlist.m3u8
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="BEIN SPORT EXTRA Ñ 🇪🇸", Pruebas
