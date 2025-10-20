@@ -174,6 +174,7 @@ async function loadM3U(args = {}) {
         channelMap[tvgId] = {
           id: tvgId,
           name: name || `Canal ${index + 1}`,
+          calidad: calidadFromName,
           logo_url: item.tvg.logo || '',
           group_title: groupTitle,
           acestream_id: stream.acestream_id || null,
