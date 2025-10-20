@@ -97,7 +97,7 @@ module.exports = async (req, res) => {
     let blobUrl = url; // fallback por defecto: la URL original
     const safeHora = slugify(hora);
     const todayKey = new Date().toISOString().slice(0,10).replace(/-/g, ''); // YYYYMMDD
-    const blobName = `${slugify(originalBasename)}_${todayKey}_${safeHora}`;
+    const blobName = `${slugify(originalBasename)}_${todayKey}_${safeHora}.png`; // Añadido .png
 
     try {
       // Generar la imagen con la hora (con Jimp sobre el baseImage)
