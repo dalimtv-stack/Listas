@@ -138,6 +138,14 @@ async function loadM3U(args = {}) {
         name = match ? match[1].trim() : `Canal ${index + 1}`;
       }
 
+      let calidadFromName = 'Sin especificar';
+      if (name) {
+        const calidadMatch = name.match(/\((1080|720|480|4K|UHD|HD|SD|Full HD|FHD)\)/i);
+        if (calidadMatch) {
+          calidadFromName = calidadMatch[1].toUpperCase();
+        }
+      }
+
       let groupTitle = item.tvg.group || '';
       if (!groupTitle && item.raw) {
         const groupMatch = item.raw.match(/group-title="([^"]+)"/);
@@ -149,8 +157,10 @@ async function loadM3U(args = {}) {
       const urlKey = isAce ? `acestream://${rawUrl.replace('acestream://', '')}` : rawUrl;
 
       const stream = {
+        name: name,  // ✅ Guardar <name> limpio del M3U
         title: `${name} (${streamType})`,
         group_title: groupTitle || 'General',
+        calidad: calidadFromName,  // ✅ Calidad extraída solo del <name>
         url: isM3u8 ? rawUrl : null,
         acestream_id: isAce ? rawUrl.replace('acestream://', '') : null,
         stream_url: (!isAce && !isM3u8 && !isWebPage) ? rawUrl : null,
