@@ -261,8 +261,7 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
   baseObj.streams = baseObj.streams.map(s => {
     // Mantener originalTitle para multiaudio
     const originalTitle = s.title || '';
-    const canalName = baseObj.chName || '';
-    const calidadDetectada = extraerYLimpiarCalidad(canalName);
+    const calidadDetectada = s.calidad ? extraerYLimpiarCalidad(s.calidad) : 'Sin especificar';
     const proveedor = (s.name || s.group_title || '').trim();
     const canal = normalizeCatalogName((baseObj.chName || '')).trim();
     const formato = s.externalUrl?.startsWith('acestream://')
