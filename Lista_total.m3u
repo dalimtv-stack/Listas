@@ -402,6 +402,8 @@ http://172.93.102.112:8989/278815_.m3u8
 http://172.93.102.112:8989/278811_.m3u8
 #EXTINF:-1 tvg-id="AMC.es" tvg-logo="https://otakukart.com/wp-content/uploads/2023/10/AMC.jpg" group-title="Telegram", AMC (1080)
 http://127.0.0.1:6878/ace/getstream?id=55ff9ee631af351f365f51cf3601695bf1fd20f3
+#EXTINF:-1 tvg-id="AMC.es" tvg-logo="https://otakukart.com/wp-content/uploads/2023/10/AMC.jpg" group-title="Telegram", AMC (1080)
+acestream://55ff9ee631af351f365f51cf3601695bf1fd20f3
 
 # https://i.ibb.co/mr0dvFN7/CAlle-trece.png
 # https://i.ibb.co/VpgH9FJF/CAlle-trece.png
