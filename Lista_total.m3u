@@ -1,7 +1,7 @@
 #EXTM3U tvg-url="https://epgshare01.online/epgshare01/epg_ripper_ES1.xml.gz"
 #EXTM3U url-tvg="https://raw.githubusercontent.com/davidmuma/EPG_dobleM/refs/heads/master/guiatv.xml, https://epgshare01.online/epgshare01/epg_ripper_NL1.xml.gz"
 #EXTVLCOPT:network-caching=1000
-# Revisar: 
+# Revisar:  
 # https://github.com/MrLonely14/world_repo/blob/f4659c98704dc85300bbad263a292235393fe43b/Updater_Matrix/XML2/%7BAllTelegram%7D2.txt#L383
 # https://github.com/tv289/20/blob/8e416a927ce751d0472195512cb04cd2eb7211a3/1g?h=1#L5477
 # https://github.com/nreyes0477/nreyes06/blob/b368eb29333fba8d5c74097bbd4d34b2d4857058/listapropianorman.m3u#L1723
