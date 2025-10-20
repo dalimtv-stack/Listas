@@ -207,7 +207,7 @@ async function scrapeExtraWebs(channelName, extraWebsList, forceScrape = false) 
               name: 'VLC',
               title: `${name} (VLC)`,
               url: vlcUrl,
-              group_title: 'VLC',
+              group_title: displayName,
               behaviorHints: { notWebReady: false, external: false }
             };
             // Guardas de integridad (diagnóstico)
