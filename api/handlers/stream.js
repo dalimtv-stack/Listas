@@ -278,7 +278,7 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
       group_title: s.group_title
     });
 
-    const proveedor = (s.name || s.group_title || '').trim();
+    const proveedor = (s.group_title || s.name || '').trim();
     const canal = normalizeCatalogName((baseObj.chName || '')).trim();
     const formato = s.externalUrl?.startsWith('acestream://')
       ? 'Acestream'
