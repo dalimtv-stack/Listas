@@ -73,7 +73,7 @@ async function getCatalog(configId, genre = '') {
     type: 'tv',
     name: `${ev.partido}`,
     poster: ev.poster || `https://dummyimage.com/300x450/000000/ffffff.png&text=${encodeURIComponent(ev.hora)}`,
-    releaseInfo: `${ev.canal}`
+    releaseInfo: `${ev.canal}`,
     description: `${ev.hora} • ${ev.dia}\n \n${ev.competicion} (${ev.deporte})`,
     //producer: `${ev.canal}`,
     background: null
