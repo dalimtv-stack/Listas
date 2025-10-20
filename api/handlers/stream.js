@@ -259,8 +259,16 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
 
   // --- Enriquecer títulos justo antes de devolver ---
   baseObj.streams = baseObj.streams.map(s => {
+    // Mantener originalTitle para multiaudio
     const originalTitle = s.title || '';
-    const calidadDetectada = extraerYLimpiarCalidad(originalTitle);
+    let calidadDetectada = extraerYLimpiarCalidad(originalTitle);
+    
+    // SOBREESCRIBIR calidad SOLO con chName
+    const canalName = baseObj.chName || '';
+    const calidadFromChannel = extraerYLimpiarCalidad(canalName);
+    if (calidadFromChannel !== 'Sin especificar') {
+      calidadDetectada = calidadFromChannel;  // "Pruebas (1080)" → "Full HD"
+    }
     const proveedor = (s.name || s.group_title || '').trim();
     const canal = normalizeCatalogName((baseObj.chName || '')).trim();
     const formato = s.externalUrl?.startsWith('acestream://')
