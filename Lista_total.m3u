@@ -6,7 +6,7 @@
 # https://github.com/tv289/20/blob/8e416a927ce751d0472195512cb04cd2eb7211a3/1g?h=1#L5477
 # https://github.com/nreyes0477/nreyes06/blob/b368eb29333fba8d5c74097bbd4d34b2d4857058/listapropianorman.m3u#L1723
 
-#https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Hollywood.jpg
+# https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Hollywood.jpg
 #EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Hollywood" group-title="Telegram", Hollywood (FHD)
 http://172.93.102.112:8989/278839_.m3u8
 #EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Acestream", Hollywood (FHD)
@@ -128,7 +128,7 @@ acestream://a9025d4e168764248d33129c30940502cea0e1c2
 # https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/LIGADECAMPEONES2-black.jpg
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES2-black" group-title="ELCANO", Movistar Liga de Campeones 2
 acestream://abdf9058786a48623d0de51a3adb414ae10b6e72
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.2.es" tvg-logo="https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/LIGADECAMPEONES2.jpg" group-title="Elcano.top", Movistar Liga de Campeones 2 (1080)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES2-black" group-title="Elcano.top", Movistar Liga de Campeones 2 (1080)
 acestream://2b51710cee513e8939785fa3e7980f32d4e0415f
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.2.es" group-title="Elcano.top", Movistar Liga de Campeones 2 (720)
 acestream://38f7b2044e549df2039ff26cefa6f9a60c854d5e
@@ -393,10 +393,10 @@ acestream://25465ea2deba65c623b7659136abf6fcc9f5dc20
 #EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://i.ibb.co/pvSNFSfp/IMG-2338.jpg" group-title="Acestream", Dark (FHD)
 acestream://77aa26a614522c3845bdda1fa1f0e15dbe97c877
 
-#EXTINF:-1 tvg-id="AXN.es" tvg-logo="http://vpns.universof.com:25461/images/7798388f9d79038c19aa53a7cfa79574.png" group-title="Telegram", AXN
+#EXTINF:-1 tvg-id="AXN.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/AXN" group-title="Telegram", AXN
 http://172.93.102.112:8989/278814_.m3u8
 
-#EXTINF:-1 tvg-id="AXN.Movie.es" tvg-logo="http://vpns.universof.com:25461/images/55ba44c548d3ebafd9f70e64a7f232b0.png" group-title="Telegram", AXN MOVIE 
+#EXTINF:-1 tvg-id="AXN.Movies.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/AXN_Movies_logo_white" group-title="Telegram", AXN MOVIES 
 http://172.93.102.112:8989/278815_.m3u8
 
 #EXTINF:-1 tvg-id="AMC.es" tvg-logo="https://otakukart.com/wp-content/uploads/2023/10/AMC.jpg" group-title="Telegram", AMC
