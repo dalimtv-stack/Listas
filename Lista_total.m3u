@@ -648,10 +648,6 @@ http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/1222
 #EXTINF:-1 tvg-id="VinTV.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/VinTv" group-title="GitHub", VinTV
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5726
 
-#EXTINF:-1 tvg-id="Cadena.Elite.es" tvg-logo="https://www.cadenaelite.es/images/logoMenu.png" group-title="GitHub", Cadena Elite
-http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/5604
-
-
 #EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="Acestream", Dark (FHD)
 acestream://25465ea2deba65c623b7659136abf6fcc9f5dc20
 #EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://i.ibb.co/pvSNFSfp/IMG-2338.jpg" group-title="Acestream", Dark (FHD)
@@ -1444,3 +1440,6 @@ http://127.0.0.1:6878/ace/getstream?id=a0464d3642e054f6122e7c309017d1e8d23f4da9
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58114
 #EXTINF:-1 tvg-id="Regalo.es" tvg-logo="https://docdog.top/logo/countries/ads/iptv_es.jpg" group-title="GitHub", Regalo 2
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58113
+
+#EXTINF:-1 tvg-id="Cadena.Elite.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Cadena_Elite" group-title="GitHub", Cadena Elite
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/5604
