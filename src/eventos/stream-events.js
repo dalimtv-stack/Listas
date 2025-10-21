@@ -153,14 +153,13 @@ async function getStreams(id, configId) {
 
   const streams = enriched.streams;
   
-  if (!ch) {
+  if (!streams.length) {
     const { kvGetJsonTTL, kvSetJsonTTL } = require('../../api/kv');
     const keyFaltantes = 'CanalesFaltantes';
     const canalFaltante = {
       id: channelId,
       nombre: canalName,
       partido,
-      deporte,
       timestamp: new Date().toISOString()
     };
   
@@ -168,8 +167,8 @@ async function getStreams(id, configId) {
     const yaExiste = prev.some(c => c.id === canalFaltante.id && c.nombre === canalFaltante.nombre);
   
     if (!yaExiste) {
-      await kvSetJsonTTL(keyFaltantes, [...prev, canalFaltante], 7 * 86400); // 7 días
-      console.warn('[EVENTOS] Canal NO ENCONTRADO en M3U y registrado en KV:', canalFaltante);
+      await kvSetJsonTTL(keyFaltantes, [...prev, canalFaltante], 7 * 86400); // TTL 7 días
+      console.warn('[STREAM] Canal faltante registrado en KV:', canalFaltante);
     }
   }
     
