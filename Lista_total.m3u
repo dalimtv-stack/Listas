@@ -331,6 +331,8 @@ acestream://799c6b5ee1cf41af077d14e3f9c45a32697eb903
 acestream://2fd410c5d89e7a627cd3785685b7915b8e4bd534
 #EXTINF:-1 tvg-id="Movistar.Deportes.3.es" tvg-logo="https://i.ibb.co/jDg5qWD/deportes3.png" group-title="NEW ERA", Movistar Deportes 3 (FHD)
 acestream://753d4b1f7c4ef43238b5cf23b05572b550a44eee
+#EXTINF:-1 tvg-id="Movistar.Deportes.3.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M_Deportes3" group-title="GitHub", Movistar Deportes 3
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63399
 
 #EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN1" group-title="Telegram", DAZN 1 (720)
 http://172.93.102.112:8989/278822_.m3u8
@@ -1084,11 +1086,8 @@ https://rtvelivestream.rtve.es/rtvesec/la1/la1_main_dvr.m3u8
 https://d71gqtnep83vb.cloudfront.net/gol_classics/gol_classics.m3u8
 
 
-#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Espn_deportes" group-title="ESPN DEPORTES 🇺🇸", ESPN Pruebas
-https://s@saz.blitzen.store/deportes.m3u8
 
-#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN DEPORTES 🇺🇸", ESPN Pruebas
-http://Tdo@origin.thetvapp.to/hls/espn-deportes/mono.m3u8
+
 
 #EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN 2 🇦🇷", ESPN Pruebas
 http://181.205.130.194:4000/play/a07i
@@ -1149,10 +1148,22 @@ acestream://4b4907de51ec11087d4bed5876f2a0c68264f442
 #EXTINF:-1 tvg-id="ESPN.2.us" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/ESPN%202.png" group-title="NEW LOOP", ESPN2 [US]
 acestream://664eb5fe460b96941aed633959a845b185cd8394
 
-#EXTINF:-1 tvg-id="ESPN.deportes.mx" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Espn_deportes" group-title="TheTvApp",ESPN DEPORTES
+#EXTINF:-1 tvg-id="ESPN.Deportes.mx" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Espn_deportes" group-title="GitHub",ESPN DEPORTES 🇺🇸
+https://s@saz.blitzen.store/deportes.m3u8
+#EXTINF:-1 tvg-id="ESPN.Deportes.mx" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Espn_deportes" group-title="TheTvApp",ESPN DEPORTES
 http://origin.thetvapp.to/hls/espn-deportes/mono.m3u8
-#EXTINF:-1 tvg-id="ESPN.deportes.mx" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Espn_deportes" group-title="NEW ERA",ESPN DEPORTES
+#EXTINF:-1 tvg-id="ESPN.Deportes.mx" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Espn_deportes" group-title="NEW ERA",ESPN DEPORTES
 acestream://ab9bf0a75f1135137e65c0bc7639cb7f8ae28af8
+#EXTINF:-1 tvg-id="ESPN.Deportes.mx" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Espn_deportes" group-title="GitHub",ESPN DEPORTES 🇺🇸
+http://Tdo@origin.thetvapp.to/hls/espn-deportes/mono.m3u8
+#EXTINF:-1 tvg-id="ESPN.Deportes.mx" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Espn_deportes" group-title="GitHub",ESPN DEPORTES 🇺🇸
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63429
+#EXTINF:-1 tvg-id="ESPN.Deportes.mx" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Espn_deportes" group-title="GitHub",ESPN DEPORTES 🇺🇸
+https://s@chained.ncvtmisgov.com/deport.m3u8
+#EXTINF:-1 tvg-id="ESPN.Deportes.mx" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Espn_deportes" group-title="GitHub",ESPN DEPORTES 🇺🇸
+https://s@too.mytherix.cz/deport.m3u8
+#EXTINF:-1 tvg-id="ESPN.Deportes.mx" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Espn_deportes" group-title="GitHub",ESPN DEPORTES 🇺🇸
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5605
 
 #EXTINF:-1 tvg-id="ESPN.2.ar" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/ESPN2_logo.svg/2560px-ESPN2_logo.svg.png",ESPN 2
 http://bantel-cdn4.iptvperu.tv:1935/Ff8cjS/espn2.stream/playlist.m3u8
