@@ -11,6 +11,8 @@
 http://172.93.102.112:8989/278839_.m3u8
 #EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://i.ibb.co/qMmVFfsK/IMG-2254.jpg" group-title="Acestream", Hollywood (FHD)
 acestream://b0405501919792a8c5f7ca89a3b3b0a7186ce49e
+#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/Canal%20Hollywood.png" group-title="GitHub", Hollywood (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5619
 
 # https://i.ibb.co/VcRYc75W/M-plus.png
 # https://www.movistarplus.es/recorte/m-DP/modmarcas/MPLUHD
