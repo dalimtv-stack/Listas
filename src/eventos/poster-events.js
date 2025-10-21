@@ -264,32 +264,41 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
   }
 
   if (!posterSourceUrl?.startsWith('http')) {
-    if (deporte && deporte.toLowerCase() === 'balonmano') {
-      posterSourceUrl = 'https://i.ibb.co/pvwRMBWB/Balonmano.png';
+    if (isBalonmano && competicion?.toLowerCase() === 'champions league') {
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Balonmano_champions.jpeg';
+    } else if (isBalonmano && competicion?.toLowerCase() === 'european league') {
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Balonmano_liga_europea.jpeg';
+    } else if (isBalonmano) {
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Balonmano.png';
     } else if (isFutbol && competicion?.toLowerCase() === 'liga f') {
-      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/ligafemenina.jpeg';
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/c_crop,g_north,h_456,w_314/c_scale,h_600,w_405/plantillas/ligafemenina.jpg';
+    } else if (isFutbol && competicion?.toLowerCase() === 'laliga ea sports') {
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/LaLigaEA.jpeg;
     } else if (isFutbol) {
-      // posterSourceUrl = 'https://i.ibb.co/dswZph87/Futbol1.png';
-      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/futbol.jpeg';
+      // posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Futbol1.png';
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/futbol.jpeg';
     } else if (isRugby && competicion?.toLowerCase() === 'top 14') {
-      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/rugby-top14.jpeg';
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/rugby-top14.jpeg';
     } else if (isHockey && competicion?.toLowerCase() === 'nhl') {
-      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/NHL.jpeg';
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/NHL.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'ufc') {
-      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/UFC.jpeg';
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/UFC.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'waterpolo') {
-      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/waterpolo.jpeg';
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,c_fill,g_auto,w_405,q_auto,f_auto/plantillas/waterpolo.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'baloncesto') {
-      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/baloncesto.jpeg';
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/baloncesto.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'billar') {
-      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/billar.jpeg';
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/billar.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'f. sala') {
-      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/futbolsala.jpeg';
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/futbolsala.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'tenis') {
-      posterSourceUrl = 'https://kb24ncicobqdaseh.public.blob.vercel-storage.com/plantillas/tenis.jpeg';
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/tenis.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'ciclismo') {
-      posterSourceUrl = 'https://i.ibb.co/CswnHc5p/IMG-2324.webp';
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Ciclismo.jpeg';
+    } else if (deporte && deporte.toLowerCase() === 'artistica') {
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/G_Artistica.jpeg';
     } else {
+      // posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/MultiChampions.jpeg'
       return generatePlaceholdPoster({ hora });
     }
   }
