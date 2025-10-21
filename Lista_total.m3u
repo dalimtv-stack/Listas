@@ -316,6 +316,22 @@ acestream://6a1703a6bbe6110a1d27f35a41c88661e1740bfa
 acestream://35c7f0c966ecde3390f4510bb4caded40018c07a
 #EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://i.ibb.co/FVzKq1y/dazn1.png" group-title="NEW LOOP",DAZN 1
 acestream://d5b2c6b940cf3df5e8f9dc6f000f0ea23a10b151
+#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN1" group-title="GitHub", DAZN 1 (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57475
+#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN1" group-title="GitHub", DAZN 1 (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5589
+#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN1" group-title="GitHub", DAZN 1
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58318
+#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN1" group-title="GitHub", DAZN 1 (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63380
+#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN1" group-title="GitHub", DAZN 1 (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63381
+#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN1" group-title="GitHub", DAZN 1 (SD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63382
+#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN1" group-title="NEW ERA", DAZN 1 BAR (FHD)
+acestream://688e785893b50acc1d00cb37f15bfc42e72f5ae3
+#EXTINF:-1 tvg-id="DAZN.1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN1" group-title="NEW ERA", DAZN 1 BAR (FHD)
+acestream://448a647ba8cd8885588572d609ce02b961238121
 
 #EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN2" group-title="Telegram", DAZN 2 (720)
 http://172.93.102.112:8989/278824_.m3u8
@@ -335,6 +351,10 @@ acestream://ca923c9873fd206a41c1e83ff8fc40e3cf323c9a
 acestream://a929eeec1268d69d1556a2e3ace793b2577d8810
 #EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://i.ibb.co/Kz0GXSX/dazn2.png" group-title="NEW LOOP",DAZN 2
 acestream://b0eabe0fdd02fdd165896236765a9b753a2ff516
+#EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN2" group-title="GitHub", DAZN 2
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5590
+#EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN2" group-title="GitHub", DAZN 2
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63383
 
 #EXTINF:-1 tvg-id="DAZN.3.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN3" group-title="daddylivestream", DAZN 3 (720)
 https://world-proxifier.xyz/daddylive_go/p/C4MWCOIWAUHR4ZLBNMLCSUC3LUKBUGQQARTWELBDMZZGEMJAM55CCYCUKZKQOUII/index.m3u8
@@ -624,6 +644,13 @@ http://xcm.budtv-ultra.com:9000/budtv/websline/eWmWuCeW3j9F/278818.m3u8
 #EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/ODISEA" group-title="GitHub", Odisea
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5724
 
+#EXTINF:-1 tvg-id="National.Geographic.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/National_Geographic" group-title="Telegram", National Geographic
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5714
+#EXTINF:-1 tvg-id="National.Geographic.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/National_Geographic" group-title="Telegram", National Geographic
+http://tvpremiund.ddns.me:2082/stellar269/johatemu269/30611
+#EXTINF:-1 tvg-id="National.Geographic.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/National_Geographic" group-title="Telegram", National Geographic
+http://streamprostk.com:2082/zcenter57/10072019/30611
+
 #https://i.ibb.co/4wKt4tkT/NAT-GEO-WILD-alt.jpg
 #EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NAT-GEO-WILD" group-title="Telegram", National Geographic Wild
 http://172.93.102.112:8989/278852_.m3u8
@@ -757,6 +784,24 @@ acestream://2c6e4c897661e6b0257bfe931b66d20b2ec763b6
 acestream://71eef80158aa8b37f3dc59f6793c6696df9a2dfa
 #EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://i.ibb.co/2Ndmtbp/f1.png" group-title="ELCANO", DAZN F1 (SD)
 acestream://268289e7a3c5209960b53b4d43c8c65fab294b85
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="GitHub", DAZN F1
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58316
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="GitHub", DAZN F1 (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57485
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="GitHub", DAZN F1 (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57484
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="GitHub", DAZN F1 (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57486
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="GitHub", DAZN F1 (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57483
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="GitHub", DAZN F1 (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63376
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="GitHub", DAZN F1 (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63377
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="GitHub", DAZN F1 (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63378
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="GitHub", DAZN F1 (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63379
 
 #EXTINF:-1 tvg-id="beIN.SPORTS.1.fr" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/BEIN_SPORTS1_FR" group-title="NEW ERA", BEIN SPORTS 1 [FR] (FHD)
 acestream://eb882a774ddf9f4cf83f3d50fc9a8d3c629f6659
@@ -775,11 +820,6 @@ acestream://4b9f813f30b4345fe555f9e218d828d76cd6ee88
 acestream://63ad519ec9602ea12f7867cf15914b2537bbf04a
 #EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://i.ibb.co/m54QH9Gt/copa.png" group-title="ELCANO", M+ Copa del Rey
 acestream://b51f2d9a15b6956a44385b6be531bcabeb099d9d
-
-#EXTINF:-1 tvg-id="DAZN.1.BAR.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN1_BAR" group-title="NEW ERA", DAZN 1 BAR (FHD)
-acestream://688e785893b50acc1d00cb37f15bfc42e72f5ae3
-#EXTINF:-1 tvg-id="DAZN.1.BAR.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/DAZN%201%20BAR.png" group-title="NEW ERA", DAZN 1 BAR (FHD) (Opcion 2)
-acestream://448a647ba8cd8885588572d609ce02b961238121
 
 #EXTINF:-1 tvg-id="DAZN.2.BAR.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN2_BAR" group-title="NEW ERA", DAZN 2 BAR (FHD)
 acestream://2f9211669499f413dab1a490198afab2a9b4b57c
