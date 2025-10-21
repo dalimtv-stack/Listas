@@ -5,6 +5,7 @@
 # https://github.com/MrLonely14/world_repo/blob/f4659c98704dc85300bbad263a292235393fe43b/Updater_Matrix/XML2/%7BAllTelegram%7D2.txt#L383
 # https://github.com/tv289/20/blob/8e416a927ce751d0472195512cb04cd2eb7211a3/1g?h=1#L5477
 # https://github.com/nreyes0477/nreyes06/blob/b368eb29333fba8d5c74097bbd4d34b2d4857058/listapropianorman.m3u#L1723
+# https://github.com/adrines423/web/tree/4140b416c55f5eb6838a90c6e175ba9aab55578b
 
 # https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Hollywood.jpg
 #EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Hollywood" group-title="Telegram", Hollywood (FHD)
@@ -75,31 +76,31 @@ acestream://6d05b31e5e8fdae312fbd57897363a7b10ddb163
 acestream://cc9b7f5fe416069a2110da0909b0f915043c468b
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://i.ibb.co/yfV1Q8n/liga.png" group-title="ELCANO", Movistar LaLiga
 acestream://1bc437bce57b4b0450f6d1f8d818b7e97000745e
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="Telegram", Movistar LaLiga (HD)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="GitHub", Movistar LaLiga (HD)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5758
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="Telegram", Movistar LaLiga (HD)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="GitHub", Movistar LaLiga (HD)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/54535
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="Telegram", Movistar LaLiga (FHD)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="GitHub", Movistar LaLiga (FHD)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/54532
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="Telegram", Movistar LaLiga (FHD)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="GitHub", Movistar LaLiga (FHD)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57362
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="Telegram", Movistar LaLiga BAR (FHD)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="GitHub", Movistar LaLiga BAR (FHD)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5661
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="Telegram", Movistar LaLiga Sat (FHD)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="GitHub", Movistar LaLiga Sat (FHD)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58313
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="Telegram", LaLiga Tv (HD)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="GitHub", LaLiga Tv (HD)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58317
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="Telegram", Movistar LaLiga (HD)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="GitHub", Movistar LaLiga (HD)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63361
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="Telegram", Movistar LaLiga (HD)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="GitHub", Movistar LaLiga (HD)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63362
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="Telegram", Movistar LaLiga (FHD)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="GitHub", Movistar LaLiga (FHD)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63363
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="Telegram", Movistar LaLiga (FHD)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="GitHub", Movistar LaLiga (FHD)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63364
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="Telegram", LaLiga TV BAR (HD)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="GitHub", LaLiga TV BAR (HD)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63370
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="Telegram", LaLiga TV BAR (FHD)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="GitHub", LaLiga TV BAR (FHD)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63369
 
 
@@ -182,6 +183,33 @@ http://127.0.0.1:6878/ace/getstream?id=678a1e93fbfbd499c329886bfdda780e73ac1786
 acestream://678a1e93fbfbd499c329886bfdda780e73ac1786
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="NEW ERA", Movistar Liga de Campeones (4K)
 http://vlc.shickat.me:8000/pid/678a1e93fbfbd499c329886bfdda780e73ac1786/stream.mp4
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="GitHub", Movistar Liga de Campeones (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63371
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="GitHub", Movistar Liga de Campeones (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63372
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="GitHub", Movistar Liga de Campeones (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63373
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="GitHub", Movistar Liga de Campeones (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63374
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="GitHub", Movistar Liga de Campeones (SD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63375
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="GitHub", Movistar Liga de Campeones (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57560
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="GitHub", Movistar Liga de Campeones (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57356
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="GitHub", Movistar Liga de Campeones (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/54531
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="GitHub", Movistar Liga de Campeones (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57363
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="GitHub", Movistar Liga de Campeones (SD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57367
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="GitHub", Movistar Liga de Campeones
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58314
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="GitHub", Movistar Liga de Campeones
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58323
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="GitHub", Movistar Liga de Campeones
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58324
+
 
 # https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/LIGADECAMPEONES2-black.jpg
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES2-black" group-title="ELCANO", Movistar Liga de Campeones 2
@@ -514,8 +542,21 @@ http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5733
 #EXTINF:-1 tvg-id="Dreamworks.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Dreamworks" group-title="GitHub", Dreamworks
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5602
 
+#EXTINF:-1 tvg-id="Nick.JR.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Nick_JR" group-title="GitHub", Nick Jr
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5720
+
+#EXTINF:-1 tvg-id="Nickelodeon.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Nickelodeon" group-title="GitHub", Nickelodeon
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5721
+
 #EXTINF:-1 tvg-id="Somos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Somos" group-title="GitHub", Somos
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5730
+
+#EXTINF:-1 tvg-id="VinTV.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/VinTv" group-title="GitHub", VinTV
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5726
+
+#EXTINF:-1 tvg-id="Cadena.Elite.es" tvg-logo="https://www.cadenaelite.es/images/logoMenu.png" group-title="GitHub", Cadena Elite
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/5604
+
 
 #EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="Acestream", Dark (FHD)
 acestream://25465ea2deba65c623b7659136abf6fcc9f5dc20
@@ -638,6 +679,14 @@ acestream://83e8a605ffebe2062f15dad76b6ffe9486a28eb3
 acestream://b2706a7ffbea236a3b398139a3a606ada664c0eb
 #EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://i.ibb.co/CBdGc9f/hypermotion1.png" group-title="ELCANO", LaLiga Hypermotion SD
 acestream://121f719ebb94193c6086ef92865cf9b197750980
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="GitHub", LaLiga Hypermotion (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/25128
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="GitHub", LaLiga Hypermotion (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58322
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="GitHub", LaLiga Hypermotion (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63384
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="GitHub", LaLiga Hypermotion (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63385
 
 #https://i.ibb.co/GfMxrwWy/M-laliga-hypermotion2.png
 #EXTINF:-1 tvg-id="LaLiga.Hypermotion.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion2" group-title="Elcano.top", LaLiga Hypermotion 2 (1080)
@@ -646,12 +695,16 @@ acestream://709075831bf5c41ed0a20dfbd640aab6c28971f8
 acestream://0cfdfde1b70623b8c210b0f7301be2a87456481d
 #EXTINF:-1 tvg-id="LaLiga.Hypermotion.2.es" tvg-logo="https://i.ibb.co/8K0VrQV/hypermotion2.png" group-title="ELCANO", LaLiga Hypermotion 2 SD
 acestream://0a335406bad0b658aeddb2d38f8c0614b2e5623a
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion2" group-title="Elcano.top", LaLiga Hypermotion 2 (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63386
 
 # https://i.ibb.co/PG79d2LF/M-laliga-hypermotion3.png
 #EXTINF:-1 tvg-id="LaLiga.Hypermotion.3.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion3" group-title="Elcano.top", LaLiga Hypermotion 3
 acestream://778d2f60bb7207addedcca0b9aed98f41529724e
 #EXTINF:-1 tvg-id="LaLiga.Hypermotion.3.es" tvg-logo="https://i.ibb.co/826y2Yv/Hypermotion3.png" group-title="ELCANO", LaLiga Hypermotion 3
 acestream://fefd45ed6ff415e05f1341b7d9da2988eacd13ea
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.3.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion3" group-title="Elcano.top", LaLiga Hypermotion 3
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63387
 
 #EXTINF:-1 tvg-id="NBA.us" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NBA" group-title="NEW ERA", NBA TV
 http://127.0.0.1:6878/ace/getstream?id=b0f64a40f333ef5cc02c2b6d4a8c3f4b73dd8073
