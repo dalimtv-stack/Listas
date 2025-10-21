@@ -564,6 +564,14 @@ http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5634
 http://vlc.shickat.me:8000/pid/e4bce95dd4faeb9cb09ade36a0636bc4b22b691c/stream.mp4
 #EXTINF:-1 tvg-id="Movistar.Cine.Espanol.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CINE-ESPANOL" group-title="GitHub", Movistar Cine Español
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5633
+#EXTINF:-1 tvg-id="Movistar.Cine.Espanol.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CINE-ESPANOL" group-title="GitHub", Movistar Cine Español (HD)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/165945
+#EXTINF:-1 tvg-id="Movistar.Cine.Espanol.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CINE-ESPANOL" group-title="GitHub", Movistar Cine Español (FHD)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/165860
+#EXTINF:-1 tvg-id="Movistar.Cine.Espanol.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CINE-ESPANOL" group-title="HEVC", Movistar Cine Español (HEVC)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/189434
+#EXTINF:-1 tvg-id="Movistar.Cine.Espanol.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CINE-ESPANOL" group-title="GitHub", Movistar Cine Español (SD)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/400220316
 
 # https://stremio.shickat.me/Images/Channels/DOCUMENTALES.jpg
 #EXTINF:-1 tvg-id="Movistar.Documentales.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-DOCUMENTALES" group-title="VLC", Movistar Documentales
@@ -624,6 +632,14 @@ http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5721
 
 #EXTINF:-1 tvg-id="Somos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Somos" group-title="GitHub", Somos
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5730
+#EXTINF:-1 tvg-id="Somos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Somos" group-title="GitHub", Somos (HD)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/7190
+#EXTINF:-1 tvg-id="Somos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Somos" group-title="GitHub", Somos (FHD)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/400407273
+#EXTINF:-1 tvg-id="Somos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Somos" group-title="HEVC", Somos (HEVC)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/33529
+#EXTINF:-1 tvg-id="Somos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Somos" group-title="GitHub", Somos (SD)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/1222
 
 #EXTINF:-1 tvg-id="VinTV.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/VinTv" group-title="GitHub", VinTV
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5726
