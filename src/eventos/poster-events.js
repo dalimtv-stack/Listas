@@ -273,7 +273,7 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
     } else if (isFutbol && competicion?.toLowerCase() === 'liga f') {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/c_crop,g_north,h_456,w_314/c_scale,h_600,w_405/plantillas/ligafemenina.jpg';
     } else if (isFutbol && competicion?.toLowerCase() === 'laliga ea sports') {
-      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/LaLigaEA.jpeg;
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/LaLigaEA.jpeg';
     } else if (isFutbol) {
       // posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Futbol1.png';
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/futbol.jpeg';
