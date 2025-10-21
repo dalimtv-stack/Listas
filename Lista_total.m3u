@@ -147,6 +147,24 @@ acestream://ec29289b0b14756e686c03a501bae1efa05be70c
 acestream://6de4794cd02f88f14354b5996823413a59a1de0f
 #EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/spain/dazn-laliga-es.png" group-title="NEW ERA II", DAZN LaLiga (SD)
 acestream://8c8c1e047a1c5ed213ba74722a5345dc55c3c0eb
+#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/f_auto/Canales/DAZN-x-LALIGA" group-title="GitHub", DAZN LaLiga (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/25125
+#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/f_auto/Canales/DAZN-x-LALIGA" group-title="GitHub", DAZN LaLiga (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57344
+#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/f_auto/Canales/DAZN-x-LALIGA" group-title="GitHub", DAZN LaLiga (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/54668
+#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/f_auto/Canales/DAZN-x-LALIGA" group-title="GitHub", DAZN LaLiga (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57359
+#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/f_auto/Canales/DAZN-x-LALIGA" group-title="GitHub", DAZN LaLiga
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58315
+#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/f_auto/Canales/DAZN-x-LALIGA" group-title="GitHub", DAZN LaLiga (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63365
+#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/f_auto/Canales/DAZN-x-LALIGA" group-title="GitHub", DAZN LaLiga (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63366
+#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/f_auto/Canales/DAZN-x-LALIGA" group-title="GitHub", DAZN LaLiga (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63367
+#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/f_auto/Canales/DAZN-x-LALIGA" group-title="GitHub", DAZN LaLiga (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63368
 
 # https://i.ibb.co/nsyG7wRV/DAZN-x-LALIGA-2.png
 # https://i.ibb.co/tw7G81gf/dazn-laliga-2-es.png
@@ -159,6 +177,10 @@ acestream://a231b2fa1f7754433efeb8bb8d69d7b9096dcba8
 acestream://c976c7b37964322752db562b4ad65515509c8d36
 #EXTINF:-1 tvg-id="DAZN.LALIGA.2.es" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/spain/dazn-laliga-2-es.png" group-title="NEW ERA II", DAZN LaLiga 2 (FHD)
 acestream://51dbbfb42f8091e4ea7a2186b566a40e780953d9
+#EXTINF:-1 tvg-id="DAZN.LALIGA.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN-x-LALIGA-2" group-title="GitHub", DAZN LaLiga 2
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57476
+#EXTINF:-1 tvg-id="DAZN.LALIGA.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN-x-LALIGA-2" group-title="GitHub", DAZN LaLiga 2
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63393
 
 # https://i.imgur.com/champions-league-logo.png
 # https://comparaiso.es/sites/comparaiso.es/files/styles/_default/public/images/movistar-liga-campeones-200x300.png
@@ -273,6 +295,18 @@ acestream://ebca4a63ce3bfda7b272964a1acc5227218184a4
 acestream://2f3cfd199a49819cbd129689a840dc3d23ab93aa
 #EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://i.ibb.co/CV4CLjz/deportes.png" group-title="NEW ERA", Movistar Deportes (FHD)
 acestream://ef9dcc4eaac36a0f608b52a31f8ab237859e071a
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_Deportes" group-title="GitHub", Movistar Deportes (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5643
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_Deportes" group-title="GitHub", Movistar Deportes (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57481
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_Deportes" group-title="GitHub", Movistar Deportes
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58320
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_Deportes" group-title="GitHub", Movistar Deportes
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58319
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_Deportes" group-title="GitHub", Movistar Deportes (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63397
+#EXTINF:-1 tvg-id="Movistar.Deportes.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_Deportes" group-title="GitHub", Movistar Deportes (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63396
 
 # https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Deportes%202.jpeg
 #EXTINF:-1 tvg-id="Movistar.Deportes.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M_Deportes2" group-title="VLC", Movistar Deportes 2
@@ -285,6 +319,10 @@ acestream://bfa01c11c5c6b7a616a516de4f2c769a89d26b25
 acestream://edd06f11e1cef292a1d795e15207ef2f580e298c
 #EXTINF:-1 tvg-id="Movistar.Deportes.2.es" tvg-logo="https://i.ibb.co/q95fBKV/deportes2.png" group-title="ELCANO", Movistar Deportes 2
 acestream://639c561dd57fa3fc91fde715caeb696c5efb7ce7
+#EXTINF:-1 tvg-id="Movistar.Deportes.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M_Deportes2" group-title="GitHub", Movistar Deportes 2
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5639
+#EXTINF:-1 tvg-id="Movistar.Deportes.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M_Deportes2" group-title="GitHub", Movistar Deportes 2
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63398
 
 # https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Deportes%203.jpeg
 #EXTINF:-1 tvg-id="Movistar.Deportes.3.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M_Deportes3" group-title="Elcano.top", Movistar Deportes 3 (1080)
@@ -383,6 +421,10 @@ acestream://1205151f6fa5d95c0eeb543cbce43ccfa6a1b216
 acestream://d03c13b6723f66155d7a0df3692a3b073fe630f2
 #EXTINF:-1 tvg-id="Movistar.Vamos.es" tvg-logo="https://i.ibb.co/gWMRpFB/vamos.png" group-title="ELCANO", Movistar Vamos
 acestream://12ba546d229bc39f01c3c18988a034b215fe6adb
+#EXTINF:-1 tvg-id="Movistar.Vamos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Vamos" group-title="GitHub", Movistar Vamos (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5630
+#EXTINF:-1 tvg-id="Movistar.Vamos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Vamos" group-title="GitHub", Movistar Vamos
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58321
 
 #EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Eurosport" group-title="daddylivestream", Eurosport (1080)
 https://world-proxifier.xyz/daddylive_go/p/C4MWCOIXGETT6FRCEQ3S2EIDCNTUAUKZLZZX66TFM53GCLDWGZ6SO2SUKFLFMVCVABKWKNZS/index.m3u8
@@ -820,6 +862,10 @@ acestream://4b9f813f30b4345fe555f9e218d828d76cd6ee88
 acestream://63ad519ec9602ea12f7867cf15914b2537bbf04a
 #EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://i.ibb.co/m54QH9Gt/copa.png" group-title="ELCANO", M+ Copa del Rey
 acestream://b51f2d9a15b6956a44385b6be531bcabeb099d9d
+#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/M-Copa_del_Rey" group-title="GitHub", M+ Copa del Rey
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63418
+#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/M-Copa_del_Rey" group-title="GitHub", M+ Copa del Rey
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63418
 
 #EXTINF:-1 tvg-id="DAZN.2.BAR.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN2_BAR" group-title="NEW ERA", DAZN 2 BAR (FHD)
 acestream://2f9211669499f413dab1a490198afab2a9b4b57c
@@ -896,6 +942,8 @@ acestream://9b84af74b2fa3690c519199326fc2f181b025cdd
 acestream://ab0d8baaf889017c5e87b2e484203a359585c9dc
 #EXTINF:-1 tvg-id="Movistar.Ellas.Vamos.es" tvg-logo="https://i.ibb.co/rx9hnHz/ellas.png" group-title="ELCANO", Movistar Ellas Vamos
 acestream://d8c2ed470e847154a88f011137cc206319f6bed5
+#EXTINF:-1 tvg-id="Movistar.Ellas.Vamos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/Vamos_ellas" group-title="GitHub", Movistar Ellas Vamos
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/29333
 
 # https://i.ibb.co/BHXHhN2b/M-Golf-2.png
 #EXTINF:-1 tvg-id="Movistar.Golf.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/GOLF2" group-title="NEW ERA", Movistar Golf 2 (FHD)
@@ -987,6 +1035,12 @@ acestream://868a6187d6aeec65ded84bd777814c9f7b7a9027
 
 #EXTINF:-1 tvg-id="Ziggo.Sport.6.nl" tvg-logo="https://tvgidsassets.nl/v354/img/channels/120x120/419.png" group-title="NEW LOOP", ZIGGO SPORT 6
 acestream://9231f38e71a85ad24b4c11a5e360992e30c916ed
+
+#EXTINF:-1 tvg-id="Mezzo.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Mezzo" group-title="GitHub", Mezzo
+http://eswoaf.top:8080/es5541757514441321/b740b3ca790f/316
+
+#EXTINF:-1 tvg-id="Mezzo.Live.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Mezzo_Live" group-title="GitHub", Mezzo Live
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5689
 
 #EXTINF:-1 tvg-id="Teledeporte.es" tvg-logo="https://graph.facebook.com/teledeporteRTVE/picture?width=200&height=200" group-title="Oficial",Teledeporte (1080)
 https://d1cctoeg0n48w5.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-mnixw9wn5ugmv/TeledeporteES.m3u8
@@ -1350,3 +1404,8 @@ https://tinyurl.com/ymt52m6r
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/FOX_SPORTS" group-title="FOX SPORT [MX]", Pruebas (NEW ERA)
 http://127.0.0.1:6878/ace/getstream?id=a0464d3642e054f6122e7c309017d1e8d23f4da9
+
+#EXTINF:-1 tvg-id="Regalo.es" tvg-logo="https://docdog.top/logo/countries/ads/iptv_es.jpg" group-title="GitHub", Regalo 1
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58114
+#EXTINF:-1 tvg-id="Regalo.es" tvg-logo="https://docdog.top/logo/countries/ads/iptv_es.jpg" group-title="GitHub", Regalo 2
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58113
