@@ -750,21 +750,6 @@ acestream://4dbe63b44fc4f439f5b634c0d2aa7e0cccad808a
 #EXTINF:-1 tvg-id="DAZN.6.pt" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/DAZN%206.png" group-title="NEW LOOP", ELEVEN DAZN 6
 acestream://50b6d2b5fd59fefb9f4fd2176994d418f2b94a80
 
-#EXTINF:-1 tvg-id="ESPN.1.nl" tvg-logo="https://tvgidsassets.nl/v354/img/channels/120x120/148.png" group-title="NEW LOOP", ESPN [BE]
-acestream://79f10c6c6168e42bfc606f3f7b9e5f3ca79dedab
-
-#EXTINF:-1 tvg-id="ESPN.2.nl" tvg-logo="https://tvgidsassets.nl/v354/img/channels/120x120/468.png" group-title="NEW LOOP", ESPN 2 [BE]
-acestream://3e0ba6867173f345d482d80c771f1a5dc3b37e63
-
-#EXTINF:-1 tvg-id="ESPN.4.nl" tvg-logo="https://tvgidsassets.nl/v354/img/channels/120x120/470.png" group-title="NEW LOOP", ESPN 4 [BE]
-acestream://5f9b19c57195cc28ab81e0ec8cad03b55118687a
-
-#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/ESPN.png" group-title="NEW LOOP", ESPN HD [US]
-acestream://4b4907de51ec11087d4bed5876f2a0c68264f442
-
-#EXTINF:-1 tvg-id="ESPN.2.us" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/ESPN%202.png" group-title="NEW LOOP", ESPN2 [US]
-acestream://664eb5fe460b96941aed633959a845b185cd8394
-
 #EXTINF:-1 tvg-id="Motors.TV" tvg-logo="https://www.mxgp.com/sites/default/files/news/image/logo%20Motors%20TV.jpg" group-title="NEW LOOP", MOTORS TV HD
 acestream://442aeb6643b8836f9d00361c9e48eeb0841ddf98
 
@@ -790,38 +775,6 @@ acestream://868a6187d6aeec65ded84bd777814c9f7b7a9027
 
 #EXTINF:-1 tvg-id="Ziggo.Sport.6.nl" tvg-logo="https://tvgidsassets.nl/v354/img/channels/120x120/419.png" group-title="NEW LOOP", ZIGGO SPORT 6
 acestream://9231f38e71a85ad24b4c11a5e360992e30c916ed
-
-#EXTINF:-1 tvg-id="ESPN.EN.VIVO" tvg-name="ESPN EN VIVO" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/2560px-ESPN_wordmark.svg.png" group-title="Deportes",ESPN EN VIVO
-http://172.93.102.112:8989/278765_.m3u8
-
-#EXTINF:-1 tvg-id="ESPN.deportes" tvg-name="ESPN DEPORTES" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/8/82/Espn_deportes.png" group-title="Deportes",ESPN DEPORTES
-http://origin.thetvapp.to/hls/espn-deportes/mono.m3u8
-#EXTINF:-1 tvg-id="ESPN.deportes" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/8/82/Espn_deportes.png",ESPN DEPORTES
-acestream://ab9bf0a75f1135137e65c0bc7639cb7f8ae28af8
-
-#EXTINF:-1 tvg-id="ESPN.2.ar" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/ESPN2_logo.svg/2560px-ESPN2_logo.svg.png",ESPN 2
-http://bantel-cdn4.iptvperu.tv:1935/Ff8cjS/espn2.stream/playlist.m3u8
-#EXTINF:-1 tvg-id="ESPN.2.ar" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/ESPN2_logo.svg/2560px-ESPN2_logo.svg.png",ESPN 2
-http://181.205.130.194:4000/play/a07i
-
-#EXTINF:-1 tvg-id="ESPN.3.ar" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/5/51/ESPN3_Logo.png",ESPN 3
-https://la12hd.com/vivo/canal.php?stream=espn3
-#EXTINF:-1 tvg-id="ESPN.3.ar" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/5/51/ESPN3_Logo.png",ESPN 3
-http://bantel-cdn4.iptvperu.tv:1935/D6Vp42/espn3.stream/playlist.m3u8
-
-#EXTINF:-1 tvg-id="ESPN.4.ar" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/ESPN_4_logo.svg/2560px-ESPN_4_logo.svg.png",ESPN 4
-https://la12hd.com/vivo/canal.php?stream=espn4
-#EXTINF:-1 tvg-id="ESPN.4.ar" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/ESPN_4_logo.svg/2560px-ESPN_4_logo.svg.png",ESPN 4
-http://bantel-cdn4.iptvperu.tv:1935/hDp0yb/espn4.stream/playlist.m3u8
-
-#EXTINF:-1 tvg-id="ESPN.5.ar" tvg-logo="https://i.postimg.cc/4d4x3qS3/1280px-ESPN-5-logo-svg.png",ESPN 5
-http://bantel-cdn4.iptvperu.tv:1935/PNwE9t/espn5.stream/playlist.m3u8
-
-#EXTINF:-1 tvg-id="ESPN.6.ar" tvg-logo="https://i.postimg.cc/g20RWFkN/1280px-ESPN-6-logo-svg.png",ESPN 6
-http://bantel-cdn4.iptvperu.tv:1935/e43Gyk/espn6.stream/playlist.m3u8
-
-#EXTINF:-1 tvg-id="ESPN.7.ar" tvg-logo="https://i.postimg.cc/vTL0VL5X/800px-ESPN-7-logo-svg.png",ESPN 7
-http://bantel-cdn4.iptvperu.tv:1935/HiOmL1/espn7.stream/playlist.m3u8
 
 #EXTINF:-1 tvg-id="Teledeporte.es" tvg-logo="https://graph.facebook.com/teledeporteRTVE/picture?width=200&height=200" group-title="Oficial",Teledeporte (1080)
 https://d1cctoeg0n48w5.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-mnixw9wn5ugmv/TeledeporteES.m3u8
@@ -865,12 +818,105 @@ https://rtvelivestream.rtve.es/rtvesec/la1/la1_main_dvr.m3u8
 https://d71gqtnep83vb.cloudfront.net/gol_classics/gol_classics.m3u8
 
 
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Espn_deportes" group-title="ESPN DEPORTES 🇺🇸", ESPN Pruebas
+https://s@saz.blitzen.store/deportes.m3u8
+
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN DEPORTES 🇺🇸", ESPN Pruebas
+http://Tdo@origin.thetvapp.to/hls/espn-deportes/mono.m3u8
+
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN 2 🇦🇷", ESPN Pruebas
+http://181.205.130.194:4000/play/a07i
+
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN VIVO 🇨🇴", ESPN Pruebas
+http://190.60.56.41:8000/play/a00z/index.m3u8
+
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN 5 🇨🇴", ESPN Pruebas
+http://190.60.56.41:8000/play/a00p/index.m3u8
+
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN 🇦🇷", ESPN Pruebas
+http://181.78.117.219:8000/play/a00b/index.m3u8
+
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN VIVO 🇦🇷", ESPN Pruebas
+http://45.71.254.1:8000/play/a038/index.m3u8
+
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN VIVO 🇦🇷", ESPN Pruebas (720)
+https://cdn01.oplay.tv/espn/index.m3u8
+
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN 🇦🇷", ESPN Pruebas
+http://200.12.41.194:8000/play/a060/index.m3u8
+
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN 🇦🇷", ESPN Pruebas
+http://45.228.234.30:16000/play/a01k/index.m3u8
+
+#EXTINF:11 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN 2 🇦🇷", ESPN Pruebas
+http://45.228.234.30:16000/play/a01l/index.m3u8
+
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN PREMIUM 🇦🇷", ESPN Pruebas
+http://190.102.246.93:9005/play/a00x
+
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN PREMIUM 🇦🇷", ESPN Pruebas
+http://190.102.246.93:9005/play/a029
+
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN 3 🇨🇴", ESPN Pruebas
+http://190.102.246.93:9005/play/a02l
+
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="https://tvgidsassets.nl/v354/img/channels/120x120/468.png" group-title="ESPN 3 🇦🇷", ESPN Pruebas (NEW ERA)
+http://127.0.0.1:6878/ace/getstream?id=d872a44653bf2ad232d5f8476597754b69e3d56c
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="https://tvgidsassets.nl/v354/img/channels/120x120/470.png" group-title="ESPN 4 🇦🇷", ESPN Pruebas (NEW ERA)
+http://127.0.0.1:6878/ace/getstream?id=216d20acdaf01a196eda71c81a7a7d5bcbe5ed58
+
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/2560px-ESPN_wordmark.svg.png" group-title="ESPN EN VIVO", ESPN EN VIVO Pruebas
+http://172.93.102.112:8989/278765_.m3u8
+
+#EXTINF:-1 tvg-id="ESPN.1.nl" tvg-logo="https://tvgidsassets.nl/v354/img/channels/120x120/148.png" group-title="NEW LOOP", ESPN [BE]
+acestream://79f10c6c6168e42bfc606f3f7b9e5f3ca79dedab
+
+#EXTINF:-1 tvg-id="ESPN.2.nl" tvg-logo="https://tvgidsassets.nl/v354/img/channels/120x120/468.png" group-title="NEW LOOP", ESPN 2 [BE]
+acestream://3e0ba6867173f345d482d80c771f1a5dc3b37e63
+
+#EXTINF:-1 tvg-id="ESPN.4.nl" tvg-logo="https://tvgidsassets.nl/v354/img/channels/120x120/470.png" group-title="NEW LOOP", ESPN 4 [BE]
+acestream://5f9b19c57195cc28ab81e0ec8cad03b55118687a
+
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/ESPN.png" group-title="NEW LOOP", ESPN HD [US]
+acestream://4b4907de51ec11087d4bed5876f2a0c68264f442
+
+#EXTINF:-1 tvg-id="ESPN.2.us" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/ESPN%202.png" group-title="NEW LOOP", ESPN2 [US]
+acestream://664eb5fe460b96941aed633959a845b185cd8394
+
+#EXTINF:-1 tvg-id="ESPN.deportes.mx" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Espn_deportes" group-title="TheTvApp",ESPN DEPORTES
+http://origin.thetvapp.to/hls/espn-deportes/mono.m3u8
+#EXTINF:-1 tvg-id="ESPN.deportes.mx" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Espn_deportes" group-title="NEW ERA",ESPN DEPORTES
+acestream://ab9bf0a75f1135137e65c0bc7639cb7f8ae28af8
+
+#EXTINF:-1 tvg-id="ESPN.2.ar" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/ESPN2_logo.svg/2560px-ESPN2_logo.svg.png",ESPN 2
+http://bantel-cdn4.iptvperu.tv:1935/Ff8cjS/espn2.stream/playlist.m3u8
+
+#EXTINF:-1 tvg-id="ESPN.2.ar" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/ESPN2_logo.svg/2560px-ESPN2_logo.svg.png",ESPN 2
+http://181.205.130.194:4000/play/a07i
+
+#EXTINF:-1 tvg-id="ESPN.3.ar" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/5/51/ESPN3_Logo.png",ESPN 3
+https://la12hd.com/vivo/canal.php?stream=espn3
+#EXTINF:-1 tvg-id="ESPN.3.ar" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/5/51/ESPN3_Logo.png",ESPN 3
+http://bantel-cdn4.iptvperu.tv:1935/D6Vp42/espn3.stream/playlist.m3u8
+
+#EXTINF:-1 tvg-id="ESPN.4.ar" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/ESPN_4_logo.svg/2560px-ESPN_4_logo.svg.png",ESPN 4
+https://la12hd.com/vivo/canal.php?stream=espn4
+#EXTINF:-1 tvg-id="ESPN.4.ar" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/ESPN_4_logo.svg/2560px-ESPN_4_logo.svg.png",ESPN 4
+http://bantel-cdn4.iptvperu.tv:1935/hDp0yb/espn4.stream/playlist.m3u8
+
+#EXTINF:-1 tvg-id="ESPN.5.ar" tvg-logo="https://i.postimg.cc/4d4x3qS3/1280px-ESPN-5-logo-svg.png",ESPN 5
+http://bantel-cdn4.iptvperu.tv:1935/PNwE9t/espn5.stream/playlist.m3u8
+
+#EXTINF:-1 tvg-id="ESPN.6.ar" tvg-logo="https://i.postimg.cc/g20RWFkN/1280px-ESPN-6-logo-svg.png",ESPN 6
+http://bantel-cdn4.iptvperu.tv:1935/e43Gyk/espn6.stream/playlist.m3u8
+
+#EXTINF:-1 tvg-id="ESPN.7.ar" tvg-logo="https://i.postimg.cc/vTL0VL5X/800px-ESPN-7-logo-svg.png",ESPN 7
+http://bantel-cdn4.iptvperu.tv:1935/HiOmL1/espn7.stream/playlist.m3u8
+
+
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS" group-title="|FR| beIN Sports 1 ᴴᴰ", Pruebas (1080)
 http://258540820214.d4ktv.info/DRFOURK234/j6914uju6w/50148
-
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.postimg.cc/Gtgvyt29/IMG-2984.png" group-title="AMC (es)", Pruebas
-http://vegafibratv.com:8085/AMC/index.m3u8
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://i.postimg.cc/pXRYBBYz/IMG-2364.png" group-title="HBO2", Pruebas
 https://cors-proxy.cooks.fyi/https://streamer1.nexgen.bz/HBO2/index.m3u8
@@ -940,17 +986,11 @@ http://258540820214.d4ktv.info/DRFOURK234/j6914uju6w/146116
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="http://138.199.27.237:8080/FRANCE/BEINSPORTS.png" group-title="|FR| BEIN SPORTS 1 4K", Pruebas
 http://258540820214.d4ktv.info/DRFOURK234/j6914uju6w/35522
 
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN DEPORTES 🇺🇸", Pruebas
-https://s@saz.blitzen.store/deportes.m3u8
-
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="SKY SPORT 🇲🇽", Pruebas
 http://181.119.103.113:12500/play/a0di/index.m3u8
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="beIN SPORTS HD 1 🇶🇦", Pruebas
 http://51.89.148.37:8080/catena-9-100-streamer-bein_sports_1_fhd/tracks-v1a1a2a3l1l2/mono.m3u8?token=ef1c6f27da4b04de8c97b52b9255617b
-
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN DEPORTES 🇺🇸", Pruebas
-http://Tdo@origin.thetvapp.to/hls/espn-deportes/mono.m3u8
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="beIN SPORTS HD 1 🇶🇦", Pruebas
 http://het104a.4rouwanda-shop.store:80/live/918454578001/index.m3u8
@@ -1024,9 +1064,6 @@ https://balance.footballii.ir/hls2/b1.m3u8
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="Bien sport 1 🇶🇦", Pruebas
 https://wo.cma.footballii.ir/hls2/b1_src.m3u8
 
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN 2 🇦🇷", Pruebas
-http://181.205.130.194:4000/play/a07i
-
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="Premier Sport 1 UK 🇬🇧", Pruebas
 https://tiger-hub.vercel.app/Premier_Sports-1/tracks-v1a1/mono.m3u8
 
@@ -1057,12 +1094,6 @@ http://wo0dyefk.dienalt.org/iptv/DV3AC2Q6YSR9XE/2559/index.m3u8
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ZIGGO SPORT 6 HD 🇳🇱", Pruebas
 http://185.236.230.212:9982/play/a09a
 
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN VIVO 🇨🇴", Pruebas
-http://190.60.56.41:8000/play/a00z/index.m3u8
-
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN 5 🇨🇴", Pruebas
-http://190.60.56.41:8000/play/a00p/index.m3u8
-
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="FOX SPORTS 1 🇲🇽", Pruebas
 http://45.167.255.254:8010/play/a045/index.m3u8
 
@@ -1086,33 +1117,6 @@ https://bit.ly/48XfUCc?profile=inspirationFreetv.m3u8
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="SPORT ITALIA 🇮🇹", Pruebas
 https://amg01370-italiansportcom-sportitalia-rakuten-3hmdb.amagi.tv/amRdirect/ads_pod_type=playerpage_midroll&ads_env=prod&ads_ppid=&ads_rtvid=271861&ads_streaming_id=4f185419-74f6-4564-8ea9-4cdc60746e2f&ads_amagi_channel=781&ads_device_type=web&ads_device_model=&ads_device_year=&ads_player_width=&ads_rtv_content_language=ita&ads_market=it&ads_rtv_content_id=3741&ads_device_make=&ads_user_type=visitor&ads_content_classification=6&ads_gdpr_consent=&ads_device_lmt=1&ads_player_height=&uid=1gnmqg5gu-qsvc-bfo-gaq3-3dgjgexshpe/hls/amagi_hls_data_rakutenAA-sportitalia-rakuten/CDN/1920x1080_4540800/chunklist.m3u8
-
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN 🇦🇷", Pruebas
-http://181.78.117.219:8000/play/a00b/index.m3u8
-
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN VIVO 🇦🇷", Pruebas
-http://45.71.254.1:8000/play/a038/index.m3u8
-
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN VIVO 🇦🇷", Pruebas (720)
-https://cdn01.oplay.tv/espn/index.m3u8
-
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN 🇦🇷", Pruebas
-http://200.12.41.194:8000/play/a060/index.m3u8
-
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN 🇦🇷", Pruebas
-http://45.228.234.30:16000/play/a01k/index.m3u8
-
-#EXTINF:11 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN 2 🇦🇷", Pruebas
-http://45.228.234.30:16000/play/a01l/index.m3u8
-
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN PREMIUM 🇦🇷", Pruebas
-http://190.102.246.93:9005/play/a00x
-
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN PREMIUM 🇦🇷", Pruebas
-http://190.102.246.93:9005/play/a029
-
-#EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="ESPN 3 🇨🇴", Pruebas
-http://190.102.246.93:9005/play/a02l
 
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="" group-title="EUROSPORT 1 🇪🇸", Pruebas
 http://origi-JW-1.netvil43.store:80/RO-110/tracks-v1a1/mono.m3u8?token=c1lhc3Q1ZVhxcXJIZTU2c2ZhdTRtWlBiMkppd3k2K0EyNE9keU5xbG1YekRxb1d1Z1plV282T1dlNU9xZ3FxeGxaT3ZvNmFGbkxLSHZJV2ZrN3Fzbm93PQ%3D%3D
