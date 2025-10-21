@@ -114,6 +114,10 @@ acestream://ad42faa399df66dcd62a1cbc9d1c99ed4512d3b8
 acestream://83c6c4942d69f4aa324aa746c5d7dbfd7d1572b3
 #EXTINF:-1 tvg-id="Movistar.LaLiga.2.es" tvg-logo="https://i.ibb.co/Tc97zSb/liga2.png" group-title="ELCANO", Movistar LaLiga 2 (SD)
 acestream://f31a586422c9244196c810c84b6c85da350318a5
+#EXTINF:-1 tvg-id="Movistar.LaLiga.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/bo_20px_solid_black/Canales/M-LALIGA2-black" group-title="GitHub", Movistar LaLiga 2 (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63388
+#EXTINF:-1 tvg-id="Movistar.LaLiga.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/bo_20px_solid_black/Canales/M-LALIGA2-black" group-title="GitHub", Movistar LaLiga 2 (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63389
 
 # https://i.ibb.co/C5qm25Q6/M-liga3.png
 # https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/M-LALIGA3-black.jpg
@@ -230,6 +234,12 @@ acestream://4fc6d0331830ad8743abab2fe2473b63bdfbc49f
 acestream://3bb6c5f346369d4f2a6bde45ec0bfe100d0e1f42
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.2.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%202.png" group-title="NEW ERA", Movistar Liga de Campeones 2 (FHD) (Opcion 4)
 acestream://4c6ed0cd87c090f3cf85b2c8adbe8b37dba08565
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES2-black" group-title="GitHub", Movistar Liga de Campeones 2 (HD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63404
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES2-black" group-title="GitHub", Movistar Liga de Campeones 2 (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63405
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES2-black" group-title="GitHub", Movistar Liga de Campeones 2 (FHD)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58115
 
 # https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/LIGADECAMPEONES3-black.jpg
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.3.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES3-black" group-title="Elcano.top", Movistar Liga de Campeones 3 (1080)
@@ -637,6 +647,10 @@ http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/25927
 http://172.93.102.112:8989/278830_.m3u8
 #EXTINF:-1 tvg-id="Discovery.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_white,c_pad,w_405,q_auto,f_auto/bo_20px_solid_white/Canales/Discovery_Channel_-_Logo" group-title="GitHub", Discovery
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5594
+
+
+#EXTINF:-1 tvg-id="Historia.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Historia" group-title="GitHub", Historia
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5618
 
 #EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/1RFEF" group-title="SOLO EVENTOS", Canal 1 [1RFEF]
 acestream://c1ee6e1e0ef5928d8261f855c417de21794f437d
