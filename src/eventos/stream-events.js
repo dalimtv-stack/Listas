@@ -167,6 +167,7 @@ async function getStreams(id, configId) {
   const { handleStreamInternal, enrichWithExtra } = getStreamModule();
 
   let result = await handleStreamInternal({ id: fakeId, m3uUrl, configId });
+  console.log('[DEBUG] Resultado handleStreamInternal:', result);
   if (!result || !Array.isArray(result.streams) || result.streams.length === 0) {
     await registrarErrorCanal(configId, canalName);
     return { streams: [], chName: partido };
