@@ -303,6 +303,7 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/G_Artistica.jpeg';
     } else {
       // posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/MultiChampions.jpeg'
+      await registrarPosterError({ partido, hora, deporte, competicion, dia });
       return generatePlaceholdPoster({ hora });
     }
   }
@@ -423,6 +424,30 @@ async function scrapePostersForEventos(eventos) {
   const finalResultados = [...eventosConPosterPrevio, ...resultados];
   console.info(`[Poster] Procesamiento completado, ${finalResultados.length} eventos con pósters`);
   return finalResultados;
+}
+
+async function registrarPosterError({ partido, hora, deporte, competicion, dia }) {
+  const { kvGetJsonTTL, kvSetJsonTTL } = require('../../api/kv');
+  const claveError = 'Error:poster';
+  const nuevoError = { partido, hora, deporte, competicion, dia };
+
+  try {
+    const prev = await kvGetJsonTTL(claveError) || [];
+    const yaExiste = prev.some(e =>
+      e.partido === partido &&
+      e.hora === hora &&
+      e.deporte === deporte &&
+      e.competicion === competicion &&
+      e.dia === dia
+    );
+
+    if (!yaExiste) {
+      await kvSetJsonTTL(claveError, [...prev, nuevoError], 7 * 86400);
+      console.warn('[Poster] Registrado en Error:poster:', nuevoError);
+    }
+  } catch (err) {
+    console.error('[Poster] Error al registrar en KV Error:poster:', err.message);
+  }
 }
 
 module.exports = {
