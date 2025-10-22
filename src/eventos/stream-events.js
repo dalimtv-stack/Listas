@@ -10,6 +10,25 @@ const { DateTime } = require('luxon');
 // ✅ Evita dependencia circular: acceso dinámico
 const getStreamModule = () => require('../../api/handlers/stream');
 
+// Registra canales no encontrados en KV
+async function registrarErrorCanal(configId, canalName) {
+  const { kvGetJsonTTL, kvSetJsonTTL } = require('../../api/kv');
+  const clave = `Error:canal:${configId}`;
+  const nuevo = { canal: canalName };
+
+  try {
+    const prev = await kvGetJsonTTL(clave) || [];
+    const yaExiste = prev.some(e => e.canal === canalName);
+
+    if (!yaExiste) {
+      await kvSetJsonTTL(clave, [...prev, nuevo], 7 * 86400);
+      console.warn(`[STREAM] Canal no encontrado registrado en ${clave}:`, canalName);
+    }
+  } catch (err) {
+    console.error(`[STREAM] Error al registrar en KV ${clave}:`, err.message);
+  }
+}
+
 // Detecta calidad y devuelve descripción + canal limpio
 function extraerYLimpiarCalidad(label = '') {
   const calidadRaw = label.toLowerCase();
@@ -90,7 +109,7 @@ async function getStreams(id, configId) {
   // 🎯 Mapeo explícito de nombres de canal
   const canalMap = {
     'Teledeporte': 'Teledeporte.es',
-    'Esport 3': 'Esport3.cat',
+    'Esport 43': 'Esport3.cat',
     'TV3': 'TV3.cat',
     'Movistar Plus+': 'Movistar.Plus.es',
     'Movistar Plus+ 2': 'Movistar.Plus.2.es',
@@ -148,6 +167,10 @@ async function getStreams(id, configId) {
   const { handleStreamInternal, enrichWithExtra } = getStreamModule();
 
   let result = await handleStreamInternal({ id: fakeId, m3uUrl, configId });
+  if (!result || !Array.isArray(result.streams) || result.streams.length === 0) {
+    await registrarErrorCanal(configId, canalName);
+    return { streams: [], chName: partido };
+  }
   result.id = fakeId;
   const enriched = await enrichWithExtra(result, configId, m3uUrl, false);
 
