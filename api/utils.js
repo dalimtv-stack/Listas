@@ -6,16 +6,24 @@ const fetch = require('node-fetch');
 const { DEFAULT_CONFIG_ID } = require('../src/config');
 
 // Detecta tipo de stream desde la URL
-function detectarFormatoDesdeUrl(url = '') {
+function detectarFormatoDesdeUrl(url = '', hints = {}) {
   const lower = url.toLowerCase();
+
   if (lower.startsWith('acestream://')) return '🔄 Acestream';
   if (lower.includes('127.0.0.1:6878/ace/getstream?id=')) return '🔄 Directo (Acestream)';
   if (lower.includes('m3u8')) return '🔗 M3U8';
-  if (lower.includes('directo')) return '🔗 Directo';
   if (lower.includes('vlc')) return '🔗 VLC';
+  if (lower.includes('mp4')) return '🔗 Stream';
+
+  // Si no se detecta por URL, usar behaviorHints como ayuda
+  if (hints.external && hints.notWebReady) return '🔗 Browser';
+  if (!hints.external && !hints.notWebReady) return '🔗 M3U8';
+  if (!hints.external && hints.notWebReady) return '🔗 Directo';
+  if (hints.external && !hints.notWebReady) return '🔗 VLC';
 
   return '🔗 Stream';
 }
+
 
 function normalizeCatalogName(name) {
   if (!name) return '';
