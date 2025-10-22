@@ -109,7 +109,7 @@ async function getStreams(id, configId) {
   // 🎯 Mapeo explícito de nombres de canal
   const canalMap = {
     'Teledeporte': 'Teledeporte.es',
-    'Esport 43': 'Esport3.cat',
+    'Esport 3': 'Esport3.cat',
     'TV3': 'TV3.cat',
     'Movistar Plus+': 'Movistar.Plus.es',
     'Movistar Plus+ 2': 'Movistar.Plus.2.es',
