@@ -687,18 +687,18 @@ http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5584
 
 #EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/ODISEA" group-title="Telegram", Odisea
 http://172.93.102.112:8989/278818_.m3u8
-#EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/ODISEA" group-title="Telegram", Odisea
+#EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/ODISEA" group-title="BudTV", Odisea
 http://xcm.budtv-ultra.com:9000/budtv/websline/eWmWuCeW3j9F/278818.m3u8
 #EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/ODISEA" group-title="PgRaceFuaApi", Odisea
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5724
 #EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/ODISEA" group-title="Mhubery", Odisea (HD)
 http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/400241870
 
-#EXTINF:-1 tvg-id="National.Geographic.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/National_Geographic" group-title="Telegram", National Geographic
+#EXTINF:-1 tvg-id="National.Geographic.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/National_Geographic" group-title="PgRaceFuaApi", National Geographic
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5714
-#EXTINF:-1 tvg-id="National.Geographic.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/National_Geographic" group-title="Telegram", National Geographic
+#EXTINF:-1 tvg-id="National.Geographic.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/National_Geographic" group-title="TvPremiunD", National Geographic
 http://tvpremiund.ddns.me:2082/stellar269/johatemu269/30611
-#EXTINF:-1 tvg-id="National.Geographic.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/National_Geographic" group-title="Telegram", National Geographic
+#EXTINF:-1 tvg-id="National.Geographic.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/National_Geographic" group-title="StreamProstk", National Geographic
 http://streamprostk.com:2082/zcenter57/10072019/30611
 
 #https://i.ibb.co/4wKt4tkT/NAT-GEO-WILD-alt.jpg
