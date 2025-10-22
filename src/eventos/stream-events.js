@@ -66,18 +66,6 @@ function transformarTexto(texto = '') {
     .replace(/\bTenis\b|\(Tenis\)/gi, '🎾');
 }
 
-// Detecta tipo de stream desde la URL
-function detectarFormatoDesdeUrl(url = '') {
-  const lower = url.toLowerCase();
-  if (lower.startsWith('acestream://')) return '🔄 Acestream';
-  if (lower.includes('127.0.0.1:6878/ace/getstream?id=')) return '🔗 Directo (Acestream)';
-  if (lower.includes('m3u8')) return '🔗 M3U8';
-  if (lower.includes('directo')) return '🔗 Directo';
-  if (lower.includes('vlc')) return '🔗 VLC';
-
-  return '🔗 Stream';
-}
-
 async function getStreams(id, configId) {
   console.log('[EVENTOS] Entrando en getStreams con id:', id, 'configId:', configId);
   const configData = await kvGetJson(configId);
