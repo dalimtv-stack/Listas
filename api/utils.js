@@ -9,21 +9,21 @@ const { DEFAULT_CONFIG_ID } = require('../src/config');
 function detectarFormatoDesdeUrl(url = '', hints = {}) {
   const lower = url.toLowerCase();
 
+  // Clasificación directa por URL
   if (lower.startsWith('acestream://')) return '🔄 Acestream';
   if (lower.includes('127.0.0.1:6878/ace/getstream?id=')) return '🔄 Directo (Acestream)';
   if (lower.includes('m3u8')) return '🔗 M3U8';
   if (lower.includes('vlc')) return '🔗 VLC';
   if (lower.includes('mp4')) return '🔗 Stream';
 
-  // Si no se detecta por URL, usar behaviorHints como ayuda
-  if (hints.external && hints.notWebReady) return '🔗 Browser';
-  if (!hints.external && !hints.notWebReady) return '🔗 M3U8';
-  if (!hints.external && hints.notWebReady) return '🔗 Directo';
-  if (hints.external && !hints.notWebReady) return '🔗 VLC';
+  // Clasificación por behaviorHints si no se detecta por URL
+  if (hints.notWebReady === true && hints.external === true) return '🔗 Browser';
+  if (hints.notWebReady === false && hints.external === false) return '🔗 Directo';
+  if (hints.notWebReady === false && hints.external === true) return '🔗 VLC';
+  if (hints.notWebReady === true && hints.external === false) return '🔗 Stream';
 
   return '🔗 Stream';
 }
-
 
 function normalizeCatalogName(name) {
   if (!name) return '';
