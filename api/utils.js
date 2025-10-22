@@ -58,16 +58,16 @@ function detectarFormatoDesdeUrl(url = '', hints = {}) {
   if (lower.startsWith('acestream://')) return '🔄 Acestream';
   if (lower.includes('127.0.0.1:6878/ace/getstream?id=')) return '🔄 Directo (Acestream)';
   if (lower.includes('m3u8')) return '🔗 M3U8';
-  if (lower.includes('vlc')) return '🔗 VLC';
-  if (lower.includes('mp4')) return '🔗 Stream';
+  if (lower.includes('vlc')) return '🔄 VLC';
+  if (lower.includes('mp4')) return '📼 Stream';
 
   // Clasificación por behaviorHints si no se detecta por URL
-  if (hints.notWebReady === true && hints.external === true) return '🔗 Browser';
+  if (hints.notWebReady === true && hints.external === true) return '📱 Browser';
   if (hints.notWebReady === false && hints.external === false) return '🔗 Directo';
-  if (hints.notWebReady === false && hints.external === true) return '🔗 VLC';
-  if (hints.notWebReady === true && hints.external === false) return '🔗 Stream';
+  if (hints.notWebReady === false && hints.external === true) return '🔄 VLC';
+  if (hints.notWebReady === true && hints.external === false) return '📼 Stream';
 
-  return '🔗 Stream';
+  return '📼 Stream';
 }
 
 function normalizeCatalogName(name) {
