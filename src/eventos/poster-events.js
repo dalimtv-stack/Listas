@@ -295,7 +295,9 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/futbolsala.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'tenis') {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/tenis.jpeg';
-    } else if (deporte && deporte.toLowerCase() === 'ciclismo') {
+    } else if (isCiclismo && competicion?.toLowerCase() === 'mundial en pista') {
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Ciclismo_pista.jpeg';
+    } else if (isCiclismo) {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Ciclismo.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'artística') {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/G_Artistica.jpeg';
