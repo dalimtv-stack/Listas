@@ -5,6 +5,51 @@ const crypto = require('crypto');
 const fetch = require('node-fetch');
 const { DEFAULT_CONFIG_ID } = require('../src/config');
 
+// Añade VLC y Directo (Acestream)
+function expandirAcestreamConFormatos(streams = []) {
+  const aceStreams = streams.filter(s => {
+    const url = s.externalUrl || s.url || '';
+    return url.startsWith('acestream://');
+  });
+
+  const yaExiste = (url) => streams.some(s =>
+    s.url === url || s.externalUrl === url
+  );
+
+  const nuevos = [];
+
+  for (const s of aceStreams) {
+    const aceUrl = s.externalUrl || s.url;
+    const aceID = aceUrl.replace('acestream://', '');
+
+    // Directo (Acestream)
+    const directoUrl = `http://127.0.0.1:6878/ace/getstream?id=${aceID}`;
+    if (!yaExiste(directoUrl)) {
+      nuevos.push({
+        ...s,
+        url: directoUrl,
+        externalUrl: undefined,
+        behaviorHints: { notWebReady: false, external: false },
+        title: s.title.replace(/Formato:.*?\n/, 'Formato:  🔄 Directo (Acestream)\n')
+      });
+    }
+
+    // VLC
+    const vlcUrl = `http://vlc.shickat.me:8000/pid/${aceID}/stream.mp4`;
+    if (!yaExiste(vlcUrl)) {
+      nuevos.push({
+        ...s,
+        url: vlcUrl,
+        externalUrl: undefined,
+        behaviorHints: { notWebReady: false, external: false },
+        title: s.title.replace(/Formato:.*?\n/, 'Formato:  🔗 VLC\n')
+      });
+    }
+  }
+
+  return [...streams, ...nuevos];
+}
+
 // Detecta tipo de stream desde la URL
 function detectarFormatoDesdeUrl(url = '', hints = {}) {
   const lower = url.toLowerCase();
@@ -79,5 +124,6 @@ module.exports = {
   getM3uHash,
   extractConfigIdFromUrl,
   detectarFormatoDesdeUrl,
+  expandirAcestreamConFormatos,
   parseCatalogRest
 };
