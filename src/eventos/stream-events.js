@@ -166,12 +166,20 @@ async function getStreams(id, configId) {
 
   const { handleStreamInternal, enrichWithExtra } = getStreamModule();
 
-  let result = await handleStreamInternal({ id: fakeId, m3uUrl, configId });
-  console.log('[DEBUG] Resultado handleStreamInternal:', result);
-  if (!result || !Array.isArray(result.streams) || result.streams.length === 0) {
+  let result;
+  try {
+    result = await handleStreamInternal({ id: fakeId, m3uUrl, configId });
+  } catch (err) {
+    console.warn('[STREAM] Error en handleStreamInternal:', err.message);
     await registrarErrorCanal(configId, canalName);
     return { streams: [], chName: partido };
   }
+  
+  if (!result || !result.streams || !Array.isArray(result.streams) || result.streams.length === 0) {
+    await registrarErrorCanal(configId, canalName);
+    return { streams: [], chName: partido };
+  }
+  
   result.id = fakeId;
   const enriched = await enrichWithExtra(result, configId, m3uUrl, false);
 
