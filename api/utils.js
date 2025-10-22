@@ -9,7 +9,7 @@ const { DEFAULT_CONFIG_ID } = require('../src/config');
 function detectarFormatoDesdeUrl(url = '') {
   const lower = url.toLowerCase();
   if (lower.startsWith('acestream://')) return '🔄 Acestream';
-  if (lower.includes('127.0.0.1:6878/ace/getstream?id=')) return '🔗 Directo (Acestream)';
+  if (lower.includes('127.0.0.1:6878/ace/getstream?id=')) return '🔄 Directo (Acestream)';
   if (lower.includes('m3u8')) return '🔗 M3U8';
   if (lower.includes('directo')) return '🔗 Directo';
   if (lower.includes('vlc')) return '🔗 VLC';
