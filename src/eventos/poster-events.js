@@ -299,7 +299,7 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Ciclismo_pista.jpeg';
     } else if (isCiclismo) {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Ciclismo.jpeg';
-    } else if (deporte && deporte.toLowerCase() === 'Fartística') {
+    } else if (deporte && deporte.toLowerCase() === 'artística') {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/G_Artistica.jpeg';
     } else {
       // posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/MultiChampions.jpeg'
