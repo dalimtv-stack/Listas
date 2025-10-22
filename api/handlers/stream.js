@@ -5,7 +5,7 @@ const NodeCache = require('node-cache');
 const { getChannel } = require('../../src/db');
 const { scrapeExtraWebs } = require('../scraper');
 const { kvGet, kvSet, kvGetJsonTTL, kvSetJsonTTLIfChanged, kvDelete } = require('../kv');
-const { detectarFormatoDesdeUrl, normalizeCatalogName, getM3uHash, extractConfigIdFromUrl } = require('../utils');
+const { expandirAcestreamConFormatos, detectarFormatoDesdeUrl, normalizeCatalogName, getM3uHash, extractConfigIdFromUrl } = require('../utils');
 const { CACHE_TTL } = require('../../src/config');
 const { resolveM3uUrl, resolveExtraWebs } = require('../resolve');
 
@@ -322,7 +322,10 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
       title: newTitle
     };
   });
-
+  
+  // --- Expandir Acestreams con variantes VLC y Directo (Acestream) ---
+  baseObj.streams = expandirAcestreamConFormatos(baseObj.streams);
+  
   // --- Ordenar streams por formato y calidad ---
   const formatoOrden = {
     'M3U8Directo': 1,
