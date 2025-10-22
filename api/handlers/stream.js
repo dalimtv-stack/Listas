@@ -280,7 +280,8 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
 
     const proveedor = (s.group_title || s.name || '').trim();
     const canal = normalizeCatalogName((baseObj.chName || '')).trim();
-    const formato = detectarFormatoDesdeUrl(s.url || s.externalUrl || '');
+    const urlReal = s.url || s.externalUrl || s.link || ''; 
+    const formato = detectarFormatoDesdeUrl(urlReal);
 
     // --- Audio: Multiaudio si estaba en el título original; si no, país por sufijo del id del canal ---
     let audioInfo = '';
@@ -301,7 +302,7 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
     }
 
     const newTitle =
-      `Formato: 🔗 ${formato}\n` +
+      `Formato:  ${formato}\n` +
       `Calidad: 🖥️ ${calidadDetectada}` +
       (audioInfo ? `\nAudio: 🎧 ${audioInfo}` : '') + '\n' +
       `Canal: 📡 ${canal}\n` +
