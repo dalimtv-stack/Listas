@@ -5,7 +5,7 @@ const NodeCache = require('node-cache');
 const { getChannel } = require('../../src/db');
 const { scrapeExtraWebs } = require('../scraper');
 const { kvGet, kvSet, kvGetJsonTTL, kvSetJsonTTLIfChanged, kvDelete } = require('../kv');
-const { normalizeCatalogName, getM3uHash, extractConfigIdFromUrl } = require('../utils');
+const { detectarFormatoDesdeUrl, normalizeCatalogName, getM3uHash, extractConfigIdFromUrl } = require('../utils');
 const { CACHE_TTL } = require('../../src/config');
 const { resolveM3uUrl, resolveExtraWebs } = require('../resolve');
 
@@ -280,11 +280,7 @@ async function enrichWithExtra(baseObj, configId, m3uUrl, forceScrape = false) {
 
     const proveedor = (s.group_title || s.name || '').trim();
     const canal = normalizeCatalogName((baseObj.chName || '')).trim();
-    const formato = s.externalUrl?.startsWith('acestream://')
-      ? 'Acestream'
-      : (s.url?.includes('m3u8') ? 'M3U8'
-      : (s.url?.includes('vlc') ? 'VLC'
-      : ((s.title?.includes('Website') || s.group_title === 'Website') ? 'Browser' : 'Directo')));
+    const formato = detectarFormatoDesdeUrl(s.url || s.externalUrl || '');
 
     // --- Audio: Multiaudio si estaba en el título original; si no, país por sufijo del id del canal ---
     let audioInfo = '';
