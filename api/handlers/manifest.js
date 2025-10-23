@@ -22,6 +22,7 @@ async function getLastUpdateString(configId) {
 async function buildManifest(configId) {
   const orderedGenres = [
     'Cine & Series',
+    'Niños',
     'La Liga',
     'Liga de Campeones',
     'Fútbol',
