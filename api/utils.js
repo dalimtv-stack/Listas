@@ -150,6 +150,7 @@ function parseCatalogRest(restRaw) {
   return { id, extra };
 }
 module.exports = {
+  requireAuth,
   normalizeCatalogName,
   getM3uHash,
   extractConfigIdFromUrl,
