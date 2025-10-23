@@ -1422,15 +1422,15 @@ http://127.0.0.1:6878/ace/getstream?id=a0464d3642e054f6122e7c309017d1e8d23f4da9
 
 
 
-#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="vlc-dalim", Pruebas 2 [estrenos 1]
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="vlc-dalim [estrenos 1]", Pruebas 2
 http://vlc-dalim.ddns.net:6880/ace/getstream?id=192f2ac5b372dfddef694e48edd2d56e308b51e7
-#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="dalim", Pruebas 2 [estrenos 1]
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="dalim [estrenos 1]", Pruebas 2
 http://dalim.ddns.net:6880/ace/getstream?id=192f2ac5b372dfddef694e48edd2d56e308b51e7
-#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="Directo", Pruebas 2 [estrenos 1]
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="Directo [estrenos 1]", Pruebas 2
 http://170.253.14.119:6880/ace/getstream?id=192f2ac5b372dfddef694e48edd2d56e308b51e7
-#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="vlc-dalim", Pruebas 2 [estrenos 2]
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="vlc-dalim [estrenos 2]", Pruebas 2
 http://vlc-dalim.ddns.net:6880/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
-#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="dalim", Pruebas 2 [estrenos 2]
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="dalim [estrenos 2]", Pruebas 2
 http://dalim.ddns.net:6880/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
-#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="Directo", Pruebas 2 [estrenos 2]
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="Directo [estrenos 2]", Pruebas 2
 http://170.253.14.119:6880/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
