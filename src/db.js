@@ -38,6 +38,13 @@ function getExtraGenres(canal) {
   ]);
   if (documentalesIds.has(id)) genres.add('Documentales');
 
+
+  // Documentales
+  const infantilIds = new Set([
+    'dreamworks.es', 'nick.jr.es', 'nickelodeon.es'
+  ]);
+  if (infantilIds.has(id)) genres.add('Niños');
+
   // Liga de Campeones
   if (id.includes('liga.de.campeones')) genres.add('Liga de Campeones');
 
