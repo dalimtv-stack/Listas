@@ -21,13 +21,16 @@ function requireAuth(req, res) {
   const cookies = req.headers.cookie || '';
   const token = cookies.match(/auth_token=([^;]+)/)?.[1];
 
-  if (!esTokenValido(token)) {
-    res.writeHead(302, { Location: '/config-index' });
+  const [email, firma] = (token || '').split('|');
+  const esValido = email === ALLOWED_EMAIL && firma === firmar(email);
+
+  if (!esValido) {
+    res.writeHead(302, { Location: '/Acceso' });
     res.end();
-    return false;
+    return null;
   }
 
-  return true;
+  return email;
 }
 
 module.exports = { requireAuth };
