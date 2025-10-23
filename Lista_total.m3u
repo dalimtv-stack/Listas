@@ -1467,7 +1467,6 @@ http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fwindnew.newkso.ru%2Fwind%2F
 #EXTINF:-1 tvg-id="DAZN3(src01).es" tvg-name="DAZN 3 Spain" tvg-logo="https://raw.githubusercontent.com/dtankdempse/daddylive-m3u/refs/heads/main/bg/ddy-logo.jpg" group-title="Spain",DAZN 3 Spain
 http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fwindnew.newkso.ru%2Fwind%2Fpremium447%2Fmono.m3u8&data=T3JpZ2luPWh0dHBzOi8vanhveGtwbGF5Lnh5enxSZWZlcmVyPWh0dHBzOi8vanhveGtwbGF5Lnh5ei98VXNlci1BZ2VudD1Nb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0OyBydjoxNDMuMCkgR2Vja28vMjAxMDAxMDEgRmlyZWZveC8xNDMuMA%3D%3D
 
-
 #EXTINF:-1 tvg-id="DAZN4(src01).es" tvg-name="DAZN 4 Spain" tvg-logo="https://raw.githubusercontent.com/dtankdempse/daddylive-m3u/refs/heads/main/bg/ddy-logo.jpg" group-title="Spain",DAZN 4 Spain
 http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fwindnew.newkso.ru%2Fwind%2Fpremium448%2Fmono.m3u8&data=T3JpZ2luPWh0dHBzOi8vanhveGtwbGF5Lnh5enxSZWZlcmVyPWh0dHBzOi8vanhveGtwbGF5Lnh5ei98VXNlci1BZ2VudD1Nb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0OyBydjoxNDMuMCkgR2Vja28vMjAxMDAxMDEgRmlyZWZveC8xNDMuMA%3D%3D
 
@@ -1492,20 +1491,20 @@ http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fwindnew.newkso.ru%2Fwind%2F
 #EXTINF:-1 tvg-id="LASEXTA(src01).es" tvg-name="La Sexta Spain" tvg-logo="https://raw.githubusercontent.com/dtankdempse/daddylive-m3u/refs/heads/main/bg/ddy-logo.jpg" group-title="Spain",La Sexta Spain
 http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fwindnew.newkso.ru%2Fwind%2Fpremium534%2Fmono.m3u8&data=T3JpZ2luPWh0dHBzOi8vanhveGtwbGF5Lnh5enxSZWZlcmVyPWh0dHBzOi8vanhveGtwbGF5Lnh5ei98VXNlci1BZ2VudD1Nb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0OyBydjoxNDMuMCkgR2Vja28vMjAxMDAxMDEgRmlyZWZveC8xNDMuMA%3D%3D
 
-#EXTINF:-1 tvg-id="(no tvg-id)" tvg-name="Movistar Deportes Spain" tvg-logo="https://raw.githubusercontent.com/dtankdempse/daddylive-m3u/refs/heads/main/bg/ddy-logo.jpg" group-title="Spain",Movistar Deportes Spain
+#EXTINF:-1 tvg-id="Deportes(src01).es" tvg-name="Movistar Deportes Spain" tvg-logo="https://raw.githubusercontent.com/dtankdempse/daddylive-m3u/refs/heads/main/bg/ddy-logo.jpg" group-title="Spain",Movistar Deportes Spain
 http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fwindnew.newkso.ru%2Fwind%2Fpremium446%2Fmono.m3u8&data=T3JpZ2luPWh0dHBzOi8vanhveGtwbGF5Lnh5enxSZWZlcmVyPWh0dHBzOi8vanhveGtwbGF5Lnh5ei98VXNlci1BZ2VudD1Nb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0OyBydjoxNDMuMCkgR2Vja28vMjAxMDAxMDEgRmlyZWZveC8xNDMuMA%3D%3D
 
-#EXTINF:-1 tvg-id="(no tvg-id)" tvg-name="Movistar Deportes 2 Spain" tvg-logo="https://raw.githubusercontent.com/dtankdempse/daddylive-m3u/refs/heads/main/bg/ddy-logo.jpg" group-title="Spain",Movistar Deportes 2 Spain
+#EXTINF:-1 tvg-id="Deportes2(src01).es" tvg-name="Movistar Deportes 2 Spain" tvg-logo="https://raw.githubusercontent.com/dtankdempse/daddylive-m3u/refs/heads/main/bg/ddy-logo.jpg" group-title="Spain",Movistar Deportes 2 Spain
 http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fwindnew.newkso.ru%2Fwind%2Fpremium438%2Fmono.m3u8&data=T3JpZ2luPWh0dHBzOi8vanhveGtwbGF5Lnh5enxSZWZlcmVyPWh0dHBzOi8vanhveGtwbGF5Lnh5ei98VXNlci1BZ2VudD1Nb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0OyBydjoxNDMuMCkgR2Vja28vMjAxMDAxMDEgRmlyZWZveC8xNDMuMA%3D%3D
 
-#EXTINF:-1 tvg-id="(no tvg-id)" tvg-name="Movistar Deportes 3 Spain" tvg-logo="https://raw.githubusercontent.com/dtankdempse/daddylive-m3u/refs/heads/main/bg/ddy-logo.jpg" group-title="Spain",Movistar Deportes 3 Spain
+#EXTINF:-1 tvg-id="Deportes3(src01).es" tvg-name="Movistar Deportes 3 Spain" tvg-logo="https://raw.githubusercontent.com/dtankdempse/daddylive-m3u/refs/heads/main/bg/ddy-logo.jpg" group-title="Spain",Movistar Deportes 3 Spain
 http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fwindnew.newkso.ru%2Fwind%2Fpremium526%2Fmono.m3u8&data=T3JpZ2luPWh0dHBzOi8vanhveGtwbGF5Lnh5enxSZWZlcmVyPWh0dHBzOi8vanhveGtwbGF5Lnh5ei98VXNlci1BZ2VudD1Nb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0OyBydjoxNDMuMCkgR2Vja28vMjAxMDAxMDEgRmlyZWZveC8xNDMuMA%3D%3D
 
-#EXTINF:-1 tvg-id="(no tvg-id)" tvg-name="Movistar Deportes 4 Spain" tvg-logo="https://raw.githubusercontent.com/dtankdempse/daddylive-m3u/refs/heads/main/bg/ddy-logo.jpg" group-title="Spain",Movistar Deportes 4 Spain
+#EXTINF:-1 tvg-id="Deportes4(src01).es" tvg-name="Movistar Deportes 4 Spain" tvg-logo="https://raw.githubusercontent.com/dtankdempse/daddylive-m3u/refs/heads/main/bg/ddy-logo.jpg" group-title="Spain",Movistar Deportes 4 Spain
 http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fwindnew.newkso.ru%2Fwind%2Fpremium527%2Fmono.m3u8&data=T3JpZ2luPWh0dHBzOi8vanhveGtwbGF5Lnh5enxSZWZlcmVyPWh0dHBzOi8vanhveGtwbGF5Lnh5ei98VXNlci1BZ2VudD1Nb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0OyBydjoxNDMuMCkgR2Vja28vMjAxMDAxMDEgRmlyZWZveC8xNDMuMA%3D%3D
 
-#EXTINF:-1 tvg-id="(no tvg-id)" tvg-name="Movistar Golf Spain" tvg-logo="https://raw.githubusercontent.com/dtankdempse/daddylive-m3u/refs/heads/main/bg/ddy-logo.jpg" group-title="Spain",Movistar Golf Spain
+#EXTINF:-1 tvg-id="Golf(src01).es" tvg-name="Movistar Golf Spain" tvg-logo="https://raw.githubusercontent.com/dtankdempse/daddylive-m3u/refs/heads/main/bg/ddy-logo.jpg" group-title="Spain",Movistar Golf Spain
 http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fwindnew.newkso.ru%2Fwind%2Fpremium558%2Fmono.m3u8&data=T3JpZ2luPWh0dHBzOi8vanhveGtwbGF5Lnh5enxSZWZlcmVyPWh0dHBzOi8vanhveGtwbGF5Lnh5ei98VXNlci1BZ2VudD1Nb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0OyBydjoxNDMuMCkgR2Vja28vMjAxMDAxMDEgRmlyZWZveC8xNDMuMA%3D%3D
 
-#EXTINF:-1 tvg-id="(no tvg-id)" tvg-name="#0 Spain" tvg-logo="https://raw.githubusercontent.com/dtankdempse/daddylive-m3u/refs/heads/main/bg/ddy-logo.jpg" group-title="Spain",#0 Spain
+#EXTINF:-1 tvg-id="Movistar.plus(src01).es" tvg-name="#0 Spain" tvg-logo="https://raw.githubusercontent.com/dtankdempse/daddylive-m3u/refs/heads/main/bg/ddy-logo.jpg" group-title="Spain",#0 Spain
 http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fwindnew.newkso.ru%2Fwind%2Fpremium437%2Fmono.m3u8&data=T3JpZ2luPWh0dHBzOi8vanhveGtwbGF5Lnh5enxSZWZlcmVyPWh0dHBzOi8vanhveGtwbGF5Lnh5ei98VXNlci1BZ2VudD1Nb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0OyBydjoxNDMuMCkgR2Vja28vMjAxMDAxMDEgRmlyZWZveC8xNDMuMA%3D%3D
