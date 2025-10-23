@@ -37,7 +37,22 @@ async function buildManifest(configId) {
     'General'
   ];
 
-  let genreOptions = ['General'];
+  let genreOptions = [
+    'Cine & Series',
+    'Niños',
+    'La Liga',
+    'Liga de Campeones',
+    'Fútbol',
+    'Deportes',
+    'Movistar',
+    'Documentales',
+    'DAZN',
+    'ESPN',
+    'España',
+    'Argentina',
+    'Portugal',
+    'General'
+  ];
   const lastUpdateStr = await getLastUpdateString(configId);
   let currentM3u = '';
   let currentExtraWebs = '';
