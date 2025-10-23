@@ -1028,6 +1028,8 @@ acestream://8dbe2d515e9131fa311353537736f8c94be9b26d
 
 #EXTINF:-1 tvg-id="Sky.Sport.Main.Event.uk" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Sky_Sports_Main_event" group-title="SPORT TV", SKY SPORTS MAIN EVENT [UK]
 acestream://eab7aeef0218ce8b0752e596e4792b69eda4df5e
+#EXTINF:-1 tvg-id="Sky.Sport.Main.Event.uk" tvg-logo="https://i.ibb.co/gwCk7Bc/sky-m-event-uhd.png" group-title="A1xmedia UHD | 4K",UK: Sky Sports Main Event (UHD)
+https://a1xs.vip/2000015
 
 #EXTINF:-1 tvg-id="Ziggo.Sport.nl" tvg-logo="https://tvgidsassets.nl/v354/img/channels/120x120/99.png" group-title="NEW LOOP", ZIGGO SPORT
 acestream://fcd7621df513f600652b4813d5d8fd1daed60058
