@@ -1,42 +1,32 @@
-const fetch = require('node-fetch');
+const crypto = require('crypto');
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const ALLOWED_EMAIL = process.env.ALLOWED_EMAIL;
-const REDIRECT_URI = 'https://TU_DOMINIO.vercel.app/api/config-index'; // ← cambia esto
+const ALLOWED_PASSWORD = process.env.ALLOWED_PASSWORD;
+const COOKIE_SECRET = process.env.COOKIE_SECRET;
+
+function firmar(email) {
+  return crypto.createHmac('sha256', COOKIE_SECRET).update(email).digest('hex');
+}
+
+function esTokenValido(token) {
+  const [email, firma] = (token || '').split('|');
+  return email === ALLOWED_EMAIL && firma === firmar(email);
+}
 
 module.exports = async (req, res) => {
-  const { query } = req;
+  const { method, query, headers } = req;
 
-  // Si viene con código OAuth, intercambiar por token
-  if (query.code) {
-    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        code: query.code,
-        client_id: GOOGLE_CLIENT_ID,
-        client_secret: GOOGLE_CLIENT_SECRET,
-        redirect_uri: REDIRECT_URI,
-        grant_type: 'authorization_code'
-      })
-    });
+  const cookies = headers.cookie || '';
+  const token = cookies.match(/auth_token=([^;]+)/)?.[1];
 
-    const tokenData = await tokenRes.json();
-    const idToken = tokenData.id_token;
-
-    const infoRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
-    const info = await infoRes.json();
-
-    if (info.email !== ALLOWED_EMAIL) {
-      return res.status(403).send('Acceso denegado');
-    }
-
+  if (esTokenValido(token)) {
+    // Usuario autenticado
+    res.setHeader('Content-Type', 'text/html');
     return res.status(200).send(`
       <html>
         <head><title>Panel de configuración</title></head>
         <body>
-          <h1>Bienvenido, ${info.name}</h1>
+          <h1>Bienvenido, ${ALLOWED_EMAIL}</h1>
           <ul>
             <li><a href="/cleanup">🧹 Cleanup</a></li>
             <li><a href="/regenerate-posters">🎨 Regenerar posters</a></li>
@@ -48,9 +38,33 @@ module.exports = async (req, res) => {
     `);
   }
 
-  // Si no hay código, redirigir al login
-  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=email%20profile`;
+  // Si viene con login
+  if (query.email && query.password) {
+    if (query.email === ALLOWED_EMAIL && query.password === ALLOWED_PASSWORD) {
+      const firma = firmar(query.email);
+      res.setHeader('Set-Cookie', `auth_token=${query.email}|${firma}; Path=/; HttpOnly; Max-Age=86400`);
+      res.writeHead(302, { Location: '/config-index' });
+      return res.end();
+    } else {
+      return res.status(403).send('Credenciales incorrectas');
+    }
+  }
 
-  res.writeHead(302, { Location: authUrl });
-  res.end();
+  // Mostrar formulario de login
+  res.setHeader('Content-Type', 'text/html');
+  return res.status(200).send(`
+    <html>
+      <head><title>Login</title></head>
+      <body>
+        <h2>Acceso restringido</h2>
+        <form method="GET" action="/config-index">
+          <label>Email:</label><br>
+          <input type="text" name="email"><br>
+          <label>Contraseña:</label><br>
+          <input type="password" name="password"><br><br>
+          <button type="submit">Entrar</button>
+        </form>
+      </body>
+    </html>
+  `);
 };
