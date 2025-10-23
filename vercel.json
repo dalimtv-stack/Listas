@@ -6,6 +6,7 @@
     { "src": "api/poster-con-hora.js", "use": "@vercel/node" },
     { "src": "api/cleanupposters.js", "use": "@vercel/node" },
     { "src": "api/regenerate-posters.js", "use": "@vercel/node" },
+    { "src": "api/config-index.js", "use": "@vercel/node" },
     { "src": "api/resolution.js", "use": "@vercel/node" },
     { "src": "api/upload-image.js", "use": "@vercel/node" }
   ],
