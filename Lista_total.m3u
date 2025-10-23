@@ -1439,3 +1439,9 @@ http://170.253.14.119:6880/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfe
 http://vlc-dalim.duckdns.org:6880/ace/getstream?id=192f2ac5b372dfddef694e48edd2d56e308b51e7
 #EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="vlc-dalim.duckdns.org [estrenos 2]", Pruebas 2
 http://vlc-dalim.duckdns.org:6880/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
+
+
+#EXTINF:-1  tvg-id="Adult.Section.Dummy.us" tvg-logo="https://baddiehub.com/wp-content/uploads/2025/10/j3ut-613x360.jpg" group-title="DrewLive - XXX" radio="false",304 Liah
+https://cdn.baddiehub.com/j3utt.mp4
+#EXTINF:-1  tvg-id="Adult.Section.Dummy.us" tvg-logo="https://baddiehub.com/wp-content/uploads/2022/04/ALIYAHAD-613x360.jpg" group-title="DrewLive - XXX" radio="false",Aaliyah
+https://cdn.baddiehub.com/AaliyTF.mp4
