@@ -1434,3 +1434,8 @@ http://vlc-dalim.ddns.net:6880/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef9
 http://dalim.ddns.net:6880/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
 #EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="Directo [estrenos 2]", Pruebas 2
 http://170.253.14.119:6880/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
+
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="vlc-dalim.duckdns.org [estrenos 1]", Pruebas 2
+http://vlc-dalim.duckdns.org:6880/ace/getstream?id=192f2ac5b372dfddef694e48edd2d56e308b51e7
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="vlc-dalim.duckdns.org [estrenos 2]", Pruebas 2
+http://vlc-dalim.duckdns.org:6880/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
