@@ -1420,6 +1420,10 @@ https://tinyurl.com/ymt52m6r
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/FOX_SPORTS" group-title="FOX SPORT [MX]", Pruebas (NEW ERA)
 http://127.0.0.1:6878/ace/getstream?id=a0464d3642e054f6122e7c309017d1e8d23f4da9
 
+#EXTINF:-1  tvg-id="Prueba.es" tvg-logo="https://baddiehub.com/wp-content/uploads/2025/10/j3ut-613x360.jpg" group-title="DrewLive - XXX",304 Liah
+https://cdn.baddiehub.com/j3utt.mp4
+#EXTINF:-1  tvg-id="Prueba.es" tvg-logo="https://baddiehub.com/wp-content/uploads/2022/04/ALIYAHAD-613x360.jpg" group-title="DrewLive - XXX",Aaliyah
+https://cdn.baddiehub.com/AaliyTF.mp4
 
 
 #EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="vlc-dalim [estrenos 1]", Pruebas 2
@@ -1441,7 +1445,3 @@ http://vlc-dalim.duckdns.org:6880/ace/getstream?id=192f2ac5b372dfddef694e48edd2d
 http://vlc-dalim.duckdns.org:6880/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
 
 
-#EXTINF:-1  tvg-id="Prueba.es" tvg-logo="https://baddiehub.com/wp-content/uploads/2025/10/j3ut-613x360.jpg" group-title="DrewLive - XXX" radio="false",304 Liah
-https://cdn.baddiehub.com/j3utt.mp4
-#EXTINF:-1  tvg-id="Prueba.es" tvg-logo="https://baddiehub.com/wp-content/uploads/2022/04/ALIYAHAD-613x360.jpg" group-title="DrewLive - XXX" radio="false",Aaliyah
-https://cdn.baddiehub.com/AaliyTF.mp4
