@@ -22,18 +22,19 @@ function getExtraGenres(canal) {
 
   // Cine & Series
   const cineSeriesIds = new Set([
-    'hollywood.es', 'movistar.estrenos.es', 'movistar.hits.es', 'movistar.comedia.es',
+    'hollywood.es','movistar.plus.es', 'movistar.estrenos.es', 'movistar.hits.es', 'movistar.comedia.es',
     'movistar.accion.es', 'movistar.drama.es', 'movistar.especial.1.es', 'movistar.especial.2.es',
-    'movistar.indie.es', 'movistar.clasicos.es', 'movistar.cine.espanol.es',
-    'movistar.documentales.es', 'movistar.originales.es', 'invitado.es', 'dark.es',
-    'axn.es', 'axn.movie.es', 'amc.es', 'calle.13.es'
+    'movistar.indie.es', 'movistar.clasicos.es', 'movistar.cine.espanol.es', 'movistar.originales.es',
+    'invitado.es', 'warner.es', 'syfy.es', 'xtrm.es', 'sundace.es', 'tcm.es', 'dreamworks.es',
+    'nick.jr.es', 'nickelodeon.es', 'somos.es', 'vintv.es', 'dark.es', 'axn.es', 'axn.movies.es',
+    'amc.es', 'calle.13.es', 'cosmo.es', 'comedy.central.es'
   ]);
   if (cineSeriesIds.has(id)) genres.add('Cine & Series');
 
   // Documentales
   const documentalesIds = new Set([
-    'movistar.documentales.es', 'movistar.originales.es', 'crime.es', 'odisea.es',
-    'movistar.plus.es', 'movistar.plus.2.es', 'national.geographic.wild.es'
+    'movistar.documentales.es', 'national.geographic.wild.es', 'National.Geographic.es', 'movistar.originales.es',
+    'crime.es', 'odisea.es', 'movistar.plus.es', 'movistar.plus.2.es', 'discovery.es', 'historia.es'
   ]);
   if (documentalesIds.has(id)) genres.add('Documentales');
 
