@@ -4,6 +4,34 @@
 const crypto = require('crypto');
 const fetch = require('node-fetch');
 const { DEFAULT_CONFIG_ID } = require('../src/config');
+const crypto = require('crypto');
+
+const ALLOWED_EMAIL = process.env.ALLOWED_EMAIL;
+const COOKIE_SECRET = process.env.COOKIE_SECRET;
+
+function firmar(email) {
+  return crypto.createHmac('sha256', COOKIE_SECRET).update(email).digest('hex');
+}
+
+function esTokenValido(token) {
+  const [email, firma] = (token || '').split('|');
+  return email === ALLOWED_EMAIL && firma === firmar(email);
+}
+
+function requireAuth(req, res) {
+  const cookies = req.headers.cookie || '';
+  const token = cookies.match(/auth_token=([^;]+)/)?.[1];
+
+  if (!esTokenValido(token)) {
+    res.writeHead(302, { Location: '/config-index' });
+    res.end();
+    return false;
+  }
+
+  return true;
+}
+
+module.exports = { requireAuth };
 
 // Añade VLC y Directo (Acestream)
 function expandirAcestreamConFormatos(streams = []) {
