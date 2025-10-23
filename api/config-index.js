@@ -19,11 +19,13 @@ module.exports = async (req, res) => {
   const token = cookies.match(/auth_token=([^;]+)/)?.[1];
 
   if (esTokenValido(token)) {
-    // Usuario autenticado
-    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     return res.status(200).end(`
       <html>
-        <head><title>Panel de configuración</title></head>
+        <head>
+          <meta charset="UTF-8">
+          <title>Panel de configuración</title>
+        </head>
         <body>
           <h1>Bienvenido, ${ALLOWED_EMAIL}</h1>
           <ul>
@@ -46,21 +48,23 @@ module.exports = async (req, res) => {
     if (email === ALLOWED_EMAIL && password === ALLOWED_PASSWORD) {
       const firma = firmar(email);
       res.setHeader('Set-Cookie', `auth_token=${email}|${firma}; Path=/; HttpOnly; Max-Age=86400`);
-      res.writeHead(302, { Location: '/config-index' });
+      res.writeHead(302, { Location: '/Acceso' });
       return res.end();
     } else {
       return res.status(403).end('Credenciales incorrectas');
     }
   }
 
-  // Mostrar formulario de login
-  res.setHeader('Content-Type', 'text/html');
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
   return res.status(200).end(`
     <html>
-      <head><title>Login</title></head>
+      <head>
+        <meta charset="UTF-8">
+        <title>Login</title>
+      </head>
       <body>
         <h2>Acceso restringido</h2>
-        <form method="POST" action="/config-index">
+        <form method="POST" action="/Acceso">
           <label>Email:</label><br>
           <input type="text" name="email"><br>
           <label>Contraseña:</label><br>
