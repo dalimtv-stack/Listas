@@ -1,4 +1,4 @@
-// api/upload-image.js - FIX CACHE + TOGGLE PREVIEWS
+// api/upload-image.js
 'use strict';
 
 const { put } = require('@vercel/blob');
@@ -8,7 +8,13 @@ const fetch = require('node-fetch');
 const { uploadImageBlob } = require('../lib/upload-to-blob');
 const { uploadImageCloudinary } = require('../lib/upload-to-cloudinary');
 
+const { requireAuth } = require('../utils');
+
 module.exports = async (req, res) => {
+  const email = requireAuth(req, res);
+  if (!email) return;
+
+  console.log(`[UPLOAD] Acceso autorizado para: ${email}`);
   if (req.method === 'POST') {
     req.disableBodyParser = true;
     
@@ -719,4 +725,5 @@ module.exports = async (req, res) => {
       </script>
     </body>
     </html>`);
+  res.status(200).send('Subida permitida');
 };
