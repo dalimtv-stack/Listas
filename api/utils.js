@@ -4,7 +4,6 @@
 const crypto = require('crypto');
 const fetch = require('node-fetch');
 const { DEFAULT_CONFIG_ID } = require('../src/config');
-const crypto = require('crypto');
 
 const ALLOWED_EMAIL = process.env.ALLOWED_EMAIL;
 const COOKIE_SECRET = process.env.COOKIE_SECRET;
