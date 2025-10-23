@@ -1192,6 +1192,10 @@ http://bantel-cdn4.iptvperu.tv:1935/HiOmL1/espn7.stream/playlist.m3u8
 
 
 
+#EXTINF:-1 tvg-id="Cadena.Elite.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Cadena_Elite" group-title="Mhubery", Cadena Elite
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/5604
+
+
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS" group-title="|FR| beIN Sports 1 ᴴᴰ", Pruebas (1080)
 http://258540820214.d4ktv.info/DRFOURK234/j6914uju6w/50148
 
@@ -1416,19 +1420,17 @@ https://tinyurl.com/ymt52m6r
 #EXTINF:-1 tvg-id="Prueba.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/FOX_SPORTS" group-title="FOX SPORT [MX]", Pruebas (NEW ERA)
 http://127.0.0.1:6878/ace/getstream?id=a0464d3642e054f6122e7c309017d1e8d23f4da9
 
-#EXTINF:-1 tvg-id="Cadena.Elite.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Cadena_Elite" group-title="Mhubery", Cadena Elite
-http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/5604
 
 
-#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="vlc-dalim", Pruebas 2
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="vlc-dalim", Pruebas 2 [estrenos 1]
 http://vlc-dalim.ddns.net:6880/ace/getstream?id=192f2ac5b372dfddef694e48edd2d56e308b51e7
-#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="dalim", Pruebas 2
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="dalim", Pruebas 2 [estrenos 1]
 http://dalim.ddns.net:6880/ace/getstream?id=192f2ac5b372dfddef694e48edd2d56e308b51e7
-#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="Directo", Pruebas 2
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="Directo", Pruebas 2 [estrenos 1]
 http://170.253.14.119:6880/ace/getstream?id=192f2ac5b372dfddef694e48edd2d56e308b51e7
-#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="vlc-dalim", Pruebas 2
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="vlc-dalim", Pruebas 2 [estrenos 2]
 http://vlc-dalim.ddns.net:6880/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
-#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="dalim", Pruebas 2
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="dalim", Pruebas 2 [estrenos 2]
 http://dalim.ddns.net:6880/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
-#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="Directo", Pruebas 2
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="Directo", Pruebas 2 [estrenos 2]
 http://170.253.14.119:6880/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
