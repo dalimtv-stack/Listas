@@ -458,16 +458,10 @@ https://d3bb58xoj568xi.cloudfront.net/v1/manifest/3722c60a815c199d9c0ef36c5b73da
 
 # Cine/Series
 # https://stremio.shickat.me/Images/Channels/ESTRENOS.jpg
-#EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ESTRENOS" group-title="NEW ERA", Movistar Estrenos
-http://vlc.shickat.me:8000/pid/5d35f906b735f25164fa2b9b7a4e6ef91dfed131/stream.mp4
-#EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://i.ibb.co/4nyZM1vC/M-Estrenos.png" group-title="NEW ERA", Movistar Estrenos (FHD)
+#EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ESTRENOS" group-title="NEW ERA", Movistar Estrenos (FHD)
 acestream://5d35f906b735f25164fa2b9b7a4e6ef91dfed131
-#EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://i.ibb.co/4nyZM1vC/M-Estrenos.png" group-title="NEW ERA", Movistar Estrenos (FHD)
-http://127.0.0.1:6878/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
 #EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://i.ibb.co/4nyZM1vC/M-Estrenos.png" group-title="NEW ERA VI", Movistar Estrenos (FHD)
 acestream://192f2ac5b372dfddef694e48edd2d56e308b51e7
-#EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://i.ibb.co/4nyZM1vC/M-Estrenos.png" group-title="NEW ERA VI", Movistar Estrenos (FHD)
-http://127.0.0.1:6878/ace/getstream?id=192f2ac5b372dfddef694e48edd2d56e308b51e7
 #EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ESTRENOS" group-title="PgRaceFuaApi", Movistar Estrenos
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57286
 #EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ESTRENOS" group-title="PgRaceFuaApi", Movistar Estrenos
@@ -1095,22 +1089,22 @@ https://d71gqtnep83vb.cloudfront.net/gol_classics/gol_classics.m3u8
 
 
 
-#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN 2 🇦🇷", ESPN Pruebas
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN 2 🇦🇷", ESPN
 http://181.205.130.194:4000/play/a07i
 
-#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN VIVO 🇨🇴", ESPN Pruebas
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN VIVO 🇨🇴", ESPN
 http://190.60.56.41:8000/play/a00z/index.m3u8
 
-#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN 5 🇨🇴", ESPN Pruebas
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN 5 🇨🇴", ESPN
 http://190.60.56.41:8000/play/a00p/index.m3u8
 
-#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN 🇦🇷", ESPN Pruebas
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN 🇦🇷", ESPN
 http://181.78.117.219:8000/play/a00b/index.m3u8
 
-#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN VIVO 🇦🇷", ESPN Pruebas
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN VIVO 🇦🇷", ESPN
 http://45.71.254.1:8000/play/a038/index.m3u8
 
-#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN VIVO 🇦🇷", ESPN Pruebas (720)
+#EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN VIVO 🇦🇷", ESPN (720)
 https://cdn01.oplay.tv/espn/index.m3u8
 
 #EXTINF:-1 tvg-id="ESPN.us" tvg-logo="" group-title="ESPN 🇦🇷", ESPN Pruebas
@@ -1424,3 +1418,17 @@ http://127.0.0.1:6878/ace/getstream?id=a0464d3642e054f6122e7c309017d1e8d23f4da9
 
 #EXTINF:-1 tvg-id="Cadena.Elite.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Cadena_Elite" group-title="Mhubery", Cadena Elite
 http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/5604
+
+
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="vlc-dalim", Pruebas 2
+http://vlc-dalim.ddns.net:6880/ace/getstream?id=192f2ac5b372dfddef694e48edd2d56e308b51e7
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="dalim", Pruebas 2
+http://dalim.ddns.net:6880/ace/getstream?id=192f2ac5b372dfddef694e48edd2d56e308b51e7
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="Directo", Pruebas 2
+http://170.253.14.119:6880/ace/getstream?id=192f2ac5b372dfddef694e48edd2d56e308b51e7
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="vlc-dalim", Pruebas 2
+http://vlc-dalim.ddns.net:6880/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="dalim", Pruebas 2
+http://dalim.ddns.net:6880/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
+#EXTINF:-1 tvg-id="Prueba.2.es" tvg-logo="https://dummyimage.com/300x450/000/fff&text=PRUEBAS%202" group-title="Directo", Pruebas 2
+http://170.253.14.119:6880/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
