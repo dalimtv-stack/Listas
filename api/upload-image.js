@@ -8,7 +8,7 @@ const fetch = require('node-fetch');
 const { uploadImageBlob } = require('../lib/upload-to-blob');
 const { uploadImageCloudinary } = require('../lib/upload-to-cloudinary');
 
-const { requireAuth } = require('../utils');
+const { requireAuth } = require('./utils');
 
 module.exports = async (req, res) => {
   const email = requireAuth(req, res);
