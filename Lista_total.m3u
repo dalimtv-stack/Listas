@@ -21,7 +21,7 @@ http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5619
 # https://www.movistarplus.es/recorte/m-DP/modmarcas/MPLUHD
 # https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Movistar_PLUS.jpg
 # https://stremio.shickat.me/Images/Channels/PLUS.jpg
-#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="dalim", Movistar Plus (FHD) (NEW ERA)
+#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="NEW ERA", Movistar Plus (FHD) (NEW ERA)
 http://127.0.0.1:6878/ace/getstream?id=b2a4d1eba9b46df5f52a87105df779f9d39abeb4
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://i.ibb.co/hFYPWbpJ/plus.png" group-title="NEW ERA", Movistar Plus (FHD)
 acestream://b2a4d1eba9b46df5f52a87105df779f9d39abeb4
@@ -32,19 +32,11 @@ acestream://8c67cdb5ba81976662c3a67984a9545d9cfb0f70
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="NEW ERA", Movistar Plus (FHD)
 acestream://8c67cdb5ba81976662c3a67984a9545d9cfb0f70
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="NEW ERA", Movistar Plus (FHD)
-http://127.0.0.1:6878/ace/getstream?id=b6ffbbc72a5b6b579faf79ebac229af7a25b933b
-#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="NEW ERA", Movistar Plus (FHD)
 acestream://b6ffbbc72a5b6b579faf79ebac229af7a25b933b
-#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="NEW ERA VI", Movistar Plus (FHD)
-http://127.0.0.1:6878/ace/getstream?id=199190e3f28c1de0be34bccf0d3568dc65209b99
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="NEW ERA VI", Movistar Plus (FHD)
 acestream://199190e3f28c1de0be34bccf0d3568dc65209b99
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="NEW ERA VI", Movistar Plus (FHD)
-http://127.0.0.1:6878/ace/getstream?id=5866e83279307bf919068ae7a0d250e4e424e464
-#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="NEW ERA VI", Movistar Plus (FHD)
 acestream://5866e83279307bf919068ae7a0d250e4e424e464
-#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="Elcano.top", Movistar Plus (FHD)
-http://127.0.0.1:6878/ace/getstream?id=1ab443f5b4beb6d586f19e8b25b9f9646cf2ab78
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="Elcano.top", Movistar Plus (FHD)
 acestream://1ab443f5b4beb6d586f19e8b25b9f9646cf2ab78
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="PgRaceFuaApi", Movistar Plus
@@ -201,8 +193,6 @@ acestream://6d88c66c89f3dbe1e6dacb5a8f7c9a98b12e6c63
 acestream://a9025d4e168764248d33129c30940502cea0e1c2
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="Mhubery", Movistar Liga de Campeones (FHD)
 http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/400241868
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="NEW ERA", Movistar Liga de Campeones (FHD)
-http://127.0.0.1:6878/ace/getstream?id=678a1e93fbfbd499c329886bfdda780e73ac1786
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="NEW ERA", Movistar Liga de Campeones (FHD)
 acestream://678a1e93fbfbd499c329886bfdda780e73ac1786
 #EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/LIGADECAMPEONES" group-title="NEW ERA", Movistar Liga de Campeones (FHD)
@@ -476,8 +466,6 @@ http://vlc.shickat.me:8000/pid/2b8e5c7438d56541df3467cc5986cf1e66014101/stream.m
 #EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://www.movistarplus.es/recorte/m-DP/modmarcas/MHITSH" group-title="Shickat.me", Movistar Hits (FHD)
 acestream://2b8e5c7438d56541df3467cc5986cf1e66014101
 #EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-HITS" group-title="NEW ERA VI", Movistar Hits
-http://127.0.0.1:6878/ace/getstream?id=50553edb5e8c54d15e0d43161369b3b4cef95065
-#EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-HITS" group-title="NEW ERA VI", Movistar Hits
 acestream:/50553edb5e8c54d15e0d43161369b3b4cef95065
 #EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-HITS" group-title="PgRaceFuaApi", Movistar Hits
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5675
@@ -493,18 +481,13 @@ acestream://4879825ab2491980e93ea2d8c4d02e095eacf670
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5636
 
 # https://stremio.shickat.me/Images/Channels/ACCION.jpg
-#EXTINF:-1 tvg-id="Movistar.Accion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ACCION" group-title="NEW ERA VI", Movistar Acción
-http://vlc.shickat.me:8000/pid/089673779de9fa7a18ac8dc26eb4a79cf5a86f96/stream.mp4
-#EXTINF:-1 tvg-id="Movistar.Accion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ACCION" group-title="NEW ERA", Movistar Acción
-http://vlc.shickat.me:8000/pid/102bcb79ca391e37ac1fc9ee77dc53440d0a59ce/stream.mp4
-#EXTINF:-1 tvg-id="Movistar.Accion.es" tvg-logo="https://i.ibb.co/QvCktsFW/M-accion.png" group-title="NEW ERA", Movistar Acción (FHD)
-acestream://102bcb79ca391e37ac1fc9ee77dc53440d0a59ce
-#EXTINF:-1 tvg-id="Movistar.Accion.es" tvg-logo="https://i.ibb.co/QvCktsFW/M-accion.png" group-title="NEW ERA", Movistar Acción (FHD)
-http://127.0.0.1:6878/ace/getstream?id=102bcb79ca391e37ac1fc9ee77dc53440d0a59ce
-#EXTINF:-1 tvg-id="Movistar.Accion.es" tvg-logo="https://i.ibb.co/QvCktsFW/M-accion.png" group-title="NEW ERA VI", Movistar Acción (FHD)
-http://127.0.0.1:6878/ace/getstream?id=089673779de9fa7a18ac8dc26eb4a79cf5a86f96
 #EXTINF:-1 tvg-id="Movistar.Accion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ACCION" group-title="PgRaceFuaApi", Movistar Acción
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5632
+#EXTINF:-1 tvg-id="Movistar.Accion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ACCION" group-title="NEW ERA VI", Movistar Acción
+acestream://089673779de9fa7a18ac8dc26eb4a79cf5a86f96
+#EXTINF:-1 tvg-id="Movistar.Accion.es" tvg-logo="https://i.ibb.co/QvCktsFW/M-accion.png" group-title="NEW ERA", Movistar Acción (FHD)
+acestream://102bcb79ca391e37ac1fc9ee77dc53440d0a59ce
+
 
 # https://i.ibb.co/6c2zRp9y/M-drama.png
 #EXTINF:-1 tvg-id="Movistar.Drama.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-DRAMA" group-title="Telegram", Movistar Drama (720)
@@ -587,11 +570,7 @@ http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58113
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5739
 
 #EXTINF:-1 tvg-id="SyFy.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/SyFy-logo" group-title="NEW ERA", SyFy (FHD)
-http://127.0.0.1:6878/ace/getstream?id=8e1bbcb6a6b8b9bb0e1144454fda35531107cdb3
-#EXTINF:-1 tvg-id="SyFy.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/SyFy-logo" group-title="NEW ERA", SyFy (FHD)
 acestream://8e1bbcb6a6b8b9bb0e1144454fda35531107cdb3
-#EXTINF:-1 tvg-id="SyFy.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/SyFy-logo" group-title="NEW ERA", SyFy (FHD)
-http://vlc.shickat.me:8000/pid/8e1bbcb6a6b8b9bb0e1144454fda35531107cdb3/stream.mp4
 #EXTINF:-1 tvg-id="SyFy.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/SyFy-logo" group-title="PgRaceFuaApi", SyFy
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5732
 
