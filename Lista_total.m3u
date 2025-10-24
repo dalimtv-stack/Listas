@@ -1,5 +1,4 @@
-#EXTM3U tvg-url="https://epgshare01.online/epgshare01/epg_ripper_ES1.xml.gz"
-#EXTM3U url-tvg="https://raw.githubusercontent.com/davidmuma/EPG_dobleM/refs/heads/master/guiatv.xml, https://epgshare01.online/epgshare01/epg_ripper_NL1.xml.gz"
+#EXTM3U tvg-url="https://raw.githubusercontent.com/dalimtv-stack/miEPG/refs/heads/main/miEPG.xml"
 #EXTVLCOPT:network-caching=1000
 
 # Revisar:  
@@ -605,7 +604,7 @@ http://vlc.shickat.me:8000/pid/d7d3830018cfd93c7430c19ba703a053680476a0/stream.m
 #EXTINF:-1 tvg-id="XTRM.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/XTRM-logo" group-title="PgRaceFuaApi", XTRM
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5751
 
-#EXTINF:-1 tvg-id="Sundace.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Sundance_TV" group-title="PgRaceFuaApi", Sundance TV
+#EXTINF:-1 tvg-id="Sundance.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Sundance_TV" group-title="PgRaceFuaApi", Sundance TV
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5731
 
 #EXTINF:-1 tvg-id="TCM.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/TCM" group-title="PgRaceFuaApi", TCM
