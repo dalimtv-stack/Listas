@@ -8,6 +8,8 @@
 # https://github.com/adrines423/web/tree/4140b416c55f5eb6838a90c6e175ba9aab55578b
 # https://github.com/Cobra4x2/DrewLive/tree/main
 # https://github.com/asanber/diabluras
+# https://github.com/michelpg01/iptv19/blob/03cc024e9c19248755b266c34163b75cccd9c582/iptv2025#L756
+# https://github.com/konanda-sg/DrewLive-1/blob/52651016f52e75558fb5d21d8c000240b3e01b60/DrewAll.m3u8#L690
 
 # https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Hollywood.jpg
 #EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Hollywood" group-title="Telegram", Hollywood (FHD)
@@ -1488,3 +1490,28 @@ http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fwindnew.newkso.ru%2Fwind%2F
 
 #EXTINF:-1 tvg-id="Movistar.plus(src01).es" tvg-name="#0 Spain" tvg-logo="https://raw.githubusercontent.com/dtankdempse/daddylive-m3u/refs/heads/main/bg/ddy-logo.jpg" group-title="Spain",#0 Spain
 http://drewlive24.duckdns.org:4123?url=https%3A%2F%2Fwindnew.newkso.ru%2Fwind%2Fpremium437%2Fmono.m3u8&data=T3JpZ2luPWh0dHBzOi8vanhveGtwbGF5Lnh5enxSZWZlcmVyPWh0dHBzOi8vanhveGtwbGF5Lnh5ei98VXNlci1BZ2VudD1Nb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0OyBydjoxNDMuMCkgR2Vja28vMjAxMDAxMDEgRmlyZWZveC8xNDMuMA%3D%3D
+
+#EXTINF:-1 tvg-id="NBATVLatinAmerica.us" tvg-name="NBA TV ᴴᴰ" tvg-logo="https://raw.githubusercontent.com/serviciovodflex/nxt-guide/main/img/deportes/nba-tv-hd.png" group-title="⭐ EVENTOS | NBA / NFL / NHL",NBA TV ᴴᴰ
+https://nxt.plus:8443/live/conejito/conejito/4983.m3u8
+
+
+#EXTINF:-1  tvg-name="NBA 10" tvg-id="NBA.League.Pass.10.us" tvg-logo="https://github.com/tv-logo/tv-logos/blob/main/countries/united-states/nba-tv-icon-us.png?raw=true" group-title="MoveOnJoy" radio="false",NBA 10
+http://fl5.moveonjoy.com/NBA_10/index.m3u8
+#EXTINF:-1  tvg-name="NBA 11" tvg-id="NBA.League.Pass.10.us" tvg-logo="https://github.com/tv-logo/tv-logos/blob/main/countries/united-states/nba-tv-icon-us.png?raw=true" group-title="MoveOnJoy" radio="false",NBA 11
+http://fl5.moveonjoy.com/NBA_11/index.m3u8
+#EXTINF:-1  tvg-name="NBA 12" tvg-id="NBA.League.Pass.10.us" tvg-logo="https://github.com/tv-logo/tv-logos/blob/main/countries/united-states/nba-tv-icon-us.png?raw=true" group-title="MoveOnJoy" radio="false",NBA 12
+http://fl5.moveonjoy.com/NBA_12/index.m3u8
+#EXTINF:-1  tvg-name="NBA 13" tvg-id="NBA.League.Pass.10.us" tvg-logo="https://github.com/tv-logo/tv-logos/blob/main/countries/united-states/nba-tv-icon-us.png?raw=true" group-title="MoveOnJoy" radio="false",NBA 13
+http://fl5.moveonjoy.com/NBA_13/index.m3u8
+#EXTINF:-1  tvg-name="NBA 5" tvg-id="NBA.League.Pass.5.us" tvg-logo="https://github.com/tv-logo/tv-logos/blob/main/countries/united-states/nba-tv-icon-us.png?raw=true" group-title="MoveOnJoy" radio="false",NBA 5
+http://fl5.moveonjoy.com/NBA_5/index.m3u8
+#EXTINF:-1  tvg-name="NBA 6" tvg-id="NBA.League.Pass.6.us" tvg-logo="https://github.com/tv-logo/tv-logos/blob/main/countries/united-states/nba-tv-icon-us.png?raw=true" group-title="MoveOnJoy" radio="false",NBA 6
+http://fl5.moveonjoy.com/NBA_6/index.m3u8
+#EXTINF:-1  tvg-name="NBA 7" tvg-id="NBA.League.Pass.7.us" tvg-logo="https://github.com/tv-logo/tv-logos/blob/main/countries/united-states/nba-tv-icon-us.png?raw=true" group-title="MoveOnJoy" radio="false",NBA 7
+http://fl5.moveonjoy.com/NBA_7/index.m3u8
+#EXTINF:-1  tvg-name="NBA 8" tvg-id="NBA.League.Pass.8.us" tvg-logo="https://github.com/tv-logo/tv-logos/blob/main/countries/united-states/nba-tv-icon-us.png?raw=true" group-title="MoveOnJoy" radio="false",NBA 8
+http://fl5.moveonjoy.com/NBA_8/index.m3u8
+#EXTINF:-1  tvg-name="NBA 9" tvg-id="NBA.League.Pass.9.us" tvg-logo="https://github.com/tv-logo/tv-logos/blob/main/countries/united-states/nba-tv-icon-us.png?raw=true" group-title="MoveOnJoy" radio="false",NBA 9
+http://fl5.moveonjoy.com/NBA_9/index.m3u8
+#EXTINF:-1  tvg-name="NBA TV" tvg-id="NBA.TV.USA.us" tvg-logo="https://github.com/tv-logo/tv-logos/blob/main/countries/united-states/nba-tv-us.png?raw=true" group-title="MoveOnJoy" radio="false",NBA TV
+https://fl3.moveonjoy.com/NBA_TV/index.m3u8
