@@ -153,14 +153,18 @@ async function handleCatalog(req) {
     });
     console.log(logPrefix, `aplicado genre="${g}", tras filtro: ${filtered.length}`);
   }
-  console.log( `Canal ID: ${c.id}`);
-  const metas = filtered.map(c => ({
-    id: `${ADDON_PREFIX}_${configId}_${c.id}`,
-    type: 'tv',
-    name: normalizeCatalogName(c.name),
-    poster: c.logo_url,
-    background: c.logo_url || null
-  }));
+  
+  const metas = filtered.map(c => {
+    console.log(`[CATALOG] Canal procesado - ID: ${c.id}`);  // Log para el ID de cada canal
+    return {
+      id: `${ADDON_PREFIX}_${configId}_${c.id}`,
+      type: 'tv',
+      name: normalizeCatalogName(c.name),
+      poster: c.logo_url,
+      background: c.logo_url || null
+    };
+  });
+
 
   const resp = { metas };
   cache.set(cacheKey, resp);
