@@ -283,7 +283,7 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/futbol.jpeg';
     } else if (isRugby && competicion?.toLowerCase() === 'top 14') {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/rugby-top14.jpeg';
-    } else if (isHockey && competicion?.toLowerCase() === 'nhl') {
+    } else if (deporte.toLowerCase() && competicion.toLowerCase() === 'nhl') {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/NHL.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'ufc') {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/UFC.jpeg';
