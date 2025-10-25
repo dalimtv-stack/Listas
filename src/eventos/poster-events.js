@@ -287,6 +287,8 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/NHL.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'ufc') {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/UFC.jpeg';
+    } else if (isF1) {
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Formula1.jpeg';
     } else if (isMotos && partido.toLowerCase() === 'motogp') {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Mundial_MotoGP.png';
     } else if (isMotos && partido.toLowerCase() === 'moto2') {
