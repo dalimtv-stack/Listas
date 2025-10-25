@@ -110,6 +110,7 @@ async function getStreams(id, configId) {
     'DAZN 2': 'DAZN.2.es',
     'DAZN 3': 'DAZN.3.es',
     'DAZN 4': 'DAZN.4.es',
+    'DAZN LALIGA': 'DAZN.LALIGA.es', 
     'M+ Deportes': 'Movistar.Deportes.es',
     'M+ Deportes 2': 'Movistar.Deportes.2.es',
     'M+ Deportes 3': 'Movistar.Deportes.3.es',
