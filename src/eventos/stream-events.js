@@ -111,6 +111,9 @@ async function getStreams(id, configId) {
     'DAZN 3': 'DAZN.3.es',
     'DAZN 4': 'DAZN.4.es',
     'DAZN LALIGA': 'DAZN.LALIGA.es', 
+    'DAZN LALIGA 2': 'DAZN.LALIGA.2.es', 
+    'DAZN LALIGA 3': 'DAZN.LALIGA.3.es', 
+    'DAZN F1': 'DAZN.F1.es', 
     'M+ Deportes': 'Movistar.Deportes.es',
     'M+ Deportes 2': 'Movistar.Deportes.2.es',
     'M+ Deportes 3': 'Movistar.Deportes.3.es',
@@ -144,6 +147,8 @@ async function getStreams(id, configId) {
     'Aragón TV': 'Aragon.TV.es',
     'TVG 2': 'TVG.2.gal',
     'M+ LALIGA': 'Movistar.LaLiga.es',
+    'M+ LALIGA 2': 'Movistar.LaLiga.2.es',
+    'M+ LALIGA 3': 'Movistar.LaLiga.3.es',
     'M+ Vamos': 'Movistar.Vamos.es'
   };
 
