@@ -149,6 +149,7 @@ async function getStreams(id, configId) {
     'M+ LALIGA': 'Movistar.LaLiga.es',
     'M+ LALIGA 2': 'Movistar.LaLiga.2.es',
     'M+ LALIGA 3': 'Movistar.LaLiga.3.es',
+    'M+ LALIGA 4': 'Movistar.LaLiga.4.es',
     'M+ Vamos': 'Movistar.Vamos.es'
   };
 
