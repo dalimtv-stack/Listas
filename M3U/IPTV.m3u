@@ -14,8 +14,6 @@ http://vlc-dalim.ddns.net:6880/ace/getstream?id=199190e3f28c1de0be34bccf0d3568dc
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="LaLiga", M+ LaLiga (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/54532
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="LaLiga", M+ LaLiga (PgRaceFuaApi)
-http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5661
-#EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="LaLiga", M+ LaLiga (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58317
 #EXTINF:-1 tvg-id="Movistar.LaLiga.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_LALIGA" group-title="LaLiga", M+ LaLiga (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63363
@@ -679,9 +677,11 @@ http://vlc-dalim.ddns.net:6880/ace/getstream?id=8546cff89e4ee8bf3ad31cf6457c3bc2
 #EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://i.ibb.co/Vp04N3pT/golf.png" group-title="NEW LOOP", Movistar Golf (HD)
 http://vlc-dalim.ddns.net:6880/ace/getstream?id=872608e734992db636eb79426802cd08f4029afb
 
-# https://cdn.sincroguia.tv/uploads/series/laliga-hypermotion-poster-1272157_V.jpg
+
 #EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="Telegram", LaLiga Hypermotion (720)
 http://172.93.102.112:8989/278842_.m3u8
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="Telegram", LaLiga Hypermotion (PgRaceFuaApi)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5661
 #EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://cdn.sincroguia.tv/uploads/series/laliga-hypermotion-poster-1272157_V.jpg" group-title="Elcano.top", LaLiga Hypermotion (1080)
 http://vlc-dalim.ddns.net:6880/ace/getstream?id=87bb542f974b6b9e89d0f2e20ed6dc93426f4be0
 #EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" group-title="Elcano.top", LaLiga Hypermotion (720)
