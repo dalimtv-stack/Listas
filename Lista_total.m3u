@@ -620,7 +620,7 @@ acestream://77aa26a614522c3845bdda1fa1f0e15dbe97c877
 #EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="NEW ERA III", Dark (FHD)
 http://127.0.0.1:6878/ace/getstream?id=25465ea2deba65c623b7659136abf6fcc9f5dc20
 #EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="NEW ERA III", Dark (FHD)
-acestream//25465ea2deba65c623b7659136abf6fcc9f5dc20
+acestream://25465ea2deba65c623b7659136abf6fcc9f5dc20
 #EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="PgRaceFuaApi", Dark (FHD)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/25930
 #EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="Mhubery", Dark (FHD)
