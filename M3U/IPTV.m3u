@@ -332,638 +332,454 @@ http://127.0.0.1:6878/ace/getstream?id=dc4ccb9e72550bc72be9360aa7d77e337ad11ecc
 #EXTINF:-1 tvg-id="Eurosport.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Eurosport2" group-title="Deportes", Eurosport 2 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=4b87a5b67f39dfc151a163ec8c08039520f0a372
 
-#EXTINF:-1 tvg-id="LaligaInside.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Laliga-Inside" group-title="Telegram", Laliga Inside (1080)
+#EXTINF:-1 tvg-id="LaligaInside.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Laliga-Inside" group-title="LaLiga", Laliga Inside (m3u8)
 https://is.gd/P9HFAg?LaligaInside.m3u8
-#EXTINF:-1 tvg-id="LaligaInside.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Laliga-Inside" group-title="Telegram", Laliga Inside (1080)
+#EXTINF:-1 tvg-id="LaligaInside.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Laliga-Inside" group-title="LaLiga", Laliga Inside (m3u8)
 https://daiconnect.com/live/hls/tvup/rk-ligainside/90358dc4f9a2bcc58260c53040284584/index.m3u8
-#EXTINF:-1 tvg-id="LaligaInside.es" tvg-logo="https://i.pinimg.com/736x/0e/96/3c/0e963cdb5e91944561a6ae37eace1f9c.jpg" group-title="CloudFront", Laliga Inside
+#EXTINF:-1 tvg-id="LaligaInside.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Laliga-Inside" group-title="LaLiga", Laliga Inside (m3u8)
 https://d3bb58xoj568xi.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-don7i7nmbho0q/index.m3u8
-#EXTINF:-1 tvg-id="LaligaInside.es" tvg-logo="https://i.pinimg.com/736x/0e/96/3c/0e963cdb5e91944561a6ae37eace1f9c.jpg" group-title="CloudFront", Laliga Inside
+#EXTINF:-1 tvg-id="LaligaInside.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Laliga-Inside" group-title="LaLiga", Laliga Inside (m3u8)
 https://d3bb58xoj568xi.cloudfront.net/v1/manifest/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-don7i7nmbho0q/8eb3cf07-8997-4ba1-8194-b9617ca72439/2.m3u8
 
-# Cine/Series
-# https://stremio.shickat.me/Images/Channels/ESTRENOS.jpg
-#EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ESTRENOS" group-title="NEW ERA", M+ Liga Estrenos (FHD)
-http://127.0.0.1:6878/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
-#EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://i.ibb.co/4nyZM1vC/M-Estrenos.png" group-title="NEW ERA VI", M+ Liga Estrenos (FHD)
-http://127.0.0.1:6878/ace/getstream?id=192f2ac5b372dfddef694e48edd2d56e308b51e7
-#EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ESTRENOS" group-title="PgRaceFuaApi", M+ Liga Estrenos
+#EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ESTRENOS" group-title="Cine & Series", M+ Liga Estrenos (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57286
-#EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ESTRENOS" group-title="PgRaceFuaApi", M+ Liga Estrenos
+#EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ESTRENOS" group-title="Cine & Series", M+ Liga Estrenos (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58330
+#EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ESTRENOS" group-title="Cine & Series", M+ Liga Estrenos (Acestream)
+http://127.0.0.1:6878/ace/getstream?id=5d35f906b735f25164fa2b9b7a4e6ef91dfed131
 
-# https://stremio.shickat.me/Images/Channels/HITS.jpg
-#EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-HITS" group-title="Shickat.me", M+ Liga Hits
-http://127.0.0.1:6878/ace/getstream?id=2b8e5c7438d56541df3467cc5986cf1e66014101
-#EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://www.movistarplus.es/recorte/m-DP/modmarcas/MHITSH" group-title="Shickat.me", M+ Liga Hits (FHD)
-http://127.0.0.1:6878/ace/getstream?id=2b8e5c7438d56541df3467cc5986cf1e66014101
-#EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-HITS" group-title="NEW ERA VI", M+ Liga Hits
-acestream:/50553edb5e8c54d15e0d43161369b3b4cef95065
-#EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-HITS" group-title="PgRaceFuaApi", M+ Liga Hits
+#EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-HITS" group-title="Cine & Series", M+ Liga Hits (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5675
+#EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-HITS" group-title="Cine & Series", M+ Liga Hits (Acestream)
+http://127.0.0.1:6878/ace/getstream?id=50553edb5e8c54d15e0d43161369b3b4cef95065
 
-# https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/spain/comedia-por-movistar-plus-es.png
-#EXTINF:-1 tvg-id="Movistar.Comedia.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-COMEDIA" group-title="Telegram", M+ Liga Comedia
+#EXTINF:-1 tvg-id="Movistar.Comedia.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-COMEDIA" group-title="Cine & Series", M+ Liga Comedia (m3u8)
 http://172.93.102.112:8989/278848_.m3u8
-#EXTINF:-1 tvg-id="Movistar.Comedia.es" tvg-logo="https://stremio.shickat.me/Images/Channels/COMEDIA.jpg" group-title="VLC", M+ Liga Comedia
-http://127.0.0.1:6878/ace/getstream?id=cf0cb321eed6765c2eadbd9983570f6674ce5df6
-#EXTINF:-1 tvg-id="Movistar.Comedia.es" tvg-logo="https://i.ibb.co/TxvVjgmB/M-comedia.png" group-title="NEW ERA", M+ Liga Comedia (FHD)
-http://127.0.0.1:6878/ace/getstream?id=4879825ab2491980e93ea2d8c4d02e095eacf670
-#EXTINF:-1 tvg-id="Movistar.Comedia.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-COMEDIA" group-title="PgRaceFuaApi", M+ Liga Comedia
+#EXTINF:-1 tvg-id="Movistar.Comedia.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-COMEDIA" group-title="Cine & Series", M+ Liga Comedia (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5636
 
-# https://stremio.shickat.me/Images/Channels/ACCION.jpg
-#EXTINF:-1 tvg-id="Movistar.Accion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ACCION" group-title="PgRaceFuaApi", M+ Liga Acción
+#EXTINF:-1 tvg-id="Movistar.Accion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ACCION" group-title="Cine & Series", M+ Liga Acción (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5632
-#EXTINF:-1 tvg-id="Movistar.Accion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ACCION" group-title="NEW ERA VI", M+ Liga Acción
+#EXTINF:-1 tvg-id="Movistar.Accion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ACCION" group-title="Cine & Series", M+ Liga Acción (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=089673779de9fa7a18ac8dc26eb4a79cf5a86f96
-#EXTINF:-1 tvg-id="Movistar.Accion.es" tvg-logo="https://i.ibb.co/QvCktsFW/M-accion.png" group-title="NEW ERA", M+ Liga Acción (FHD)
-http://127.0.0.1:6878/ace/getstream?id=102bcb79ca391e37ac1fc9ee77dc53440d0a59ce
 
-
-# https://i.ibb.co/6c2zRp9y/M-drama.png
-#EXTINF:-1 tvg-id="Movistar.Drama.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-DRAMA" group-title="Telegram", M+ Liga Drama (720)
+#EXTINF:-1 tvg-id="Movistar.Drama.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-DRAMA" group-title="Cine & Series", M+ Liga Drama (m3u8)
 http://172.93.102.112:8989/278850_.m3u8
-#EXTINF:-1 tvg-id="Movistar.Drama.es" tvg-logo="https://stremio.shickat.me/Images/Channels/DRAMA.jpg" group-title="VLC", M+ Liga Drama (1080)
-http://127.0.0.1:6878/ace/getstream?id=a6de6a4977d7801bbddc9c7739d822f4beb358ae
-#EXTINF:-1 tvg-id="Movistar.Drama.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-DRAMA" group-title="PgRaceFuaApi", M+ Liga Drama
+#EXTINF:-1 tvg-id="Movistar.Drama.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-DRAMA" group-title="Cine & Series", M+ Liga Drama (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5644
 
-# https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Terror.jpg
-# https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/TERROR_poster.jpg
-#EXTINF:-1 tvg-id="Movistar.Especial.1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-TERROR" group-title="VLC", M+ Liga Terror (1080)
+#EXTINF:-1 tvg-id="Movistar.Especial.1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-TERROR" group-title="Cine & Series", M+ Liga Terror (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=cf99e99c105162410ec6d1f68cc6f4811560fee7
-#EXTINF:-1 tvg-id="Movistar.Especial.1.es" tvg-logo="https://i.ibb.co/hJ1mPCbC/M-vacaciones.webp" group-title="Shickat.me", M+ Liga Terror (FHD)
+#EXTINF:-1 tvg-id="Movistar.Especial.1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-TERROR" group-title="Cine & Series", M+ Liga Terror (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=cf99e99c105162410ec6d1f68cc6f4811560fee7
 
-# https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Romance.jpg
-# https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Romance_poster.jpg
-#EXTINF:-1 tvg-id="Movistar.Especial.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-Romance" group-title="VLC", M+ Liga Romance (FHD)
+#EXTINF:-1 tvg-id="Movistar.Especial.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-Romance" group-title="Cine & Series", M+ Liga Romance (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=4bfeb0516c44c4f0e3502e3f1ca1035d39ddf9c2
-#EXTINF:-1 tvg-id="Movistar.Especial.2.es" tvg-logo="https://i.ibb.co/Q177kHV/M-western.webp" group-title="Shickat.me", M+ Liga Romance (FHD)
+#EXTINF:-1 tvg-id="Movistar.Especial.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-Romance" group-title="Cine & Series", M+ Liga Romance (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=4bfeb0516c44c4f0e3502e3f1ca1035d39ddf9c2
 
-# https://i.ibb.co/WWq3fbcj/M-indie.png
-# https://stremio.shickat.me/Images/Channels/INDIE.jpg
-#EXTINF:-1 tvg-id="Movistar.Indie.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-INDIE" group-title="VLC", M+ Liga Indie
-http://127.0.0.1:6878/ace/getstream?id=7716c9fd5bd4413715e4e26f97efb91802f6ee80
-#EXTINF:-1 tvg-id="Movistar.Indie.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-INDIE" group-title="PgRaceFuaApi", M+ Liga Indie
+#EXTINF:-1 tvg-id="Movistar.Indie.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-INDIE" group-title="Cine & Series", M+ Liga Indie (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57282
+#EXTINF:-1 tvg-id="Movistar.Indie.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-INDIE" group-title="Cine & Series", M+ Liga Indie (Acestream)
+http://127.0.0.1:6878/ace/getstream?id=7716c9fd5bd4413715e4e26f97efb91802f6ee80
 
-# https://i.ibb.co/JWpf4FcM/clasicos.png
-# https://www.tvlogo.org/spain/clasicos-por-movistar-plus-es.png
-# https://stremio.shickat.me/Images/Channels/CLASICOS.jpg
-#EXTINF:-1 tvg-id="Movistar.Clasicos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CLASICOS" group-title="VLC", M+ Liga Clásicos
-http://127.0.0.1:6878/ace/getstream?id=6462c8f65fcaa6e4fc874fef8d1e45bb7a7e6bae
-#EXTINF:-1 tvg-id="Movistar.Clasicos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CLASICOS" group-title="PgRaceFuaApi", M+ Liga Clásicos
+#EXTINF:-1 tvg-id="Movistar.Clasicos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CLASICOS" group-title="Cine & Series", M+ Liga Clásicos (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5634
+#EXTINF:-1 tvg-id="Movistar.Clasicos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CLASICOS" group-title="Cine & Series", M+ Liga Clásicos (Acestream)
+http://127.0.0.1:6878/ace/getstream?id=6462c8f65fcaa6e4fc874fef8d1e45bb7a7e6bae
 
-# https://i.ibb.co/vxcn76Qb/M-cine-espanol.png
-# https://stremio.shickat.me/Images/Channels/CINEESPANOL.jpg
-#EXTINF:-1 tvg-id="Movistar.Cine.Espanol.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CINE-ESPANOL" group-title="VLC", M+ Liga Cine Español
-http://127.0.0.1:6878/ace/getstream?id=e4bce95dd4faeb9cb09ade36a0636bc4b22b691c
-#EXTINF:-1 tvg-id="Movistar.Cine.Espanol.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CINE-ESPANOL" group-title="PgRaceFuaApi", M+ Liga Cine Español
+#EXTINF:-1 tvg-id="Movistar.Cine.Espanol.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CINE-ESPANOL" group-title="PgRaceFuaApi", M+ Liga Cine Español (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5633
-#EXTINF:-1 tvg-id="Movistar.Cine.Espanol.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CINE-ESPANOL" group-title="Mhubery", M+ Liga Cine Español (HD)
-http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/165945
-#EXTINF:-1 tvg-id="Movistar.Cine.Espanol.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CINE-ESPANOL" group-title="Mhubery", M+ Liga Cine Español (FHD)
+#EXTINF:-1 tvg-id="Movistar.Cine.Espanol.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CINE-ESPANOL" group-title="Mhubery", M+ Liga Cine Español (Mhubery)
 http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/165860
-#EXTINF:-1 tvg-id="Movistar.Cine.Espanol.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CINE-ESPANOL" group-title="Mhubery [HEVC]", M+ Liga Cine Español (HEVC)
-http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/189434
-#EXTINF:-1 tvg-id="Movistar.Cine.Espanol.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-CINE-ESPANOL" group-title="Mhubery", M+ Liga Cine Español (SD)
-http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/400220316
 
-# https://stremio.shickat.me/Images/Channels/DOCUMENTALES.jpg
-#EXTINF:-1 tvg-id="Movistar.Documentales.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-DOCUMENTALES" group-title="VLC", M+ Liga Documentales
-http://127.0.0.1:6878/ace/getstream?id=b3fc9b5647c5933b101c0b6b64322590c68587b9
-#EXTINF:-1 tvg-id="Movistar.Documentales.es" tvg-logo="https://i.ibb.co/S7GD8x7R/M-documentales.png" group-title="Shickat.me", M+ Liga Documentales (FHD)
-http://127.0.0.1:6878/ace/getstream?id=b3fc9b5647c5933b101c0b6b64322590c68587b9
-#EXTINF:-1 tvg-id="Movistar.Documentales.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-DOCUMENTALES" group-title="PgRaceFuaApi", M+ Liga Documentales
+#EXTINF:-1 tvg-id="Movistar.Documentales.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-DOCUMENTALES" group-title="Documentales", M+ Liga Documentales (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57284
+#EXTINF:-1 tvg-id="Movistar.Documentales.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-DOCUMENTALES" group-title="Documentales", M+ Liga Documentales (Acestream)
+http://127.0.0.1:6878/ace/getstream?id=b3fc9b5647c5933b101c0b6b64322590c68587b9
 
-# https://i.ibb.co/rGVmRcSH/hits.png
-# https://stremio.shickat.me/Images/Channels/ORIGINALES.jpg
-#EXTINF:-1 tvg-id="Movistar.Originales.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ORIGINALES" group-title="VLC", M+ Liga Originales
-http://127.0.0.1:6878/ace/getstream?id=096b817fcc836535f608facb15fca6408fae3162
-#EXTINF:-1 tvg-id="Movistar.Originales.es" tvg-logo="https://i.ibb.co/rGVmRcSH/hits.png" group-title="NEW ERA", M+ Liga Originales (FHD)
-http://127.0.0.1:6878/ace/getstream?id=2752dee68a7faa9c847216dc22a6821661db891a
-#EXTINF:-1 tvg-id="Movistar.Originales.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ORIGINALES" group-title="PgRaceFuaApi", M+ Liga Originales
+#EXTINF:-1 tvg-id="Movistar.Originales.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ORIGINALES" group-title="Documentales", M+ Liga Originales (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57283
+#EXTINF:-1 tvg-id="Movistar.Originales.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ORIGINALES" group-title="Documentales", M+ Liga Originales (Acestream)
 
-# https://dummyimage.com/300x450/000/fff&text=INVITADO
-#EXTINF:-1 tvg-id="Invitado.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/INVITADO" group-title="Telegram", Canal Invitado
-http://172.93.102.112:8989/278847_.m3u8
-#EXTINF:-1 tvg-id="Invitado.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/INVITADO" group-title="PgRaceFuaApi", Regalo 1
-http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58114
-#EXTINF:-1 tvg-id="Invitado.es" tvg-logo="https://docdog.top/logo/countries/ads/iptv_es.jpg" group-title="PgRaceFuaApi", Regalo 2
-http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58113
-
-#EXTINF:-1 tvg-id="Warner.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/Warner" group-title="PgRaceFuaApi", Warner
+#EXTINF:-1 tvg-id="Warner.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/Warner" group-title="Cine & Series", Warner (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5739
 
-#EXTINF:-1 tvg-id="SyFy.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/SyFy-logo" group-title="NEW ERA", SyFy (FHD)
-http://127.0.0.1:6878/ace/getstream?id=8e1bbcb6a6b8b9bb0e1144454fda35531107cdb3
-#EXTINF:-1 tvg-id="SyFy.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/SyFy-logo" group-title="PgRaceFuaApi", SyFy
+#EXTINF:-1 tvg-id="SyFy.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/SyFy-logo" group-title="PgRaceFuaApi", SyFy (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5732
+#EXTINF:-1 tvg-id="SyFy.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/SyFy-logo" group-title="Cine & Series", SyFy (Acestream)
+http://127.0.0.1:6878/ace/getstream?id=8e1bbcb6a6b8b9bb0e1144454fda35531107cdb3
 
-#EXTINF:-1 tvg-id="XTRM.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/XTRM-logo" group-title="NEW ERA", XTRM (FHD)
-http://127.0.0.1:6878/ace/getstream?id=d7d3830018cfd93c7430c19ba703a053680476a0
-#EXTINF:-1 tvg-id="XTRM.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/XTRM-logo" group-title="NEW ERA", XTRM (FHD)
-http://127.0.0.1:6878/ace/getstream?id=d7d3830018cfd93c7430c19ba703a053680476a0
-#EXTINF:-1 tvg-id="XTRM.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/XTRM-logo" group-title="NEW ERA", XTRM (FHD)
-http://127.0.0.1:6878/ace/getstream?id=d7d3830018cfd93c7430c19ba703a053680476a0
-#EXTINF:-1 tvg-id="XTRM.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/XTRM-logo" group-title="PgRaceFuaApi", XTRM
+#EXTINF:-1 tvg-id="XTRM.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/XTRM-logo" group-title="Cine & Series", XTRM (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5751
+#EXTINF:-1 tvg-id="XTRM.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/XTRM-logo" group-title="Cine & Series", XTRM (Acestream)
+http://127.0.0.1:6878/ace/getstream?id=d7d3830018cfd93c7430c19ba703a053680476a0
 
-#EXTINF:-1 tvg-id="Sundance.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Sundance_TV" group-title="PgRaceFuaApi", Sundance TV
+#EXTINF:-1 tvg-id="Sundance.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Sundance_TV" group-title="Cine & Series", Sundance TV (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5731
 
-#EXTINF:-1 tvg-id="TCM.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/TCM" group-title="PgRaceFuaApi", TCM
+#EXTINF:-1 tvg-id="TCM.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/TCM" group-title="Cine & Series", TCM (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5733
 
-#EXTINF:-1 tvg-id="Dreamworks.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Dreamworks" group-title="PgRaceFuaApi", Dreamworks
+#EXTINF:-1 tvg-id="Dreamworks.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Dreamworks" group-title="Cine & Series", Dreamworks (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5602
 
-#EXTINF:-1 tvg-id="Nick.JR.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Nick_JR" group-title="PgRaceFuaApi", Nick Jr
+#EXTINF:-1 tvg-id="Nick.JR.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Nick_JR" group-title="Cine & Series", Nick Jr (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5720
 
-#EXTINF:-1 tvg-id="Nickelodeon.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Nickelodeon" group-title="PgRaceFuaApi", Nickelodeon
+#EXTINF:-1 tvg-id="Nickelodeon.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Nickelodeon" group-title="Cine & Series", Nickelodeon (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5721
 
-#EXTINF:-1 tvg-id="Somos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Somos" group-title="PgRaceFuaApi", Somos
+#EXTINF:-1 tvg-id="Somos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Somos" group-title="Cine & Series", Somos (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5730
-#EXTINF:-1 tvg-id="Somos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Somos" group-title="Mhubery", Somos (HD)
+#EXTINF:-1 tvg-id="Somos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Somos" group-title="Cine & Series", Somos (Mhubery)
 http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/7190
-#EXTINF:-1 tvg-id="Somos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Somos" group-title="Mhubery", Somos (FHD)
-http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/400407273
-#EXTINF:-1 tvg-id="Somos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Somos" group-title="Mhubery [HEVC]", Somos (HEVC)
-http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/33529
-#EXTINF:-1 tvg-id="Somos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Somos" group-title="Mhubery", Somos (SD)
-http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/1222
 
-#EXTINF:-1 tvg-id="VinTV.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/VinTv" group-title="PgRaceFuaApi", VinTV
+#EXTINF:-1 tvg-id="VinTV.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/VinTv" group-title="Cine & Series", VinTV (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5726
 
-#EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="Acestream", Dark (FHD)
-http://127.0.0.1:6878/ace/getstream?id=25465ea2deba65c623b7659136abf6fcc9f5dc20
-#EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://i.ibb.co/pvSNFSfp/IMG-2338.jpg" group-title="Acestream", Dark (FHD)
-http://127.0.0.1:6878/ace/getstream?id=77aa26a614522c3845bdda1fa1f0e15dbe97c877
-#EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="NEW ERA III", Dark (FHD)
-http://127.0.0.1:6878/ace/getstream?id=25465ea2deba65c623b7659136abf6fcc9f5dc20
-#EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="NEW ERA III", Dark (FHD)
-acestream//25465ea2deba65c623b7659136abf6fcc9f5dc20
-#EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="PgRaceFuaApi", Dark (FHD)
+#EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="Cine & Series", Dark (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/25930
-#EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="Mhubery", Dark (FHD)
+#EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="Cine & Series", Dark (Mhubery)
 http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/400278977
+#EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="Cine & Series", Dark (Acestream)
+http://127.0.0.1:6878/ace/getstream?id=25465ea2deba65c623b7659136abf6fcc9f5dc20
+#EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="Cine & Series", Dark (Acestream)
+http://127.0.0.1:6878/ace/getstream?id=77aa26a614522c3845bdda1fa1f0e15dbe97c877
+#EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="Cine & Series", Dark (Acestream)
+http://127.0.0.1:6878/ace/getstream?id=25465ea2deba65c623b7659136abf6fcc9f5dc20
+#EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="Cine & Series", Dark (Acestream)
+http://127.0.0.1:6878/ace/getstream?id=25465ea2deba65c623b7659136abf6fcc9f5dc20
 
-#EXTINF:-1 tvg-id="AXN.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/AXN" group-title="Telegram", AXN
+#EXTINF:-1 tvg-id="AXN.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/AXN" group-title="Cine & Series", AXN (m3u8)
 http://172.93.102.112:8989/278814_.m3u8
-#EXTINF:-1 tvg-id="AXN.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/AXN" group-title="PgRaceFuaApi", AXN
+#EXTINF:-1 tvg-id="AXN.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/AXN" group-title="PgRaceFuaApi", AXN (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5557
 
-#EXTINF:-1 tvg-id="AXN.Movies.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/AXN_Movies_logo_white" group-title="Telegram", AXN MOVIES 
+#EXTINF:-1 tvg-id="AXN.Movies.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/AXN_Movies_logo_white" group-title="Cine & Series", AXN MOVIES (m3u8)
 http://172.93.102.112:8989/278815_.m3u8
-#EXTINF:-1 tvg-id="AXN.Movies.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/AXN_Movies_logo_white" group-title="PgRaceFuaApi", AXN MOVIES 
+#EXTINF:-1 tvg-id="AXN.Movies.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/AXN_Movies_logo_white" group-title="Cine & Series", AXN MOVIES (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5558
-#EXTINF:-1 tvg-id="AXN.Movies.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/AXN_Movies_logo_white" group-title="TvPremiunD", AXN MOVIES 
-http://tvpremiund.ddns.me:2082/stellar269/johatemu269/29513
-#EXTINF:-1 tvg-id="AXN.Movies.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/AXN_Movies_logo_white" group-title="StreamProstk", AXN MOVIES 
-http://streamprostk.com:2082/zcenter57/10072019/29513
 
-#EXTINF:-1 tvg-id="AMC.es" tvg-logo="https://otakukart.com/wp-content/uploads/2023/10/AMC.jpg" group-title="Telegram", AMC
+#EXTINF:-1 tvg-id="AMC.es" tvg-logo="https://otakukart.com/wp-content/uploads/2023/10/AMC.jpg" group-title="Cine & Series", AMC (m3u8)
 http://172.93.102.112:8989/278811_.m3u8
-#EXTINF:-1 tvg-id="AMC.es" tvg-logo="https://otakukart.com/wp-content/uploads/2023/10/AMC.jpg" group-title="NEW ERA", AMC (1080)
-http://127.0.0.1:6878/ace/getstream?id=55ff9ee631af351f365f51cf3601695bf1fd20f3
-#EXTINF:-1 tvg-id="AMC.es" tvg-logo="https://otakukart.com/wp-content/uploads/2023/10/AMC.jpg" group-title="NEW ERA", AMC (1080)
-http://127.0.0.1:6878/ace/getstream?id=55ff9ee631af351f365f51cf3601695bf1fd20f3
-#EXTINF:-1 tvg-id="AMC.es" tvg-logo="https://otakukart.com/wp-content/uploads/2023/10/AMC.jpg" group-title="PgRaceFuaApi", AMC
+#EXTINF:-1 tvg-id="AMC.es" tvg-logo="https://otakukart.com/wp-content/uploads/2023/10/AMC.jpg" group-title="Cine & Series", AMC (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5553
 
-# https://i.ibb.co/mr0dvFN7/CAlle-trece.png
-# https://i.ibb.co/VpgH9FJF/CAlle-trece.png
-#EXTINF:-1 tvg-id="Calle.13.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto,q_auto,f_auto/Canales/CAlle-trece" group-title="Telegram", Calle 13
+#EXTINF:-1 tvg-id="Calle.13.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto,q_auto,f_auto/Canales/CAlle-trece" group-title="Cine & Series", Calle 13 (m3u8)
 http://172.93.102.112:8989/278817_.m3u8
-#EXTINF:-1 tvg-id="Calle.13.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto,q_auto,f_auto/Canales/CAlle-trece" group-title="PgRaceFuaApi", Calle 13
+#EXTINF:-1 tvg-id="Calle.13.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto,q_auto,f_auto/Canales/CAlle-trece" group-title="Cine & Series", Calle 13 (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5567
-http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/05567
 
-#EXTINF:-1 tvg-id="Cosmo.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/Cosmo" group-title="Telegram", Cosmo
+#EXTINF:-1 tvg-id="Cosmo.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/Cosmo" group-title="Cine & Series", Cosmo (m3u8)
 http://172.93.102.112:8989/278821_.m3u8
-#EXTINF:-1 tvg-id="Cosmo.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/Cosmo" group-title="PgRaceFuaApi", Cosmo
+#EXTINF:-1 tvg-id="Cosmo.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/Cosmo" group-title="Cine & Series", Cosmo (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5585
 
-#EXTINF:-1 tvg-id="Comedy.Central.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Comedy_Central" group-title="PgRaceFuaApi", Comedy Central
+#EXTINF:-1 tvg-id="Comedy.Central.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Comedy_Central" group-title="Cine & Series", Comedy Central (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5584
 
-#EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/ODISEA" group-title="Telegram", Odisea
+#EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/ODISEA" group-title="Documentales", Odisea (m3u8)
 http://172.93.102.112:8989/278818_.m3u8
-#EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/ODISEA" group-title="BudTV", Odisea
+#EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/ODISEA" group-title="Documentales", Odisea (BudTV)
 http://xcm.budtv-ultra.com:9000/budtv/websline/eWmWuCeW3j9F/278818.m3u8
-#EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/ODISEA" group-title="PgRaceFuaApi", Odisea
+#EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/ODISEA" group-title="Documentales", Odisea (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5724
-#EXTINF:-1 tvg-id="Odisea.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/ODISEA" group-title="Mhubery", Odisea (HD)
-http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/400241870
 
-#EXTINF:-1 tvg-id="National.Geographic.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/National_Geographic" group-title="PgRaceFuaApi", National Geographic
+#EXTINF:-1 tvg-id="National.Geographic.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/National_Geographic" group-title="Documentales", National Geographic (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5714
-#EXTINF:-1 tvg-id="National.Geographic.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/National_Geographic" group-title="TvPremiunD", National Geographic
+#EXTINF:-1 tvg-id="National.Geographic.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/National_Geographic" group-title="Documentales", National Geographic (TvPremiunD)
 http://tvpremiund.ddns.me:2082/stellar269/johatemu269/30611
-#EXTINF:-1 tvg-id="National.Geographic.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/National_Geographic" group-title="StreamProstk", National Geographic
+#EXTINF:-1 tvg-id="National.Geographic.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/National_Geographic" group-title="Documentales", National Geographic (StreamProstk)
 http://streamprostk.com:2082/zcenter57/10072019/30611
 
-#https://i.ibb.co/4wKt4tkT/NAT-GEO-WILD-alt.jpg
-#EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NAT-GEO-WILD" group-title="Telegram", National Geographic Wild
+#EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NAT-GEO-WILD" group-title="Documentales", National Geographic Wild (m3u8)
 http://172.93.102.112:8989/278852_.m3u8
-#EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NAT-GEO-WILD" group-title="PgRaceFuaApi", National Geographic Wild
+#EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NAT-GEO-WILD" group-title="Documentales", National Geographic Wild (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5715
-#EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NAT-GEO-WILD" group-title="TvPremiunD", National Geographic Wild
+#EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NAT-GEO-WILD" group-title="Documentales", National Geographic Wild (TvPremiunD)
 http://tvpremiund.ddns.me:2082/stellar269/johatemu269/2466
-#EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NAT-GEO-WILD" group-title="StreamProstk", National Geographic Wild
+#EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NAT-GEO-WILD" group-title="Documentales", National Geographic Wild (StreamProstk)
 http://streamprostk.com:2082/zcenter57/10072019/2466
-#EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NAT-GEO-WILD" group-title="TvPremiunD", National Geographic Wild
+#EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NAT-GEO-WILD" group-title="Documentales", National Geographic Wild (TvPremiunD)
 http://tvpremiund.ddns.me:2082/stellar269/johatemu269/2692
-#EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NAT-GEO-WILD" group-title="StreamProstk", National Geographic Wild
+#EXTINF:-1 tvg-id="National.Geographic.Wild.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NAT-GEO-WILD" group-title="Documentales", National Geographic Wild (StreamProstk)
 http://streamprostk.com:2082/zcenter57/10072019/2692
 
-#EXTINF:-1 tvg-id="Crime.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/AMC-CRIME" group-title="Telegram", Crime
+#EXTINF:-1 tvg-id="Crime.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/AMC-CRIME" group-title="Documentales", AMC Crime (m3u8)
 http://172.93.102.112:8989/278866_.m3u8
-#EXTINF:-1 tvg-id="Crime.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/AMC-CRIME" group-title="PgRaceFuaApi", Crime
+#EXTINF:-1 tvg-id="Crime.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/AMC-CRIME" group-title="Documentales", AMC Crime (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/25927
 
-#EXTINF:-1 tvg-id="Discovery.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_white,c_pad,w_405,q_auto,f_auto/bo_20px_solid_white/Canales/Discovery_Channel_-_Logo" group-title="Telegram", Discovery
+#EXTINF:-1 tvg-id="Discovery.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_white,c_pad,w_405,q_auto,f_auto/bo_20px_solid_white/Canales/Discovery_Channel_-_Logo" group-title="Documentales", Discovery (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/05594
-#EXTINF:-1 tvg-id="Discovery.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_white,c_pad,w_405,q_auto,f_auto/bo_20px_solid_white/Canales/Discovery_Channel_-_Logo" group-title="PgRaceFuaApi", Discovery
-http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5594
 
-
-#EXTINF:-1 tvg-id="Historia.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Historia" group-title="PgRaceFuaApi", Historia
+#EXTINF:-1 tvg-id="Historia.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Historia" group-title="Documentales", Historia (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5618
 
-#EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/1RFEF" group-title="SOLO EVENTOS", Canal 1 [1RFEF]
+#EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/1RFEF" group-title="LaLiga", Canal 1 [1RFEF]
 http://127.0.0.1:6878/ace/getstream?id=c1ee6e1e0ef5928d8261f855c417de21794f437d
-#EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/1RFEF" group-title="NEW ERA", Canal 1 [1RFEF] (FHD)
+#EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/1RFEF" group-title="LaLiga", Canal 1 [1RFEF]
 http://127.0.0.1:6878/ace/getstream?id=599a2fda91aa55703e2c5a51562d9dbf5d3d31d9
-#EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/1RFEF" group-title="NEW ERA VI", Canal 1 [1RFEF] (FHD)
+#EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/1RFEF" group-title="LaLiga", Canal 1 [1RFEF]
 http://127.0.0.1:6878/ace/getstream?id=b40212c43e96e97542ea00f2129212a054853a57
-#EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/1RFEF" group-title="SOLO EVENTOS", Canal 1 [1RFEF]
+#EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/1RFEF" group-title="LaLiga", Canal 1 [1RFEF]
 http://127.0.0.1:6878/ace/getstream?id=0a56c3f215071f5d21a71e6dca8383aa64eb9b2f
-#EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/1RFEF" group-title="NEW ERA VI", Canal 1 [1RFEF] (FHD)
+#EXTINF:-1 tvg-id="Canal.1.1RFEF" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/1RFEF" group-title="LaLiga", Canal 1 [1RFEF]
 http://127.0.0.1:6878/ace/getstream?id=b40212c43e96e97542ea00f2129212a054853a57
 
-#EXTINF:-1 tvg-id="Canal.2.1RFEF" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/1RFEF-logo" group-title="SOLO EVENTOS", Canal 2 [1RFEF]
+#EXTINF:-1 tvg-id="Canal.2.1RFEF" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/1RFEF-logo" group-title="LaLiga", Canal 2 [1RFEF]
 http://127.0.0.1:6878/ace/getstream?id=8677d339ecddd75165c0015025f598b6215974cf
 
-# https://stremio.shickat.me/Images/Channels/GOLF.jpg
-#EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/GOLF" group-title="Telegram", M+ Liga Golf (720)
+#EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/GOLF" group-title="Deportes", M+ Liga Golf (m3u8)
 http://172.93.102.112:8989/278851_.m3u8
-#EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://stremio.shickat.me/Images/Channels/GOLF.jpg" group-title="VLC", M+ Liga Golf
+#EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/GOLF" group-title="Deportes", M+ Liga Golf (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=9ed46050217ee6ed8236a64b72d7992f7b3b37f2
-#EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://www.movistarplus.es/recorte/n/caratulaH/M1857850V3157130" group-title="NEW ERA", M+ Liga Golf (FHD)
-http://127.0.0.1:6878/ace/getstream?id=8546cff89e4ee8bf3ad31cf6457c3bc2c4341031
-#EXTINF:-1 tvg-id="Movistar.Golf.es" tvg-logo="https://i.ibb.co/Vp04N3pT/golf.png" group-title="NEW LOOP", M+ Liga Golf (HD)
-http://127.0.0.1:6878/ace/getstream?id=872608e734992db636eb79426802cd08f4029afb
 
-
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="Telegram", LaLiga Hypermotion (720)
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="LaLiga", LaLiga Hypermotion (720)
 http://172.93.102.112:8989/278842_.m3u8
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="Telegram", LaLiga Hypermotion (PgRaceFuaApi)
-http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5661
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="Telegram", LaLiga Hypermotion (PgRaceFuaApi)
-http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63369
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://cdn.sincroguia.tv/uploads/series/laliga-hypermotion-poster-1272157_V.jpg" group-title="Elcano.top", LaLiga Hypermotion (1080)
-http://127.0.0.1:6878/ace/getstream?id=87bb542f974b6b9e89d0f2e20ed6dc93426f4be0
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" group-title="Elcano.top", LaLiga Hypermotion (720)
-http://127.0.0.1:6878/ace/getstream?id=a4f072c9b614323ac1258a175f868a909ea3c8cd
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://i.ibb.co/CBdGc9f/hypermotion1.png" group-title="NEW ERA", LaLiga Hypermotion (FHD)
-http://127.0.0.1:6878/ace/getstream?id=fe289ab20d8f9dcb426fc6d56ce9dbbddb66e3b3
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://i.ibb.co/CBdGc9f/hypermotion1.png" group-title="NEW ERA II", LaLiga Hypermotion (FHD)
-http://127.0.0.1:6878/ace/getstream?id=83e8a605ffebe2062f15dad76b6ffe9486a28eb3
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://i.ibb.co/CBdGc9f/hypermotion1.png" group-title="ELCANO", LaLiga Hypermotion (FHD)
-http://127.0.0.1:6878/ace/getstream?id=b2706a7ffbea236a3b398139a3a606ada664c0eb
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://i.ibb.co/CBdGc9f/hypermotion1.png" group-title="ELCANO", LaLiga Hypermotion SD
-http://127.0.0.1:6878/ace/getstream?id=121f719ebb94193c6086ef92865cf9b197750980
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="PgRaceFuaApi", LaLiga Hypermotion (HD)
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="LaLiga", LaLiga Hypermotion (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/25128
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="PgRaceFuaApi", LaLiga Hypermotion (HD)
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="LaLiga", LaLiga Hypermotion (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58322
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="PgRaceFuaApi", LaLiga Hypermotion (FHD)
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="LaLiga", LaLiga Hypermotion (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63384
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="PgRaceFuaApi", LaLiga Hypermotion (FHD)
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="LaLiga", LaLiga Hypermotion (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63385
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="LaLiga", LaLiga Hypermotion (PgRaceFuaApi)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5661
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion" group-title="LaLiga", LaLiga Hypermotion (PgRaceFuaApi)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63369
 
-#https://i.ibb.co/GfMxrwWy/M-laliga-hypermotion2.png
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion2" group-title="Elcano.top", LaLiga Hypermotion 2 (1080)
-http://127.0.0.1:6878/ace/getstream?id=709075831bf5c41ed0a20dfbd640aab6c28971f8
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.2.es" tvg-logo="https://i.ibb.co/8K0VrQV/hypermotion2.png" group-title="ELCANO", LaLiga Hypermotion 2 (FHD)
-http://127.0.0.1:6878/ace/getstream?id=0cfdfde1b70623b8c210b0f7301be2a87456481d
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.2.es" tvg-logo="https://i.ibb.co/8K0VrQV/hypermotion2.png" group-title="ELCANO", LaLiga Hypermotion 2 SD
-http://127.0.0.1:6878/ace/getstream?id=0a335406bad0b658aeddb2d38f8c0614b2e5623a
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion2" group-title="Elcano.top", LaLiga Hypermotion 2 (HD)
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion2" group-title="LaLiga", LaLiga Hypermotion 2 (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63386
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion2" group-title="LaLiga", LaLiga Hypermotion 2 (Acestream)
+http://127.0.0.1:6878/ace/getstream?id=709075831bf5c41ed0a20dfbd640aab6c28971f8
 
-# https://i.ibb.co/PG79d2LF/M-laliga-hypermotion3.png
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.3.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion3" group-title="Elcano.top", LaLiga Hypermotion 3
-http://127.0.0.1:6878/ace/getstream?id=778d2f60bb7207addedcca0b9aed98f41529724e
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.3.es" tvg-logo="https://i.ibb.co/826y2Yv/Hypermotion3.png" group-title="ELCANO", LaLiga Hypermotion 3
-http://127.0.0.1:6878/ace/getstream?id=fefd45ed6ff415e05f1341b7d9da2988eacd13ea
-#EXTINF:-1 tvg-id="LaLiga.Hypermotion.3.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion3" group-title="Elcano.top", LaLiga Hypermotion 3
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.3.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion3" group-title="LaLiga", LaLiga Hypermotion 3 (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63387
+#EXTINF:-1 tvg-id="LaLiga.Hypermotion.3.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LaLiga_Hypermotion3" group-title="LaLiga", LaLiga Hypermotion 3 (Acestream)
+http://127.0.0.1:6878/ace/getstream?id=778d2f60bb7207addedcca0b9aed98f41529724e
 
-#EXTINF:-1 tvg-id="NBA.us" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NBA" group-title="NEW ERA", NBA TV
+#EXTINF:-1 tvg-id="NBA.us" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NBA" group-title="NBA", NBA TV (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=b0f64a40f333ef5cc02c2b6d4a8c3f4b73dd8073
-#EXTINF:-1 tvg-id="NBA.us" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NBA" group-title="NEW ERA", NBA TV
+#EXTINF:-1 tvg-id="NBA.us" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NBA" group-title="NBA", NBA TV (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=b0f64a40f333ef5cc02c2b6d4a8c3f4b73dd8073
 
-#EXTINF:-1 tvg-id="Canal.Tenis.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/Canal_tenis" group-title="SPORT TV", Canal de Tenis (HD)
+#EXTINF:-1 tvg-id="Canal.Tenis.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/Canal_tenis" group-title="Deportes", Canal de Tenis (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=039fae21c9e7e5214d3d898cba80863e37e623ac
-#EXTINF:-1 tvg-id="Canal.Tenis.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/Canal_tenis" group-title="SPORT TV", Canal de Tenis (HD)
+#EXTINF:-1 tvg-id="Canal.Tenis.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/Canal_tenis" group-title="Deportes", Canal de Tenis (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=039fae21c9e7e5214d3d898cba80863e37e623ac
 
-# https://m.media-amazon.com/images/M/MV5BODU5ZTc3MjctNDE1My00OTkyLTkxYjMtNWU4NGJhNTcyZjc4XkEyXkFqcGc@._V1_QL75_UX190_CR0,2,190,281_.jpg
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="Elcano.top", DAZN F1 (1080)
-http://127.0.0.1:6878/ace/getstream?id=b08e158ea3f5c72084f5ff8e3c30ca2e4d1ff6d1
-#EXTINF:-1 tvg-id="DAZN.F1.es" group-title="Elcano.top", DAZN F1 (1080) (Opcion 2)
-http://127.0.0.1:6878/ace/getstream?id=bcf9dc38f92e90a71b87bd54b3bac91b76d09a69
-#EXTINF:-1 tvg-id="DAZN.F1.es" group-title="Elcano.top", DAZN F1 (1080) (Opcion 3)
-http://127.0.0.1:6878/ace/getstream?id=fd53cfa7055fe458d4f5c0ff59a06cd43723be55
-#EXTINF:-1 tvg-id="DAZN.F1.es" group-title="Elcano.top", DAZN F1 (720)
-http://127.0.0.1:6878/ace/getstream?id=ed6188dcbb491efeb2092c1a6199226c27f61727
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://i.ibb.co/2Ndmtbp/f1.png" group-title="NEW ERA", DAZN F1 (FHD)
-http://127.0.0.1:6878/ace/getstream?id=6422e8bc34282871634c81947be093c04ad1bb29
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://i.ibb.co/2Ndmtbp/f1.png" group-title="NEW ERA", DAZN F1 (FHD) (Opcion 2)
-http://127.0.0.1:6878/ace/getstream?id=c9c18ae7a9dafba1caae5beb22060f9c92bba553
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://i.ibb.co/2Ndmtbp/f1.png" group-title="NEW ERA", DAZN F1 (FHD) (Opcion 3)
-http://127.0.0.1:6878/ace/getstream?id=515efd8115482bda8d92aa6df9a882a5e5797494
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://i.ibb.co/2Ndmtbp/f1.png" group-title="NEW ERA", DAZN F1 (FHD) (Opcion 4)
-http://127.0.0.1:6878/ace/getstream?id=d27584ebe5128c8033cb6fdc806a994fbd17b790
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://i.ibb.co/2Ndmtbp/f1.png" group-title="NEW ERA II", DAZN F1 (FHD)
-http://127.0.0.1:6878/ace/getstream?id=d8068894248c1f21eea31e538917276a8c49ec06
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://i.ibb.co/2Ndmtbp/f1.png" group-title="ELCANO", DAZN F1 (FHD)
-http://127.0.0.1:6878/ace/getstream?id=d6281d4e6310269b416180442a470d23a4a99dc9
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://i.ibb.co/2Ndmtbp/f1.png" group-title="ELCANO", DAZN F1 (FHD) (Opcion 2)
-http://127.0.0.1:6878/ace/getstream?id=2c6e4c897661e6b0257bfe931b66d20b2ec763b6
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://i.ibb.co/2Ndmtbp/f1.png" group-title="ELCANO", DAZN F1 (FHD) (Opcion 3)
-http://127.0.0.1:6878/ace/getstream?id=71eef80158aa8b37f3dc59f6793c6696df9a2dfa
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://i.ibb.co/2Ndmtbp/f1.png" group-title="ELCANO", DAZN F1 (SD)
-http://127.0.0.1:6878/ace/getstream?id=268289e7a3c5209960b53b4d43c8c65fab294b85
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="PgRaceFuaApi", DAZN F1
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="Deportes", DAZN F1 (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58316
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="PgRaceFuaApi", DAZN F1 (HD)
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="Deportes", DAZN F1 (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57485
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="PgRaceFuaApi", DAZN F1 (HD)
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="Deportes", DAZN F1 (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57484
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="PgRaceFuaApi", DAZN F1 (FHD)
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="Deportes", DAZN F1 (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57486
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="PgRaceFuaApi", DAZN F1 (FHD)
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="Deportes", DAZN F1 (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57483
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="PgRaceFuaApi", DAZN F1 (HD)
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="Deportes", DAZN F1 (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63376
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="PgRaceFuaApi", DAZN F1 (HD)
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="Deportes", DAZN F1 (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63377
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="PgRaceFuaApi", DAZN F1 (FHD)
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="Deportes", DAZN F1 (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63378
-#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="PgRaceFuaApi", DAZN F1 (FHD)
+#EXTINF:-1 tvg-id="DAZN.F1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN_F1" group-title="Deportes", DAZN F1 (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63379
 
-#EXTINF:-1 tvg-id="beIN.SPORTS.1.fr" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/BEIN_SPORTS1_FR" group-title="NEW ERA", BEIN SPORTS 1 [FR] (FHD)
+#EXTINF:-1 tvg-id="beIN.SPORTS.1.fr" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/BEIN_SPORTS1_FR" group-title="Deportes", BEIN SPORTS 1 [FR] (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=eb882a774ddf9f4cf83f3d50fc9a8d3c629f6659
 
-#EXTINF:-1 tvg-id="beIN.SPORTS.2.fr" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/BEIN_SPORTS2_FR" group-title="NEW ERA", BEIN SPORTS 2 [FR] (FHD)
+#EXTINF:-1 tvg-id="beIN.SPORTS.2.fr" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/BEIN_SPORTS2_FR" group-title="Deportes", BEIN SPORTS 2 [FR] (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=c1fb3fd5e4a6b6c6d4a463834841f1d66518d061
 
-#EXTINF:-1 tvg-id="beIN.SPORTS.3.fr" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/BEIN_SPORTS3_FR" group-title="NEW ERA", BEIN SPORTS 3 [FR] (FHD)
+#EXTINF:-1 tvg-id="beIN.SPORTS.3.fr" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/BEIN_SPORTS3_FR" group-title="Deportes", BEIN SPORTS 3 [FR] (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=ea6dd2fbd792fe4fb5d372f5d8b84d03792e6e7a
 
-#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/M-Copa_del_Rey" group-title="NEW ERA", M+ Copa del Rey (FHD)
+#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/M-Copa_del_Rey" group-title="LaLiga", M+ Copa del Rey (PgRaceFuaApi)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63418
+#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/M-Copa_del_Rey" group-title="LaLiga", M+ Copa del Rey (PgRaceFuaApi)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63418
+#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/M-Copa_del_Rey" group-title="LaLiga", M+ Copa del Rey (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=28205d7c9776b96a1f479c9082e80bd1e18f5afd
-#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://i.ibb.co/m54QH9Gt/copa.png" group-title="NEW ERA", M+ Copa del Rey
+#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/M-Copa_del_Rey" group-title="LaLiga", M+ Copa del Rey (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=4b9f813f30b4345fe555f9e218d828d76cd6ee88
-#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://i.ibb.co/m54QH9Gt/copa.png" group-title="NEW ERA", M+ Copa del Rey
+#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/M-Copa_del_Rey" group-title="LaLiga", M+ Copa del Rey (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=63ad519ec9602ea12f7867cf15914b2537bbf04a
-#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://i.ibb.co/m54QH9Gt/copa.png" group-title="ELCANO", M+ Copa del Rey
+#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/M-Copa_del_Rey" group-title="LaLiga", M+ Copa del Rey (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=b51f2d9a15b6956a44385b6be531bcabeb099d9d
-#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/M-Copa_del_Rey" group-title="PgRaceFuaApi", M+ Copa del Rey
-http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63418
-#EXTINF:-1 tvg-id="Movistar.Copa.del.Rey.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/M-Copa_del_Rey" group-title="PgRaceFuaApi", M+ Copa del Rey
-http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63418
 
-#EXTINF:-1 tvg-id="DAZN.2.BAR.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN2_BAR" group-title="NEW ERA", DAZN 2 BAR (FHD)
+#EXTINF:-1 tvg-id="DAZN.2.BAR.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN2_BAR" group-title="Deportes", DAZN 2 BAR (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=2f9211669499f413dab1a490198afab2a9b4b57c
 
-#EXTINF:-1 tvg-id="DAZN.4.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN4" group-title="NEW ERA", DAZN 4 (FHD)
+#EXTINF:-1 tvg-id="DAZN.4.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN4" group-title="Deportes", DAZN 4 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=7e27e46c25d4308d16098d9dc67fcd8736e8c1f0
-#EXTINF:-1 tvg-id="DAZN.4.es" tvg-logo="https://i.ibb.co/R4LBVWP/dazn4.png" group-title="NEW ERA", DAZN 4 (FHD) (Opcion 2)
+#EXTINF:-1 tvg-id="DAZN.4.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/DAZN4" group-title="Deportes", DAZN 4 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=75306ac6ffbe33b08c5c28487674f75f012c7f50
 
-#EXTINF:-1 tvg-id="DAZN.EVENTOS.1.es" tvg-logo="https://i.ibb.co/FVzKq1y/dazn1.png" group-title="NEW ERA", DAZN EVENTOS 1
-http://127.0.0.1:6878/ace/getstream?id=176f0b8565a161f87c81a4a250463e3eaf678fb5
-
-#EXTINF:-1 tvg-id="DAZN.EVENTOS.2.es" tvg-logo="https://i.ibb.co/Kz0GXSX/dazn2.png" group-title="NEW ERA", DAZN EVENTOS 2
-http://127.0.0.1:6878/ace/getstream?id=8bdeb6055da0be3bd1e1977dbf3640408f7d0267
-
-#EXTINF:-1 tvg-id="DAZN.EVENTOS.3.es" tvg-logo="https://i.ibb.co/2vkThM3/dazn3.png" group-title="NEW ERA", DAZN EVENTOS 3
-http://127.0.0.1:6878/ace/getstream?id=4b048bcfaed7daec454e88f0e29b56756300447d
-
-#EXTINF:-1 tvg-id="GOL.PLAY.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/GOL_PLAY" group-title="Telegram", GOL PLAY
+#EXTINF:-1 tvg-id="GOL.PLAY.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/GOL_PLAY" group-title="Deportes", GOL PLAY (m3u8)
 http://172.93.102.112:8989/278838_.m3u8
-#EXTINF:-1 tvg-id="GOL.PLAY.es" tvg-logo="https://assets.laliga.com/assets/2023/07/13/medium/60e1502d7d6098162828bb002e98bdb4.png" group-title="NEW ERA", GOL PLAY (FHD)
-http://127.0.0.1:6878/ace/getstream?id=b2d560741c006fc5e4a42412bb52dbd25a6a4a3a
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.5.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES5" group-title="Elcano.top", M+ Liga Liga de Campeones 5 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.5.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES5" group-title="Liga de Campeones", M+ Liga Liga de Campeones 5 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=5620c0ce3dcbf14a6375cb2c2d681207f45eb97d
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.5.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%205.png" group-title="NEW ERA", M+ Liga Liga de Campeones 5 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.5.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES5" group-title="Liga de Campeones", M+ Liga Liga de Campeones 5 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=cb6410a6355a645cfc6f6f5a7c7d71298fcbc2c5
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.5.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones%205.png" group-title="NEW ERA", M+ Liga Liga de Campeones 5 (FHD) (Opcion 2)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.5.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES5" group-title="Liga de Campeones", M+ Liga Liga de Campeones 5 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=d2cf12b65c8a540a50bd74c3db1ce59ae8d05623
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.6.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES6" group-title="NEW ERA", M+ Liga Liga de Campeones 6 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.6.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES6" group-title="Liga de Campeones", M+ Liga Liga de Campeones 6 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=976983697790ab8a07b764b08843529d38bc6444
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.7.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES7" group-title="NEW ERA", M+ Liga Liga de Campeones 7 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.7.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES7" group-title="Liga de Campeones", M+ Liga Liga de Campeones 7 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=83c02982581a536d1321e38a77dc0c520b1cb842
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.8.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES8" group-title="NEW ERA", M+ Liga Liga de Campeones 8 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.8.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES8" group-title="Liga de Campeones", M+ Liga Liga de Campeones 8 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=97f8a84212fe6b3d2ab15aadc83c7b5e6af656c9
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.9.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES9" group-title="NEW ERA", M+ Liga Liga de Campeones 9 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.9.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES9" group-title="Liga de Campeones", M+ Liga Liga de Campeones 9 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=80abcb38122c25fefb4dffeb57086998447ff49b
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.10.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES10" group-title="NEW ERA", M+ Liga Liga de Campeones 10 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.10.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES10" group-title="Liga de Campeones", M+ Liga Liga de Campeones 10 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=0103373118989085dd0d02667c629ee36d462cb1
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.11.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES11" group-title="NEW ERA", M+ Liga Liga de Campeones 11 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.11.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES11" group-title="Liga de Campeones", M+ Liga Liga de Campeones 11 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=6e12a5849a4edea248ed9c8689e58bd66fc9f8fa
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.12.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES12" group-title="NEW ERA", M+ Liga Liga de Campeones 12 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.12.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES12" group-title="Liga de Campeones", M+ Liga Liga de Campeones 12 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=130d37f9a68bd8f29f0d636dcde522a1e91d1cb7
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.13.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES13" group-title="NEW ERA", M+ Liga Liga de Campeones 13 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.13.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES13" group-title="Liga de Campeones", M+ Liga Liga de Campeones 13 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=9c246c5e6a153ba2b765e4b84f4d50e0836b3556
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.14.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES14" group-title="NEW ERA", M+ Liga Liga de Campeones 14 (SD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.14.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES14" group-title="Liga de Campeones", M+ Liga Liga de Campeones 14 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=773ef9e2d2feb4f80ef558b253c72fda8d8e53cf
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.15.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES15" group-title="NEW ERA", M+ Liga Liga de Campeones 15 (SD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.15.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES15" group-title="Liga de Campeones", M+ Liga Liga de Campeones 15 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=47ce8fe15adfcf4e1749b0c0dee1fc79a3d5ca6d
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.16.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES16" group-title="NEW ERA", M+ Liga Liga de Campeones 16 (SD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.16.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES16" group-title="Liga de Campeones", M+ Liga Liga de Campeones 16 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=348cc65d5cbd5a77da0fe006ce97eff6ad72b9da
 
-#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.17.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES17" group-title="NEW ERA", M+ Liga Liga de Campeones 17 (SD)
+#EXTINF:-1 tvg-id="Movistar.Liga.de.Campeones.17.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LIGADECAMPEONES17" group-title="Liga de Campeones", M+ Liga Liga de Campeones 17 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=a15a132ffe7867a2b61b49617df39a8309cce27c
 
-# https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/M-LALIGA4-black.jpg
-#EXTINF:-1 tvg-id="Movistar.LaLiga.4.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/M-LALIGA4-black" group-title="NEW ERA", M+ Liga LaLiga 4 (FHD)
+#EXTINF:-1 tvg-id="Movistar.LaLiga.4.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/M-LALIGA4-black" group-title="LaLiga", M+ Liga LaLiga 4 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=68697ea4f261289d97bbc3418ad3cbc4180aa32f
 
-#EXTINF:-1 tvg-id="Movistar.Ellas.Vamos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/Vamos_ellas" group-title="NEW ERA", M+ Liga Ellas Vamos (FHD)
-http://127.0.0.1:6878/ace/getstream?id=9b84af74b2fa3690c519199326fc2f181b025cdd
-#EXTINF:-1 tvg-id="Movistar.Ellas.Vamos.es" tvg-logo="https://i.ibb.co/rx9hnHz/ellas.png" group-title="NEW ERA II", M+ Liga Ellas Vamos (FHD)
-http://127.0.0.1:6878/ace/getstream?id=ab0d8baaf889017c5e87b2e484203a359585c9dc
-#EXTINF:-1 tvg-id="Movistar.Ellas.Vamos.es" tvg-logo="https://i.ibb.co/rx9hnHz/ellas.png" group-title="ELCANO", M+ Liga Ellas Vamos
-http://127.0.0.1:6878/ace/getstream?id=d8c2ed470e847154a88f011137cc206319f6bed5
-#EXTINF:-1 tvg-id="Movistar.Ellas.Vamos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/Vamos_ellas" group-title="PgRaceFuaApi", M+ Liga Ellas Vamos
+#EXTINF:-1 tvg-id="Movistar.Ellas.Vamos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/Vamos_ellas" group-title="Deportes", M+ Liga Ellas Vamos (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/29333
+#EXTINF:-1 tvg-id="Movistar.Ellas.Vamos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/Vamos_ellas" group-title="Deportes", M+ Liga Ellas Vamos (Acestream)
+http://127.0.0.1:6878/ace/getstream?id=9b84af74b2fa3690c519199326fc2f181b025cdd
+#EXTINF:-1 tvg-id="Movistar.Ellas.Vamos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/Vamos_ellas" group-title="Deportes", M+ Liga Ellas Vamos (Acestream)
+http://127.0.0.1:6878/ace/getstream?id=ab0d8baaf889017c5e87b2e484203a359585c9dc
+#EXTINF:-1 tvg-id="Movistar.Ellas.Vamos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/Vamos_ellas" group-title="Deportes", M+ Liga Ellas Vamos (Acestream)
+http://127.0.0.1:6878/ace/getstream?id=d8c2ed470e847154a88f011137cc206319f6bed5
 
-# https://i.ibb.co/BHXHhN2b/M-Golf-2.png
-#EXTINF:-1 tvg-id="Movistar.Golf.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/GOLF2" group-title="NEW ERA", M+ Liga Golf 2 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Golf.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/Canales/GOLF2" group-title="Deportes", M+ Liga Golf 2 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=96e82321c731e41768a806992ee4d3b9b7a0e7d7
 
-#EXTINF:-1 tvg-id="Movistar.Plus.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Movistar_PLUS2" group-title="Telegram", M+ Liga Plus 2
+#EXTINF:-1 tvg-id="Movistar.Plus.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Movistar_PLUS2" group-title="Deportes", M+ Plus 2 (m3u8)
 http://172.93.102.112:8989/278851_.m3u8
-#EXTINF:-1 tvg-id="Movistar.Plus.2.es" tvg-logo="https://i.ibb.co/gL8rx1B7/plus2.png" group-title="NEW ERA", M+ Liga Plus 2 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Plus.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Movistar_PLUS2" group-title="Deportes", M+ Plus 2 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=fbc39d8a9e5d7c9ac6a1438d440104620f54e09c
 
-# https://www.tvlogo.org/spain/deportes-4-por-movistar-plus-es.png
-#EXTINF:-1 tvg-id="Movistar.Deportes.4.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/M_Deportes4" group-title="Elcano.top", M+ Liga Deportes 4 (1080)
+#EXTINF:-1 tvg-id="Movistar.Deportes.4.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/M_Deportes4" group-title="Deportes", M+ Deportes 4 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=b40e1de2dcbd7c665f54877b14c830ed67b32a96
-#EXTINF:-1 tvg-id="Movistar.Deportes.4.es" tvg-logo="https://i.ibb.co/WDN9NN9/deportes4.png" group-title="NEW ERA", M+ Liga Deportes 4 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Deportes.4.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/M_Deportes4" group-title="Deportes", M+ Deportes 4 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=58a4c880ab18486d914751db32a12760e74b75a4
 
-#EXTINF:-1 tvg-id="Movistar.Deportes.5.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/M_Deportes5" group-title="Elcano.top", M+ Liga Deportes 5 (1080)
+#EXTINF:-1 tvg-id="Movistar.Deportes.5.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/M_Deportes5" group-title="Deportes", M+ Deportes 5 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=7b361369a40046ad3011086f9d4ae2982fb4d5aa
-#EXTINF:-1 tvg-id="Movistar.Deportes.5.es" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/spain/deportes-5-por-movistar-plus-es.png" group-title="NEW ERA", M+ Liga Deportes 5 (HD)
+#EXTINF:-1 tvg-id="Movistar.Deportes.5.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/M_Deportes5" group-title="Deportes", M+ Deportes 5 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=f6961e0dbf9b6ede4f5be93b72dc15533b4063d4
-#EXTINF:-1 tvg-id="Movistar.Deportes.5.es" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/spain/deportes-5-por-movistar-plus-es.png" group-title="NEW ERA II", M+ Liga Deportes 5 (FHD)
+#EXTINF:-1 tvg-id="Movistar.Deportes.5.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/M_Deportes5" group-title="Deportes", M+ Deportes 5 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=fcc0fd75bf1dba40b108fcf0d3514e0e549bfbac
 
-#EXTINF:-1 tvg-id="Movistar.Deportes.6.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/M_Deportes6" group-title="ELCANO", M+ Liga Deportes 6
+#EXTINF:-1 tvg-id="Movistar.Deportes.6.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/M_Deportes6" group-title="Deportes", M+ Deportes 6 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=cc5782d37ae6b6e0bab396dd64074982d0879046
 
-#EXTINF:-1 tvg-id="Movistar.Deportes.7.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/M_Deportes7" group-title="ELCANO", M+ Liga Deportes 7
+#EXTINF:-1 tvg-id="Movistar.Deportes.7.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/M_Deportes7" group-title="Deportes", M+ Deportes 7 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=070f82d6443a52962d6a2ed9954c979b29404932
 
-#EXTINF:-1 tvg-id="AutomotorSport" tvg-logo="https://seeklogo.com/images/A/Automotor-logo-D99B43248F-seeklogo.com.gif" group-title="NEW LOOP", AUTOMOTORSPORT (HD)
-http://127.0.0.1:6878/ace/getstream?id=610993aea3a2bfd509594334b7461ce96900f54c
-
-#EXTINF:-1 tvg-id="beIN.SPORTS.XTRA.ñ" tvg-logo="https://upload.wikimedia.org/wikipedia/en/thumb/8/8f/Bein_Sport_en_espa%C3%B1ol_logo.svg/320px-Bein_Sport_en_espa%C3%B1ol_logo.svg.png" group-title="NEW LOOP", BEIN SPORTS Ñ
+#EXTINF:-1 tvg-id="beIN.SPORTS.XTRA.ñ" tvg-logo="https://upload.wikimedia.org/wikipedia/en/thumb/8/8f/Bein_Sport_en_espa%C3%B1ol_logo.svg/320px-Bein_Sport_en_espa%C3%B1ol_logo.svg.png" group-title="Deportes", BEIN SPORTS Ñ (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=4922d8414b6d96bcdd36e99483a7077f484b6f71
-#EXTINF:-1 tvg-id="beIN.SPORTS.XTRA.ñ" tvg-logo="https://upload.wikimedia.org/wikipedia/en/thumb/8/8f/Bein_Sport_en_espa%C3%B1ol_logo.svg/320px-Bein_Sport_en_espa%C3%B1ol_logo.svg.png" group-title="NEW LOOP", BEIN SPORTS Ñ (Opcion 2)
+#EXTINF:-1 tvg-id="beIN.SPORTS.XTRA.ñ" tvg-logo="https://upload.wikimedia.org/wikipedia/en/thumb/8/8f/Bein_Sport_en_espa%C3%B1ol_logo.svg/320px-Bein_Sport_en_espa%C3%B1ol_logo.svg.png" group-title="Deportes", BEIN SPORTS Ñ (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=e8e459656f964f601ad4bcda8b81a43ba41c68f9
 
-#EXTINF:-1 tvg-id="TNT.Sports.1.uk" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/TNT%20Sports%201.png" group-title="NEW LOOP", BT Sport 1 [UK]
+#EXTINF:-1 tvg-id="TNT.Sports.1.uk" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/TNT%20Sports%201.png" group-title="UK", BT Sport 1 [UK]
 http://127.0.0.1:6878/ace/getstream?id=fc5089d8e1519872fdf951779ccbca913acc9bce
-#EXTINF:-1 tvg-id="TNT.Sports.1.uk" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/TNT%20Sports%201.png" group-title="NEW LOOP", BT Sport 1 [UK] (Opcion 2)
+#EXTINF:-1 tvg-id="TNT.Sports.1.uk" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/TNT%20Sports%201.png" group-title="UK", BT Sport 1 [UK] (Opcion 2)
 http://127.0.0.1:6878/ace/getstream?id=efc60cfe5e3a349baa02bcc49f6647c21a9c3c5b
 
-#EXTINF:-1 tvg-id="TNT.Sports.2.uk" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/TNT%20Sports%202.png" group-title="NEW LOOP", BT Sport 2 [UK]
+#EXTINF:-1 tvg-id="TNT.Sports.2.uk" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/TNT%20Sports%202.png" group-title="UK", BT Sport 2 [UK]
 http://127.0.0.1:6878/ace/getstream?id=d63d8a57cf471394bfa9f619bbd68b01ae27a801
 
-#EXTINF:-1 tvg-id="TNT.Sports.3.uk" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/TNT%20Sports%203.png" group-title="NEW LOOP", BT Sport 3 [UK]
+#EXTINF:-1 tvg-id="TNT.Sports.3.uk" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/TNT%20Sports%203.png" group-title="UK", BT Sport 3 [UK]
 http://127.0.0.1:6878/ace/getstream?id=5f966c123759de46dff29c379266b7a403452033
 
-#EXTINF:-1 tvg-id="Canal.Motor" tvg-logo="https://www.cxtv.com.br/img/Tvs/Logo/webp-l/3ee9eef4eb12ec1b3e26049e79a43606.webp" group-title="NEW LOOP", CANAL MOTOR
-http://127.0.0.1:6878/ace/getstream?id=35e17cc84abc5e393b5acd688536a9681105f2d5
-
-#EXTINF:-1 tvg-id="DAZN.1.pt" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/DAZN%201.png" group-title="NEW LOOP", ELEVEN DAZN 1
-http://127.0.0.1:6878/ace/getstream?id=36cad67fed5a739757a9db844a551aa845a8d51b
-
-#EXTINF:-1 tvg-id="DAZN.3.pt" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/DAZN%203.png" group-title="NEW LOOP", ELEVEN DAZN 3
-http://127.0.0.1:6878/ace/getstream?id=dae7d1251f069516cc0a9c8f15f6639d2a17df1e
-
-#EXTINF:-1 tvg-id="DAZN.4.pt" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/DAZN%204.png" group-title="NEW LOOP", ELEVEN DAZN 4
-http://127.0.0.1:6878/ace/getstream?id=0f32c0131a2d9444996410801f4e18b04384db98
-
-#EXTINF:-1 tvg-id="DAZN.5.pt" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/DAZN%205.png" group-title="NEW LOOP", ELEVEN DAZN 5
-http://127.0.0.1:6878/ace/getstream?id=4dbe63b44fc4f439f5b634c0d2aa7e0cccad808a
-
-#EXTINF:-1 tvg-id="DAZN.6.pt" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/DAZN%206.png" group-title="NEW LOOP", ELEVEN DAZN 6
-http://127.0.0.1:6878/ace/getstream?id=50b6d2b5fd59fefb9f4fd2176994d418f2b94a80
-
-#EXTINF:-1 tvg-id="Motors.TV" tvg-logo="https://www.mxgp.com/sites/default/files/news/image/logo%20Motors%20TV.jpg" group-title="NEW LOOP", MOTORS TV HD
-http://127.0.0.1:6878/ace/getstream?id=442aeb6643b8836f9d00361c9e48eeb0841ddf98
-
-#EXTINF:-1 tvg-id="Premier.Sports.1.uk" tvg-logo="https://i.ibb.co/10xGrD4/Premier1.png" group-title="NEW LOOP", PREMIER SPORTS 1 [UK]
+#EXTINF:-1 tvg-id="Premier.Sports.1.uk" tvg-logo="https://i.ibb.co/10xGrD4/Premier1.png" group-title="UK", PREMIER SPORTS 1 [UK]
 http://127.0.0.1:6878/ace/getstream?id=75a56863b6fe0407ad4305b4d7ee5643c3923565
 
-#EXTINF:-1 tvg-id="Sky.Sport.Arena.uk" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Sky_Sport_Arena_logo2" group-title="SPORT TV", SKY SPORTS ARENA [UK]
+#EXTINF:-1 tvg-id="Sky.Sport.Arena.uk" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Sky_Sport_Arena_logo2" group-title="UK", SKY SPORTS ARENA [UK]
 http://127.0.0.1:6878/ace/getstream?id=d317a003e8047da2c36a2a2bb2289578c9a3b79c
-#EXTINF:-1 tvg-id="Sky.Sport.Arena.uk" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Sky_Sport_Arena_logo" group-title="SPORT TV", SKY SPORTS ARENA [UK]
+#EXTINF:-1 tvg-id="Sky.Sport.Arena.uk" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Sky_Sport_Arena_logo" group-title="UK", SKY SPORTS ARENA [UK]
 http://127.0.0.1:6878/ace/getstream?id=d317a003e8047da2c36a2a2bb2289578c9a3b79c
 
-#EXTINF:-1 tvg-id="Sky.Sport.Football.uk" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Sky_Sports_Football" group-title="NEW LOOP", SKY SPORTS FOOTBALL [UK]
+#EXTINF:-1 tvg-id="Sky.Sport.Football.uk" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Sky_Sports_Football" group-title="UK", SKY SPORTS FOOTBALL [UK]
 http://127.0.0.1:6878/ace/getstream?id=8dbe2d515e9131fa311353537736f8c94be9b26d
 
-#EXTINF:-1 tvg-id="Sky.Sport.Main.Event.uk" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Sky_Sports_Main_event" group-title="SPORT TV", SKY SPORTS MAIN EVENT [UK]
+#EXTINF:-1 tvg-id="Sky.Sport.Main.Event.uk" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Sky_Sports_Main_event" group-title="UK", SKY SPORTS MAIN EVENT [UK]
 http://127.0.0.1:6878/ace/getstream?id=eab7aeef0218ce8b0752e596e4792b69eda4df5e
-#EXTINF:-1 tvg-id="Sky.Sport.Main.Event.uk" tvg-logo="https://i.ibb.co/gwCk7Bc/sky-m-event-uhd.png" group-title="A1xmedia UHD | 4K",UK: Sky Sports Main Event (UHD)
+#EXTINF:-1 tvg-id="Sky.Sport.Main.Event.uk" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,q_auto,f_auto/bo_10px_solid_black/Canales/Sky_Sports_Main_event" group-title="UK", SKY SPORTS MAIN EVENT [UK]
 https://a1xs.vip/2000015
 
-#EXTINF:-1 tvg-id="Ziggo.Sport.nl" tvg-logo="https://tvgidsassets.nl/v354/img/channels/120x120/99.png" group-title="NEW LOOP", ZIGGO SPORT
-http://127.0.0.1:6878/ace/getstream?id=fcd7621df513f600652b4813d5d8fd1daed60058
-
-#EXTINF:-1 tvg-id="Ziggo.Sport.2.nl" tvg-logo="https://tvgidsassets.nl/v354/img/channels/120x120/474.png" group-title="NEW LOOP", ZIGGO SPORT 2
-http://127.0.0.1:6878/ace/getstream?id=868a6187d6aeec65ded84bd777814c9f7b7a9027
-
-#EXTINF:-1 tvg-id="Ziggo.Sport.6.nl" tvg-logo="https://tvgidsassets.nl/v354/img/channels/120x120/419.png" group-title="NEW LOOP", ZIGGO SPORT 6
-http://127.0.0.1:6878/ace/getstream?id=9231f38e71a85ad24b4c11a5e360992e30c916ed
-
-#EXTINF:-1 tvg-id="Mezzo.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Mezzo" group-title="EsWoaf", Mezzo
+#EXTINF:-1 tvg-id="Mezzo.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Mezzo" group-title="Musica", Mezzo (EsWoaf)
 http://eswoaf.top:8080/es5541757514441321/b740b3ca790f/316
 
-#EXTINF:-1 tvg-id="Mezzo.Live.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Mezzo_Live" group-title="PgRaceFuaApi", Mezzo Live
+#EXTINF:-1 tvg-id="Mezzo.Live.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Mezzo_Live" group-title="Musica", Mezzo Live (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5689
 
-#EXTINF:-1 tvg-id="Teledeporte.es" tvg-logo="https://graph.facebook.com/teledeporteRTVE/picture?width=200&height=200" group-title="Oficial",Teledeporte (1080)
+#EXTINF:-1 tvg-id="Teledeporte.es" tvg-logo="https://graph.facebook.com/teledeporteRTVE/picture?width=200&height=200" group-title="Deportes",Teledeporte (Oficial)
 https://d1cctoeg0n48w5.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-mnixw9wn5ugmv/TeledeporteES.m3u8
-#EXTINF:-1 tvg-id="Teledeporte.es" tvg-logo="https://graph.facebook.com/teledeporteRTVE/picture?width=200&height=200" group-title="Oficial",Teledeporte (720)
+#EXTINF:-1 tvg-id="Teledeporte.es" tvg-logo="https://graph.facebook.com/teledeporteRTVE/picture?width=200&height=200" group-title="Deportes",Teledeporte (Oficial)
 https://rtvelivestream.rtve.es/rtvesec/tdp/tdp_main.m3u8
-#EXTINF:-1 tvg-id="Teledeporte.es" tvg-logo="https://graph.facebook.com/teledeporteRTVE/picture?width=200&height=200" group-title="Oficial",Teledeporte (720)
+#EXTINF:-1 tvg-id="Teledeporte.es" tvg-logo="https://graph.facebook.com/teledeporteRTVE/picture?width=200&height=200" group-title="Deportes",Teledeporte (Oficial)
 https://ztnr.rtve.es/ztnr/1712295.m3u8
-#EXTINF:-1 tvg-id="Teledeporte.es" tvg-logo="https://graph.facebook.com/teledeporteRTVE/picture?width=200&height=200" group-title="Oficial",Teledeporte (720)
+#EXTINF:-1 tvg-id="Teledeporte.es" tvg-logo="https://graph.facebook.com/teledeporteRTVE/picture?width=200&height=200" group-title="Deportes",Teledeporte (m3u8)
 http://172.93.102.112:8989/278848_.m3u8
 
-# https://i.ibb.co/GfhZC1Fc/IMG-2340.jpg
-#EXTINF:-1 tvg-id="Esport3.cat" tvg-logo="https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/esport3" group-title="Oficial", Esport3 [Cataluña] (1080)
+#EXTINF:-1 tvg-id="Esport3.cat" tvg-logo="https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/esport3" group-title="Deportes", Esport3 [Cataluña] (Oficial)
 https://directes-tv-cat.3catdirectes.cat/live-origin/esport3-hls/master.m3u8
-#EXTINF:-1 tvg-id="Esport3.cat" tvg-logo="https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/esport3" group-title="Oficial", Esport3 [Cataluña] (1080)
+#EXTINF:-1 tvg-id="Esport3.cat" tvg-logo="https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/esport3" group-title="Deportes", Esport3 [Cataluña] (Oficial)
 https://directes-tv-es.3catdirectes.cat/live-origin/esport3-hls/master.m3u8
 
-#EXTINF:-1 tvg-id="TV3.cat" tvg-logo="https://pbs.twimg.com/profile_images/1269286508625891328/rVes9BS__200x200.png" group-title="Oficial", TV3 [Cataluña] (1080)
+#EXTINF:-1 tvg-id="TV3.cat" tvg-logo="https://pbs.twimg.com/profile_images/1269286508625891328/rVes9BS__200x200.png" group-title="Deportes", TV3 [Cataluña] (Oficial)
 https://directes3-tv-int.3catdirectes.cat/live-content/tvi-hls/master.m3u8
-#EXTINF:-1 tvg-id="TV3.cat" tvg-logo="https://pbs.twimg.com/profile_images/1269286508625891328/rVes9BS__200x200.png" group-title="Oficial", TV3 [Cataluña] (1080)
+#EXTINF:-1 tvg-id="TV3.cat" tvg-logo="https://pbs.twimg.com/profile_images/1269286508625891328/rVes9BS__200x200.png" group-title="Deportes", TV3 [Cataluña] (Oficial)
 https://directes3-tv-int.3catdirectes.cat/live-content/tvi-hls/bitrate_3.m3u8
 
-#EXTINF:-1 tvg-id="Aragon.TV.es" tvg-logo="https://graph.facebook.com/AragonTV/picture?width=200&height=200" group-title="Oficial", Aragón TV (720)
+#EXTINF:-1 tvg-id="Aragon.TV.es" tvg-logo="https://graph.facebook.com/AragonTV/picture?width=200&height=200" group-title="Deportes", Aragón TV (Oficial)
 https://cartv.streaming.aranova.es/hls/live/aragontv_canal1.m3u8
 
-#EXTINF:-1 tvg-id="TVG.Europa.gal" tvg-logo="https://graph.facebook.com/CRTVG/picture?width=200&height=200" group-title="Oficial", TVG Europa (720)
+#EXTINF:-1 tvg-id="TVG.Europa.gal" tvg-logo="https://graph.facebook.com/CRTVG/picture?width=200&height=200" group-title="Deportes", TVG Europa (Oficial)
 https://crtvg-europa.flumotion.cloud/playlist_dvr.m3u8
 
-#EXTINF:-1 tvg-id="TVG.2.gal" tvg-logo="https://graph.facebook.com/CRTVG/picture?width=200&height=200" group-title="Oficial", TVG 2 (720)
+#EXTINF:-1 tvg-id="TVG.2.gal" tvg-logo="https://graph.facebook.com/CRTVG/picture?width=200&height=200" group-title="Deportes", TVG 2 (Oficial)
 https://crtvg-tvg2.flumotion.cloud/playlist.m3u8
 
-#EXTINF:-1 tvg-id="LA1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LA1-logo" group-title="Oficial", LA 1 (1080)
+#EXTINF:-1 tvg-id="LA1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LA1-logo" group-title="Deportes", LA 1 (Oficial)
 https://d2jws8nf49xuk0.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-3ikffw175xm6u/La1ES.m3u8
-#EXTINF:-1 tvg-id="LA1.es" tvg-logo="https://pbs.twimg.com/profile_images/1921959108862709760/fe5Tqhlh_200x200.jpg" group-title="Oficial", LA 1 (1080)
+#EXTINF:-1 tvg-id="LA1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LA1-logo" group-title="Deportes", LA 1 (Oficial)
 https://d2jws8nf49xuk0.cloudfront.net/v1/manifest/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-3ikffw175xm6u/7c9b5813-1b5e-44c7-a94f-e729c391b11f/4.m3u8
-#EXTINF:-1 tvg-id="LA1.es" tvg-logo="https://pbs.twimg.com/profile_images/1921959108862709760/fe5Tqhlh_200x200.jpg" group-title="Oficial", LA 1 (720)
+#EXTINF:-1 tvg-id="LA1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LA1-logo" group-title="Deportes", LA 1 (Oficial)
 https://ztnr.rtve.es/ztnr/1688877.m3u8
-#EXTINF:-1 tvg-id="LA1.es" tvg-logo="https://pbs.twimg.com/profile_images/1921959108862709760/fe5Tqhlh_200x200.jpg" group-title="Oficial", LA 1 (720)
+#EXTINF:-1 tvg-id="LA1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/LA1-logo" group-title="Deportes", LA 1 (Oficial)
 https://rtvelivestream.rtve.es/rtvesec/la1/la1_main_dvr.m3u8
 
-#EXTINF:-1 tvg-id="GolClassics.es" tvg-logo="https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/gol_classics_logo.jpg" group-title="Oficial", Gol Classics (1080)
+#EXTINF:-1 tvg-id="GolClassics.es" tvg-logo="https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/gol_classics_logo.jpg" group-title="Deportes", Gol Classics (Oficial)
 https://d71gqtnep83vb.cloudfront.net/gol_classics/gol_classics.m3u8
 
 
