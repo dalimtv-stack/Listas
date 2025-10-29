@@ -463,12 +463,11 @@ http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57286
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58330
 
 # https://stremio.shickat.me/Images/Channels/HITS.jpg
-#EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-HITS" group-title="Shickat.me", Movistar Hits
-http://vlc.shickat.me:8000/pid/2b8e5c7438d56541df3467cc5986cf1e66014101/stream.mp4
-#EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://www.movistarplus.es/recorte/m-DP/modmarcas/MHITSH" group-title="Shickat.me", Movistar Hits (FHD)
+# https://www.movistarplus.es/recorte/m-DP/modmarcas/MHITSH
+#EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-HITS" group-title="Shickat.me", Movistar Hits (FHD)
 acestream://2b8e5c7438d56541df3467cc5986cf1e66014101
 #EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-HITS" group-title="NEW ERA VI", Movistar Hits
-acestream:/50553edb5e8c54d15e0d43161369b3b4cef95065
+acestream://50553edb5e8c54d15e0d43161369b3b4cef95065
 #EXTINF:-1 tvg-id="Movistar.Hits.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-HITS" group-title="PgRaceFuaApi", Movistar Hits
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5675
 
