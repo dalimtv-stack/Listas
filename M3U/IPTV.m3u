@@ -306,6 +306,8 @@ http://127.0.0.1:6878/ace/getstream?id=12ba546d229bc39f01c3c18988a034b215fe6adb
 
 #EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Eurosport" group-title="Deportes", Eurosport (m3u8)
 http://185.189.225.157/EuroSport1/index.m3u8
+#EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Eurosport" group-title="Deportes", Eurosport (PgRaceFuaApi)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/05607
 #EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Eurosport" group-title="Deportes", Eurosport (HLS)
 http://87.120.179.187:8000/play/a02c
 #EXTINF:-1 tvg-id="Eurosport.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Eurosport" group-title="Deportes", Eurosport (Acestream)
@@ -544,6 +546,7 @@ http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5553
 http://172.93.102.112:8989/278817_.m3u8
 #EXTINF:-1 tvg-id="Calle.13.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto,q_auto,f_auto/Canales/CAlle-trece" group-title="PgRaceFuaApi", Calle 13
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5567
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/05567
 
 #EXTINF:-1 tvg-id="Cosmo.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/Cosmo" group-title="Telegram", Cosmo
 http://172.93.102.112:8989/278821_.m3u8
@@ -589,7 +592,7 @@ http://172.93.102.112:8989/278866_.m3u8
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/25927
 
 #EXTINF:-1 tvg-id="Discovery.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_white,c_pad,w_405,q_auto,f_auto/bo_20px_solid_white/Canales/Discovery_Channel_-_Logo" group-title="Telegram", Discovery
-http://172.93.102.112:8989/278830_.m3u8
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/05594
 #EXTINF:-1 tvg-id="Discovery.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_white,c_pad,w_405,q_auto,f_auto/bo_20px_solid_white/Canales/Discovery_Channel_-_Logo" group-title="PgRaceFuaApi", Discovery
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5594
 
