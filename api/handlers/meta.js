@@ -26,19 +26,37 @@ async function obtenerEPGDescripcion(canalId) {
       .filter(p => p.channel?.[0] === canalId)
       .map(p => ({
         start: p.start?.[0],
+        stop: p.stop?.[0],
         title: p.title?.[0]?._ || '',
       }))
       .sort((a, b) => a.start.localeCompare(b.start));
 
     const ahora = new Date();
-    const proximos = eventos.filter(e => {
-      const fecha = parseFechaXMLTV(e.start);
-      return fecha > ahora;
-    }).slice(0, 3);
+    const vistos = new Set();
+    const seleccionados = [];
 
-    return proximos.map(e => {
+    for (const e of eventos) {
+      const inicio = parseFechaXMLTV(e.start);
+      const fin = e.stop ? parseFechaXMLTV(e.stop) : null;
+      const clave = `${e.start}-${e.title}`;
+      if (vistos.has(clave)) continue;
+      vistos.add(clave);
+
+      if (fin && inicio <= ahora && ahora < fin) {
+        seleccionados.push({ ...e, label: 'En emisión' });
+      } else if (inicio < ahora && seleccionados.length === 0) {
+        seleccionados.push({ ...e, label: 'Último' });
+      } else if (inicio > ahora && seleccionados.length < 3) {
+        seleccionados.push(e);
+      }
+
+      if (seleccionados.length >= 3) break;
+    }
+
+    return seleccionados.map(e => {
       const hora = e.start.slice(8, 12).replace(/(\d{2})(\d{2})/, '$1:$2');
-      return `${hora} - ${e.title}`;
+      const prefix = e.label ? `${e.label}: ` : '';
+      return `${prefix}${hora} - ${e.title}`;
     }).join('\n');
   } catch (err) {
     console.warn('[EPG] Error al obtener EPG:', err.message);
@@ -47,14 +65,7 @@ async function obtenerEPGDescripcion(canalId) {
 }
 
 function parseFechaXMLTV(str) {
-  const clean = str.split(' ')[0];
-  const año = clean.slice(0, 4);
-  const mes = clean.slice(4, 6);
-  const dia = clean.slice(6, 8);
-  const hora = clean.slice(8, 10);
-  const min = clean.slice(10, 12);
-  const seg = clean.slice(12, 14);
-  return new Date(`${año}-${mes}-${dia}T${hora}:${min}:${seg}Z`);
+  return new Date(str);
 }
 
 async function handleMeta(req) {
