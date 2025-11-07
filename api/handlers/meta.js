@@ -66,18 +66,20 @@ async function handleMeta(req) {
     const fin = parseFechaXMLTV(actual.stop);
     const hora = d => d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
   
-    epgDescripcion = `${hora(inicio)} - ${hora(fin)}  ${actual.title}\n\n${actual.desc}`;
+    epgDescripcion =
+      `${hora(inicio)} - ${hora(fin)}\n` +
+      `•  ${actual.title}  •\n\n` +
+      `${actual.desc}`;
   
     if (siguientes.length) {
-      epgDescripcion += '\n\n';
+      epgDescripcion += '\n\nPróximos:\n';
       for (const e of siguientes) {
         const h = parseFechaXMLTV(e.start);
-        epgDescripcion += `${hora(h)}  ${e.title}\n`;
+        epgDescripcion += `⏭ ${hora(h)}\n• ${e.title}  •\n`;
       }
       epgDescripcion = epgDescripcion.trimEnd();
     }
   }
-
 
   const resp = {
     meta: {
