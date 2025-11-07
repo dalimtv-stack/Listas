@@ -12,7 +12,7 @@ const { resolveM3uUrl } = require('../resolve');
 const { getMeta: getEventosMeta } = require('../../src/eventos/meta-events');
 
 // --- EPG por canal desde KV ---
-const { actualizarEPGSiCaducado, getEventoActualDesdeKV } = require('../epg');
+const { actualizarEPGSiCaducado, parseFechaXMLTV, getEventoActualDesdeKV } = require('../epg');
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
