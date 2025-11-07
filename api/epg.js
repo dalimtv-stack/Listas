@@ -1,4 +1,3 @@
-// api/epg.js
 'use strict';
 
 const xml2js = require('xml2js');
@@ -26,9 +25,14 @@ function extraerEventosPorCanal(programas) {
     const canalId = p.channel?.[0];
     if (!canalId) continue;
 
+    const startStr = p.start?.[0];
+    const stopStr = p.stop?.[0];
+
     const evento = {
-      start: p.start?.[0],
-      stop: p.stop?.[0],
+      start: startStr,
+      stop: stopStr,
+      tsStart: startStr ? parseFechaXMLTV(startStr).getTime() : null,
+      tsStop: stopStr ? parseFechaXMLTV(stopStr).getTime() : null,
       title: p.title?.[0]?._ || '',
       desc: p.desc?.[0]?._ || '',
       category: p.category?.[0]?._ || '',
@@ -70,16 +74,13 @@ async function getEventoActualDesdeKV(canalId) {
   const eventos = await kvGetJsonTTL(clave);
   if (!Array.isArray(eventos)) return null;
 
-  const ahora = new Date();
-  const parse = parseFechaXMLTV;
-
+  const ahora = Date.now();
   let actual = null;
   let siguientes = [];
 
   for (const e of eventos) {
-    const inicio = parse(e.start);
-    const fin = e.stop ? parse(e.stop) : null;
-
+    const inicio = e.tsStart ?? parseFechaXMLTV(e.start).getTime();
+    const fin = e.tsStop ?? parseFechaXMLTV(e.stop).getTime();
     if (fin && inicio <= ahora && ahora < fin && e.desc) {
       actual = e;
       break;
@@ -89,7 +90,7 @@ async function getEventoActualDesdeKV(canalId) {
   if (!actual) {
     for (let i = eventos.length - 1; i >= 0; i--) {
       const e = eventos[i];
-      const inicio = parse(e.start);
+      const inicio = e.tsStart ?? parseFechaXMLTV(e.start).getTime();
       if (inicio < ahora && e.desc) {
         actual = e;
         break;
@@ -97,17 +98,12 @@ async function getEventoActualDesdeKV(canalId) {
     }
   }
 
-  if (actual?.stop) {
-    const finActual = parse(actual.stop);
+  if (actual?.tsStop) {
     const vistos = new Set();
     siguientes = eventos.filter(e => {
-      const inicio = parse(e.start);
+      const inicio = e.tsStart ?? parseFechaXMLTV(e.start).getTime();
       const clave = `${e.start}-${e.title}`;
-      if (inicio >= finActual && !vistos.has(clave)) {
-        vistos.add(clave);
-        return true;
-      }
-      return false;
+      return inicio >= actual.tsStop && !vistos.has(clave) && vistos.add(clave);
     }).slice(0, 2);
   }
 
