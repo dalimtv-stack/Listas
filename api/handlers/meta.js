@@ -3,7 +3,7 @@
 
 const NodeCache = require('node-cache');
 const { getChannel } = require('../../src/db');
-const { kvGetJsonTTL, kvSetJsonTTLIfChanged } = require('../kv');
+const { kvSetJsonTTLIfChanged } = require('../kv');
 const { normalizeCatalogName, getM3uHash, extractConfigIdFromUrl } = require('../utils');
 const { CACHE_TTL } = require('../../src/config');
 const { resolveM3uUrl } = require('../resolve');
@@ -11,62 +11,10 @@ const { resolveM3uUrl } = require('../resolve');
 // --- Import de eventos ---
 const { getMeta: getEventosMeta } = require('../../src/eventos/meta-events');
 
+// --- EPG por canal desde KV ---
+const { actualizarEPGSiCaducado, getEventoActualDesdeKV } = require('../epg');
+
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
-const xml2js = require('xml2js');
-const EPG_URL = 'https://raw.githubusercontent.com/dalimtv-stack/miEPG/main/miEPG.xml';
-
-async function obtenerEPGDescripcion(canalId) {
-  try {
-    const res = await fetch(EPG_URL);
-    const xml = await res.text();
-    const parsed = await xml2js.parseStringPromise(xml, { mergeAttrs: true });
-    const programas = parsed.tv.programme;
-
-    const eventos = programas
-      .filter(p => p.channel?.[0] === canalId)
-      .map(p => ({
-        start: p.start?.[0],
-        stop: p.stop?.[0],
-        title: p.title?.[0]?._ || '',
-      }))
-      .sort((a, b) => a.start.localeCompare(b.start));
-
-    const ahora = new Date();
-    const vistos = new Set();
-    const seleccionados = [];
-
-    for (const e of eventos) {
-      const inicio = parseFechaXMLTV(e.start);
-      const fin = e.stop ? parseFechaXMLTV(e.stop) : null;
-      const clave = `${e.start}-${e.title}`;
-      if (vistos.has(clave)) continue;
-      vistos.add(clave);
-
-      if (fin && inicio <= ahora && ahora < fin) {
-        seleccionados.push({ ...e, label: 'En emisión' });
-      } else if (inicio < ahora && seleccionados.length === 0) {
-        seleccionados.push({ ...e, label: 'Último' });
-      } else if (inicio > ahora && seleccionados.length < 3) {
-        seleccionados.push(e);
-      }
-
-      if (seleccionados.length >= 3) break;
-    }
-
-    return seleccionados.map(e => {
-      const hora = e.start.slice(8, 12).replace(/(\d{2})(\d{2})/, '$1:$2');
-      const prefix = e.label ? `${e.label}: ` : '';
-      return `${prefix}${hora} - ${e.title}`;
-    }).join('\n');
-  } catch (err) {
-    console.warn('[EPG] Error al obtener EPG:', err.message);
-    return 'Sin programación disponible.';
-  }
-}
-
-function parseFechaXMLTV(str) {
-  return new Date(str);
-}
 
 async function handleMeta(req) {
   const logPrefix = '[META]';
@@ -104,9 +52,13 @@ async function handleMeta(req) {
     console.log(logPrefix, `canal no encontrado: ${channelId}`);
     return { meta: null };
   }
-  
-  const cleanName = normalizeCatalogName (ch.name);
-  const epgDescripcion = await obtenerEPGDescripcion(channelId);
+
+  const cleanName = normalizeCatalogName(ch.name);
+
+  // --- EPG desde KV ---
+  await actualizarEPGSiCaducado(channelId);
+  const evento = await getEventoActualDesdeKV(channelId);
+  const epgDescripcion = evento?.desc || 'Sin programación disponible.';
 
   const resp = {
     meta: {
