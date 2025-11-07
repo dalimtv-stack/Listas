@@ -31,4 +31,8 @@ async function precargarTodosLosEPG() {
   console.log('[EPG] Precarga completa finalizada');
 }
 
-module.exports = { precargarTodosLosEPG };
+// ✅ Esto lo expone como endpoint para Vercel
+module.exports = async (req, res) => {
+  await precargarTodosLosEPG();
+  res.end('EPG precargado');
+};
