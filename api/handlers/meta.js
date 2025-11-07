@@ -95,6 +95,7 @@ async function handleMeta(req) {
   }
   
   const cleanName = normalizeCatalogName (ch.name);
+  const epgDescripcion = await obtenerEPGDescripcion(channelId);
 
   const resp = {
     meta: {
