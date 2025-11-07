@@ -62,6 +62,7 @@ async function actualizarEPGSiCaducado(canalId) {
 
   const todos = await parsearXMLTV();
   const eventos = todos[canalId] || 'Sin información';
+  console.log('[EPG] eventos encontrados para', canalId, ':', Array.isArray(eventos) ? eventos.length : eventos);
   await kvSetJsonTTLIfChanged(clave, eventos, TTL);
 }
 
