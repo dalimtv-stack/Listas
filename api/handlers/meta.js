@@ -57,8 +57,27 @@ async function handleMeta(req) {
 
   // --- EPG desde KV ---
   await actualizarEPGSiCaducado(channelId);
-  const evento = await getEventoActualDesdeKV(channelId);
-  const epgDescripcion = evento?.desc || 'Sin programación disponible.';
+  const { actual, siguientes } = await getEventoActualDesdeKV(channelId);
+
+  let epgDescripcion = 'Sin programación disponible.';
+  
+  if (actual) {
+    const inicio = parseFechaXMLTV(actual.start);
+    const fin = parseFechaXMLTV(actual.stop);
+    const hora = d => d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  
+    epgDescripcion = `${hora(inicio)} - ${hora(fin)}  ${actual.title}\n\n${actual.desc}`;
+  
+    if (siguientes.length) {
+      epgDescripcion += '\n\n';
+      for (const e of siguientes) {
+        const h = parseFechaXMLTV(e.start);
+        epgDescripcion += `${hora(h)}  ${e.title}\n`;
+      }
+      epgDescripcion = epgDescripcion.trimEnd();
+    }
+  }
+
 
   const resp = {
     meta: {
