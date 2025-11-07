@@ -71,14 +71,19 @@ async function getEventoActualDesdeKV(canalId) {
   if (!Array.isArray(eventos)) return null;
 
   const ahora = new Date();
-  let actual = null;
+  const parse = parseFechaXMLTV;
 
-  for (const e of eventos) {
-    const inicio = parseFechaXMLTV(e.start);
-    const fin = e.stop ? parseFechaXMLTV(e.stop) : null;
+  let actual = null;
+  let siguientes = [];
+
+  for (let i = 0; i < eventos.length; i++) {
+    const e = eventos[i];
+    const inicio = parse(e.start);
+    const fin = e.stop ? parse(e.stop) : null;
 
     if (fin && inicio <= ahora && ahora < fin && e.desc) {
       actual = e;
+      siguientes = eventos.slice(i + 1, i + 3);
       break;
     }
   }
@@ -86,16 +91,18 @@ async function getEventoActualDesdeKV(canalId) {
   if (!actual) {
     for (let i = eventos.length - 1; i >= 0; i--) {
       const e = eventos[i];
-      const inicio = parseFechaXMLTV(e.start);
+      const inicio = parse(e.start);
       if (inicio < ahora && e.desc) {
         actual = e;
+        siguientes = eventos.slice(i + 1, i + 3);
         break;
       }
     }
   }
 
-  return actual;
+  return { actual, siguientes };
 }
+
 
 module.exports = {
   parsearXMLTV,
