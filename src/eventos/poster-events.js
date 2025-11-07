@@ -198,7 +198,7 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
     const isCiclismo = sport === 'ciclismo';
     const isGolf = sport === 'golf'; 
     const isMotos = sport === 'motos';
-    const isF1 = sport === 'fórmula 1';
+    const isF1 = sport === 'fórmula 1' || sport === 'formula 1';
     const isHockey = sport === 'hockey';
   try {
     const candidates = generateFallbackNames(partido, competicion);
@@ -292,11 +292,11 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/UFC.jpeg';
     } else if (isF1) {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Formula1.jpeg';
-    } else if (isMotos && partido.toLowerCase() === 'motogp') {
-      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Mundial_MotoGP.png';
-    } else if (isMotos && partido.toLowerCase() === 'moto2') {
+    } else if (isMotos && partido.toLowerCase().includes('motogp')) {
+    posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Mundial_MotoGP.png';
+    } else if (isMotos && partido.toLowerCase().includes('moto2')) {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Mundial_Moto2.png';
-    } else if (isMotos && partido.toLowerCase() === 'moto3') {
+    } else if (isMotos && partido.toLowerCase().includes('moto3')) {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Mundial_Moto3.png';
     } else if (deporte && deporte.toLowerCase() === 'waterpolo') {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,c_fill,g_auto,w_405,q_auto,f_auto/plantillas/waterpolo.jpeg';
