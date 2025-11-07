@@ -106,6 +106,7 @@ async function getEventoActualDesdeKV(canalId) {
 
 module.exports = {
   parsearXMLTV,
+  parseFechaXMLTV,
   actualizarEPGSiCaducado,
   getEventoActualDesdeKV
 };
