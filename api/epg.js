@@ -103,7 +103,7 @@ async function getEventoActualDesdeKV(canalId) {
     siguientes = eventos.filter(e => {
       const inicio = parse(e.start);
       const clave = `${e.start}-${e.title}`;
-      if (inicio > finActual && !vistos.has(clave)) {
+      if (inicio >= finActual && !vistos.has(clave)) {
         vistos.add(clave);
         return true;
       }
