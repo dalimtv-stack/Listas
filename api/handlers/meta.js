@@ -12,6 +12,50 @@ const { resolveM3uUrl } = require('../resolve');
 const { getMeta: getEventosMeta } = require('../../src/eventos/meta-events');
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
+const xml2js = require('xml2js');
+const EPG_URL = 'https://raw.githubusercontent.com/dalimtv-stack/miEPG/main/miEPG.xml';
+
+async function obtenerEPGDescripcion(canalId) {
+  try {
+    const res = await fetch(EPG_URL);
+    const xml = await res.text();
+    const parsed = await xml2js.parseStringPromise(xml, { mergeAttrs: true });
+    const programas = parsed.tv.programme;
+
+    const eventos = programas
+      .filter(p => p.channel?.[0] === canalId)
+      .map(p => ({
+        start: p.start?.[0],
+        title: p.title?.[0]?._ || '',
+      }))
+      .sort((a, b) => a.start.localeCompare(b.start));
+
+    const ahora = new Date();
+    const proximos = eventos.filter(e => {
+      const fecha = parseFechaXMLTV(e.start);
+      return fecha > ahora;
+    }).slice(0, 3);
+
+    return proximos.map(e => {
+      const hora = e.start.slice(8, 12).replace(/(\d{2})(\d{2})/, '$1:$2');
+      return `${hora} - ${e.title}`;
+    }).join('\n');
+  } catch (err) {
+    console.warn('[EPG] Error al obtener EPG:', err.message);
+    return 'Sin programación disponible.';
+  }
+}
+
+function parseFechaXMLTV(str) {
+  const clean = str.split(' ')[0];
+  const año = clean.slice(0, 4);
+  const mes = clean.slice(4, 6);
+  const dia = clean.slice(6, 8);
+  const hora = clean.slice(8, 10);
+  const min = clean.slice(10, 12);
+  const seg = clean.slice(12, 14);
+  return new Date(`${año}-${mes}-${dia}T${hora}:${min}:${seg}Z`);
+}
 
 async function handleMeta(req) {
   const logPrefix = '[META]';
@@ -59,7 +103,7 @@ async function handleMeta(req) {
       name: cleanName,
       poster: ch.logo_url,
       background: ch.logo_url,
-      description: ``
+      description: epgDescripcion
     }
   };
 
