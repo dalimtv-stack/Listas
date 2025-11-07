@@ -9,8 +9,27 @@ const { normalizeCatalogName, getM3uHash, parseCatalogRest, extractConfigIdFromU
 const { CACHE_TTL, ADDON_PREFIX, FORCE_REFRESH_GENRES } = require('../../src/config');
 const { resolveM3uUrl } = require('../resolve');
 const { getCatalog: getEventosCatalog } = require('../../src/eventos/catalog-events');
+const { actualizarEPGSiCaducado } = require('../epg'); // ✅ añadido
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
+
+// ✅ función auxiliar para actualizar EPG en segundo plano
+function actualizarEPGEnSegundoPlano(channelIds) {
+  for (const canalId of channelIds) {
+    setTimeout(async () => {
+      try {
+        const clave = `epg:${canalId}`;
+        const actual = await kvGetJsonTTL(clave);
+        if (!Array.isArray(actual)) {
+          console.log('[EPG] TTL caducado o datos inválidos, actualizando:', canalId);
+          await actualizarEPGSiCaducado(canalId);
+        }
+      } catch (err) {
+        console.warn('[EPG] Error al actualizar', canalId, err.message);
+      }
+    }, 0); // no bloquea
+  }
+}
 
 async function extractAndStoreGenresIfChanged(channels, configId) {
   try {
@@ -125,6 +144,7 @@ async function handleCatalog(req) {
   } else {
     channels = await getChannels({ m3uUrl });
     console.log(logPrefix, `M3U sin cambios, canales cargados: ${channels.length}`);
+    actualizarEPGEnSegundoPlano(channels.map(c => c.id)); // ✅ añadido
   }
 
   const m3uHash = currentM3uHash;
@@ -164,7 +184,6 @@ async function handleCatalog(req) {
       background: c.logo_url || null
     };
   });
-
 
   const resp = { metas };
   cache.set(cacheKey, resp);
