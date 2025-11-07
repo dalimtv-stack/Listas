@@ -19,8 +19,8 @@ function actualizarEPGEnSegundoPlano(channelIds) {
     setTimeout(async () => {
       try {
         const clave = `epg:${canalId}`;
-        const actual = await kvGetJsonTTL(clave);
-        if (!Array.isArray(actual)) {
+        const actual = await kvGet(clave);
+        if (actual === null || actual === undefined) {
           console.log('[EPG] TTL caducado o datos inválidos, actualizando:', canalId);
           await actualizarEPGSiCaducado(canalId);
         }
