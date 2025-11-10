@@ -9,14 +9,16 @@ const EPG_URL = 'https://raw.githubusercontent.com/dalimtv-stack/miEPG/main/miEP
 const TTL = 24 * 3600; // 24 horas
 
 function parseFechaXMLTV(str) {
-  const clean = str.split(' ')[0];
-  const año = clean.slice(0, 4);
-  const mes = clean.slice(4, 6);
-  const dia = clean.slice(6, 8);
-  const hora = clean.slice(8, 10);
-  const min = clean.slice(10, 12);
-  const seg = clean.slice(12, 14);
-  return new Date(`${año}-${mes}-${dia}T${hora}:${min}:${seg}+01:00`);
+  const [fecha, offset] = str.split(' ');
+  const año = fecha.slice(0, 4);
+  const mes = fecha.slice(4, 6);
+  const dia = fecha.slice(6, 8);
+  const hora = fecha.slice(8, 10);
+  const min = fecha.slice(10, 12);
+  const seg = fecha.slice(12, 14);
+
+  const iso = `${año}-${mes}-${dia}T${hora}:${min}:${seg}${offset || '+00:00'}`;
+  return new Date(iso);
 }
 
 function extraerTexto(x) {
@@ -29,7 +31,7 @@ function extraerEventosPorCanal(programas) {
   const eventosPorCanal = {};
 
   for (const p of programas) {
-    const canalId = p.channel;
+    const canalId = p.channel?.trim();
     if (!canalId) continue;
 
     const evento = {
