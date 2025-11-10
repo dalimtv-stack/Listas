@@ -9,7 +9,6 @@ const EPG_URL = 'https://raw.githubusercontent.com/dalimtv-stack/miEPG/main/miEP
 const TTL = 24 * 3600; // 24 horas
 
 function parseFechaXMLTV(str) {
-  if (!str) return null;
   const clean = str.split(' ')[0]; // "20251107081500"
   const año = clean.slice(0, 4);
   const mes = clean.slice(4, 6);
@@ -24,23 +23,18 @@ function extraerEventosPorCanal(programas) {
   const eventosPorCanal = {};
 
   for (const p of programas) {
-    const canalId = p.channel;
+    const canalId = p.channel?.[0];
     if (!canalId) continue;
 
-    // Acceso correcto a los atributos dentro de `$` (que es donde xml2js los coloca)
-    const start = p.$?.start;
-    const stop = p.$?.stop;
-
-    // Generamos el objeto evento
     const evento = {
-      start: start || '',
-      stop: stop || '',
-      title: typeof p.title === 'string' ? p.title : p.title?._ || '',
-      desc: typeof p.desc === 'string' ? p.desc : p.desc?._ || '',
-      category: typeof p.category === 'string' ? p.category : p.category?._ || '',
-      icon: p.icon?.src || '',
-      rating: p.rating?.value || '',
-      starRating: p['star-rating']?.value || ''
+      start: p.start?.[0],
+      stop: p.stop?.[0],
+      title: p.title?.[0]?._ || '',
+      desc: p.desc?.[0]?._ || '',
+      category: p.category?.[0]?._ || '',
+      icon: Array.isArray(p.icon?.[0]?.src) ? p.icon[0].src[0] : p.icon?.[0]?.src || '',
+      rating: p.rating?.[0]?.value?.[0] || '',
+      starRating: p['star-rating']?.[0]?.value?.[0] || ''
     };
 
     if (!eventosPorCanal[canalId]) eventosPorCanal[canalId] = [];
@@ -57,24 +51,27 @@ function extraerEventosPorCanal(programas) {
 async function parsearXMLTV() {
   const res = await fetch(EPG_URL);
   const xml = await res.text();
+  const xmlClean = xml.replace(/^\uFEFF/, '').trim();
 
   const parser = new xml2js.Parser({
     strict: false,
-    explicitArray: false, // 👈 ¡EL FIX IMPORTANTE!
-    mergeAttrs: true
+    mergeAttrs: true,
+    explicitArray: true,
+    preserveChildrenOrder: true,
+    charsAsChildren: false
   });
 
   let parsed;
   try {
-    parsed = await parser.parseStringPromise(xml);
+    parsed = await parser.parseStringPromise(xmlClean);
   } catch (err) {
     console.error('[EPG] Error al parsear XMLTV:', err.message);
     return {};
   }
 
-  const programas = parsed.tv?.programme || [];
+  const programas = parsed.tv?.programme;
   if (!Array.isArray(programas)) {
-    console.warn('[EPG] No se encontraron eventos <programme> en el XMLTV');
+    console.warn('[EPG] XMLTV sin <programme>:', Object.keys(parsed.tv || {}));
     return {};
   }
 
