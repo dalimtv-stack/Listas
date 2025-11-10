@@ -23,16 +23,16 @@ function extraerEventosPorCanal(programas) {
   const eventosPorCanal = {};
 
   for (const p of programas) {
-    const canalId = p.channel?.[0];
+    const canalId = p.$?.channel;
     if (!canalId) continue;
 
     const evento = {
-      start: p.start?.[0],
-      stop: p.stop?.[0],
+      start: p.$?.start || '',
+      stop: p.$?.stop || '',
       title: typeof p.title?.[0] === 'string' ? p.title[0] : p.title?.[0]?._ || '',
       desc: typeof p.desc?.[0] === 'string' ? p.desc[0] : p.desc?.[0]?._ || '',
       category: typeof p.category?.[0] === 'string' ? p.category[0] : p.category?.[0]?._ || '',
-      icon: Array.isArray(p.icon?.[0]?.src) ? p.icon[0].src[0] : p.icon?.[0]?.src || '',
+      icon: Array.isArray(p.icon?.[0]?.$.src) ? p.icon[0].$.src[0] : p.icon?.[0]?.$.src || '',
       rating: p.rating?.[0]?.value?.[0] || '',
       starRating: p['star-rating']?.[0]?.value?.[0] || ''
     };
@@ -55,12 +55,11 @@ async function parsearXMLTV() {
 
   const parser = new xml2js.Parser({
     strict: false,
-    mergeAttrs: false, // ← CAMBIO CLAVE
+    mergeAttrs: false,
     explicitArray: true,
     preserveChildrenOrder: true,
     charsAsChildren: false
   });
-
 
   let parsed;
   try {
