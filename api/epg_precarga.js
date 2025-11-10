@@ -1,5 +1,5 @@
 const { kvSetJsonTTLIfChanged } = require('./kv');
-const { parsearXMLTV } = require('./parsear');
+const { parsearXMLTV } = require('./epg');
 
 const TTL = 24 * 3600;
 
