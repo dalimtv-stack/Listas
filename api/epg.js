@@ -59,6 +59,11 @@ async function parsearXMLTV() {
   });
 
   const parsed = await parser.parseStringPromise(xml);
+
+  if (!parsed.tv || !Array.isArray(parsed.tv.programme)) {
+    throw new Error('XMLTV malformado: no se encontró <tv><programme>');
+  }
+
   return extraerEventosPorCanal(parsed.tv.programme);
 }
 
