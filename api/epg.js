@@ -23,4 +23,153 @@ function extraerEventosPorCanal(programas) {
   const eventosPorCanal = {};
 
   for (const p of programas) {
-    const canalId = p.channel?.
+    const canalId = p.channel?.[0];
+    if (!canalId) continue;
+
+    const evento = {
+      start: p.start?.[0],
+      stop: p.stop?.[0],
+      title: typeof p.title?.[0] === 'string' ? p.title[0] : p.title?.[0]?._ || '',
+      desc: typeof p.desc?.[0] === 'string' ? p.desc[0] : p.desc?.[0]?._ || '',
+      category: typeof p.category?.[0] === 'string' ? p.category[0] : p.category?.[0]?._ || '',
+      icon: Array.isArray(p.icon?.[0]?.src) ? p.icon[0].src[0] : p.icon?.[0]?.src || '',
+      rating: p.rating?.[0]?.value?.[0] || '',
+      starRating: p['star-rating']?.[0]?.value?.[0] || ''
+    };
+
+    if (!eventosPorCanal[canalId]) eventosPorCanal[canalId] = [];
+    eventosPorCanal[canalId].push(evento);
+  }
+
+  for (const canal in eventosPorCanal) {
+    eventosPorCanal[canal].sort((a, b) => a.start.localeCompare(b.start));
+  }
+
+  return eventosPorCanal;
+}
+
+async function parsearXMLTV() {
+  const res = await fetch(EPG_URL);
+  const xml = await res.text();
+  const xmlClean = xml.replace(/^\uFEFF/, '').trim();
+
+  const parser = new xml2js.Parser({
+    strict: false,
+    mergeAttrs: true,
+    explicitArray: true,
+    preserveChildrenOrder: true,
+    charsAsChildren: false
+  });
+
+  let parsed;
+  try {
+    parsed = await parser.parseStringPromise(xmlClean);
+  } catch (err) {
+    console.error('[EPG] Error al parsear XMLTV:', err.message);
+    return {};
+  }
+
+  const programas = parsed.tv?.programme;
+  if (!Array.isArray(programas)) {
+    console.warn('[EPG] XMLTV sin <programme>:', Object.keys(parsed.tv || {}));
+    return {};
+  }
+
+  return extraerEventosPorCanal(programas);
+}
+
+async function actualizarEPGSiCaducado(canalId) {
+  const clave = `epg:${canalId}`;
+  const actual = await kvGetJsonTTL(clave);
+  if (actual) return;
+
+  const todos = await parsearXMLTV();
+  let eventos = todos[canalId];
+
+  if (!Array.isArray(eventos) || eventos.length === 0) {
+    eventos = [{
+      title: 'Sin información',
+      desc: '',
+      start: '',
+      stop: ''
+    }];
+  }
+
+  console.log('[EPG] eventos encontrados para', canalId, ':', Array.isArray(eventos) ? eventos.length : eventos);
+  await kvSetJsonTTLIfChanged(clave, eventos, TTL);
+}
+
+async function getEventoActualDesdeKV(canalId) {
+  const clave = `epg:${canalId}`;
+  const eventos = await kvGetJsonTTL(clave);
+
+  if (!Array.isArray(eventos) || eventos.length === 0) {
+    return {
+      actual: {
+        title: 'Sin información',
+        desc: '',
+        start: '',
+        stop: ''
+      },
+      siguientes: []
+    };
+  }
+
+  const ahora = Date.now();
+
+  let actual = null;
+  let siguientes = [];
+
+  for (const e of eventos) {
+    const inicioTS = Date.parse(e.start?.split(' ')[0]);
+    const finTS = e.stop ? Date.parse(e.stop?.split(' ')[0]) : null;
+
+    if (finTS && inicioTS <= ahora && ahora < finTS && e.desc) {
+      actual = e;
+      break;
+    }
+  }
+
+  if (!actual) {
+    for (let i = eventos.length - 1; i >= 0; i--) {
+      const e = eventos[i];
+      const inicioTS = Date.parse(e.start?.split(' ')[0]);
+      if (inicioTS < ahora && e.desc) {
+        actual = e;
+        break;
+      }
+    }
+  }
+
+  if (!actual) {
+    actual = {
+      title: 'Sin información',
+      desc: '',
+      start: '',
+      stop: ''
+    };
+  }
+
+  if (actual?.stop) {
+    const finActualTS = Date.parse(actual.stop?.split(' ')[0]);
+    const vistos = new Set();
+    siguientes = eventos.filter(e => {
+      const inicioTS = Date.parse(e.start?.split(' ')[0]);
+      const clave = `${e.start}-${e.title}`;
+      if (inicioTS >= finActualTS && !vistos.has(clave)) {
+        vistos.add(clave);
+        return true;
+      }
+      return false;
+    }).slice(0, 2);
+  }
+
+  return { actual, siguientes };
+}
+
+module.exports = {
+  parsearXMLTV,
+  parseFechaXMLTV,
+  actualizarEPGSiCaducado,
+  getEventoActualDesdeKV
+};
