@@ -55,11 +55,12 @@ async function parsearXMLTV() {
 
   const parser = new xml2js.Parser({
     strict: false,
-    mergeAttrs: true,
+    mergeAttrs: false, // ← CAMBIO CLAVE
     explicitArray: true,
     preserveChildrenOrder: true,
     charsAsChildren: false
   });
+
 
   let parsed;
   try {
