@@ -9,6 +9,7 @@ const EPG_URL = 'https://raw.githubusercontent.com/dalimtv-stack/miEPG/main/miEP
 const TTL = 24 * 3600; // 24 horas
 
 function parseFechaXMLTV(str) {
+  if (!str) return null;
   const clean = str.split(' ')[0]; // "20251107081500"
   const año = clean.slice(0, 4);
   const mes = clean.slice(4, 6);
@@ -23,24 +24,36 @@ function extraerEventosPorCanal(programas) {
   const eventosPorCanal = {};
 
   for (const p of programas) {
-    const canalId = p.$?.channel;
+    const canalId = p.channel;
     if (!canalId) continue;
 
+    // Accedemos a los atributos de fecha dentro de '$'
+    const start = p.$?.start;
+    const stop = p.$?.stop;
+
+    // Comprobamos si los eventos tienen start y stop
+    if (!start || !stop) {
+      console.error(`[EPG] Evento sin fecha válido para el canal ${canalId}`);
+      continue;
+    }
+
+    // Generamos el objeto evento
     const evento = {
-      start: p.$?.start || '',
-      stop: p.$?.stop || '',
-      title: typeof p.title?.[0] === 'string' ? p.title[0] : p.title?.[0]?._ || '',
-      desc: typeof p.desc?.[0] === 'string' ? p.desc[0] : p.desc?.[0]?._ || '',
-      category: typeof p.category?.[0] === 'string' ? p.category[0] : p.category?.[0]?._ || '',
-      icon: Array.isArray(p.icon?.[0]?.$.src) ? p.icon[0].$.src[0] : p.icon?.[0]?.$.src || '',
-      rating: p.rating?.[0]?.value?.[0] || '',
-      starRating: p['star-rating']?.[0]?.value?.[0] || ''
+      start: start || '',
+      stop: stop || '',
+      title: typeof p.title === 'string' ? p.title : p.title?._ || '',
+      desc: typeof p.desc === 'string' ? p.desc : p.desc?._ || '',
+      category: typeof p.category === 'string' ? p.category : p.category?._ || '',
+      icon: p.icon?.src || '',
+      rating: p.rating?.value || '',
+      starRating: p['star-rating']?.value || ''
     };
 
     if (!eventosPorCanal[canalId]) eventosPorCanal[canalId] = [];
     eventosPorCanal[canalId].push(evento);
   }
 
+  // Ordenamos los eventos por la fecha de inicio
   for (const canal in eventosPorCanal) {
     eventosPorCanal[canal].sort((a, b) => a.start.localeCompare(b.start));
   }
@@ -51,29 +64,29 @@ function extraerEventosPorCanal(programas) {
 async function parsearXMLTV() {
   const res = await fetch(EPG_URL);
   const xml = await res.text();
-  const xmlClean = xml.replace(/^\uFEFF/, '').trim();
 
   const parser = new xml2js.Parser({
     strict: false,
-    mergeAttrs: false,
-    explicitArray: true,
-    preserveChildrenOrder: true,
-    charsAsChildren: false
+    explicitArray: false, // Esto es importante para manejar bien los datos
+    mergeAttrs: true
   });
 
   let parsed;
   try {
-    parsed = await parser.parseStringPromise(xmlClean);
+    parsed = await parser.parseStringPromise(xml);
   } catch (err) {
     console.error('[EPG] Error al parsear XMLTV:', err.message);
     return {};
   }
 
-  const programas = parsed.tv?.programme;
+  const programas = parsed.tv?.programme || [];
   if (!Array.isArray(programas)) {
-    console.warn('[EPG] XMLTV sin <programme>:', Object.keys(parsed.tv || {}));
+    console.warn('[EPG] No se encontraron eventos <programme> en el XMLTV');
     return {};
   }
+
+  // Verificamos si el XML está llegando correctamente
+  console.log('[EPG] Programas encontrados:', programas.length);
 
   return extraerEventosPorCanal(programas);
 }
@@ -115,16 +128,17 @@ async function getEventoActualDesdeKV(canalId) {
     };
   }
 
-  const ahora = Date.now();
+  const ahora = new Date();
+  const parse = parseFechaXMLTV;
 
   let actual = null;
   let siguientes = [];
 
   for (const e of eventos) {
-    const inicioTS = Date.parse(e.start?.split(' ')[0]);
-    const finTS = e.stop ? Date.parse(e.stop?.split(' ')[0]) : null;
+    const inicio = parse(e.start);
+    const fin = e.stop ? parse(e.stop) : null;
 
-    if (finTS && inicioTS <= ahora && ahora < finTS && e.desc) {
+    if (fin && inicio <= ahora && ahora < fin && e.desc) {
       actual = e;
       break;
     }
@@ -133,8 +147,8 @@ async function getEventoActualDesdeKV(canalId) {
   if (!actual) {
     for (let i = eventos.length - 1; i >= 0; i--) {
       const e = eventos[i];
-      const inicioTS = Date.parse(e.start?.split(' ')[0]);
-      if (inicioTS < ahora && e.desc) {
+      const inicio = parse(e.start);
+      if (inicio < ahora && e.desc) {
         actual = e;
         break;
       }
@@ -151,12 +165,12 @@ async function getEventoActualDesdeKV(canalId) {
   }
 
   if (actual?.stop) {
-    const finActualTS = Date.parse(actual.stop?.split(' ')[0]);
+    const finActual = parse(actual.stop);
     const vistos = new Set();
     siguientes = eventos.filter(e => {
-      const inicioTS = Date.parse(e.start?.split(' ')[0]);
+      const inicio = parse(e.start);
       const clave = `${e.start}-${e.title}`;
-      if (inicioTS >= finActualTS && !vistos.has(clave)) {
+      if (inicio >= finActual && !vistos.has(clave)) {
         vistos.add(clave);
         return true;
       }
