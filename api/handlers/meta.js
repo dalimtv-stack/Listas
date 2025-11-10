@@ -16,6 +16,12 @@ const { actualizarEPGSiCaducado, parseFechaXMLTV, getEventoActualDesdeKV } = req
 
 const cache = new NodeCache({ stdTTL: CACHE_TTL });
 
+function extraerTexto(x) {
+  if (typeof x === 'string') return x;
+  if (x && typeof x['#text'] === 'string') return x['#text'];
+  return '';
+}
+
 async function handleMeta(req) {
   const logPrefix = '[META]';
   const { id } = req.params;
@@ -61,21 +67,24 @@ async function handleMeta(req) {
 
   let epgDescripcion = 'Sin programación disponible.';
 
-  if (actual && actual.title !== 'Sin información') {
+  const titulo = extraerTexto(actual?.title);
+  const descripcion = extraerTexto(actual?.desc);
+
+  if (titulo && descripcion) {
     const inicio = parseFechaXMLTV(actual.start);
     const fin = parseFechaXMLTV(actual.stop);
     const hora = d => isNaN(d) ? '??:??' : d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
     epgDescripcion =
       `${hora(inicio)} - ${hora(fin)}\n` +
-      `•  ${actual.title || 'Sin título'}  •\n\n` +
-      `${actual.desc || ''}`.trim();
+      `•  ${titulo}  •\n\n` +
+      `${descripcion}`.trim();
 
     if (siguientes.length) {
       epgDescripcion += '\n\nPróximos:\n';
       for (const e of siguientes) {
         const h = parseFechaXMLTV(e.start);
-        epgDescripcion += `${hora(h)}: ${e.title || 'Sin título'}\n`;
+        epgDescripcion += `${hora(h)}: ${extraerTexto(e.title) || 'Sin título'}\n`;
       }
       epgDescripcion = epgDescripcion.trimEnd();
     }
