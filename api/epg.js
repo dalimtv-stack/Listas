@@ -51,19 +51,7 @@ function extraerEventosPorCanal(programas) {
 async function parsearXMLTV() {
   const res = await fetch(EPG_URL);
   const xml = await res.text();
-
-  const parser = new xml2js.Parser({
-    strict: false,
-    mergeAttrs: true,
-    explicitArray: true
-  });
-
-  const parsed = await parser.parseStringPromise(xml);
-
-  if (!parsed.tv || !Array.isArray(parsed.tv.programme)) {
-    throw new Error('XMLTV malformado: no se encontró <tv><programme>');
-  }
-
+  const parsed = await xml2js.parseStringPromise(xml, { mergeAttrs: true });
   return extraerEventosPorCanal(parsed.tv.programme);
 }
 
