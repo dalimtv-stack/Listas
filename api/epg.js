@@ -54,9 +54,10 @@ async function parsearXMLTV() {
 
   const parser = new xml2js.Parser({
     strict: false,
-    mergeAttrs: true,
-    explicitArray: true
+    explicitArray: false,   // 👈 lo más importante
+    mergeAttrs: true
   });
+
 
   let parsed;
   try {
