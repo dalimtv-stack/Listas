@@ -51,8 +51,28 @@ function extraerEventosPorCanal(programas) {
 async function parsearXMLTV() {
   const res = await fetch(EPG_URL);
   const xml = await res.text();
-  const parsed = await xml2js.parseStringPromise(xml, { mergeAttrs: true });
-  return extraerEventosPorCanal(parsed.tv.programme);
+
+  const parser = new xml2js.Parser({
+    strict: false,
+    mergeAttrs: true,
+    explicitArray: true
+  });
+
+  let parsed;
+  try {
+    parsed = await parser.parseStringPromise(xml);
+  } catch (err) {
+    console.error('[EPG] Error al parsear XMLTV:', err.message);
+    return {};
+  }
+
+  const programas = parsed.tv?.programme || [];
+  if (!Array.isArray(programas)) {
+    console.warn('[EPG] No se encontraron eventos <programme> en el XMLTV');
+    return {};
+  }
+
+  return extraerEventosPorCanal(programas);
 }
 
 async function actualizarEPGSiCaducado(canalId) {
@@ -62,8 +82,14 @@ async function actualizarEPGSiCaducado(canalId) {
 
   const todos = await parsearXMLTV();
   let eventos = todos[canalId];
+
   if (!Array.isArray(eventos) || eventos.length === 0) {
-    eventos = [{ title: 'Sin información', desc: '', start: '', stop: '' }];
+    eventos = [{
+      title: 'Sin información',
+      desc: '',
+      start: '',
+      stop: ''
+    }];
   }
 
   console.log('[EPG] eventos encontrados para', canalId, ':', Array.isArray(eventos) ? eventos.length : eventos);
@@ -73,7 +99,18 @@ async function actualizarEPGSiCaducado(canalId) {
 async function getEventoActualDesdeKV(canalId) {
   const clave = `epg:${canalId}`;
   const eventos = await kvGetJsonTTL(clave);
-  if (!Array.isArray(eventos)) return null;
+
+  if (!Array.isArray(eventos) || eventos.length === 0) {
+    return {
+      actual: {
+        title: 'Sin información',
+        desc: '',
+        start: '',
+        stop: ''
+      },
+      siguientes: []
+    };
+  }
 
   const ahora = new Date();
   const parse = parseFechaXMLTV;
@@ -100,6 +137,15 @@ async function getEventoActualDesdeKV(canalId) {
         break;
       }
     }
+  }
+
+  if (!actual) {
+    actual = {
+      title: 'Sin información',
+      desc: '',
+      start: '',
+      stop: ''
+    };
   }
 
   if (actual?.stop) {
