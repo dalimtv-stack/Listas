@@ -125,11 +125,11 @@ async function getEventoActualDesdeKV(canalId) {
   let siguientes = [];
 
   for (const e of eventos) {
-    const inicioTS = Date.parse(e.start?.split(' ')[0]);
-    const finTS = e.stop ? Date.parse(e.stop?.split(' ')[0]) : null;
+    const inicioTS = Date.parse(e.start?.replace(' +0100', ''));
+    const finTS = e.stop ? Date.parse(e.stop.replace(' +0100', '')) : null;
     const desc = extraerTexto(e.desc);
 
-    if (finTS && inicioTS <= ahora && ahora < finTS && desc) {
+    if (finTS && inicioTS <= ahora && ahora < finTS && desc && desc.length > 10) {
       actual = {
         ...e,
         title: extraerTexto(e.title),
@@ -143,9 +143,9 @@ async function getEventoActualDesdeKV(canalId) {
   if (!actual) {
     for (let i = eventos.length - 1; i >= 0; i--) {
       const e = eventos[i];
-      const inicioTS = Date.parse(e.start?.split(' ')[0]);
+      const inicioTS = Date.parse(e.start?.replace(' +0100', ''));
       const desc = extraerTexto(e.desc);
-      if (inicioTS < ahora && desc) {
+      if (inicioTS < ahora && desc && desc.length > 10) {
         actual = {
           ...e,
           title: extraerTexto(e.title),
@@ -167,7 +167,7 @@ async function getEventoActualDesdeKV(canalId) {
   }
 
   if (actual?.stop) {
-    const finActualTS = Date.parse(actual.stop?.split(' ')[0]);
+    const finActualTS = Date.parse(actual.stop.replace(' +0100', ''));
     const vistos = new Set();
     siguientes = eventos
       .map(e => ({
@@ -177,7 +177,7 @@ async function getEventoActualDesdeKV(canalId) {
         category: extraerTexto(e.category)
       }))
       .filter(e => {
-        const inicioTS = Date.parse(e.start?.split(' ')[0]);
+        const inicioTS = Date.parse(e.start?.replace(' +0100', ''));
         const clave = `${e.start}-${e.title}`;
         if (inicioTS >= finActualTS && !vistos.has(clave)) {
           vistos.add(clave);
