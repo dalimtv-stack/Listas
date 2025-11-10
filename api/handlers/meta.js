@@ -59,10 +59,10 @@ async function handleMeta(req) {
   await actualizarEPGSiCaducado(channelId);
   const { actual, siguientes } = await getEventoActualDesdeKV(channelId);
 
-  let epgDescripcion = 'Sin programación disponible.';
-
   const titulo = actual?.title;
   const descripcion = actual?.desc;
+
+  let epgDescripcion = 'Sin programación disponible.';
 
   if (titulo && descripcion && titulo !== 'Sin información') {
     const inicio = parseFechaXMLTV(actual.start);
@@ -83,6 +83,10 @@ async function handleMeta(req) {
       epgDescripcion = epgDescripcion.trimEnd();
     }
   }
+
+  // 🔍 Log de depuración
+  console.log('[META] evento actual:', actual);
+  console.log('[META] descripción generada:\n', epgDescripcion);
 
   const resp = {
     meta: {
