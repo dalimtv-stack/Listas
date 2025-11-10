@@ -60,22 +60,22 @@ async function handleMeta(req) {
   const { actual, siguientes } = await getEventoActualDesdeKV(channelId);
 
   let epgDescripcion = 'Sin programación disponible.';
-  
-  if (actual) {
+
+  if (actual && actual.title !== 'Sin información') {
     const inicio = parseFechaXMLTV(actual.start);
     const fin = parseFechaXMLTV(actual.stop);
-    const hora = d => d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-  
+    const hora = d => isNaN(d) ? '??:??' : d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
     epgDescripcion =
       `${hora(inicio)} - ${hora(fin)}\n` +
-      `•  ${actual.title}  •\n\n` +
-      `${actual.desc}`;
-  
+      `•  ${actual.title || 'Sin título'}  •\n\n` +
+      `${actual.desc || ''}`.trim();
+
     if (siguientes.length) {
       epgDescripcion += '\n\nPróximos:\n';
       for (const e of siguientes) {
         const h = parseFechaXMLTV(e.start);
-        epgDescripcion += `⏭ ${hora(h)}\n• ${e.title}  •\n`;
+        epgDescripcion += `${hora(h)}: ${e.title || 'Sin título'}\n`;
       }
       epgDescripcion = epgDescripcion.trimEnd();
     }
