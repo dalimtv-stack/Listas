@@ -11,13 +11,11 @@ const TTL = 24 * 3600; // 24 horas
 function parseFechaXMLTV(str) {
   const [fecha] = str.split(' ');
   const año = parseInt(fecha.slice(0, 4), 10);
-  const mes = parseInt(fecha.slice(4, 6), 10) - 1; // JS usa 0-11
+  const mes = parseInt(fecha.slice(4, 6), 10) - 1;
   const dia = parseInt(fecha.slice(6, 8), 10);
   const hora = parseInt(fecha.slice(8, 10), 10);
   const min = parseInt(fecha.slice(10, 12), 10);
   const seg = parseInt(fecha.slice(12, 14), 10);
-
-  // Construir fecha en hora local directamente
   return new Date(año, mes, dia, hora, min, seg);
 }
 
@@ -29,11 +27,9 @@ function extraerTexto(x) {
 
 function extraerEventosPorCanal(programas) {
   const eventosPorCanal = {};
-
   for (const p of programas) {
     const canalId = p.channel?.trim();
     if (!canalId) continue;
-
     const evento = {
       start: p.start || '',
       stop: p.stop || '',
@@ -44,15 +40,12 @@ function extraerEventosPorCanal(programas) {
       rating: p.rating?.value || '',
       starRating: p['star-rating']?.value || ''
     };
-
     if (!eventosPorCanal[canalId]) eventosPorCanal[canalId] = [];
     eventosPorCanal[canalId].push(evento);
   }
-
   for (const canal in eventosPorCanal) {
     eventosPorCanal[canal].sort((a, b) => a.start.localeCompare(b.start));
   }
-
   return eventosPorCanal;
 }
 
@@ -72,16 +65,24 @@ async function parsearXMLTV() {
     parsed = parser.parse(xmlClean);
   } catch (err) {
     console.error('[EPG] Error al parsear XMLTV:', err.message);
-    return {};
+    return { eventosPorCanal: {}, logosPorCanal: {} };
   }
 
   const programas = parsed.tv?.programme;
-  if (!Array.isArray(programas)) {
-    console.warn('[EPG] XMLTV sin <programme>:', Object.keys(parsed.tv || {}));
-    return {};
+  const canales = parsed.tv?.channel;
+
+  const eventosPorCanal = Array.isArray(programas) ? extraerEventosPorCanal(programas) : {};
+  const logosPorCanal = {};
+
+  if (Array.isArray(canales)) {
+    for (const c of canales) {
+      const canalId = c.id?.trim();
+      if (!canalId) continue;
+      logosPorCanal[canalId] = c.icon?.src || '';
+    }
   }
 
-  return extraerEventosPorCanal(programas);
+  return { eventosPorCanal, logosPorCanal };
 }
 
 async function actualizarEPGSiCaducado(canalId) {
@@ -89,8 +90,9 @@ async function actualizarEPGSiCaducado(canalId) {
   const actual = await kvGetJsonTTL(clave);
   if (actual) return;
 
-  const todos = await parsearXMLTV();
-  let eventos = todos[canalId];
+  const { eventosPorCanal, logosPorCanal } = await parsearXMLTV();
+  let eventos = eventosPorCanal[canalId];
+  const logo = logosPorCanal[canalId] || '';
 
   if (!Array.isArray(eventos) || eventos.length === 0) {
     eventos = [{
@@ -102,27 +104,28 @@ async function actualizarEPGSiCaducado(canalId) {
   }
 
   console.log('[EPG] eventos encontrados para', canalId, ':', Array.isArray(eventos) ? eventos.length : eventos);
-  await kvSetJsonTTLIfChanged(clave, eventos, TTL);
+
+  // Guardar objeto con logo + eventos
+  await kvSetJsonTTLIfChanged(clave, { logo, eventos }, TTL);
 }
 
 async function getEventoActualDesdeKV(canalId) {
   const clave = `epg:${canalId}`;
-  const eventos = await kvGetJsonTTL(clave);
+  const data = await kvGetJsonTTL(clave);
+
+  // Compatibilidad: si el KV contiene directamente un array, úsalo como eventos
+  const eventos = Array.isArray(data) ? data : data?.eventos || [];
+  const logo = Array.isArray(data) ? '' : data?.logo || '';
 
   if (!Array.isArray(eventos) || eventos.length === 0) {
     return {
-      actual: {
-        title: 'Sin información',
-        desc: '',
-        start: '',
-        stop: ''
-      },
-      siguientes: []
+      actual: { title: 'Sin información', desc: '', start: '', stop: '' },
+      siguientes: [],
+      logo
     };
   }
 
   const ahora = Date.now();
-
   let actual = null;
   let siguientes = [];
 
@@ -130,14 +133,8 @@ async function getEventoActualDesdeKV(canalId) {
     const inicioTS = parseFechaXMLTV(e.start).getTime();
     const finTS = parseFechaXMLTV(e.stop).getTime();
     const desc = extraerTexto(e.desc);
-
     if (finTS && inicioTS <= ahora && ahora < finTS && desc && desc.length > 10) {
-      actual = {
-        ...e,
-        title: extraerTexto(e.title),
-        desc,
-        category: extraerTexto(e.category)
-      };
+      actual = { ...e, title: extraerTexto(e.title), desc, category: extraerTexto(e.category) };
       break;
     }
   }
@@ -148,36 +145,21 @@ async function getEventoActualDesdeKV(canalId) {
       const inicioTS = parseFechaXMLTV(e.start).getTime();
       const desc = extraerTexto(e.desc);
       if (inicioTS < ahora && desc && desc.length > 10) {
-        actual = {
-          ...e,
-          title: extraerTexto(e.title),
-          desc,
-          category: extraerTexto(e.category)
-        };
+        actual = { ...e, title: extraerTexto(e.title), desc, category: extraerTexto(e.category) };
         break;
       }
     }
   }
 
   if (!actual) {
-    actual = {
-      title: 'Sin información',
-      desc: '',
-      start: '',
-      stop: ''
-    };
+    actual = { title: 'Sin información', desc: '', start: '', stop: '' };
   }
 
   if (actual?.stop) {
     const finActualTS = parseFechaXMLTV(actual.stop).getTime();
     const vistos = new Set();
     siguientes = eventos
-      .map(e => ({
-        ...e,
-        title: extraerTexto(e.title),
-        desc: extraerTexto(e.desc),
-        category: extraerTexto(e.category)
-      }))
+      .map(e => ({ ...e, title: extraerTexto(e.title), desc: extraerTexto(e.desc), category: extraerTexto(e.category) }))
       .filter(e => {
         const inicioTS = parseFechaXMLTV(e.start).getTime();
         const clave = `${e.start}-${e.title}`;
@@ -190,7 +172,7 @@ async function getEventoActualDesdeKV(canalId) {
       .slice(0, 2);
   }
 
-  return { actual, siguientes };
+  return { actual, siguientes, logo };
 }
 
 module.exports = {
