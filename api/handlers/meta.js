@@ -99,7 +99,16 @@ async function handleMeta(req) {
     }
   };
 
-  cache.set(cacheKey, resp);
+  // TTL dinámico: expira al terminar el evento actual (mínimo 30s)
+  let ttlSegundos = CACHE_TTL;
+  if (actual?.stop) {
+    const finTS = parseFechaXMLTV(actual.stop).getTime();
+    const ahoraTS = Date.now();
+    const restanteMs = Math.max(0, finTS - ahoraTS);
+    ttlSegundos = Math.max(30, Math.floor(restanteMs / 1000));
+  }
+
+  cache.set(cacheKey, resp, ttlSegundos);
 
   // 🚀 Se elimina la escritura en KV de meta para evitar desfasar la programación
   // const kvKey = `meta:${m3uHash}:${channelId}`;
