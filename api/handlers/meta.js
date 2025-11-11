@@ -66,7 +66,15 @@ async function handleMeta(req) {
   if (titulo && descripcion && titulo !== 'Sin información') {
     const inicio = parseFechaXMLTV(actual.start);
     const fin = parseFechaXMLTV(actual.stop);
-    const hora = d => isNaN(d) ? '??:??' : d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    const hora = d => {
+      if (isNaN(d)) return '??:??';
+      // Forzar zona CET (UTC+1 / UTC+2 según horario)
+      return d.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Europe/Madrid'  // ← FIJA LA ZONA
+      });
+    };
 
     epgDescripcion =
       `${hora(inicio)} - ${hora(fin)}\n` +
