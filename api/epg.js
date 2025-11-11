@@ -1,30 +1,32 @@
 // api/epg.js
 'use strict';
-
 const { XMLParser } = require('fast-xml-parser');
 const fetch = require('node-fetch');
 const { kvGetJsonTTL, kvSetJsonTTLIfChanged } = require('./kv');
-
 const EPG_URL = 'https://raw.githubusercontent.com/dalimtv-stack/miEPG/main/miEPG.xml';
 const TTL = 24 * 3600; // 24 horas
-
 function parseFechaXMLTV(str) {
-  const [fecha] = str.split(' ');
+  const parts = str.trim().split(' ');
+  const fecha = parts[0];
   const año = parseInt(fecha.slice(0, 4), 10);
   const mes = parseInt(fecha.slice(4, 6), 10) - 1;
   const dia = parseInt(fecha.slice(6, 8), 10);
   const hora = parseInt(fecha.slice(8, 10), 10);
   const min = parseInt(fecha.slice(10, 12), 10);
   const seg = parseInt(fecha.slice(12, 14), 10);
-  return new Date(año, mes, dia, hora, min, seg);
+  const offset = parts[1] || '+0000';
+  const offsetH = offset.slice(0, 3);
+  const offsetM = offset.slice(3, 5);
+  const iso = `${año}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}T` +
+              `${String(hora).padStart(2, '0')}:${String(min).padStart(2, '0')}:${String(seg).padStart(2, '0')}` +
+              `${offsetH}:${offsetM}`;
+  return new Date(iso);
 }
-
 function extraerTexto(x) {
   if (typeof x === 'string') return x;
   if (x && typeof x['#text'] === 'string') return x['#text'];
   return '';
 }
-
 function extraerEventosPorCanal(programas) {
   const eventosPorCanal = {};
   for (const p of programas) {
@@ -48,18 +50,15 @@ function extraerEventosPorCanal(programas) {
   }
   return eventosPorCanal;
 }
-
 async function parsearXMLTV() {
   const res = await fetch(EPG_URL);
   const xml = await res.text();
   const xmlClean = xml.replace(/^\uFEFF/, '').trim();
-
   const parser = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: '',
     allowBooleanAttributes: true
   });
-
   let parsed;
   try {
     parsed = parser.parse(xmlClean);
@@ -67,28 +66,20 @@ async function parsearXMLTV() {
     console.error('[EPG] Error al parsear XMLTV:', err.message);
     return { eventosPorCanal: {}, logosPorCanal: {} };
   }
-
-  // Normalizar a arrays por si <programme> o <channel> vienen como objeto único
   const programasRaw = parsed.tv?.programme;
   const canalesRaw = parsed.tv?.channel;
-
   const programas = Array.isArray(programasRaw)
     ? programasRaw
     : (programasRaw ? [programasRaw] : []);
-
   const canales = Array.isArray(canalesRaw)
     ? canalesRaw
     : (canalesRaw ? [canalesRaw] : []);
-
   const eventosPorCanal = programas.length ? extraerEventosPorCanal(programas) : {};
   const logosPorCanal = {};
-
   if (canales.length) {
     for (const c of canales) {
       const canalId = (c.id || '').trim();
       if (!canalId) continue;
-
-      // fast-xml-parser puede mapear <icon src="..."/> como objeto o como array
       let iconSrc = '';
       if (c.icon) {
         if (Array.isArray(c.icon)) {
@@ -97,23 +88,18 @@ async function parsearXMLTV() {
           iconSrc = c.icon.src || '';
         }
       }
-
       logosPorCanal[canalId] = iconSrc;
     }
   }
-
   return { eventosPorCanal, logosPorCanal };
 }
-
 async function actualizarEPGSiCaducado(canalId) {
   const clave = `epg:${canalId}`;
   const actual = await kvGetJsonTTL(clave);
   if (actual) return;
-
   const { eventosPorCanal, logosPorCanal } = await parsearXMLTV();
   let eventos = eventosPorCanal[canalId];
   const logo = logosPorCanal[canalId] || '';
-
   if (!Array.isArray(eventos) || eventos.length === 0) {
     eventos = [{
       title: 'Sin información',
@@ -122,21 +108,14 @@ async function actualizarEPGSiCaducado(canalId) {
       stop: ''
     }];
   }
-
   console.log('[EPG] eventos encontrados para', canalId, ':', Array.isArray(eventos) ? eventos.length : eventos);
-
-  // Guardar objeto con logo + eventos
   await kvSetJsonTTLIfChanged(clave, { logo, eventos }, TTL);
 }
-
 async function getEventoActualDesdeKV(canalId) {
   const clave = `epg:${canalId}`;
   const data = await kvGetJsonTTL(clave);
-
-  // Compatibilidad: si el KV contiene directamente un array, úsalo como eventos
   const eventos = Array.isArray(data) ? data : data?.eventos || [];
   const logo = Array.isArray(data) ? '' : data?.logo || '';
-
   if (!Array.isArray(eventos) || eventos.length === 0) {
     return {
       actual: { title: 'Sin información', desc: '', start: '', stop: '' },
@@ -144,38 +123,31 @@ async function getEventoActualDesdeKV(canalId) {
       logo
     };
   }
-
   const ahora = Date.now();
   let actual = null;
   let siguientes = [];
-
-  // Buscar evento en curso
   for (const e of eventos) {
     const inicioTS = parseFechaXMLTV(e.start).getTime();
     const finTS = parseFechaXMLTV(e.stop).getTime();
     const desc = extraerTexto(e.desc);
-    if (finTS && inicioTS <= ahora && ahora < finTS && desc && desc.length > 10) {
+    if (finTS && inicioTS <= ahora && ahora < finTS) {
       actual = { ...e, title: extraerTexto(e.title), desc, category: extraerTexto(e.category) };
       break;
     }
   }
-
-  // Si no hay evento en curso, buscar el siguiente que empieza después de ahora
   if (!actual) {
     for (const e of eventos) {
       const inicioTS = parseFechaXMLTV(e.start).getTime();
       const desc = extraerTexto(e.desc);
-      if (inicioTS >= ahora && desc && desc.length > 10) {
+      if (inicioTS >= ahora) {
         actual = { ...e, title: extraerTexto(e.title), desc, category: extraerTexto(e.category) };
         break;
       }
     }
   }
-
   if (!actual) {
     actual = { title: 'Sin información', desc: '', start: '', stop: '' };
   }
-
   if (actual?.stop) {
     const finActualTS = parseFechaXMLTV(actual.stop).getTime();
     const vistos = new Set();
@@ -192,10 +164,8 @@ async function getEventoActualDesdeKV(canalId) {
       })
       .slice(0, 2);
   }
-
   return { actual, siguientes, logo };
 }
-
 module.exports = {
   parsearXMLTV,
   parseFechaXMLTV,
