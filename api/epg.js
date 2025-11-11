@@ -9,16 +9,16 @@ const EPG_URL = 'https://raw.githubusercontent.com/dalimtv-stack/miEPG/main/miEP
 const TTL = 24 * 3600; // 24 horas
 
 function parseFechaXMLTV(str) {
-  const [fecha, offset] = str.split(' ');
-  const año = fecha.slice(0, 4);
-  const mes = fecha.slice(4, 6);
-  const dia = fecha.slice(6, 8);
-  const hora = fecha.slice(8, 10);
-  const min = fecha.slice(10, 12);
-  const seg = fecha.slice(12, 14);
+  const [fecha] = str.split(' ');
+  const año = parseInt(fecha.slice(0, 4), 10);
+  const mes = parseInt(fecha.slice(4, 6), 10) - 1; // JS usa 0-11
+  const dia = parseInt(fecha.slice(6, 8), 10);
+  const hora = parseInt(fecha.slice(8, 10), 10);
+  const min = parseInt(fecha.slice(10, 12), 10);
+  const seg = parseInt(fecha.slice(12, 14), 10);
 
-  const iso = `${año}-${mes}-${dia}T${hora}:${min}:${seg}${offset || '+00:00'}`;
-  return new Date(iso);
+  // Construir fecha en hora local directamente
+  return new Date(año, mes, dia, hora, min, seg);
 }
 
 function extraerTexto(x) {
