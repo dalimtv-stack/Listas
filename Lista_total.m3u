@@ -500,9 +500,9 @@ http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5644
 
 # https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Terror.jpg
 # https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/TERROR_poster.jpg
-#EXTINF:-1 tvg-id="Movistar.Especial.1.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-TERROR" group-title="VLC", Movistar Terror (1080)
+#EXTINF:-1 tvg-id="Movistar.Especial.1.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Nicolas%20Cage.png" group-title="VLC", Movistar Nicolas Cage (1080)
 http://vlc.shickat.me:8000/pid/cf99e99c105162410ec6d1f68cc6f4811560fee7/stream.mp4
-#EXTINF:-1 tvg-id="Movistar.Especial.1.es" tvg-logo="https://i.ibb.co/hJ1mPCbC/M-vacaciones.webp" group-title="Shickat.me", Movistar Terror (FHD)
+#EXTINF:-1 tvg-id="Movistar.Especial.1.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Nicolas%20Cage.png" group-title="Shickat.me", Movistar Nicolas Cage (FHD)
 acestream://cf99e99c105162410ec6d1f68cc6f4811560fee7
 
 # https://kb24ncicobqdaseh.public.blob.vercel-storage.com/Canales/Romance.jpg
