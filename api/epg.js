@@ -149,6 +149,7 @@ async function getEventoActualDesdeKV(canalId) {
   let actual = null;
   let siguientes = [];
 
+  // Buscar evento en curso
   for (const e of eventos) {
     const inicioTS = parseFechaXMLTV(e.start).getTime();
     const finTS = parseFechaXMLTV(e.stop).getTime();
@@ -159,12 +160,12 @@ async function getEventoActualDesdeKV(canalId) {
     }
   }
 
+  // Si no hay evento en curso, buscar el siguiente que empieza después de ahora
   if (!actual) {
-    for (let i = eventos.length - 1; i >= 0; i--) {
-      const e = eventos[i];
+    for (const e of eventos) {
       const inicioTS = parseFechaXMLTV(e.start).getTime();
       const desc = extraerTexto(e.desc);
-      if (inicioTS < ahora && desc && desc.length > 10) {
+      if (inicioTS >= ahora && desc && desc.length > 10) {
         actual = { ...e, title: extraerTexto(e.title), desc, category: extraerTexto(e.category) };
         break;
       }
