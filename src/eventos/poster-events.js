@@ -195,6 +195,7 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
     const isBaloncesto = sport === 'baloncesto';
     const isBalonmano = sport === 'balonmano';
     const isRugby = sport === 'rugby';
+    const isPadel = sport === 'padel';
     const isCiclismo = sport === 'ciclismo';
     const isGolf = sport === 'golf'; 
     const isMotos = sport === 'motos';
@@ -220,6 +221,12 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
     } else if (isRugby) {
       fuentes = [
         'https://www.movistarplus.es/deportes/rugby?conf=iptv',
+        'https://www.movistarplus.es/deportes?conf=iptv',
+        'https://www.movistarplus.es/el-partido-movistarplus'
+      ];
+    } else if (isPadel) {
+      fuentes = [
+        'https://www.movistarplus.es/deportes/padel?conf=iptv',
         'https://www.movistarplus.es/deportes?conf=iptv',
         'https://www.movistarplus.es/el-partido-movistarplus'
       ];
@@ -295,6 +302,21 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
     (competicion && competicion.toLowerCase() === 'mlb')
   ) {
     posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/MLB.jpeg';
+    } else if (
+    (deporte && deporte.toLowerCase() === 'boxeo') ||
+    (competicion && competicion.toLowerCase() === 'boxeo')
+  ) {
+    posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Boxeo.jpeg';
+    } else if (
+    (deporte && deporte.toLowerCase() === 'h. patines') ||
+    (competicion && competicion.toLowerCase() === 'h. patines')
+  ) {
+    posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Hockey_Patines.jpeg';
+    } else if (
+    (deporte && deporte.toLowerCase() === 'remo') ||
+    (competicion && competicion.toLowerCase() === 'remo')
+  ) {
+    posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Remo.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'ufc') {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/UFC.jpeg';
     } else if (isF1) {
@@ -307,6 +329,8 @@ async function generatePosterWithHour({ partido, hora, deporte, competicion, dia
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Mundial_Moto3.png';
     } else if (deporte && deporte.toLowerCase() === 'waterpolo') {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,c_fill,g_auto,w_405,q_auto,f_auto/plantillas/waterpolo.jpeg';
+    } else if (deporte && deporte.toLowerCase() === 'taekwondo') {
+      posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/Taekwondo.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'baloncesto') {
       posterSourceUrl = 'https://res.cloudinary.com/doimszxld/image/upload/plantillas/baloncesto.jpeg';
     } else if (deporte && deporte.toLowerCase() === 'billar') {
