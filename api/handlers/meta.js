@@ -3,7 +3,6 @@
 
 const NodeCache = require('node-cache');
 const { getChannel } = require('../../src/db');
-const { kvSetJsonTTLIfChanged } = require('../kv');
 const { normalizeCatalogName, getM3uHash, extractConfigIdFromUrl } = require('../utils');
 const { CACHE_TTL } = require('../../src/config');
 const { resolveM3uUrl } = require('../resolve');
@@ -102,9 +101,9 @@ async function handleMeta(req) {
 
   cache.set(cacheKey, resp);
 
-  // 🚀 Solo escribir en KV si hay cambios
-  const kvKey = `meta:${m3uHash}:${channelId}`;
-  await kvSetJsonTTLIfChanged(kvKey, resp, 24 * 3600);
+  // 🚀 Se elimina la escritura en KV de meta para evitar desfasar la programación
+  // const kvKey = `meta:${m3uHash}:${channelId}`;
+  // await kvSetJsonTTLIfChanged(kvKey, resp, 24 * 3600);
 
   console.log(logPrefix, `meta para ${channelId}: ${ch.name}`);
   return resp;
