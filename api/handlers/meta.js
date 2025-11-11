@@ -93,7 +93,6 @@ async function handleMeta(req) {
       id,
       type: 'tv',
       name: cleanName,
-      logo: actual?.icon || "",
       poster: ch.logo_url,
       background: ch.logo_url,
       description: epgDescripcion
