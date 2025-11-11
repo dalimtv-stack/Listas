@@ -57,7 +57,7 @@ async function handleMeta(req) {
 
   // --- EPG desde KV ---
   await actualizarEPGSiCaducado(channelId);
-  const { actual, siguientes } = await getEventoActualDesdeKV(channelId);
+  const { actual, siguientes, logo } = await getEventoActualDesdeKV(channelId);
 
   const titulo = actual?.title;
   const descripcion = actual?.desc;
@@ -95,7 +95,8 @@ async function handleMeta(req) {
       name: cleanName,
       poster: ch.logo_url,
       background: ch.logo_url,
-      description: epgDescripcion
+      description: epgDescripcion,
+      logo: logo || undefined // ← añadido: solo incluir si existe en KV
     }
   };
 
