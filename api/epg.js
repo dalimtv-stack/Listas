@@ -68,17 +68,37 @@ async function parsearXMLTV() {
     return { eventosPorCanal: {}, logosPorCanal: {} };
   }
 
-  const programas = parsed.tv?.programme;
-  const canales = parsed.tv?.channel;
+  // Normalizar a arrays por si <programme> o <channel> vienen como objeto único
+  const programasRaw = parsed.tv?.programme;
+  const canalesRaw = parsed.tv?.channel;
 
-  const eventosPorCanal = Array.isArray(programas) ? extraerEventosPorCanal(programas) : {};
+  const programas = Array.isArray(programasRaw)
+    ? programasRaw
+    : (programasRaw ? [programasRaw] : []);
+
+  const canales = Array.isArray(canalesRaw)
+    ? canalesRaw
+    : (canalesRaw ? [canalesRaw] : []);
+
+  const eventosPorCanal = programas.length ? extraerEventosPorCanal(programas) : {};
   const logosPorCanal = {};
 
-  if (Array.isArray(canales)) {
+  if (canales.length) {
     for (const c of canales) {
-      const canalId = c.id?.trim();
+      const canalId = (c.id || '').trim();
       if (!canalId) continue;
-      logosPorCanal[canalId] = c.icon?.src || '';
+
+      // fast-xml-parser puede mapear <icon src="..."/> como objeto o como array
+      let iconSrc = '';
+      if (c.icon) {
+        if (Array.isArray(c.icon)) {
+          iconSrc = c.icon[0]?.src || '';
+        } else {
+          iconSrc = c.icon.src || '';
+        }
+      }
+
+      logosPorCanal[canalId] = iconSrc;
     }
   }
 
