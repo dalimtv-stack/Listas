@@ -145,6 +145,38 @@ async function getEventoActualDesdeKV(canalId) {
       }
     }
   }
+
+  // FIX MÍNIMO: si no hay actual, pero sí eventos → usa el más reciente pasado o el próximo
+  if (!actual) {
+    const eventosConFecha = eventos
+      .map(e => ({ ...e, ts: parseFechaXMLTV(e.start).getTime() }))
+      .filter(e => !isNaN(e.ts))
+      .sort((a, b) => a.ts - b.ts);
+
+    if (eventosConFecha.length > 0) {
+      let candidato = null;
+      for (const e of eventosConFecha) {
+        const finTS = parseFechaXMLTV(e.stop).getTime();
+        if (finTS >= ahora) {
+          candidato = e;
+          break;
+        }
+      }
+      if (!candidato && eventosConFecha.length) {
+        candidato = eventosConFecha[eventosConFecha.length - 1];
+      }
+      if (candidato) {
+        actual = {
+          title: extraerTexto(candidato.title) || 'Sin título',
+          desc: extraerTexto(candidato.desc),
+          start: candidato.start,
+          stop: candidato.stop,
+          category: extraerTexto(candidato.category)
+        };
+      }
+    }
+  }
+
   if (!actual) {
     actual = { title: 'Sin información', desc: '', start: '', stop: '' };
   }
