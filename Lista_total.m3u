@@ -795,7 +795,7 @@ acestream://fefd45ed6ff415e05f1341b7d9da2988eacd13ea
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63387
 
 #EXTINF:-1 tvg-id="NBA.us" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NBA" group-title="NEW ERA", NBA TV
-http://127.0.0.1:6878/ace/getstream?id=b0f64a40f333ef5cc02c2b6d4a8c3f4b73dd8073
+acestream://e72d03fb9694164317260f684470be9ab781ed95
 #EXTINF:-1 tvg-id="NBA.us" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/NBA" group-title="NEW ERA", NBA TV
 acestream://b0f64a40f333ef5cc02c2b6d4a8c3f4b73dd8073
 
