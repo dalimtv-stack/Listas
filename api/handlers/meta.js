@@ -122,6 +122,9 @@ async function handleMeta(req) {
       name: cleanName,
       poster,
       background,
+      votes: '10',
+      genres: 'Drama',
+      year: '16',
       description: epgDescripcion,
       logo: logoEstatico || logoEPG || undefined  // ← Prioridad: KV > EPG
     }
