@@ -18,6 +18,8 @@ http://172.93.102.112:8989/278839_.m3u8
 acestream://b0405501919792a8c5f7ca89a3b3b0a7186ce49e
 #EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/Canal%20Hollywood.png" group-title="PgRaceFuaApi", Hollywood (FHD)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5619
+#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/Canal%20Hollywood.png" group-title="Mhubery", Hollywood (FHD)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/165862
 
 # https://i.ibb.co/VcRYc75W/M-plus.png
 # https://www.movistarplus.es/recorte/m-DP/modmarcas/MPLUHD
@@ -570,6 +572,8 @@ http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/58113
 #EXTINF:-1 tvg-id="Warner.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/Warner" group-title="PgRaceFuaApi", Warner
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5739
 
+#EXTINF:-1 tvg-id="SyFy.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/SyFy-logo" group-title="Mhubery", SyFy (FHD)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/165872
 #EXTINF:-1 tvg-id="SyFy.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/SyFy-logo" group-title="NEW ERA", SyFy (FHD)
 acestream://8e1bbcb6a6b8b9bb0e1144454fda35531107cdb3
 #EXTINF:-1 tvg-id="SyFy.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_auto,c_pad,w_405,q_auto,f_auto/Canales/SyFy-logo" group-title="PgRaceFuaApi", SyFy
@@ -649,6 +653,11 @@ acestream://55ff9ee631af351f365f51cf3601695bf1fd20f3
 #EXTINF:-1 tvg-id="AMC.es" tvg-logo="https://otakukart.com/wp-content/uploads/2023/10/AMC.jpg" group-title="PgRaceFuaApi", AMC
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5553
 
+#EXTINF:-1 tvg-id="AMC.Break.es" tvg-logo="https://lo1.in/sp/AMC BREAK.png" group-title="Mhubery",AMC BREAK (HD)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/10815
+#EXTINF:-1 tvg-id="AMC.Break.es" tvg-logo="https://lo1.in/sp/AMC BREAK.png" group-title="Mhubery",AMC BREAK (FHD)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/400407276
+
 # https://i.ibb.co/mr0dvFN7/CAlle-trece.png
 # https://i.ibb.co/VpgH9FJF/CAlle-trece.png
 #EXTINF:-1 tvg-id="Calle.13.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto,q_auto,f_auto/Canales/CAlle-trece" group-title="Telegram", Calle 13
@@ -663,6 +672,12 @@ http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5585
 
 #EXTINF:-1 tvg-id="BOM.cine.es" tvg-logo="https://lo1.in/sp/bomcnn.png" group-title="Mhubery", BOM CINE
 http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/5614
+#EXTINF:-1 tvg-id="BOM.cine.es" tvg-logo="https://lo1.in/sp/bomcnn.png" group-title="Mhubery", BOM CINE
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/5616
+#EXTINF:-1 tvg-id="BOM.cine.es" tvg-logo="https://lo1.in/sp/bomcnn.png" group-title="Mhubery", BOM CINE (HEVC)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/5615
+#EXTINF:-1 tvg-id="BOM.cine.es" tvg-logo="https://lo1.in/sp/bomcnn.png" group-title="Mhubery", BOM CINE (SD)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/1228
 
 #EXTINF:-1 tvg-id="Comedy.Central.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/Comedy_Central" group-title="PgRaceFuaApi", Comedy Central
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5584
