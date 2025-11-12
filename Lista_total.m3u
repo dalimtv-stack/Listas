@@ -384,6 +384,8 @@ http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5590
 #EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN2" group-title="PgRaceFuaApi", DAZN 2
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63383
 
+#EXTINF:-1 tvg-id="DAZN.3.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN3" group-title="Mhubery", DAZN 3 (HD)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/379046
 #EXTINF:-1 tvg-id="DAZN.3.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN3" group-title="NEW ERA", DAZN 3 (FHD)
 acestream://d641cd0fca0f467b3130754a091e2f4d22e68eb1
 #EXTINF:-1 tvg-id="DAZN.3.es" tvg-logo="https://www.movistarplus.es/recorte/n/mod_de_v/M2359028V4081907" group-title="NEW ERA", DAZN 3 (FHD) (Opcion 2)
