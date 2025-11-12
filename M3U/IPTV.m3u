@@ -271,6 +271,8 @@ http://127.0.0.1:6878/ace/getstream?id=a929eeec1268d69d1556a2e3ace793b2577d8810
 #EXTINF:-1 tvg-id="DAZN.2.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN2" group-title="Deportes", DAZN 2 (m3u8)
 http://127.0.0.1:6878/ace/getstream?id=b0eabe0fdd02fdd165896236765a9b753a2ff516
 
+#EXTINF:-1 tvg-id="DAZN.3.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN3" group-title="Deportes", DAZN 3 (Mhubery)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/379046
 #EXTINF:-1 tvg-id="DAZN.3.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN3" group-title="Deportes", DAZN 3 (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=d641cd0fca0f467b3130754a091e2f4d22e68eb1
 #EXTINF:-1 tvg-id="DAZN.3.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DAZN3" group-title="Deportes", DAZN 3 (Acestream)
@@ -438,6 +440,15 @@ http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/7190
 #EXTINF:-1 tvg-id="VinTV.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,b_black,c_pad,w_405,f_auto/bo_20px_solid_black/Canales/VinTv" group-title="Cine & Series", VinTV (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5726
 
+#EXTINF:-1 tvg-id="BOM.cine.es" tvg-logo="https://lo1.in/sp/bomcnn.png" group-title="Cine & Series", BOM CINE (Mhubery)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/5614
+#EXTINF:-1 tvg-id="BOM.cine.es" tvg-logo="https://lo1.in/sp/bomcnn.png" group-title="Cine & Series", BOM CINE (Mhubery)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/5616
+#EXTINF:-1 tvg-id="BOM.cine.es" tvg-logo="https://lo1.in/sp/bomcnn.png" group-title="Cine & Series", BOM CINE (Mhubery)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/5615
+#EXTINF:-1 tvg-id="BOM.cine.es" tvg-logo="https://lo1.in/sp/bomcnn.png" group-title="Cine & Series", BOM CINE (Mhubery)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/1228
+
 #EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="Cine & Series", Dark (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/25930
 #EXTINF:-1 tvg-id="Dark.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/DARK_black" group-title="Cine & Series", Dark (Mhubery)
@@ -465,6 +476,11 @@ http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5558
 http://172.93.102.112:8989/278811_.m3u8
 #EXTINF:-1 tvg-id="AMC.es" tvg-logo="https://otakukart.com/wp-content/uploads/2023/10/AMC.jpg" group-title="Cine & Series", AMC (PgRaceFuaApi)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5553
+
+#EXTINF:-1 tvg-id="AMC.Break.es" tvg-logo="https://lo1.in/sp/AMC BREAK.png" group-title="Cine & Series",AMC BREAK (Mhubery)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/10815
+#EXTINF:-1 tvg-id="AMC.Break.es" tvg-logo="https://lo1.in/sp/AMC BREAK.png" group-title="Cine & Series",AMC BREAK (Mhubery)
+http://gyzgmjtm.mhubery.xyz:80/34FZJ249/NGLB3NLU/400407276
 
 #EXTINF:-1 tvg-id="Calle.13.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto,q_auto,f_auto/Canales/CAlle-trece" group-title="Cine & Series", Calle 13 (m3u8)
 http://172.93.102.112:8989/278817_.m3u8
