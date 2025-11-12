@@ -157,6 +157,8 @@ http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63366
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63367
 #EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/f_auto/Canales/DAZN-x-LALIGA" group-title="PgRaceFuaApi", DAZN LaLiga (FHD)
 http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/63368
+#EXTINF:-1 tvg-id="DAZN.LALIGA.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/f_auto/Canales/DAZN-x-LALIGA" group-title="8dott", DAZN LaLiga
+http://tv.8dott.xyz:80/live/samuel/samuel123456/837876.ts
 
 # https://i.ibb.co/nsyG7wRV/DAZN-x-LALIGA-2.png
 # https://i.ibb.co/tw7G81gf/dazn-laliga-2-es.png
