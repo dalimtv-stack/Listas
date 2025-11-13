@@ -131,7 +131,9 @@ module.exports = async (req, res) => {
     <div class="modal-content">
       <span class="close" onclick="closeModal('modalStream')">&times;</span>
       <h2 class="text-xl font-bold mb-4">Añadir Stream a Canal Existente</h2>
-      <input type="text" id="streamTvgId" placeholder="tvg-id del canal (exacto)" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
+      <select id="streamTvgId" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
+        <option value="">-- Selecciona un canal --</option>
+      </select>
       <input type="url" id="streamUrl" placeholder="URL del nuevo stream" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
       <button onclick="insertStream()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Añadir debajo</button>
     </div>
@@ -144,6 +146,7 @@ module.exports = async (req, res) => {
     const saveBtn = document.getElementById('save');
     const reloadBtn = document.getElementById('reload');
     const channelCount = document.getElementById('channelCount');
+    const streamSelect = document.getElementById('streamTvgId');
     let currentSha = '';
 
     function show(msg, type = 'info') {
@@ -160,13 +163,26 @@ module.exports = async (req, res) => {
       const uniqueTvgIds = new Set();
       extinfLines.forEach(line => {
         const match = line.match(/tvg-id="([^"]*)"/);
-        if (match && match[1]) {
-          uniqueTvgIds.add(match[1]);
-        }
+        if (match && match[1]) uniqueTvgIds.add(match[1]);
       });
 
       const channelCountNum = uniqueTvgIds.size;
       channelCount.textContent = \`\${channelCountNum} canal\${channelCountNum !== 1 ? 'es' : ''} • \${streamCount} stream\${streamCount !== 1 ? 's' : ''}\`;
+      updateStreamSelect(uniqueTvgIds);
+    }
+
+    function updateStreamSelect(tvgIds) {
+      streamSelect.innerHTML = '<option value="">-- Selecciona un canal --</option>';
+      if (tvgIds.size === 0) {
+        streamSelect.innerHTML += '<option disabled>No hay canales con tvg-id</option>';
+        return;
+      }
+      Array.from(tvgIds).sort().forEach(id => {
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = id;
+        streamSelect.appendChild(opt);
+      });
     }
 
     function validateM3U() {
@@ -182,7 +198,8 @@ module.exports = async (req, res) => {
           inChannel = true;
           if (!line.includes('tvg-id=')) warnings.push('Línea ' + (i+1) + ': Falta tvg-id');
           if (!line.includes('tvg-logo=')) warnings.push('Línea ' + (i+1) + ': Sin logo');
-        } else if (inChannel && line && !line.startsWith('http')) {
+        } else if (inChannel && line && !line.startsWith('...
+        ) {
           errors.push('Línea ' + (i+1) + ': Stream sin URL');
           inChannel = false;
         } else if (inChannel && line.startsWith('http')) {
@@ -221,9 +238,10 @@ module.exports = async (req, res) => {
     }
 
     function insertStream() {
-      const tvgId = document.getElementById('streamTvgId').value.trim();
+      const tvgId = streamSelect.value;
       const url = document.getElementById('streamUrl').value.trim();
-      if (!tvgId || !url) return show('Faltan tvg-id o URL', 'error');
+      if (!tvgId) return show('Selecciona un canal', 'error');
+      if (!url) return show('Falta la URL', 'error');
 
       const lines = textarea.value.split(/\\r?\\n/);
       let inserted = false;
@@ -234,7 +252,7 @@ module.exports = async (req, res) => {
           break;
         }
       }
-      if (!inserted) return show('Canal con tvg-id no encontrado', 'error');
+      if (!inserted) return show('No se encontró el canal', 'error');
 
       textarea.value = lines.join('\\n');
       updateChannelCount();
@@ -250,7 +268,7 @@ module.exports = async (req, res) => {
         const { content, sha } = await r.json();
         textarea.value = content;
         currentSha = sha;
-        updateChannelCount(); // <-- ¡AQUÍ SE LLAMA!
+        updateChannelCount();
         show('Listo', 'success');
       } catch (e) {
         show('Error: ' + e.message, 'error');
