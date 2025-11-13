@@ -100,12 +100,11 @@ module.exports = async (req, res) => {
               <p class="text-sm opacity-80">Configurar calidad</p>
             </div>
           </a>
-
           <!-- GUÍA TV CON BADGE LIVE -->
           <a href="https://davidmuma.github.io/EPG/" target="_blank" class="card bg-gradient-to-br from-orange-600 to-amber-700 p-6 rounded-xl flex items-center gap-4 hover:shadow-2xl border border-orange-800/50 relative">
             <div class="bg-white/10 p-3 rounded-lg">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>
             </div>
@@ -119,6 +118,21 @@ module.exports = async (req, res) => {
               <p class="text-sm opacity-80">Programación completa</p>
             </div>
           </a>
+
+          <!-- NUEVO: EDITOR M3U -->
+          <a href="/editor" target="_blank" class="card bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-xl flex items-center gap-4 hover:shadow-2xl border border-indigo-800/50">
+            <div class="bg-white/10 p-3 rounded-lg">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-lg">Editor M3U</h3>
+              <p class="text-sm opacity-80">Editar lista en GitHub</p>
+            </div>
+          </a>
+
         </div>
         <div class="mt-8 text-center">
           <a href="/logout" class="text-gray-400 hover:text-white text-sm underline transition-colors">Cerrar sesión</a>
