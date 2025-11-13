@@ -11,6 +11,7 @@ module.exports = async (req, res) => {
   const email = requireAuth(req, res);
   if (!email) return;
 
+  // === API: GET M3U ===
   if (req.method === 'GET' && req.url === '/editor/data') {
     try {
       const r = await fetch(API_URL, {
@@ -26,6 +27,7 @@ module.exports = async (req, res) => {
     return;
   }
 
+  // === API: POST M3U ===
   if (req.method === 'POST' && req.url === '/editor/data') {
     const body = await getRawBody(req);
     const { content, sha } = JSON.parse(body.toString());
@@ -51,6 +53,7 @@ module.exports = async (req, res) => {
     return;
   }
 
+  // === EDITOR WEB ===
   if (req.url === '/editor' || req.url === '/editor/') {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     return res.status(200).end(`
@@ -64,14 +67,12 @@ module.exports = async (req, res) => {
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
-    .live-badge { animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.7; } }
   </style>
 </head>
 <body class="bg-black text-white min-h-screen">
   <div class="text-center py-8">
     <h1 class="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
-      Heimdallr Channels <span class="live-badge inline-block ml-3 text-xs font-bold bg-red-600 text-white px-2 py-0.5 rounded-full">LIVE</span>
+      Heimdallr Channels
     </h1>
     <p class="text-gray-400 mt-2 text-lg">Editor M3U</p>
   </div>
@@ -81,7 +82,6 @@ module.exports = async (req, res) => {
       <div class="flex justify-between items-center mb-6">
         <span class="text-green-400 font-medium">Autenticado como ${email}</span>
         <a href="/Acceso" class="text-gray-400 hover:text-white text-sm underline">Panel</a>
-      </,>
       </div>
 
       <div id="status" class="mb-4 text-sm"></div>
@@ -153,6 +153,7 @@ module.exports = async (req, res) => {
     `);
   }
 
+  // === CUALQUIER OTRA RUTA → LOGIN ===
   res.writeHead(302, { Location: '/Acceso' });
   res.end();
 };
