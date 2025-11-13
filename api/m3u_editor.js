@@ -118,8 +118,8 @@ module.exports = async (req, res) => {
     <div class="modal-content">
       <span class="close" onclick="closeModal('modalChannel')">&times;</span>
       <h2 class="text-xl font-bold mb-4">Añadir Canal</h2>
+      <input type="text" id="channelTvgId" placeholder="tvg-id (obligatorio)" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
       <input type="text" id="channelName" placeholder="Nombre del canal" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
-      <input type="text" id="channelTvgName" placeholder="tvg-name (opcional)" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
       <input type="url" id="channelLogo" placeholder="Logo URL (opcional)" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
       <input type="url" id="channelUrl" placeholder="URL del stream" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
       <button onclick="insertChannel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Insertar al final</button>
@@ -131,7 +131,7 @@ module.exports = async (req, res) => {
     <div class="modal-content">
       <span class="close" onclick="closeModal('modalStream')">&times;</span>
       <h2 class="text-xl font-bold mb-4">Añadir Stream a Canal Existente</h2>
-      <input type="text" id="streamChannelName" placeholder="Nombre exacto del canal (como en #EXTINF)" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
+      <input type="text" id="streamTvgId" placeholder="tvg-id del canal (exacto)" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
       <input type="url" id="streamUrl" placeholder="URL del nuevo stream" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
       <button onclick="insertStream()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Añadir debajo</button>
     </div>
@@ -153,14 +153,26 @@ module.exports = async (req, res) => {
     }
 
     function updateChannelCount() {
-      const lines = textarea.value.split('\\n');
-      const count = lines.filter(l => l.trim().startsWith('#EXTINF:')).length;
-      channelCount.textContent = count + ' canal' + (count !== 1 ? 'es' : '');
+      const lines = textarea.value.split('\n');
+      const extinfLines = lines.filter(l => l.trim().startsWith('#EXTINF:'));
+      const streamCount = extinfLines.length;
+
+      const uniqueTvgIds = new Set();
+      extinfLines.forEach(line => {
+        const match = line.match(/tvg-id="([^"]+)"/);
+        if (match && match[1].trim()) {
+          uniqueTvgIds.add(match[1].trim());
+        }
+      });
+
+      const channelCount = uniqueTvgIds.size;
+      document.getElementById('channelCount').textContent = 
+        \`\${channelCount} canal\${channelCount !== 1 ? 'es' : ''} • \${streamCount} stream\${streamCount !== 1 ? 's' : ''}\`;
     }
 
     function validateM3U() {
       validation.innerHTML = '';
-      const lines = textarea.value.split('\\n');
+      const lines = textarea.value.split('\n');
       const errors = [];
       const warnings = [];
       let inChannel = false;
@@ -169,7 +181,7 @@ module.exports = async (req, res) => {
         const line = lines[i].trim();
         if (line.startsWith('#EXTINF:')) {
           inChannel = true;
-          if (!line.includes('tvg-name=')) warnings.push('Línea ' + (i+1) + ': Falta tvg-name');
+          if (!line.includes('tvg-id=')) warnings.push('Línea ' + (i+1) + ': Falta tvg-id');
           if (!line.includes('tvg-logo=')) warnings.push('Línea ' + (i+1) + ': Sin logo');
         } else if (inChannel && line && !line.startsWith('http')) {
           errors.push('Línea ' + (i+1) + ': Stream sin URL');
@@ -194,15 +206,14 @@ module.exports = async (req, res) => {
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     function insertChannel() {
+      const tvgId = document.getElementById('channelTvgId').value.trim();
       const name = document.getElementById('channelName').value.trim();
-      const tvg = document.getElementById('channelTvgName').value.trim();
       const logo = document.getElementById('channelLogo').value.trim();
       const url = document.getElementById('channelUrl').value.trim();
-      if (!name || !url) return show('Faltan datos', 'error');
+      if (!tvgId || !name || !url) return show('Faltan tvg-id, nombre o URL', 'error');
 
-      const tvgPart = tvg ? ' tvg-name="' + tvg + '"' : '';
       const logoPart = logo ? ' tvg-logo="' + logo + '"' : '';
-      const entry = '\\n#EXTINF:-1' + tvgPart + logoPart + ' group-title="Heimdallr",' + name + '\\n' + url + '\\n';
+      const entry = '\\n#EXTINF:-1 tvg-id="' + tvgId + '"' + logoPart + ' group-title="Heimdallr",' + name + '\\n' + url + '\\n';
 
       textarea.value += entry;
       updateChannelCount();
@@ -211,22 +222,22 @@ module.exports = async (req, res) => {
     }
 
     function insertStream() {
-      const channelName = document.getElementById('streamChannelName').value.trim();
+      const tvgId = document.getElementById('streamTvgId').value.trim();
       const url = document.getElementById('streamUrl').value.trim();
-      if (!channelName || !url) return show('Faltan datos', 'error');
+      if (!tvgId || !url) return show('Faltan tvg-id o URL', 'error');
 
-      const lines = textarea.value.split('\\n');
+      const lines = textarea.value.split('\n');
       let inserted = false;
       for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes(channelName) && lines[i].startsWith('#EXTINF:')) {
-          lines.splice(i + 1, 0, url);
+        if (lines[i].includes('tvg-id="' + tvgId + '"') && lines[i].startsWith('#EXTINF:')) {
+          lines.spliceCut(i + 1, 0, url);
           inserted = true;
           break;
         }
       }
-      if (!inserted) return show('Canal no encontrado', 'error');
+      if (!inserted) return show('Canal con tvg-id no encontrado', 'error');
 
-      textarea.value = lines.join('\\n');
+      textarea.value = lines.join('\n');
       updateChannelCount();
       closeModal('modalStream');
       show('Stream añadido', 'success');
