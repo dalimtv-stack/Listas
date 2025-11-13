@@ -56,7 +56,8 @@ module.exports = async (req, res) => {
   // === EDITOR WEB ===
   if (req.url === '/editor' || req.url === '/editor/') {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    return res.status(200).end(`
+
+    const html = `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -85,7 +86,7 @@ module.exports = async (req, res) => {
   <div class="max-w-5xl mx-auto p-6">
     <div class="bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-gray-800">
       <div class="flex justify-between items-center mb-6">
-        <span class="text-green-400 font-medium">Autenticado como ' + email + '</span>
+        <span class="text-green-400 font-medium">Autenticado como ` + email + `</span>
         <a href="/Acceso" class="text-gray-400 hover:text-white text-sm underline">Panel</a>
       </div>
 
@@ -153,7 +154,7 @@ module.exports = async (req, res) => {
 
     function updateChannelCount() {
       const lines = textarea.value.split('\\n');
-      const count = lines.filter(l => l.startsWith('#EXTINF:')).length;
+      const count = lines.filter(l => l.trim().startsWith('#EXTINF:')).length;
       channelCount.textContent = count + ' canal' + (count !== 1 ? 'es' : '');
     }
 
@@ -169,7 +170,7 @@ module.exports = async (req, res) => {
         if (line.startsWith('#EXTINF:')) {
           inChannel = true;
           if (!line.includes('tvg-name=')) warnings.push('Línea ' + (i+1) + ': Falta tvg-name');
-          if (!line.includes('http')) warnings.push('Línea ' + (i+1) + ': Sin logo?');
+          if (!line.includes('tvg-logo=')) warnings.push('Línea ' + (i+1) + ': Sin logo');
         } else if (inChannel && line && !line.startsWith('http')) {
           errors.push('Línea ' + (i+1) + ': Stream sin URL');
           inChannel = false;
@@ -199,9 +200,9 @@ module.exports = async (req, res) => {
       const url = document.getElementById('channelUrl').value.trim();
       if (!name || !url) return show('Faltan datos', 'error');
 
-      const tvgPart = tvg ? ` tvg-name="${tvg}"` : '';
-      const logoPart = logo ? ` tvg-logo="${logo}"` : '';
-      const entry = `\\n#EXTINF:-1${tvgPart}${logoPart} group-title="Heimdallr",${name}\\n${url}\\n`;
+      const tvgPart = tvg ? ' tvg-name="' + tvg + '"' : '';
+      const logoPart = logo ? ' tvg-logo="' + logo + '"' : '';
+      const entry = '\\n#EXTINF:-1' + tvgPart + logoPart + ' group-title="Heimdallr",' + name + '\\n' + url + '\\n';
 
       textarea.value += entry;
       updateChannelCount();
@@ -275,8 +276,9 @@ module.exports = async (req, res) => {
     load();
   </script>
 </body>
-</html>
-    `);
+</html>`;
+
+    return res.status(200).end(html);
   }
 
   res.writeHead(302, { Location: '/Acceso' });
