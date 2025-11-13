@@ -11,7 +11,6 @@ module.exports = async (req, res) => {
   const email = requireAuth(req, res);
   if (!email) return;
 
-  // === API: GET M3U ===
   if (req.method === 'GET' && req.url === '/editor/data') {
     try {
       const r = await fetch(API_URL, {
@@ -27,7 +26,6 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // === API: POST M3U ===
   if (req.method === 'POST' && req.url === '/editor/data') {
     const body = await getRawBody(req);
     const { content, sha } = JSON.parse(body.toString());
@@ -53,7 +51,6 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // === EDITOR WEB ===
   if (req.url === '/editor' || req.url === '/editor/') {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     return res.status(200).end(`
@@ -84,6 +81,7 @@ module.exports = async (req, res) => {
       <div class="flex justify-between items-center mb-6">
         <span class="text-green-400 font-medium">Autenticado como ${email}</span>
         <a href="/Acceso" class="text-gray-400 hover:text-white text-sm underline">Panel</a>
+      </,>
       </div>
 
       <div id="status" class="mb-4 text-sm"></div>
@@ -109,7 +107,7 @@ module.exports = async (req, res) => {
 
     function show(msg, type = 'info') {
       const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'yellow';
-      status.innerHTML = `<span class="text-${color}-400">${msg}</span>`;
+      status.innerHTML = '<span class="text-' + color + '-400">' + msg + '</span>';
       setTimeout(() => status.innerHTML = '', 5000);
     }
 
