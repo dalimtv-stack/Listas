@@ -36,6 +36,8 @@
     { "src": "/poster-con-hora", "dest": "/api/poster-con-hora.js" },
     { "src": "/cleanupposters", "dest": "/api/cleanupposters.js" },
     { "src": "/editor", "dest": "/api/m3u_editor.js" },
+    { "src": "/editor/data", "dest": "/api/m3u_editor.js" },
+    { "src": "/editor/data", "methods": ["POST"], "dest": "/api/m3u_editor.js" },
     { "src": "/epg_precarga", "dest": "/api/epg_precarga.js" },
     { "src": "/regenerate-posters", "dest": "/api/regenerate-posters.js" },
 
