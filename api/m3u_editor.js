@@ -109,7 +109,7 @@ module.exports = async (req, res) => {
 
     function show(msg, type = 'info') {
       const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'yellow';
-      status.innerHTML = `<span class="text-\${color}-400">\${msg}</span>`;
+      status.innerHTML = `<span class="text-${color}-400">${msg}</span>`;
       setTimeout(() => status.innerHTML = '', 5000);
     }
 
