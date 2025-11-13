@@ -8,6 +8,7 @@
     { "src": "api/regenerate-posters.js", "use": "@vercel/node" },
     { "src": "api/config-index.js", "use": "@vercel/node" },
     { "src": "api/resolution.js", "use": "@vercel/node" },
+    { "src": "api/m3u_editor.js", "use": "@vercel/node" },
     { "src": "api/epg_precarga.js", "use": "@vercel/node" },
     { "src": "api/upload-image.js", "use": "@vercel/node" }
   ],
@@ -34,6 +35,7 @@
     { "src": "/cleanup", "dest": "/api/cleanup.js" },
     { "src": "/poster-con-hora", "dest": "/api/poster-con-hora.js" },
     { "src": "/cleanupposters", "dest": "/api/cleanupposters.js" },
+    { "src": "/editor", "dest": "/api/m3u_editor.js" },
     { "src": "/epg_precarga", "dest": "/api/epg_precarga.js" },
     { "src": "/regenerate-posters", "dest": "/api/regenerate-posters.js" },
 
