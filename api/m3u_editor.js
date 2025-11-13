@@ -85,7 +85,7 @@ module.exports = async (req, res) => {
   <div class="max-w-5xl mx-auto p-6">
     <div class="bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-gray-800">
       <div class="flex justify-between items-center mb-6">
-        <span class="text-green-400 font-medium">Autenticado como ${email}</span>
+        <span class="text-green-400 font-medium">Autenticado como ' + email + '</span>
         <a href="/Acceso" class="text-gray-400 hover:text-white text-sm underline">Panel</a>
       </div>
 
