@@ -9,7 +9,7 @@ const API_URL = `https://api.github.com/repos/${GITHUB_REPO}/contents/${M3U_PATH
 
 module.exports = async (req, res) => {
   const email = requireAuth(req, res);
-  if (!email) return; // ← ya redirige a login
+  if (!email) return; // ← redirige a /Acceso si no autenticado
 
   // === API: GET M3U ===
   if (req.method === 'GET' && req.url === '/editor/data') {
