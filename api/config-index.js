@@ -1,6 +1,5 @@
 const crypto = require('crypto');
 const getRawBody = require('raw-body');
-
 const ALLOWED_EMAIL = process.env.ALLOWED_EMAIL;
 const ALLOWED_PASSWORD = process.env.ALLOWED_PASSWORD;
 const COOKIE_SECRET = process.env.COOKIE_SECRET;
@@ -44,7 +43,6 @@ module.exports = async (req, res) => {
     </h1>
     <p class="text-gray-400 mt-2 text-lg">Panel de Control</p>
   </div>
-
   <div class="flex items-center justify-center p-6">
     <div class="w-full max-w-2xl">
       <div class="bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-gray-800">
@@ -58,7 +56,6 @@ module.exports = async (req, res) => {
             <span class="font-medium text-green-400">${ALLOWED_EMAIL}</span>
           </div>
         </div>
-
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <a href="/cleanup" class="card bg-gradient-to-br from-red-600 to-rose-700 p-6 rounded-xl flex items-center gap-4 hover:shadow-2xl border border-red-800/50">
             <div class="bg-white/10 p-3 rounded-lg">
@@ -69,7 +66,6 @@ module.exports = async (req, res) => {
               <p class="text-sm opacity-80">Eliminar caché y datos antiguos</p>
             </div>
           </a>
-
           <a href="/regenerate-posters" class="card bg-gradient-to-br from-cyan-600 to-blue-700 p-6 rounded-xl flex items-center gap-4 hover:shadow-2xl border border-cyan-800/50">
             <div class="bg-white/10 p-3 rounded-lg">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -79,7 +75,6 @@ module.exports = async (req, res) => {
               <p class="text-sm opacity-80">Actualizar imágenes</p>
             </div>
           </a>
-
           <a href="/upload-image" class="card bg-gradient-to-br from-emerald-600 to-teal-700 p-6 rounded-xl flex items-center gap-4 hover:shadow-2xl border border-emerald-800/50">
             <div class="bg-white/10 p-3 rounded-lg">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
@@ -89,7 +84,6 @@ module.exports = async (req, res) => {
               <p class="text-sm opacity-80">Añadir logos personalizados</p>
             </div>
           </a>
-
           <a href="/Resolution" class="card bg-gradient-to-br from-purple-600 to-indigo-700 p-6 rounded-xl flex items-center gap-4 hover:shadow-2xl border border-purple-800/50">
             <div class="bg-white/10 p-3 rounded-lg">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -99,8 +93,21 @@ module.exports = async (req, res) => {
               <p class="text-sm opacity-80">Configurar calidad</p>
             </div>
           </a>
-        </div>
 
+          <!-- NUEVO: GUÍA TV -->
+          <a href="https://davidmuma.github.io/EPG/" target="_blank" class="card bg-gradient-to-br from-orange-600 to-amber-700 p-6 rounded-xl flex items-center gap-4 hover:shadow-2xl border border-orange-800/50">
+            <div class="bg-white/10 p-3 rounded-lg">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-lg">Guía TV</h3>
+              <p class="text-sm opacity-80">Programación completa</p>
+            </div>
+          </a>
+        </div>
         <div class="mt-8 text-center">
           <a href="/logout" class="text-gray-400 hover:text-white text-sm underline transition-colors">Cerrar sesión</a>
         </div>
@@ -118,7 +125,6 @@ module.exports = async (req, res) => {
     const params = new URLSearchParams(body.toString());
     const email = params.get('email');
     const password = params.get('password');
-
     if (email === ALLOWED_EMAIL && password === ALLOWED_PASSWORD) {
       const firma = firmar(email);
       res.setHeader('Set-Cookie', `auth_token=${email}|${firma}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=86400`);
@@ -162,7 +168,6 @@ module.exports = async (req, res) => {
     </h1>
     <p class="text-gray-500 mt-2">Acceso Seguro</p>
   </div>
-
   <div class="w-full max-w-md mt-32">
     <div class="bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-gray-800">
       <div class="text-center mb-8">
@@ -170,11 +175,10 @@ module.exports = async (req, res) => {
           <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
         </div>
       </div>
-
       <form method="POST" action="/Acceso" class="space-y-5">
         <div>
           <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
-          <input type="email" name="email" required autocomplete="email" 
+          <input type="email" name="email" required autocomplete="email"
                  class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
         </div>
         <div>
@@ -182,7 +186,7 @@ module.exports = async (req, res) => {
           <input type="password" name="password" required autocomplete="current-password"
                  class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
         </div>
-        <button type="submit" 
+        <button type="submit"
                 class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transform transition-all duration-200 hover:scale-[1.02] shadow-xl">
           Iniciar Sesión
         </button>
