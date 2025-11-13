@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
   const token = cookies.match(/auth_token=([^;]+)/)?.[1];
 
   // === API: GET M3U ===
-  if (req.method === 'GET' && req.url === '/api/m3u_editor/data') {
+  if (req.method === 'GET' && req.url === '/editor/data') {
     if (!esTokenValido(token)) return res.status(401).json({ error: 'No autorizado' });
     try {
       const r = await fetch(API_URL, { headers: { Authorization: `token ${GITHUB_TOKEN}`, 'User-Agent': 'Heimdallr' } });
@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
   }
 
   // === API: POST M3U ===
-  if (req.method === 'POST' && req.url === '/api/m3u_editor/data') {
+  if (req.method === 'POST' && req.url === '/editor/data') {
     if (!esTokenValido(token)) return res.status(401).json({ error: 'No autorizado' });
     const { content, sha } = JSON.parse((await getRawBody(req)).toString());
     try {
@@ -42,8 +42,8 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // === EDITOR WEB (ruta principal) ===
-  if (req.url === '/api/m3u_editor' || req.url === '/api/m3u_editor/') {
+  // === EDITOR WEB ===
+  if (req.url === '/editor' || req.url === '/editor/') {
     if (!esTokenValido(token)) {
       res.writeHead(302, { Location: '/Acceso' });
       return res.end();
@@ -84,10 +84,10 @@ module.exports = async (req, res) => {
       <textarea id="m3u" class="w-full h-96 bg-gray-800 text-green-400 p-4 rounded-lg font-mono text-sm focus:ring-2 focus:ring-purple-500" placeholder="Cargando..."></textarea>
 
       <div class="mt-6 flex gap-3">
-        <button id="save" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transform transition-all duration-200 hover:scale-[1.02] shadow-xl flex items-center gap-2">
+        <button id="save" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transform transition-all duration-200 hover:scale-[1.02] shadow-xl">
           Guardar en GitHub
         </button>
-        <button id="reload" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg flex items-center gap-2">
+        <button id="reload" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg">
           Recargar
         </button>
       </div>
@@ -125,7 +125,7 @@ module.exports = async (req, res) => {
       });
       show('Guardado!', 'success');
       saveBtn.disabled = false;
-      saveBtn.innerHTML = 'Guardar en GitHub';
+      saveBtn.textContent = 'Guardar en GitHub';
     };
 
     reloadBtn.onclick = load;
@@ -136,7 +136,7 @@ module.exports = async (req, res) => {
     `);
   }
 
-  // === NO AUTENTICADO O RUTA DESCONOCIDA ===
+  // === CUALQUIER OTRA RUTA → LOGIN ===
   res.writeHead(302, { Location: '/Acceso' });
   res.end();
 };
