@@ -67,6 +67,11 @@ module.exports = async (req, res) => {
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
+    .validation-error { background: #7f1d1d; border-left: 4px solid #ef4444; }
+    .validation-warning { background: #7c2d12; border-left: 4px solid #f97316; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 50; }
+    .modal-content { background: #111; margin: 5% auto; padding: 2rem; width: 90%; max-width: 600px; border-radius: 12px; border: 1px solid #333; }
+    .close { float: right; font-size: 1.5rem; cursor: pointer; }
   </style>
 </head>
 <body class="bg-black text-white min-h-screen">
@@ -84,7 +89,16 @@ module.exports = async (req, res) => {
         <a href="/Acceso" class="text-gray-400 hover:text-white text-sm underline">Panel</a>
       </div>
 
+      <div class="flex items-center gap-4 mb-4">
+        <span id="channelCount" class="text-2xl font-bold text-purple-400">0 canales</span>
+        <button id="addChannel" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Añadir Canal</button>
+        <button id="addStream" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Añadir Stream</button>
+        <button id="validate" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-lg">Validar M3U</button>
+      </div>
+
+      <div id="validation" class="mb-4 text-sm"></div>
       <div id="status" class="mb-4 text-sm"></div>
+
       <textarea id="m3u" class="w-full h-96 bg-gray-800 text-green-400 p-4 rounded-lg font-mono text-sm focus:ring-2 focus:ring-purple-500" placeholder="Cargando..."></textarea>
 
       <div class="mt-6 flex gap-3">
@@ -98,17 +112,123 @@ module.exports = async (req, res) => {
     </div>
   </div>
 
+  <!-- MODAL: AÑADIR CANAL -->
+  <div id="modalChannel" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('modalChannel')">&times;</span>
+      <h2 class="text-xl font-bold mb-4">Añadir Canal</h2>
+      <input type="text" id="channelName" placeholder="Nombre del canal" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
+      <input type="text" id="channelTvgName" placeholder="tvg-name (opcional)" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
+      <input type="url" id="channelLogo" placeholder="Logo URL (opcional)" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
+      <input type="url" id="channelUrl" placeholder="URL del stream" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
+      <button onclick="insertChannel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Insertar al final</button>
+    </div>
+  </div>
+
+  <!-- MODAL: AÑADIR STREAM -->
+  <div id="modalStream" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('modalStream')">&times;</span>
+      <h2 class="text-xl font-bold mb-4">Añadir Stream a Canal Existente</h2>
+      <input type="text" id="streamChannelName" placeholder="Nombre exacto del canal (como en #EXTINF)" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
+      <input type="url" id="streamUrl" placeholder="URL del nuevo stream" class="w-full p-2 mb-3 bg-gray-800 rounded text-white">
+      <button onclick="insertStream()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Añadir debajo</button>
+    </div>
+  </div>
+
   <script>
     const status = document.getElementById('status');
+    const validation = document.getElementById('validation');
     const textarea = document.getElementById('m3u');
     const saveBtn = document.getElementById('save');
     const reloadBtn = document.getElementById('reload');
+    const channelCount = document.getElementById('channelCount');
     let currentSha = '';
 
     function show(msg, type = 'info') {
       const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'yellow';
       status.innerHTML = '<span class="text-' + color + '-400">' + msg + '</span>';
       setTimeout(() => status.innerHTML = '', 5000);
+    }
+
+    function updateChannelCount() {
+      const lines = textarea.value.split('\\n');
+      const count = lines.filter(l => l.startsWith('#EXTINF:')).length;
+      channelCount.textContent = count + ' canal' + (count !== 1 ? 'es' : '');
+    }
+
+    function validateM3U() {
+      validation.innerHTML = '';
+      const lines = textarea.value.split('\\n');
+      const errors = [];
+      const warnings = [];
+      let inChannel = false;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line.startsWith('#EXTINF:')) {
+          inChannel = true;
+          if (!line.includes('tvg-name=')) warnings.push('Línea ' + (i+1) + ': Falta tvg-name');
+          if (!line.includes('http')) warnings.push('Línea ' + (i+1) + ': Sin logo?');
+        } else if (inChannel && line && !line.startsWith('http')) {
+          errors.push('Línea ' + (i+1) + ': Stream sin URL');
+          inChannel = false;
+        } else if (inChannel && line.startsWith('http')) {
+          inChannel = false;
+        }
+      }
+
+      if (errors.length) {
+        validation.innerHTML += '<div class="validation-error p-3 mb-2 rounded"><strong>Errores:</strong><ul class="list-disc pl-5">' + errors.map(e => '<li>' + e + '</li>').join('') + '</ul></div>';
+      }
+      if (warnings.length) {
+        validation.innerHTML += '<div class="validation-warning p-3 mb-2 rounded"><strong>Advertencias:</strong><ul class="list-disc pl-5">' + warnings.map(w => '<li>' + w + '</li>').join('') + '</ul></div>';
+      }
+      if (!errors.length && !warnings.length) {
+        validation.innerHTML = '<div class="text-green-400 p-3 bg-green-900/50 rounded">M3U válido</div>';
+      }
+    }
+
+    function openModal(id) { document.getElementById(id).style.display = 'block'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function insertChannel() {
+      const name = document.getElementById('channelName').value.trim();
+      const tvg = document.getElementById('channelTvgName').value.trim();
+      const logo = document.getElementById('channelLogo').value.trim();
+      const url = document.getElementById('channelUrl').value.trim();
+      if (!name || !url) return show('Faltan datos', 'error');
+
+      const tvgPart = tvg ? ` tvg-name="${tvg}"` : '';
+      const logoPart = logo ? ` tvg-logo="${logo}"` : '';
+      const entry = `\\n#EXTINF:-1${tvgPart}${logoPart} group-title="Heimdallr",${name}\\n${url}\\n`;
+
+      textarea.value += entry;
+      updateChannelCount();
+      closeModal('modalChannel');
+      show('Canal añadido', 'success');
+    }
+
+    function insertStream() {
+      const channelName = document.getElementById('streamChannelName').value.trim();
+      const url = document.getElementById('streamUrl').value.trim();
+      if (!channelName || !url) return show('Faltan datos', 'error');
+
+      const lines = textarea.value.split('\\n');
+      let inserted = false;
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].includes(channelName) && lines[i].startsWith('#EXTINF:')) {
+          lines.splice(i + 1, 0, url);
+          inserted = true;
+          break;
+        }
+      }
+      if (!inserted) return show('Canal no encontrado', 'error');
+
+      textarea.value = lines.join('\\n');
+      updateChannelCount();
+      closeModal('modalStream');
+      show('Stream añadido', 'success');
     }
 
     async function load() {
@@ -119,6 +239,7 @@ module.exports = async (req, res) => {
         const { content, sha } = await r.json();
         textarea.value = content;
         currentSha = sha;
+        updateChannelCount();
         show('Listo', 'success');
       } catch (e) {
         show('Error: ' + e.message, 'error');
@@ -126,7 +247,7 @@ module.exports = async (req, res) => {
     }
 
     saveBtn.onclick = async () => {
-      if (!currentSha) return show('Primero recarga el archivo', 'error');
+      if (!currentSha) return show('Primero recarga', 'error');
       saveBtn.disabled = true;
       saveBtn.textContent = 'Guardando...';
       try {
@@ -146,6 +267,11 @@ module.exports = async (req, res) => {
     };
 
     reloadBtn.onclick = load;
+    document.getElementById('addChannel').onclick = () => openModal('modalChannel');
+    document.getElementById('addStream').onclick = () => openModal('modalStream');
+    document.getElementById('validate').onclick = validateM3U;
+    textarea.oninput = updateChannelCount;
+
     load();
   </script>
 </body>
@@ -153,7 +279,6 @@ module.exports = async (req, res) => {
     `);
   }
 
-  // === CUALQUIER OTRA RUTA → LOGIN ===
   res.writeHead(302, { Location: '/Acceso' });
   res.end();
 };
