@@ -167,7 +167,7 @@ module.exports = async (req, res) => {
       });
 
       const channelCountNum = uniqueTvgIds.size;
-      channelCount.textContent = \`\${channelCountNum} canal\${channelCountNum !== 1 ? 'es' : ''} • \${streamCount} stream\${streamCount !== 1 ? 's' : ''}\`;
+      channelCount.textContent = channelCountNum + ' canal' + (channelCountNum !== 1 ? 'es' : '') + ' • ' + streamCount + ' stream' + (streamCount !== 1 ? 's' : '');
       updateStreamSelect(uniqueTvgIds);
     }
 
@@ -198,8 +198,7 @@ module.exports = async (req, res) => {
           inChannel = true;
           if (!line.includes('tvg-id=')) warnings.push('Línea ' + (i+1) + ': Falta tvg-id');
           if (!line.includes('tvg-logo=')) warnings.push('Línea ' + (i+1) + ': Sin logo');
-        } else if (inChannel && line && !line.startsWith('...
-        ) {
+        } else if (inChannel && line && !line.startsWith('http')) {
           errors.push('Línea ' + (i+1) + ': Stream sin URL');
           inChannel = false;
         } else if (inChannel && line.startsWith('http')) {
