@@ -153,26 +153,25 @@ module.exports = async (req, res) => {
     }
 
     function updateChannelCount() {
-      const lines = textarea.value.split('\n');
+      const lines = textarea.value.split(/\\r?\\n/);
       const extinfLines = lines.filter(l => l.trim().startsWith('#EXTINF:'));
       const streamCount = extinfLines.length;
 
       const uniqueTvgIds = new Set();
       extinfLines.forEach(line => {
-        const match = line.match(/tvg-id="([^"]+)"/);
-        if (match && match[1].trim()) {
-          uniqueTvgIds.add(match[1].trim());
+        const match = line.match(/tvg-id="([^"]*)"/);
+        if (match && match[1]) {
+          uniqueTvgIds.add(match[1]);
         }
       });
 
-      const channelCount = uniqueTvgIds.size;
-      document.getElementById('channelCount').textContent = 
-        \`\${channelCount} canal\${channelCount !== 1 ? 'es' : ''} • \${streamCount} stream\${streamCount !== 1 ? 's' : ''}\`;
+      const channelCountNum = uniqueTvgIds.size;
+      channelCount.textContent = \`\${channelCountNum} canal\${channelCountNum !== 1 ? 'es' : ''} • \${streamCount} stream\${streamCount !== 1 ? 's' : ''}\`;
     }
 
     function validateM3U() {
       validation.innerHTML = '';
-      const lines = textarea.value.split('\n');
+      const lines = textarea.value.split(/\\r?\\n/);
       const errors = [];
       const warnings = [];
       let inChannel = false;
@@ -226,18 +225,18 @@ module.exports = async (req, res) => {
       const url = document.getElementById('streamUrl').value.trim();
       if (!tvgId || !url) return show('Faltan tvg-id o URL', 'error');
 
-      const lines = textarea.value.split('\n');
+      const lines = textarea.value.split(/\\r?\\n/);
       let inserted = false;
       for (let i = 0; i < lines.length; i++) {
         if (lines[i].includes('tvg-id="' + tvgId + '"') && lines[i].startsWith('#EXTINF:')) {
-          lines.spliceCut(i + 1, 0, url);
+          lines.splice(i + 1, 0, url);
           inserted = true;
           break;
         }
       }
       if (!inserted) return show('Canal con tvg-id no encontrado', 'error');
 
-      textarea.value = lines.join('\n');
+      textarea.value = lines.join('\\n');
       updateChannelCount();
       closeModal('modalStream');
       show('Stream añadido', 'success');
@@ -251,7 +250,7 @@ module.exports = async (req, res) => {
         const { content, sha } = await r.json();
         textarea.value = content;
         currentSha = sha;
-        updateChannelCount();
+        updateChannelCount(); // <-- ¡AQUÍ SE LLAMA!
         show('Listo', 'success');
       } catch (e) {
         show('Error: ' + e.message, 'error');
@@ -282,7 +281,7 @@ module.exports = async (req, res) => {
     document.getElementById('addChannel').onclick = () => openModal('modalChannel');
     document.getElementById('addStream').onclick = () => openModal('modalStream');
     document.getElementById('validate').onclick = validateM3U;
-    textarea.oninput = updateChannelCount;
+    textarea.addEventListener('input', updateChannelCount);
 
     load();
   </script>
