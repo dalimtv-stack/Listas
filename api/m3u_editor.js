@@ -15,7 +15,10 @@ module.exports = async (req, res) => {
   if (req.method === 'GET' && req.url === '/editor/data') {
     if (!esTokenValido(token)) return res.status(401).json({ error: 'No autorizado' });
     try {
-      const r = await fetch(API_URL, { headers: { Authorization: `token ${GITHUB_TOKEN}`, 'User-Agent': 'Heimdallr' } });
+      const r = await fetch(API_URL, {
+        headers: { Authorization: `token ${GITHUB_TOKEN}`, 'User-Agent': 'Heimdallr' }
+      });
+      if (!r.ok) throw new Error(`GitHub: ${r.status}`);
       const data = await r.json();
       const content = Buffer.from(data.content, 'base64').toString('utf8');
       res.json({ content, sha: data.sha });
@@ -28,13 +31,23 @@ module.exports = async (req, res) => {
   // === API: POST M3U ===
   if (req.method === 'POST' && req.url === '/editor/data') {
     if (!esTokenValido(token)) return res.status(401).json({ error: 'No autorizado' });
-    const { content, sha } = JSON.parse((await getRawBody(req)).toString());
+    const body = await getRawBody(req);
+    const { content, sha } = JSON.parse(body.toString());
     try {
-      await fetch(API_URL, {
+      const r = await fetch(API_URL, {
         method: 'PUT',
-        headers: { Authorization: `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json', 'User-Agent': 'Heimdallr' },
-        body: JSON.stringify({ message: `Edit via Editor - ${new Date().toISOString()}`, content: Buffer.from(content).toString('base64'), sha })
+        headers: {
+          Authorization: `token ${GITHUB_TOKEN}`,
+          'Content-Type': 'application/json',
+          'User-Agent': 'Heimdallr'
+        },
+        body: JSON.stringify({
+          message: `Edit M3U - ${new Date().toISOString()}`,
+          content: Buffer.from(content).toString('base64'),
+          sha
+        })
       });
+      if (!r.ok) throw new Error(`GitHub: ${r.status}`);
       res.json({ ok: true });
     } catch (e) {
       res.status(500).json({ error: e.message });
@@ -42,7 +55,7 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // === EDITOR WEB ===
+  // === EDITOR WEB (solo si autenticado) ===
   if (req.url === '/editor' || req.url === '/editor/') {
     if (!esTokenValido(token)) {
       res.writeHead(302, { Location: '/Acceso' });
@@ -94,24 +107,25 @@ module.exports = async (req, res) => {
     </div>
   </div>
 
+  <!-- JAVASCRIPT DEL CLIENTE (CORREGIDO) -->
   <script>
     const status = document.getElementById('status');
     const textarea = document.getElementById('m3u');
     const saveBtn = document.getElementById('save');
     const reloadBtn = document.getElementById('reload');
     let currentSha = '';
-  
+
     function show(msg, type = 'info') {
       const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'yellow';
-      status.innerHTML = `<span class="text-${color}-400">${msg}</span>`;
+      status.innerHTML = \`<span class="text-\${color}-400">\${msg}</span>\`;
       setTimeout(() => status.innerHTML = '', 5000);
     }
-  
+
     async function load() {
       show('Cargando...', 'info');
       try {
         const r = await fetch('/editor/data');
-        if (!r.ok) throw new Error('Error de autenticación o red');
+        if (!r.ok) throw new Error('Error de red o autenticación');
         const { content, sha } = await r.json();
         textarea.value = content;
         currentSha = sha;
@@ -123,7 +137,7 @@ module.exports = async (req, res) => {
         }
       }
     }
-  
+
     saveBtn.onclick = async () => {
       if (!currentSha) return show('Primero recarga el archivo', 'error');
       saveBtn.disabled = true;
@@ -134,8 +148,8 @@ module.exports = async (req, res) => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content: textarea.value, sha: currentSha })
         });
-        if (!r.ok) throw new Error('Fallo al guardar en GitHub');
-        show('Guardado con éxito!', 'success');
+        if (!r.ok) throw new Error('Fallo al guardar');
+        show('Guardado en GitHub!', 'success');
       } catch (e) {
         show('Error: ' + e.message, 'error');
       } finally {
@@ -143,7 +157,7 @@ module.exports = async (req, res) => {
         saveBtn.textContent = 'Guardar en GitHub';
       }
     };
-  
+
     reloadBtn.onclick = load;
     load();
   </script>
