@@ -33,6 +33,13 @@ module.exports = async (req, res) => {
     body { font-family: 'Inter', sans-serif; }
     .card { transition: all 0.3s ease; }
     .card:hover { transform: translateY(-6px); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+    @keyframes pulse-live {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .live-badge {
+      animation: pulse-live 2s infinite;
+    }
   </style>
 </head>
 <body class="bg-black text-white min-h-screen">
@@ -94,16 +101,21 @@ module.exports = async (req, res) => {
             </div>
           </a>
 
-          <!-- NUEVO: GUÍA TV -->
-          <a href="https://davidmuma.github.io/EPG/" target="_blank" class="card bg-gradient-to-br from-orange-600 to-amber-700 p-6 rounded-xl flex items-center gap-4 hover:shadow-2xl border border-orange-800/50">
+          <!-- GUÍA TV CON BADGE LIVE -->
+          <a href="https://davidmuma.github.io/EPG/" target="_blank" class="card bg-gradient-to-br from-orange-600 to-amber-700 p-6 rounded-xl flex items-center gap-4 hover:shadow-2xl border border-orange-800/50 relative">
             <div class="bg-white/10 p-3 rounded-lg">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                       d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>
             </div>
-            <div>
-              <h3 class="font-bold text-lg">Guía TV</h3>
+            <div class="flex-1">
+              <h3 class="font-bold text-lg flex items-center gap-2">
+                Guía TV
+                <span class="live-badge inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-600 text-white">
+                  LIVE
+                </span>
+              </h3>
               <p class="text-sm opacity-80">Programación completa</p>
             </div>
           </a>
