@@ -120,7 +120,7 @@ module.exports = async (req, res) => {
           </a>
 
           <!-- NUEVO: EDITOR M3U -->
-          <a href="/editor" target="_blank" class="card bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-xl flex items-center gap-4 hover:shadow-2xl border border-indigo-800/50">
+          <a href="/editor" class="card bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-xl flex items-center gap-4 hover:shadow-2xl border border-indigo-800/50">
             <div class="bg-white/10 p-3 rounded-lg">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
