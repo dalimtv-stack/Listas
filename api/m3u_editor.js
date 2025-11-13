@@ -1,6 +1,6 @@
 // api/m3u_editor.js
 const getRawBody = require('raw-body');
-const { esTokenValido } = require('./config-index');
+const { requireAuth } = require('./utils');
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_REPO = process.env.GITHUB_REPO;
@@ -8,12 +8,11 @@ const M3U_PATH = process.env.M3U_PATH || 'Lista_total.m3u';
 const API_URL = `https://api.github.com/repos/${GITHUB_REPO}/contents/${M3U_PATH}`;
 
 module.exports = async (req, res) => {
-  const cookies = req.headers.cookie || '';
-  const token = cookies.match(/auth_token=([^;]+)/)?.[1];
+  const email = requireAuth(req, res);
+  if (!email) return; // ← ya redirige a login
 
   // === API: GET M3U ===
   if (req.method === 'GET' && req.url === '/editor/data') {
-    if (!esTokenValido(token)) return res.status(401).json({ error: 'No autorizado' });
     try {
       const r = await fetch(API_URL, {
         headers: { Authorization: `token ${GITHUB_TOKEN}`, 'User-Agent': 'Heimdallr' }
@@ -30,7 +29,6 @@ module.exports = async (req, res) => {
 
   // === API: POST M3U ===
   if (req.method === 'POST' && req.url === '/editor/data') {
-    if (!esTokenValido(token)) return res.status(401).json({ error: 'No autorizado' });
     const body = await getRawBody(req);
     const { content, sha } = JSON.parse(body.toString());
     try {
@@ -42,7 +40,7 @@ module.exports = async (req, res) => {
           'User-Agent': 'Heimdallr'
         },
         body: JSON.stringify({
-          message: `Edit M3U - ${new Date().toISOString()}`,
+          message: `Edit M3U - ${email} - ${new Date().toISOString()}`,
           content: Buffer.from(content).toString('base64'),
           sha
         })
@@ -55,13 +53,8 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // === EDITOR WEB (solo si autenticado) ===
+  // === EDITOR WEB ===
   if (req.url === '/editor' || req.url === '/editor/') {
-    if (!esTokenValido(token)) {
-      res.writeHead(302, { Location: '/Acceso' });
-      return res.end();
-    }
-
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     return res.status(200).end(`
 <!DOCTYPE html>
@@ -89,7 +82,7 @@ module.exports = async (req, res) => {
   <div class="max-w-5xl mx-auto p-6">
     <div class="bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-gray-800">
       <div class="flex justify-between items-center mb-6">
-        <span class="text-green-400 font-medium">Autenticado</span>
+        <span class="text-green-400 font-medium">Autenticado como ${email}</span>
         <a href="/Acceso" class="text-gray-400 hover:text-white text-sm underline">Panel</a>
       </div>
 
@@ -107,7 +100,6 @@ module.exports = async (req, res) => {
     </div>
   </div>
 
-  <!-- JAVASCRIPT DEL CLIENTE (CORREGIDO) -->
   <script>
     const status = document.getElementById('status');
     const textarea = document.getElementById('m3u');
@@ -117,7 +109,7 @@ module.exports = async (req, res) => {
 
     function show(msg, type = 'info') {
       const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'yellow';
-      status.innerHTML = \`<span class="text-\${color}-400">\${msg}</span>\`;
+      status.innerHTML = `<span class="text-\${color}-400">\${msg}</span>`;
       setTimeout(() => status.innerHTML = '', 5000);
     }
 
@@ -125,16 +117,13 @@ module.exports = async (req, res) => {
       show('Cargando...', 'info');
       try {
         const r = await fetch('/editor/data');
-        if (!r.ok) throw new Error('Error de red o autenticación');
+        if (!r.ok) throw new Error('Error de red');
         const { content, sha } = await r.json();
         textarea.value = content;
         currentSha = sha;
         show('Listo', 'success');
       } catch (e) {
         show('Error: ' + e.message, 'error');
-        if (e.message.includes('autenticación')) {
-          setTimeout(() => location.href = '/Acceso', 2000);
-        }
       }
     }
 
@@ -149,7 +138,7 @@ module.exports = async (req, res) => {
           body: JSON.stringify({ content: textarea.value, sha: currentSha })
         });
         if (!r.ok) throw new Error('Fallo al guardar');
-        show('Guardado en GitHub!', 'success');
+        show('Guardado!', 'success');
       } catch (e) {
         show('Error: ' + e.message, 'error');
       } finally {
