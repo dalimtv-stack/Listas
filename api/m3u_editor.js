@@ -100,34 +100,50 @@ module.exports = async (req, res) => {
     const saveBtn = document.getElementById('save');
     const reloadBtn = document.getElementById('reload');
     let currentSha = '';
-
+  
     function show(msg, type = 'info') {
-      status.innerHTML = `<span class="text-${type === 'error' ? 'red' : type === 'success' ? 'green' : 'yellow'}-400">${msg}</span>`;
+      const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'yellow';
+      status.innerHTML = `<span class="text-${color}-400">${msg}</span>`;
       setTimeout(() => status.innerHTML = '', 5000);
     }
-
+  
     async function load() {
       show('Cargando...', 'info');
-      const r = await fetch('/editor/data');
-      const { content, sha } = await r.json();
-      textarea.value = content;
-      currentSha = sha;
-      show('Listo', 'success');
+      try {
+        const r = await fetch('/editor/data');
+        if (!r.ok) throw new Error('Error de autenticación o red');
+        const { content, sha } = await r.json();
+        textarea.value = content;
+        currentSha = sha;
+        show('Listo', 'success');
+      } catch (e) {
+        show('Error: ' + e.message, 'error');
+        if (e.message.includes('autenticación')) {
+          setTimeout(() => location.href = '/Acceso', 2000);
+        }
+      }
     }
-
+  
     saveBtn.onclick = async () => {
+      if (!currentSha) return show('Primero recarga el archivo', 'error');
       saveBtn.disabled = true;
       saveBtn.textContent = 'Guardando...';
-      await fetch('/editor/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: textarea.value, sha: currentSha })
-      });
-      show('Guardado!', 'success');
-      saveBtn.disabled = false;
-      saveBtn.textContent = 'Guardar en GitHub';
+      try {
+        const r = await fetch('/editor/data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: textarea.value, sha: currentSha })
+        });
+        if (!r.ok) throw new Error('Fallo al guardar en GitHub');
+        show('Guardado con éxito!', 'success');
+      } catch (e) {
+        show('Error: ' + e.message, 'error');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Guardar en GitHub';
+      }
     };
-
+  
     reloadBtn.onclick = load;
     load();
   </script>
