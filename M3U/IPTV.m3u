@@ -10,13 +10,11 @@
 # http://vipipjpapi.top:8080/get.php?username=VIP0115174023890722&password=91740238907762&type=m3u_plus&output=m3u8
 # http://pgracefuaapi.top:8080/get.php?username=1521716634841165&password=bcf748b413f8&type=m3u_plus&output=m3u8
 
-#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Hollywood" group-title="Cine & Series", Hollywood (m3u8)
-http://172.93.102.112:8989/278839_.m3u8
-#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Hollywood" group-title="Cine & Series", Hollywood (PgRaceFuaApi)
-http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5619
+#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Hollywood" group-title="Cine & Series", Hollywood (esproookttm)
+http://esproookttm.top:8080/es7561748533673272/2f307b7a784e/35
 
-#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="Cine & Series", M+ Plus (PgRaceFuaApi)
-http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/57285
+#EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="Cine & Series", M+ Plus (esproookttm)
+http://esproookttm.top:8080/es7561748533673272/2f307b7a784e/86
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="Cine & Series", M+ Plus (Acestream)
 http://127.0.0.1:6878/ace/getstream?id=199190e3f28c1de0be34bccf0d3568dc65209b99
 
