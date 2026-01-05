@@ -1,6 +1,10 @@
 #EXTM3U tvg-url="https://raw.githubusercontent.com/dalimtv-stack/miEPG/refs/heads/main/miEPG.xml"
 #EXTVLCOPT:network-caching=1000
 
+###### AQUI estan las listas ###### 
+# https://github.com/dregs1/dregs1.github.io/blob/7b609879ad09a5265face3fb0d3f3afa503cfc7f/xml/apilista.xml#L6
+###### ###### 
+
 # http://esproookttm.top:8080/get.php?username=es7561748533673272&password=2f307b7a784e&type=m3u_plus
 # http://vipketseyket.top:8080/get.php?username=VIP011371755270674553&password=72f356ab29af&type=m3u_plus
 # http://vipipjpapi.top:8080/get.php?username=VIP0115174023890722&password=91740238907762&type=m3u_plus&output=m3u8
