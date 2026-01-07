@@ -12,8 +12,10 @@
 # http://vipipjpapi.top:8080/get.php?username=VIP0115174023890722&password=91740238907762&type=m3u_plus&output=m3u8
 # https://github.com/dvovalle/old/blob/main/listas.txt
 
-#EXTINF:-1 tvg-id="Simpsons.es" tvg-logo="" group-title="Cine & Series", Simpsons (24/7)
+#EXTINF:-1 tvg-id="Simpsons.es" tvg-logo="https://biblio.uottawa.ca/sites/biblio.uottawa.ca/files/24-7-2016.png" group-title="Cine & Series", Simpsons (24/7)
 http://marveliptv.ddns.net:25461/live/jen/jen/87135.ts
+#EXTINF:-1 tvg-id="Simpsons.es" tvg-logo="https://biblio.uottawa.ca/sites/biblio.uottawa.ca/files/24-7-2016.png" group-title="Cine & Series", Simpsons (24/7)
+http://magmas5.com:8000/sunlink/dFIdo0UaMM/129313
 
 #EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Hollywood" group-title="Cine & Series", Hollywood (espeeoydee)
 http://espeeoydee.top:8080/es9421764617325381/b1482d9655d8/35
