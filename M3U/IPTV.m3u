@@ -25,6 +25,8 @@ http://esproookttm.top:8080/es7561748533673272/2f307b7a784e/35
 http://live.fuxxion.club:8080/mottamartin1/iiQ7uuhbWA/161917
 #EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Hollywood" group-title="Cine & Series", Hollywood (fuxxion)
 http://live.fuxxion.club:8080/mottamartin1/iiQ7uuhbWA/161985
+#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Hollywood" group-title="Cine & Series", Hollywood (streamingtv)
+http://streamingtv.vip:80//live/83737ne4994/73737737474mt8/110160.ts
 
 #EXTINF:-1 tvg-id="Movistar.Plus.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Movistar_PLUS" group-title="Cine & Series", M+ Plus (esproookttm)
 http://esproookttm.top:8080/es7561748533673272/2f307b7a784e/86
@@ -299,6 +301,8 @@ https://d3bb58xoj568xi.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68
 #EXTINF:-1 tvg-id="LaligaInside.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Laliga-Inside" group-title="LaLiga", Laliga Inside (m3u8)
 https://d3bb58xoj568xi.cloudfront.net/v1/manifest/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-don7i7nmbho0q/8eb3cf07-8997-4ba1-8194-b9617ca72439/2.m3u8
 
+#EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ESTRENOS" group-title="Cine & Series", M+ Estrenos (streamingtv)
+http://streamingtv.vip:80//live/83737ne4994/73737737474mt8/315718.ts
 #EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ESTRENOS" group-title="Cine & Series", M+ Estrenos (esproookttm)
 http://esproookttm.top:8080/es7561748533673272/2f307b7a784e/10
 #EXTINF:-1 tvg-id="Movistar.Estrenos.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/M-ESTRENOS" group-title="Cine & Series", M+ Estrenos (esproookttm)
