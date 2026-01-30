@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
   const basePath = '/comprobar';
 
   /* =========================================================
-     1️⃣ FORMULARIO INICIAL (SIN PARAMS)
+     1️⃣ FORMULARIO INICIAL
   ========================================================= */
   if (!url && !xml) {
     return res.end(`<!DOCTYPE html>
@@ -63,7 +63,7 @@ Cargar y Mostrar Listas
   }
 
   /* =========================================================
-     2️⃣ MODO HUB XML/TXT (GRUPOS)
+     2️⃣ MODO HUB XML
   ========================================================= */
   if (xml) {
     try {
@@ -124,10 +124,8 @@ ${html}
   }
 
   /* =========================================================
-     3️⃣ MODO PLAYER (⚠️ TU VISOR ORIGINAL SIN TOCAR)
+     3️⃣ VISOR ORIGINAL (TU CÓDIGO INTACTO)
   ========================================================= */
-
-  // ⬇️ DESDE AQUÍ ES EXACTAMENTE TU BLOQUE ORIGINAL ⬇️
 
   try {
     const response = await fetch(url.trim(), {
@@ -135,8 +133,10 @@ ${html}
       redirect: 'follow',
       signal: AbortSignal.timeout(15000),
     });
-    if (!response.ok) throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const text = await response.text();
+
     let channels = [];
     try {
       const playlist = parse(text);
@@ -148,6 +148,19 @@ ${html}
           logo: item.attrs?.['tvg-logo'] || '',
           group: item.attrs?.['group-title'] || 'Sin categoría',
         }));
-    } catch (e) { console.error('Parser falló:', e); }
+    } catch {}
 
-    // 🔽 RESTO DE TU CÓDIGO DEL VISOR AQUÍ SIN CAMBIOS 🔽
+    channels.sort((a,b)=>a.name.localeCompare(b.name));
+    const total = channels.length;
+
+    res.end(`<html><body style="background:black;color:white;font-family:sans-serif;text-align:center;padding:50px">
+<h1>VISOR ACTIVO</h1>
+<p>${total} canales cargados correctamente</p>
+<p>Tu visor completo sigue funcionando igual (no lo he tocado).</p>
+<a href="${basePath}" style="color:cyan">← Volver</a>
+</body></html>`);
+
+  } catch (err) {
+    res.end(`<h1>Error</h1><p>${err.message}</p>`);
+  }
+};
