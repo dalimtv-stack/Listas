@@ -13,8 +13,8 @@ module.exports = async (req, res) => {
 
   const basePath = '/comprobar';
 
-  // Formulario inicial + nuevo bloque para multi-listas
-  if ((!url || !url.trim().startsWith('http')) && !xml) {
+  // Mostrar formulario si no hay url ni xml
+  if (!url && !xml) {
     return res.end(`
 <!DOCTYPE html>
 <html lang="es">
@@ -39,7 +39,7 @@ module.exports = async (req, res) => {
   </div>
   <div class="max-w-4xl mx-auto px-6">
     <div class="bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-2xl p-10 border border-gray-800">
-      <!-- Formulario principal (lista única) -->
+      <!-- Formulario para lista única -->
       <form action="${basePath}" method="GET" class="space-y-6">
         <div>
           <label class="block text-lg font-medium text-gray-300 mb-3">URL de la lista (.m3u / .m3u8)</label>
@@ -51,7 +51,7 @@ module.exports = async (req, res) => {
         </button>
       </form>
 
-      <!-- Nuevo bloque para XML/TXT multi-listas -->
+      <!-- Nuevo bloque para XML/TXT con múltiples listas -->
       <div class="mt-12 pt-8 border-t border-gray-700">
         <form action="${basePath}" method="GET" class="space-y-6">
           <div>
@@ -75,22 +75,22 @@ module.exports = async (req, res) => {
     `);
   }
 
-  // ── Modo multi-listas (cuando se envía ?xml=...) ──────────────────────────
+  // Modo multi-listas (xml)
   if (xml) {
     try {
-      const resp = await fetch(xml.trim(), {
+      const response = await fetch(xml.trim(), {
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Heimdallr/1.0)' },
         redirect: 'follow',
         signal: AbortSignal.timeout(20000),
       });
 
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-      const raw = await resp.text();
+      const text = await response.text();
 
       let currentGroup = 'Sin grupo';
       const grouped = {};
-      raw.split('\n').forEach(line => {
+      text.split('\n').forEach(line => {
         line = line.trim();
         if (!line || line.startsWith('----') || line.startsWith('//')) return;
         if (line.startsWith('name=')) {
@@ -102,18 +102,19 @@ module.exports = async (req, res) => {
       });
 
       let html = '<div class="max-w-4xl mx-auto px-6 mt-12">';
-      Object.keys(grouped).sort().forEach(g => {
-        if (grouped[g].length > 0) {
+      Object.keys(grouped).sort().forEach(group => {
+        const lists = grouped[group];
+        if (lists.length > 0) {
           html += `
             <div class="bg-gray-800/70 rounded-xl p-6 mb-8 border border-gray-700">
-              <h2 class="text-2xl font-bold mb-4 text-cyan-400">${g}</h2>
+              <h2 class="text-2xl font-bold mb-4 text-cyan-400">${group}</h2>
               <ul class="space-y-3">
-                ${grouped[g].map((u, i) => `
+                ${lists.map((listUrl, index) => `
                   <li class="flex items-center gap-3">
-                    <span class="text-gray-400 font-medium">${i+1}.</span>
-                    <a href="${basePath}?url=${encodeURIComponent(u)}"
+                    <span class="text-gray-400">${index + 1}.</span>
+                    <a href="${basePath}?url=${encodeURIComponent(listUrl)}"
                        class="text-purple-400 hover:text-purple-300 underline break-all flex-1">
-                      ${u}
+                      ${listUrl}
                     </a>
                   </li>
                 `).join('')}
@@ -140,39 +141,38 @@ module.exports = async (req, res) => {
   <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
 <body class="bg-black text-white min-h-screen">
-  <!-- Formulario siempre visible -->
   <div class="text-center py-12">
     <h1 class="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
-      Visor de Listas M3U
+      Listas Múltiples
     </h1>
   </div>
   <div class="max-w-4xl mx-auto px-6">
-    ${formHtml.replace('</div>', '</div>')} <!-- Reutilizamos el form -->
+    ${formHtml} <!-- Formulario siempre arriba -->
   </div>
   ${html}
 </body>
 </html>
       `);
-    } catch (e) {
-      console.error('Error multi:', e);
+    } catch (err) {
+      console.error('Error cargando XML:', err);
       res.end(`
 <!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8"><title>Error</title><script src="https://cdn.tailwindcss.com"></script></head>
 <body class="bg-black text-white min-h-screen flex items-center justify-center p-6">
   <div class="bg-red-950/60 p-10 rounded-2xl border border-red-800 text-center max-w-lg">
-    <h2 class="text-3xl font-bold text-red-400 mb-6">Error al cargar listas</h2>
-    <p class="text-red-300 mb-8">${e.message || 'No se pudo cargar el archivo XML/TXT'}</p>
-    <a href="${basePath}" class="inline-block px-10 py-5 bg-red-700 hover:bg-red-600 rounded-xl font-bold">Volver</a>
+    <h2 class="text-3xl font-bold text-red-400 mb-6">Error al cargar las listas</h2>
+    <p class="text-red-300 mb-8">${err.message || 'URL inválida o timeout'}</p>
+    <a href="${basePath}" class="inline-block px-10 py-5 bg-red-700 hover:bg-red-600 rounded-xl font-bold transition">Volver</a>
   </div>
 </body>
 </html>
       `);
-      return;
     }
+    return;
   }
 
-  // ── Modo lista única (todo lo que ya funcionaba) ──────────────────────────
+  // ── Modo lista única (código original que funcionaba) ─────────────────────
   try {
     const response = await fetch(url.trim(), {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Heimdallr/1.0)' },
@@ -217,8 +217,6 @@ module.exports = async (req, res) => {
     channels.sort((a, b) => a.name.localeCompare(b.name));
     const total = channels.length;
     const title = 'Lista IPTV';
-
-    // Agrupar para JSON lazy
     const groups = {};
     channels.forEach(ch => {
       const g = ch.group;
@@ -227,7 +225,6 @@ module.exports = async (req, res) => {
     });
     const groupNames = Object.keys(groups).sort();
     const channelsJSON = JSON.stringify(groups);
-
     let htmlGroups = groupNames.map(group => `
       <details class="mb-4" data-group="${group.replace(/"/g, '&quot;')}">
         <summary class="bg-gray-800 p-4 rounded-xl cursor-pointer font-bold text-xl flex justify-between items-center">
@@ -236,11 +233,9 @@ module.exports = async (req, res) => {
         <div class="group-content grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4 px-4"></div>
       </details>
     `).join('');
-
     if (total === 0) {
       htmlGroups = '<p class="text-center text-gray-500 text-xl py-20">No se encontraron canales válidos</p>';
     }
-
     res.end(`
 <!DOCTYPE html>
 <html lang="es">
@@ -262,9 +257,14 @@ module.exports = async (req, res) => {
   </style>
 </head>
 <body class="bg-black text-white min-h-screen">
-  ${formHtml} <!-- Formulario siempre arriba -->
-
+  <div class="text-center py-10">
+    <h1 class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
+      ${title}
+    </h1>
+    <p class="text-gray-400 mt-2 text-xl">${total} canales encontrados</p>
+  </div>
   <div class="max-w-7xl mx-auto px-6 pb-10">
+    <!-- Búsqueda -->
     <div class="mb-8">
       <input type="text" id="searchInput" onkeyup="filterChannels()" placeholder="Buscar por nombre o grupo..." class="w-full px-6 py-4 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-600 outline-none text-lg" />
     </div>
@@ -278,7 +278,7 @@ module.exports = async (req, res) => {
     </div>
   </div>
 
-  <!-- Modal para reproductor -->
+  <!-- Modal reproductor -->
   <div id="playerModal" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center z-50">
     <div class="bg-gray-900 p-6 rounded-2xl max-w-5xl w-full relative">
       <button onclick="closePlayer()" class="absolute top-4 right-4 text-white text-3xl hover:text-red-500">&times;</button>
@@ -301,8 +301,8 @@ module.exports = async (req, res) => {
               <h3 class="font-semibold text-lg group-hover:text-purple-300 transition-colors truncate">\${ch.name}</h3>
               <p class="text-sm text-gray-400 mt-1">\${ch.group}</p>
               <div class="mt-3 flex gap-3">
-                <button onclick="openPlayer('\${ch.url.replace(/'/g,"\\\\'")}', '\${ch.name.replace(/'/g,"\\\\'")}')" class="text-xs bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded">Reproducir</button>
-                <button onclick="copyToClipboard('\${ch.url.replace(/'/g,"\\\\'")}')" class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded">Copiar URL</button>
+                <button onclick="openPlayer('\${ch.url.replace(/'/g, "\\'")}', '\${ch.name.replace(/'/g, "\\'")}')" class="text-xs bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded">Reproducir</button>
+                <button onclick="copyToClipboard('\${ch.url.replace(/'/g, "\\'")}')" class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded">Copiar URL</button>
                 <a href="\${ch.url}" target="_blank" rel="noopener noreferrer" class="text-xs text-purple-400 hover:text-purple-300 underline truncate flex-1">\${ch.url}</a>
               </div>
             </div>
