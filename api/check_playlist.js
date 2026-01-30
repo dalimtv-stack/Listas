@@ -13,6 +13,7 @@ module.exports = async (req, res) => {
 
   const basePath = '/comprobar';
 
+  // Formulario inicial (sin cambios)
   if (!url || !url.trim().startsWith('http')) {
     return res.end(`
 <!DOCTYPE html>
@@ -30,7 +31,6 @@ module.exports = async (req, res) => {
   </style>
 </head>
 <body class="bg-black text-white min-h-screen">
-  <!-- Formulario igual que antes -->
   <div class="text-center py-12">
     <h1 class="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
       Visor de Listas M3U
@@ -59,6 +59,7 @@ module.exports = async (req, res) => {
     `);
   }
 
+  // Parseo (sin cambios)
   try {
     const response = await fetch(url.trim(), {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Heimdallr/1.0)' },
@@ -111,46 +112,26 @@ module.exports = async (req, res) => {
     const total = channels.length;
     const title = 'Lista IPTV';
 
-    // Agrupar por grupo
+    // Agrupar para JSON (ligero)
     const groups = {};
     channels.forEach(ch => {
-      const g = ch.group || 'Sin categoría';
+      const g = ch.group;
       if (!groups[g]) groups[g] = [];
       groups[g].push(ch);
     });
 
-    let htmlGroups = '';
-    Object.keys(groups).sort().forEach(group => {
-      const chans = groups[group];
-      const cards = chans.map(ch => `
-        <div class="card bg-gray-800/60 backdrop-blur-sm rounded-xl p-5 border border-gray-700 hover:border-purple-500/50 group">
-          <div class="flex items-start gap-4">
-            ${ch.logo ? `<img src="${ch.logo}" alt="${ch.name}" class="w-16 h-16 object-cover rounded-lg bg-gray-900 flex-shrink-0" onerror="this.src='https://via.placeholder.com/64?text=?'" />` : `
-              <div class="w-16 h-16 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0"><span class="text-gray-500 text-xl">TV</span></div>`}
-            <div class="flex-1 min-w-0">
-              <h3 class="font-semibold text-lg group-hover:text-purple-300 transition-colors truncate">${ch.name}</h3>
-              <p class="text-sm text-gray-400 mt-1">${group}</p>
-              <div class="mt-3 flex gap-3">
-                <button onclick="openPlayer('${ch.url}', '${ch.name}')" class="text-xs bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded">Reproducir</button>
-                <button onclick="copyToClipboard('${ch.url}')" class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded">Copiar URL</button>
-                <a href="${ch.url}" target="_blank" rel="noopener noreferrer" class="text-xs text-purple-400 hover:text-purple-300 underline truncate flex-1">${ch.url}</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      `).join('');
+    const groupNames = Object.keys(groups).sort();
+    const channelsJSON = JSON.stringify(groups);
 
-      htmlGroups += `
-        <details class="mb-4">
-          <summary class="bg-gray-800 p-4 rounded-xl cursor-pointer font-bold text-xl flex justify-between items-center">
-            ${group} <span class="text-gray-400 text-sm">(${chans.length} canales)</span>
-          </summary>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4 px-4">
-            ${cards}
-          </div>
-        </details>
-      `;
-    });
+    // HTML skeletons para grupos
+    let htmlGroups = groupNames.map(group => `
+      <details class="mb-4" data-group="${group.replace(/"/g, '&quot;')}">
+        <summary class="bg-gray-800 p-4 rounded-xl cursor-pointer font-bold text-xl flex justify-between items-center">
+          ${group} <span class="text-gray-400 text-sm">(${groups[group].length} canales)</span>
+        </summary>
+        <div class="group-content grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4 px-4"></div>
+      </details>
+    `).join('');
 
     if (total === 0) {
       htmlGroups = '<p class="text-center text-gray-500 text-xl py-20">No se encontraron canales válidos</p>';
@@ -175,7 +156,7 @@ module.exports = async (req, res) => {
     .card { transition: all 0.3s ease; }
     .card:hover { transform: translateY(-6px); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
     #searchInput { background: #1f2937; border: 1px solid #4b5563; }
-    #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; }
+    #playerModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; }
     #playerContainer { width: 90%; max-width: 1200px; }
   </style>
 </head>
@@ -197,6 +178,8 @@ module.exports = async (req, res) => {
       ${htmlGroups}
     </div>
 
+    <div id="searchResults" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
     <div class="mt-12 text-center space-x-6">
       <a href="${basePath}" class="text-gray-400 hover:text-white px-6 py-3 border border-gray-700 rounded-xl hover:bg-gray-800 transition">← Nueva lista</a>
       <a href="/" class="text-gray-400 hover:text-white px-6 py-3 border border-gray-700 rounded-xl hover:bg-gray-800 transition">Volver al panel</a>
@@ -213,8 +196,72 @@ module.exports = async (req, res) => {
   </div>
 
   <script>
+    const channelsByGroup = ${channelsJSON};
     let player = null;
 
+    // Render card function
+    function renderCard(ch) {
+      return \`
+        <div class="card bg-gray-800/60 backdrop-blur-sm rounded-xl p-5 border border-gray-700 hover:border-purple-500/50 group">
+          <div class="flex items-start gap-4">
+            \${ch.logo ? \` <img src="\${ch.logo}" alt="\${ch.name}" class="w-16 h-16 object-cover rounded-lg bg-gray-900 flex-shrink-0" onerror="this.src='https://via.placeholder.com/64?text=?'" /> \` : \`
+              <div class="w-16 h-16 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0"><span class="text-gray-500 text-xl">TV</span></div>\`}
+            <div class="flex-1 min-w-0">
+              <h3 class="font-semibold text-lg group-hover:text-purple-300 transition-colors truncate">\${ch.name}</h3>
+              <p class="text-sm text-gray-400 mt-1">\${ch.group}</p>
+              <div class="mt-3 flex gap-3">
+                <button onclick="openPlayer('\${ch.url}', '\${ch.name}')" class="text-xs bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded">Reproducir</button>
+                <button onclick="copyToClipboard('\${ch.url}')" class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded">Copiar URL</button>
+                <a href="\${ch.url}" target="_blank" rel="noopener noreferrer" class="text-xs text-purple-400 hover:text-purple-300 underline truncate flex-1">\${ch.url}</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      \`;
+    }
+
+    // Lazy load on expand
+    document.querySelectorAll('details').forEach(details => {
+      details.addEventListener('toggle', (e) => {
+        if (e.target.open) {
+          const group = e.target.dataset.group;
+          const content = e.target.querySelector('.group-content');
+          if (content.innerHTML.trim() === '') {
+            const html = channelsByGroup[group].map(renderCard).join('');
+            content.innerHTML = html;
+          }
+        }
+      });
+    });
+
+    // Búsqueda con filtro client-side (muestra lista plana)
+    function filterChannels() {
+      const input = document.getElementById('searchInput').value.toLowerCase();
+      const groupsContainer = document.getElementById('groupsContainer');
+      const searchResults = document.getElementById('searchResults');
+
+      if (input === '') {
+        groupsContainer.classList.remove('hidden');
+        searchResults.classList.add('hidden');
+        searchResults.innerHTML = '';
+        return;
+      }
+
+      groupsContainer.classList.add('hidden');
+      searchResults.classList.remove('hidden');
+
+      let matches = [];
+      Object.keys(channelsByGroup).forEach(group => {
+        matches = matches.concat(channelsByGroup[group].filter(ch => 
+          ch.name.toLowerCase().includes(input) || group.toLowerCase().includes(input)
+        ));
+      });
+
+      const html = matches.length > 0 ? matches.map(renderCard).join('') : '<p class="col-span-full text-center text-gray-500 text-xl py-10">No hay resultados</p>';
+      searchResults.innerHTML = html;
+    }
+
+    // Funciones player y copiar (sin cambios)
     function openPlayer(url, name) {
       document.getElementById('playerTitle').textContent = name;
       document.getElementById('playerModal').classList.remove('hidden');
@@ -228,7 +275,6 @@ module.exports = async (req, res) => {
         sources: [{ src: url, type: 'application/x-mpegURL' }]
       });
 
-      // Si HLS.js es necesario (fallback para algunos browsers)
       if (Hls.isSupported()) {
         const hls = new Hls();
         hls.loadSource(url);
@@ -245,25 +291,7 @@ module.exports = async (req, res) => {
     }
 
     function copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        alert('URL copiada al portapapeles');
-      }).catch(() => {
-        alert('Error al copiar');
-      });
-    }
-
-    function filterChannels() {
-      const input = document.getElementById('searchInput').value.toLowerCase();
-      const cards = document.querySelectorAll('.card');
-      cards.forEach(card => {
-        const name = card.querySelector('h3').textContent.toLowerCase();
-        const group = card.querySelector('p').textContent.toLowerCase();
-        if (name.includes(input) || group.includes(input)) {
-          card.style.display = '';
-        } else {
-          card.style.display = 'none';
-        }
-      });
+      navigator.clipboard.writeText(text).then(() => alert('URL copiada')).catch(() => alert('Error al copiar'));
     }
   </script>
 </body>
@@ -272,6 +300,25 @@ module.exports = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.statusCode = 500;
-    res.end(`<!-- Error HTML como antes, con basePath -->`);
+    res.end(`
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Error</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white min-h-screen flex items-center justify-center p-6">
+  <div class="bg-red-950/60 backdrop-blur-xl border border-red-800 p-10 rounded-2xl max-w-lg text-center">
+    <svg class="w-20 h-20 text-red-500 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+    </svg>
+    <h2 class="text-3xl font-bold mb-4">Error al cargar la lista</h2>
+    <p class="text-red-300 mb-8">${err.message || 'URL inválida, timeout o formato no soportado'}</p>
+    <a href="${basePath}" class="inline-block bg-red-700 hover:bg-red-600 text-white px-8 py-4 rounded-xl font-medium transition">Intentar otra URL</a>
+  </div>
+</body>
+</html>
+    `);
   }
 };
