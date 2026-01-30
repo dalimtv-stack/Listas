@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
 
   const basePath = '/comprobar';
 
-  // Mostrar formulario solo si no hay url ni xml
+  // Formulario solo si no hay url ni xml
   if (!url && !xml) {
     return res.end(`
 <!DOCTYPE html>
@@ -75,7 +75,7 @@ module.exports = async (req, res) => {
     `);
   }
 
-  // Modo multi-listas (XML/TXT)
+  // Modo multi-listas (XML/TXT) - carga en la misma página
   if (xml) {
     try {
       const resp = await fetch(xml.trim(), {
@@ -174,7 +174,7 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // Modo lista única (visor completo, sin formulario arriba)
+  // Visor de canales única (sin formulario arriba)
   try {
     const response = await fetch(url.trim(), {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Heimdallr/1.0)' },
