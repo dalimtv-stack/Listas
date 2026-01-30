@@ -7,14 +7,14 @@ module.exports = async (req, res) => {
     return res.end('Method Not Allowed');
   }
 
-  const { url } = req.query;
+  const { url, xml } = req.query;
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
 
   const basePath = '/comprobar';
 
-  // Formulario inicial (sin cambios)
-  if (!url || !url.trim().startsWith('http')) {
+  // Formulario inicial + nuevo bloque para multi-listas
+  if ((!url || !url.trim().startsWith('http')) && !xml) {
     return res.end(`
 <!DOCTYPE html>
 <html lang="es">
@@ -37,8 +37,9 @@ module.exports = async (req, res) => {
     </h1>
     <p class="text-gray-400 mt-3 text-xl">Carga tu playlist IPTV</p>
   </div>
-  <div class="max-w-3xl mx-auto px-6">
+  <div class="max-w-4xl mx-auto px-6">
     <div class="bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-2xl p-10 border border-gray-800">
+      <!-- Formulario principal (lista única) -->
       <form action="${basePath}" method="GET" class="space-y-6">
         <div>
           <label class="block text-lg font-medium text-gray-300 mb-3">URL de la lista (.m3u / .m3u8)</label>
@@ -49,6 +50,21 @@ module.exports = async (req, res) => {
           Cargar y Mostrar Canales
         </button>
       </form>
+
+      <!-- Nuevo bloque para XML/TXT multi-listas -->
+      <div class="mt-12 pt-8 border-t border-gray-700">
+        <form action="${basePath}" method="GET" class="space-y-6">
+          <div>
+            <label class="block text-lg font-medium text-gray-300 mb-3">Url de XML/TXT con varias listas</label>
+            <input type="url" name="xml" placeholder="https://raw.githubusercontent.com/dregs1/dregs1.github.io/main/xml/apilista.xml"
+                   class="w-full px-5 py-4 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-600 focus:border-transparent text-lg" />
+          </div>
+          <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-4 rounded-xl transform transition-all duration-200 hover:scale-[1.02] shadow-xl text-lg">
+            Cargar y Mostrar Listas
+          </button>
+        </form>
+      </div>
+
       <div class="mt-10 text-center">
         <a href="/" class="text-gray-400 hover:text-purple-400 transition-colors">← Volver al panel principal</a>
       </div>
@@ -59,20 +75,113 @@ module.exports = async (req, res) => {
     `);
   }
 
-  // Parseo (sin cambios)
+  // ── Modo multi-listas (cuando se envía ?xml=...) ──────────────────────────
+  if (xml) {
+    try {
+      const resp = await fetch(xml.trim(), {
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Heimdallr/1.0)' },
+        redirect: 'follow',
+        signal: AbortSignal.timeout(20000),
+      });
+
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+      const raw = await resp.text();
+
+      let currentGroup = 'Sin grupo';
+      const grouped = {};
+      raw.split('\n').forEach(line => {
+        line = line.trim();
+        if (!line || line.startsWith('----') || line.startsWith('//')) return;
+        if (line.startsWith('name=')) {
+          currentGroup = line.substring(5).trim();
+          if (!grouped[currentGroup]) grouped[currentGroup] = [];
+        } else if (line.startsWith('http')) {
+          grouped[currentGroup].push(line);
+        }
+      });
+
+      let html = '<div class="max-w-4xl mx-auto px-6 mt-12">';
+      Object.keys(grouped).sort().forEach(g => {
+        if (grouped[g].length > 0) {
+          html += `
+            <div class="bg-gray-800/70 rounded-xl p-6 mb-8 border border-gray-700">
+              <h2 class="text-2xl font-bold mb-4 text-cyan-400">${g}</h2>
+              <ul class="space-y-3">
+                ${grouped[g].map((u, i) => `
+                  <li class="flex items-center gap-3">
+                    <span class="text-gray-400 font-medium">${i+1}.</span>
+                    <a href="${basePath}?url=${encodeURIComponent(u)}"
+                       class="text-purple-400 hover:text-purple-300 underline break-all flex-1">
+                      ${u}
+                    </a>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+          `;
+        }
+      });
+      html += '</div>';
+
+      if (Object.keys(grouped).length === 0) {
+        html = '<p class="text-center text-gray-500 text-xl py-20 mt-12">No se encontraron listas válidas en el archivo</p>';
+      }
+
+      res.end(`
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Listas Múltiples – Heimdallr</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-black text-white min-h-screen">
+  <!-- Formulario siempre visible -->
+  <div class="text-center py-12">
+    <h1 class="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
+      Visor de Listas M3U
+    </h1>
+  </div>
+  <div class="max-w-4xl mx-auto px-6">
+    ${formHtml.replace('</div>', '</div>')} <!-- Reutilizamos el form -->
+  </div>
+  ${html}
+</body>
+</html>
+      `);
+    } catch (e) {
+      console.error('Error multi:', e);
+      res.end(`
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Error</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-black text-white min-h-screen flex items-center justify-center p-6">
+  <div class="bg-red-950/60 p-10 rounded-2xl border border-red-800 text-center max-w-lg">
+    <h2 class="text-3xl font-bold text-red-400 mb-6">Error al cargar listas</h2>
+    <p class="text-red-300 mb-8">${e.message || 'No se pudo cargar el archivo XML/TXT'}</p>
+    <a href="${basePath}" class="inline-block px-10 py-5 bg-red-700 hover:bg-red-600 rounded-xl font-bold">Volver</a>
+  </div>
+</body>
+</html>
+      `);
+      return;
+    }
+  }
+
+  // ── Modo lista única (todo lo que ya funcionaba) ──────────────────────────
   try {
     const response = await fetch(url.trim(), {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Heimdallr/1.0)' },
       redirect: 'follow',
       signal: AbortSignal.timeout(15000),
     });
-
     if (!response.ok) throw new Error(`HTTP ${response.status} - ${response.statusText}`);
-
     const text = await response.text();
-
     let channels = [];
-
     try {
       const playlist = parse(text);
       channels = playlist.items
@@ -84,7 +193,6 @@ module.exports = async (req, res) => {
           group: item.attrs?.['group-title'] || 'Sin categoría',
         }));
     } catch (e) { console.error('Parser falló:', e); }
-
     if (channels.length === 0 && text.includes('#EXTINF')) {
       const lines = text.split('\n');
       let current = null;
@@ -106,24 +214,20 @@ module.exports = async (req, res) => {
         }
       }
     }
-
     channels.sort((a, b) => a.name.localeCompare(b.name));
-
     const total = channels.length;
     const title = 'Lista IPTV';
 
-    // Agrupar para JSON (ligero)
+    // Agrupar para JSON lazy
     const groups = {};
     channels.forEach(ch => {
       const g = ch.group;
       if (!groups[g]) groups[g] = [];
       groups[g].push(ch);
     });
-
     const groupNames = Object.keys(groups).sort();
     const channelsJSON = JSON.stringify(groups);
 
-    // HTML skeletons para grupos
     let htmlGroups = groupNames.map(group => `
       <details class="mb-4" data-group="${group.replace(/"/g, '&quot;')}">
         <summary class="bg-gray-800 p-4 rounded-xl cursor-pointer font-bold text-xl flex justify-between items-center">
@@ -146,10 +250,8 @@ module.exports = async (req, res) => {
   <title>${title} – Heimdallr</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- Video.js CDN -->
   <link href="https://vjs.zencdn.net/8.23.4/video-js.css" rel="stylesheet" />
   <script src="https://vjs.zencdn.net/8.23.4/video.min.js"></script>
-  <!-- HLS.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     body { font-family: 'Inter', sans-serif; }
@@ -157,29 +259,19 @@ module.exports = async (req, res) => {
     .card:hover { transform: translateY(-6px); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
     #searchInput { background: #1f2937; border: 1px solid #4b5563; }
     #playerModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; }
-    #playerContainer { width: 90%; max-width: 1200px; }
   </style>
 </head>
 <body class="bg-black text-white min-h-screen">
-  <div class="text-center py-10">
-    <h1 class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
-      ${title}
-    </h1>
-    <p class="text-gray-400 mt-2 text-xl">${total} canales encontrados</p>
-  </div>
+  ${formHtml} <!-- Formulario siempre arriba -->
 
   <div class="max-w-7xl mx-auto px-6 pb-10">
-    <!-- Búsqueda -->
     <div class="mb-8">
       <input type="text" id="searchInput" onkeyup="filterChannels()" placeholder="Buscar por nombre o grupo..." class="w-full px-6 py-4 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-600 outline-none text-lg" />
     </div>
-
     <div id="groupsContainer">
       ${htmlGroups}
     </div>
-
     <div id="searchResults" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-
     <div class="mt-12 text-center space-x-6">
       <a href="${basePath}" class="text-gray-400 hover:text-white px-6 py-3 border border-gray-700 rounded-xl hover:bg-gray-800 transition">← Nueva lista</a>
       <a href="/" class="text-gray-400 hover:text-white px-6 py-3 border border-gray-700 rounded-xl hover:bg-gray-800 transition">Volver al panel</a>
@@ -199,7 +291,6 @@ module.exports = async (req, res) => {
     const channelsByGroup = ${channelsJSON};
     let player = null;
 
-    // Render card function
     function renderCard(ch) {
       return \`
         <div class="card bg-gray-800/60 backdrop-blur-sm rounded-xl p-5 border border-gray-700 hover:border-purple-500/50 group">
@@ -210,8 +301,8 @@ module.exports = async (req, res) => {
               <h3 class="font-semibold text-lg group-hover:text-purple-300 transition-colors truncate">\${ch.name}</h3>
               <p class="text-sm text-gray-400 mt-1">\${ch.group}</p>
               <div class="mt-3 flex gap-3">
-                <button onclick="openPlayer('\${ch.url}', '\${ch.name}')" class="text-xs bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded">Reproducir</button>
-                <button onclick="copyToClipboard('\${ch.url}')" class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded">Copiar URL</button>
+                <button onclick="openPlayer('\${ch.url.replace(/'/g,"\\\\'")}', '\${ch.name.replace(/'/g,"\\\\'")}')" class="text-xs bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded">Reproducir</button>
+                <button onclick="copyToClipboard('\${ch.url.replace(/'/g,"\\\\'")}')" class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded">Copiar URL</button>
                 <a href="\${ch.url}" target="_blank" rel="noopener noreferrer" class="text-xs text-purple-400 hover:text-purple-300 underline truncate flex-1">\${ch.url}</a>
               </div>
             </div>
@@ -220,7 +311,6 @@ module.exports = async (req, res) => {
       \`;
     }
 
-    // Lazy load on expand
     document.querySelectorAll('details').forEach(details => {
       details.addEventListener('toggle', (e) => {
         if (e.target.open) {
@@ -234,38 +324,31 @@ module.exports = async (req, res) => {
       });
     });
 
-    // Búsqueda con filtro client-side (muestra lista plana)
     function filterChannels() {
       const input = document.getElementById('searchInput').value.toLowerCase();
       const groupsContainer = document.getElementById('groupsContainer');
       const searchResults = document.getElementById('searchResults');
-
       if (input === '') {
         groupsContainer.classList.remove('hidden');
         searchResults.classList.add('hidden');
         searchResults.innerHTML = '';
         return;
       }
-
       groupsContainer.classList.add('hidden');
       searchResults.classList.remove('hidden');
-
       let matches = [];
       Object.keys(channelsByGroup).forEach(group => {
-        matches = matches.concat(channelsByGroup[group].filter(ch => 
+        matches = matches.concat(channelsByGroup[group].filter(ch =>
           ch.name.toLowerCase().includes(input) || group.toLowerCase().includes(input)
         ));
       });
-
       const html = matches.length > 0 ? matches.map(renderCard).join('') : '<p class="col-span-full text-center text-gray-500 text-xl py-10">No hay resultados</p>';
       searchResults.innerHTML = html;
     }
 
-    // Funciones player y copiar (sin cambios)
     function openPlayer(url, name) {
       document.getElementById('playerTitle').textContent = name;
       document.getElementById('playerModal').classList.remove('hidden');
-
       const video = document.getElementById('my-video');
       if (player) player.dispose();
       player = videojs(video, {
@@ -274,7 +357,6 @@ module.exports = async (req, res) => {
         controls: true,
         sources: [{ src: url, type: 'application/x-mpegURL' }]
       });
-
       if (Hls.isSupported()) {
         const hls = new Hls();
         hls.loadSource(url);
