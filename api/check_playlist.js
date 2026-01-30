@@ -7,217 +7,15 @@ module.exports = async (req, res) => {
     return res.end('Method Not Allowed');
   }
 
-  const { url, xml } = req.query;
+  const { url } = req.query;
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
 
   const basePath = '/comprobar';
 
-  // Formulario común (siempre visible arriba)
-  const formHtml = `
-  <div class="bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-2xl p-10 border border-gray-800">
-    <form action="${basePath}" method="GET" class="space-y-6">
-      <div>
-        <label class="block text-lg font-medium text-gray-300 mb-3">URL de la lista (.m3u / .m3u8)</label>
-        <input type="url" name="url" placeholder="https://example.com/iptv.m3u8"
-               class="w-full px-5 py-4 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-600 focus:border-transparent text-lg" />
-      </div>
-      <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 rounded-xl transform transition-all duration-200 hover:scale-[1.02] shadow-xl text-lg">
-        Cargar y Mostrar Canales
-      </button>
-    </form>
-
-    <form action="${basePath}" method="GET" class="space-y-6 mt-10 border-t border-gray-700 pt-8">
-      <div>
-        <label class="block text-lg font-medium text-gray-300 mb-3">Url de XML/TXT con varias listas</label>
-        <input type="url" name="xml" placeholder="https://raw.githubusercontent.com/dregs1/dregs1.github.io/main/xml/apilista.xml"
-               class="w-full px-5 py-4 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-600 focus:border-transparent text-lg" />
-      </div>
-      <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-4 rounded-xl transform transition-all duration-200 hover:scale-[1.02] shadow-xl text-lg">
-        Cargar y Mostrar Listas
-      </button>
-    </form>
-
-    <div class="mt-10 text-center">
-      <a href="/" class="text-gray-400 hover:text-purple-400 transition-colors">← Volver al panel principal</a>
-    </div>
-  </div>
-  `;
-
-  // Si no hay ni url ni xml → solo formulario
-  if (!url && !xml) {
+  // Formulario inicial (sin cambios)
+  if (!url || !url.trim().startsWith('http')) {
     return res.end(`
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Heimdallr Channels – Visor M3U</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>body { font-family: 'Inter', sans-serif; }</style>
-</head>
-<body class="bg-black text-white min-h-screen">
-  <div class="text-center py-12">
-    <h1 class="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
-      Visor de Listas M3U
-    </h1>
-    <p class="text-gray-400 mt-3 text-xl">Carga tu playlist IPTV</p>
-  </div>
-  <div class="max-w-4xl mx-auto px-6">
-    ${formHtml}
-  </div>
-</body>
-</html>
-    `);
-  }
-
-  try {
-    let mainContent = '';
-
-    if (xml) {
-      // Modo multi-listas: cargar el TXT/XML
-      const resp = await fetch(xml.trim(), {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Heimdallr/1.0)' },
-        redirect: 'follow',
-        signal: AbortSignal.timeout(20000),
-      });
-
-      if (!resp.ok) throw new Error(`No se pudo cargar el archivo XML/TXT (HTTP ${resp.status})`);
-
-      const rawText = await resp.text();
-
-      // Parseo robusto del formato TXT (name=Grupo seguido de URLs)
-      let currentGroup = 'Sin grupo';
-      const groupedLists = {};
-      const lines = rawText.split('\n');
-
-      lines.forEach(line => {
-        line = line.trim();
-        if (!line || line.startsWith('----') || line.startsWith('//')) return; // Ignorar vacías, separadores, comentarios
-
-        if (line.startsWith('name=')) {
-          currentGroup = line.substring(5).trim();
-          if (!groupedLists[currentGroup]) groupedLists[currentGroup] = [];
-        } else if (line.startsWith('http')) {
-          if (!groupedLists[currentGroup]) groupedLists[currentGroup] = [];
-          groupedLists[currentGroup].push(line);
-        }
-      });
-
-      // Generar HTML de listas clickable
-      let listHtml = '<div class="mt-12 space-y-10">';
-      Object.keys(groupedLists).sort().forEach(group => {
-        const urls = groupedLists[group];
-        if (urls.length > 0) {
-          listHtml += `
-            <div class="bg-gray-800/60 rounded-xl p-6 border border-gray-700">
-              <h2 class="text-2xl font-bold mb-4 text-cyan-400">${group}</h2>
-              <ul class="space-y-3">
-                ${urls.map((u, idx) => `
-                  <li class="flex items-center gap-3">
-                    <span class="text-gray-400">${idx + 1}.</span>
-                    <a href="${basePath}?url=${encodeURIComponent(u)}"
-                       class="text-purple-400 hover:text-purple-300 underline break-all flex-1">
-                      ${u}
-                    </a>
-                  </li>
-                `).join('')}
-              </ul>
-            </div>
-          `;
-        }
-      });
-      listHtml += '</div>';
-
-      if (Object.keys(groupedLists).length === 0) {
-        listHtml = '<p class="text-center text-gray-500 text-xl py-20 mt-12">No se encontraron listas válidas en el archivo TXT/XML</p>';
-      }
-
-      mainContent = listHtml;
-    } else if (url) {
-      // Modo single lista: parseo y visor de canales (tu código anterior optimizado)
-      const resp = await fetch(url.trim(), {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Heimdallr/1.0)' },
-        redirect: 'follow',
-        signal: AbortSignal.timeout(15000),
-      });
-
-      if (!resp.ok) throw new Error(`HTTP ${resp.status} - ${resp.statusText}`);
-
-      const text = await resp.text();
-
-      let channels = [];
-
-      try {
-        const playlist = parse(text);
-        channels = playlist.items
-          .filter(item => item.url && item.url.startsWith('http'))
-          .map(item => ({
-            name: item.name?.trim() || item.attrs?.title || 'Canal sin nombre',
-            url: item.url,
-            logo: item.attrs?.['tvg-logo'] || '',
-            group: item.attrs?.['group-title'] || 'Sin categoría',
-          }));
-      } catch (e) {
-        console.error('Parser @iptv/playlist falló:', e);
-      }
-
-      if (channels.length === 0 && text.includes('#EXTINF')) {
-        const lines = text.split('\n');
-        let current = null;
-        channels = [];
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed.startsWith('#EXTINF:')) {
-            const nameMatch = trimmed.match(/,(.+)$/);
-            const groupMatch = trimmed.match(/group-title="([^"]+)"/i);
-            const logoMatch = trimmed.match(/tvg-logo="([^"]+)"/i);
-            current = {
-              name: nameMatch ? nameMatch[1].trim() : 'Sin nombre',
-              group: groupMatch ? groupMatch[1].trim() : 'General',
-              logo: logoMatch ? logoMatch[1].trim() : '',
-            };
-          } else if (trimmed.startsWith('http') && current) {
-            current.url = trimmed;
-            channels.push(current);
-            current = null;
-          }
-        }
-      }
-
-      channels.sort((a, b) => a.name.localeCompare(b.name));
-
-      const total = channels.length;
-      const title = 'Lista IPTV';
-
-      let htmlChannels = total === 0
-        ? '<p class="text-center col-span-full text-gray-500 text-xl py-20">No se encontraron canales válidos en la lista</p>'
-        : channels.map(ch => `
-          <div class="card bg-gray-800/60 backdrop-blur-sm rounded-xl p-5 border border-gray-700 hover:border-purple-500/50 group">
-            <div class="flex items-start gap-4">
-              ${ch.logo ? `<img src="${ch.logo}" alt="${ch.name}" class="w-16 h-16 object-cover rounded-lg bg-gray-900 flex-shrink-0" onerror="this.src='https://via.placeholder.com/64?text=?'" />` : `
-                <div class="w-16 h-16 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0"><span class="text-gray-500 text-xl">TV</span></div>`}
-              <div class="flex-1 min-w-0">
-                <h3 class="font-semibold text-lg group-hover:text-purple-300 transition-colors truncate">${ch.name}</h3>
-                <p class="text-sm text-gray-400 mt-1">${ch.group}</p>
-                <a href="${ch.url}" target="_blank" rel="noopener noreferrer" class="mt-3 inline-block text-xs text-purple-400 hover:text-purple-300 underline truncate max-w-full block">${ch.url}</a>
-              </div>
-            </div>
-          </div>
-        `).join('');
-
-      mainContent = `
-        <div class="mt-12">
-          <h2 class="text-3xl font-bold text-center mb-8">${title} (${total} canales)</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            ${htmlChannels}
-          </div>
-        </div>
-      `;
-    }
-
-    res.end(`
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -237,26 +35,287 @@ module.exports = async (req, res) => {
     <h1 class="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
       Visor de Listas M3U
     </h1>
+    <p class="text-gray-400 mt-3 text-xl">Carga tu playlist IPTV</p>
   </div>
-  <div class="max-w-7xl mx-auto px-6 pb-20">
-    ${formHtml}
-    ${mainContent}
+  <div class="max-w-3xl mx-auto px-6">
+    <div class="bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-2xl p-10 border border-gray-800">
+      <form action="${basePath}" method="GET" class="space-y-6">
+        <div>
+          <label class="block text-lg font-medium text-gray-300 mb-3">URL de la lista (.m3u / .m3u8)</label>
+          <input type="url" name="url" required placeholder="https://example.com/iptv.m3u8"
+                 class="w-full px-5 py-4 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-600 focus:border-transparent text-lg" />
+        </div>
+        <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 rounded-xl transform transition-all duration-200 hover:scale-[1.02] shadow-xl text-lg">
+          Cargar y Mostrar Canales
+        </button>
+      </form>
+      <div class="mt-10 text-center">
+        <a href="/" class="text-gray-400 hover:text-purple-400 transition-colors">← Volver al panel principal</a>
+      </div>
+    </div>
   </div>
 </body>
 </html>
     `);
+  }
+
+  // Parseo (sin cambios)
+  try {
+    const response = await fetch(url.trim(), {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Heimdallr/1.0)' },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(15000),
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+
+    const text = await response.text();
+
+    let channels = [];
+
+    try {
+      const playlist = parse(text);
+      channels = playlist.items
+        .filter(item => item.url && item.url.startsWith('http'))
+        .map(item => ({
+          name: item.name?.trim() || 'Canal sin nombre',
+          url: item.url,
+          logo: item.attrs?.['tvg-logo'] || '',
+          group: item.attrs?.['group-title'] || 'Sin categoría',
+        }));
+    } catch (e) { console.error('Parser falló:', e); }
+
+    if (channels.length === 0 && text.includes('#EXTINF')) {
+      const lines = text.split('\n');
+      let current = null;
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('#EXTINF:')) {
+          const nameMatch = trimmed.match(/,(.+)$/);
+          const groupMatch = trimmed.match(/group-title="([^"]+)"/i);
+          const logoMatch = trimmed.match(/tvg-logo="([^"]+)"/i);
+          current = {
+            name: nameMatch ? nameMatch[1].trim() : 'Sin nombre',
+            group: groupMatch ? groupMatch[1].trim() : 'General',
+            logo: logoMatch ? logoMatch[1].trim() : '',
+          };
+        } else if (trimmed.startsWith('http') && current) {
+          current.url = trimmed;
+          channels.push(current);
+          current = null;
+        }
+      }
+    }
+
+    channels.sort((a, b) => a.name.localeCompare(b.name));
+
+    const total = channels.length;
+    const title = 'Lista IPTV';
+
+    // Agrupar para JSON (ligero)
+    const groups = {};
+    channels.forEach(ch => {
+      const g = ch.group;
+      if (!groups[g]) groups[g] = [];
+      groups[g].push(ch);
+    });
+
+    const groupNames = Object.keys(groups).sort();
+    const channelsJSON = JSON.stringify(groups);
+
+    // HTML skeletons para grupos
+    let htmlGroups = groupNames.map(group => `
+      <details class="mb-4" data-group="${group.replace(/"/g, '&quot;')}">
+        <summary class="bg-gray-800 p-4 rounded-xl cursor-pointer font-bold text-xl flex justify-between items-center">
+          ${group} <span class="text-gray-400 text-sm">(${groups[group].length} canales)</span>
+        </summary>
+        <div class="group-content grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4 px-4"></div>
+      </details>
+    `).join('');
+
+    if (total === 0) {
+      htmlGroups = '<p class="text-center text-gray-500 text-xl py-20">No se encontraron canales válidos</p>';
+    }
+
+    res.end(`
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>${title} – Heimdallr</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Video.js CDN -->
+  <link href="https://vjs.zencdn.net/8.23.4/video-js.css" rel="stylesheet" />
+  <script src="https://vjs.zencdn.net/8.23.4/video.min.js"></script>
+  <!-- HLS.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .card { transition: all 0.3s ease; }
+    .card:hover { transform: translateY(-6px); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+    #searchInput { background: #1f2937; border: 1px solid #4b5563; }
+    #playerModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; }
+    #playerContainer { width: 90%; max-width: 1200px; }
+  </style>
+</head>
+<body class="bg-black text-white min-h-screen">
+  <div class="text-center py-10">
+    <h1 class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
+      ${title}
+    </h1>
+    <p class="text-gray-400 mt-2 text-xl">${total} canales encontrados</p>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 pb-10">
+    <!-- Búsqueda -->
+    <div class="mb-8">
+      <input type="text" id="searchInput" onkeyup="filterChannels()" placeholder="Buscar por nombre o grupo..." class="w-full px-6 py-4 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-600 outline-none text-lg" />
+    </div>
+
+    <div id="groupsContainer">
+      ${htmlGroups}
+    </div>
+
+    <div id="searchResults" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+    <div class="mt-12 text-center space-x-6">
+      <a href="${basePath}" class="text-gray-400 hover:text-white px-6 py-3 border border-gray-700 rounded-xl hover:bg-gray-800 transition">← Nueva lista</a>
+      <a href="/" class="text-gray-400 hover:text-white px-6 py-3 border border-gray-700 rounded-xl hover:bg-gray-800 transition">Volver al panel</a>
+    </div>
+  </div>
+
+  <!-- Modal para reproductor -->
+  <div id="playerModal" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center z-50">
+    <div class="bg-gray-900 p-6 rounded-2xl max-w-5xl w-full relative">
+      <button onclick="closePlayer()" class="absolute top-4 right-4 text-white text-3xl hover:text-red-500">&times;</button>
+      <h3 id="playerTitle" class="text-2xl font-bold mb-4 text-center"></h3>
+      <video-js id="my-video" class="vjs-default-skin vjs-big-play-centered" controls preload="auto" width="100%" height="auto"></video-js>
+    </div>
+  </div>
+
+  <script>
+    const channelsByGroup = ${channelsJSON};
+    let player = null;
+
+    // Render card function
+    function renderCard(ch) {
+      return \`
+        <div class="card bg-gray-800/60 backdrop-blur-sm rounded-xl p-5 border border-gray-700 hover:border-purple-500/50 group">
+          <div class="flex items-start gap-4">
+            \${ch.logo ? \` <img src="\${ch.logo}" alt="\${ch.name}" class="w-16 h-16 object-cover rounded-lg bg-gray-900 flex-shrink-0" onerror="this.src='https://via.placeholder.com/64?text=?'" /> \` : \`
+              <div class="w-16 h-16 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0"><span class="text-gray-500 text-xl">TV</span></div>\`}
+            <div class="flex-1 min-w-0">
+              <h3 class="font-semibold text-lg group-hover:text-purple-300 transition-colors truncate">\${ch.name}</h3>
+              <p class="text-sm text-gray-400 mt-1">\${ch.group}</p>
+              <div class="mt-3 flex gap-3">
+                <button onclick="openPlayer('\${ch.url}', '\${ch.name}')" class="text-xs bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded">Reproducir</button>
+                <button onclick="copyToClipboard('\${ch.url}')" class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded">Copiar URL</button>
+                <a href="\${ch.url}" target="_blank" rel="noopener noreferrer" class="text-xs text-purple-400 hover:text-purple-300 underline truncate flex-1">\${ch.url}</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      \`;
+    }
+
+    // Lazy load on expand
+    document.querySelectorAll('details').forEach(details => {
+      details.addEventListener('toggle', (e) => {
+        if (e.target.open) {
+          const group = e.target.dataset.group;
+          const content = e.target.querySelector('.group-content');
+          if (content.innerHTML.trim() === '') {
+            const html = channelsByGroup[group].map(renderCard).join('');
+            content.innerHTML = html;
+          }
+        }
+      });
+    });
+
+    // Búsqueda con filtro client-side (muestra lista plana)
+    function filterChannels() {
+      const input = document.getElementById('searchInput').value.toLowerCase();
+      const groupsContainer = document.getElementById('groupsContainer');
+      const searchResults = document.getElementById('searchResults');
+
+      if (input === '') {
+        groupsContainer.classList.remove('hidden');
+        searchResults.classList.add('hidden');
+        searchResults.innerHTML = '';
+        return;
+      }
+
+      groupsContainer.classList.add('hidden');
+      searchResults.classList.remove('hidden');
+
+      let matches = [];
+      Object.keys(channelsByGroup).forEach(group => {
+        matches = matches.concat(channelsByGroup[group].filter(ch => 
+          ch.name.toLowerCase().includes(input) || group.toLowerCase().includes(input)
+        ));
+      });
+
+      const html = matches.length > 0 ? matches.map(renderCard).join('') : '<p class="col-span-full text-center text-gray-500 text-xl py-10">No hay resultados</p>';
+      searchResults.innerHTML = html;
+    }
+
+    // Funciones player y copiar (sin cambios)
+    function openPlayer(url, name) {
+      document.getElementById('playerTitle').textContent = name;
+      document.getElementById('playerModal').classList.remove('hidden');
+
+      const video = document.getElementById('my-video');
+      if (player) player.dispose();
+      player = videojs(video, {
+        fluid: true,
+        autoplay: false,
+        controls: true,
+        sources: [{ src: url, type: 'application/x-mpegURL' }]
+      });
+
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(video);
+      }
+    }
+
+    function closePlayer() {
+      document.getElementById('playerModal').classList.add('hidden');
+      if (player) {
+        player.dispose();
+        player = null;
+      }
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => alert('URL copiada')).catch(() => alert('Error al copiar'));
+    }
+  </script>
+</body>
+</html>
+    `);
   } catch (err) {
-    console.error('Error general:', err);
+    console.error(err);
     res.statusCode = 500;
     res.end(`
 <!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Error</title><script src="https://cdn.tailwindcss.com"></script></head>
+<head>
+  <meta charset="UTF-8" />
+  <title>Error</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
 <body class="bg-black text-white min-h-screen flex items-center justify-center p-6">
   <div class="bg-red-950/60 backdrop-blur-xl border border-red-800 p-10 rounded-2xl max-w-lg text-center">
-    <h2 class="text-3xl font-bold text-red-400 mb-6">Error al procesar</h2>
-    <p class="text-red-300 text-lg mb-8">${err.message || 'Problema al cargar la URL o el archivo'}</p>
-    <a href="${basePath}" class="inline-block px-10 py-5 bg-red-700 hover:bg-red-600 rounded-xl font-bold transition">Volver a intentar</a>
+    <svg class="w-20 h-20 text-red-500 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+    </svg>
+    <h2 class="text-3xl font-bold mb-4">Error al cargar la lista</h2>
+    <p class="text-red-300 mb-8">${err.message || 'URL inválida, timeout o formato no soportado'}</p>
+    <a href="${basePath}" class="inline-block bg-red-700 hover:bg-red-600 text-white px-8 py-4 rounded-xl font-medium transition">Intentar otra URL</a>
   </div>
 </body>
 </html>
