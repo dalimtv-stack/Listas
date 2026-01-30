@@ -7,6 +7,7 @@
     { "src": "api/cleanupposters.js", "use": "@vercel/node" },
     { "src": "api/regenerate-posters.js", "use": "@vercel/node" },
     { "src": "api/config-index.js", "use": "@vercel/node" },
+    { "src": "api/check_playlist.js", "use": "@vercel/node" },
     { "src": "api/resolution.js", "use": "@vercel/node" },
     { "src": "api/m3u_editor.js", "use": "@vercel/node" },
     { "src": "api/epg_precarga.js", "use": "@vercel/node" },
@@ -34,7 +35,8 @@
 
     { "src": "/cleanup", "dest": "/api/cleanup.js" },
     { "src": "/poster-con-hora", "dest": "/api/poster-con-hora.js" },
-    { "src": "/cleanupposters", "dest": "/api/cleanupposters.js" },
+    { "src": "/cleanupposters", "dest": "/api/check_playlist.js" },
+    { "src": "/comprobar", "dest": "/api/cleanupposters.js" },
     { "src": "/editor", "dest": "/api/m3u_editor.js" },
     { "src": "/editor/data", "dest": "/api/m3u_editor.js" },
     { "src": "/editor/data", "methods": ["POST"], "dest": "/api/m3u_editor.js" },
