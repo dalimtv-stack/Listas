@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
 
-  const basePath = '/api/check_playlist';  // Ruta pública real
+  const basePath = '/comprobar';  // Ruta pública real
 
   // Página base sin URL → formulario
   if (!url || !url.trim().startsWith('http')) {
