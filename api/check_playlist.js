@@ -12,9 +12,8 @@ module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
 
   const basePath = '/comprobar';
-  const domain = 'https://listas-sand.vercel.app';
 
-  // Formulario solo si no hay parámetros
+  // Formulario solo si no hay url ni xml
   if (!url && !xml) {
     return res.end(`
 <!DOCTYPE html>
@@ -76,7 +75,7 @@ module.exports = async (req, res) => {
     `);
   }
 
-  // Modo multi-listas (xml)
+  // Modo multi-listas (xml) - sin referencias a formHtml
   if (xml) {
     try {
       const resp = await fetch(xml.trim(), {
@@ -113,7 +112,7 @@ module.exports = async (req, res) => {
                 ${lists.map((u, i) => `
                   <li class="flex items-center gap-3">
                     <span class="text-gray-400 font-medium">${i+1}.</span>
-                    <a href="${domain}${basePath}?url=${encodeURIComponent(u)}"
+                    <a href="${basePath}?url=${encodeURIComponent(u)}"
                        class="text-purple-400 hover:text-purple-300 underline break-all flex-1">
                       ${u}
                     </a>
@@ -127,7 +126,7 @@ module.exports = async (req, res) => {
       html += '</div>';
 
       if (Object.keys(grouped).length === 0) {
-        html = '<p class="text-center text-gray-500 text-xl py-20">No se encontraron listas válidas</p>';
+        html = '<p class="text-center text-gray-500 text-xl py-20">No se encontraron listas válidas en el archivo</p>';
       }
 
       res.end(`
@@ -148,11 +147,10 @@ module.exports = async (req, res) => {
     </h1>
   </div>
   <div class="max-w-7xl mx-auto px-6">
-    <div class="bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-2xl p-10 border border-gray-800 mb-12">
-      <!-- Formulario siempre visible en modo multi -->
-      ${formHtml.replace(/required/g, '')} <!-- Quitamos required para no bloquear -->
-    </div>
     ${html}
+    <div class="mt-12 text-center">
+      <a href="${basePath}" class="text-gray-400 hover:text-white px-6 py-3 border border-gray-700 rounded-xl hover:bg-gray-800 transition">← Volver al inicio</a>
+    </div>
   </div>
 </body>
 </html>
@@ -176,7 +174,7 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // Modo lista única (visor completo sin formulario)
+  // Visor de canales única (sin formulario arriba)
   try {
     const response = await fetch(url.trim(), {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Heimdallr/1.0)' },
