@@ -35,8 +35,8 @@
 
     { "src": "/cleanup", "dest": "/api/cleanup.js" },
     { "src": "/poster-con-hora", "dest": "/api/poster-con-hora.js" },
-    { "src": "/cleanupposters", "dest": "/api/check_playlist.js" },
-    { "src": "/comprobar", "dest": "/api/cleanupposters.js" },
+    { "src": "/cleanupposters", "dest": "/api/cleanupposters.js" },
+    { "src": "/comprobar", "dest": "/api/check_playlist.js" },
     { "src": "/editor", "dest": "/api/m3u_editor.js" },
     { "src": "/editor/data", "dest": "/api/m3u_editor.js" },
     { "src": "/editor/data", "methods": ["POST"], "dest": "/api/m3u_editor.js" },
