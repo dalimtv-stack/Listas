@@ -13,8 +13,24 @@ module.exports = async (req, res) => {
 
   const basePath = '/comprobar';
 
-  // Definimos formHtml UNA VEZ aquí para reutilizarlo en todos los casos
-  const formHtml = `
+  // Solo mostrar formulario si no hay ni url ni xml
+  if (!url && !xml) {
+    return res.end(`
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Heimdallr Channels – Visor M3U</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .card { transition: all 0.3s ease; }
+    .card:hover { transform: translateY(-6px); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+  </style>
+</head>
+<body class="bg-black text-white min-h-screen">
   <div class="text-center py-12">
     <h1 class="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
       Visor de Listas M3U
@@ -23,7 +39,7 @@ module.exports = async (req, res) => {
   </div>
   <div class="max-w-4xl mx-auto px-6">
     <div class="bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-2xl p-10 border border-gray-800">
-      <!-- Lista única -->
+      <!-- Formulario lista única -->
       <form action="${basePath}" method="GET" class="space-y-6">
         <div>
           <label class="block text-lg font-medium text-gray-300 mb-3">URL de la lista (.m3u / .m3u8)</label>
@@ -35,7 +51,7 @@ module.exports = async (req, res) => {
         </button>
       </form>
 
-      <!-- Multi-listas -->
+      <!-- Formulario multi-listas -->
       <div class="mt-12 pt-8 border-t border-gray-700">
         <form action="${basePath}" method="GET" class="space-y-6">
           <div>
@@ -54,44 +70,23 @@ module.exports = async (req, res) => {
       </div>
     </div>
   </div>
-  `;
-
-  // Si no hay ni url ni xml → formulario
-  if (!url && !xml) {
-    return res.end(`
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Heimdallr Channels – Visor M3U</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    .card { transition: all 0.3s ease; }
-    .card:hover { transform: translateY(-6px); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-  </style>
-</head>
-<body class="bg-black text-white min-h-screen">
-  ${formHtml}
 </body>
 </html>
     `);
   }
 
-  // Modo multi-listas (xml)
+  // ── Modo multi-listas ────────────────────────────────────────────────────
   if (xml) {
     try {
-      const response = await fetch(xml.trim(), {
+      const resp = await fetch(xml.trim(), {
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Heimdallr/1.0)' },
         redirect: 'follow',
         signal: AbortSignal.timeout(20000),
       });
 
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
-      const text = await response.text();
+      const text = await resp.text();
 
       let currentGroup = 'Sin grupo';
       const grouped = {};
@@ -106,20 +101,19 @@ module.exports = async (req, res) => {
         }
       });
 
-      let html = '<div class="max-w-4xl mx-auto px-6 mt-12">';
-      Object.keys(grouped).sort().forEach(group => {
-        const lists = grouped[group];
-        if (lists.length > 0) {
+      let html = '<div class="max-w-7xl mx-auto px-6 mt-12">';
+      Object.keys(grouped).sort().forEach(g => {
+        if (grouped[g].length > 0) {
           html += `
             <div class="bg-gray-800/70 rounded-xl p-6 mb-8 border border-gray-700">
-              <h2 class="text-2xl font-bold mb-4 text-cyan-400">${group}</h2>
+              <h2 class="text-2xl font-bold mb-4 text-cyan-400">${g}</h2>
               <ul class="space-y-3">
-                ${lists.map((listUrl, index) => `
+                ${grouped[g].map((u, i) => `
                   <li class="flex items-center gap-3">
-                    <span class="text-gray-400">${index + 1}.</span>
-                    <a href="${basePath}?url=${encodeURIComponent(listUrl)}"
+                    <span class="text-gray-400">${i+1}.</span>
+                    <a href="${basePath}?url=${encodeURIComponent(u)}" 
                        class="text-purple-400 hover:text-purple-300 underline break-all flex-1">
-                      ${listUrl}
+                      ${u}
                     </a>
                   </li>
                 `).join('')}
@@ -131,7 +125,7 @@ module.exports = async (req, res) => {
       html += '</div>';
 
       if (Object.keys(grouped).length === 0) {
-        html = '<p class="text-center text-gray-500 text-xl py-20 mt-12">No se encontraron listas válidas en el archivo</p>';
+        html = '<p class="text-center text-gray-500 text-xl py-20">No se encontraron listas válidas en el archivo</p>';
       }
 
       res.end(`
@@ -148,11 +142,14 @@ module.exports = async (req, res) => {
 <body class="bg-black text-white min-h-screen">
   ${formHtml}
   ${html}
+  <div class="text-center mt-12 pb-10">
+    <a href="${basePath}" class="text-gray-400 hover:text-white px-6 py-3 border border-gray-700 rounded-xl hover:bg-gray-800 transition">Volver al inicio</a>
+  </div>
 </body>
 </html>
       `);
     } catch (err) {
-      console.error('Error cargando multi-listas:', err);
+      console.error('Error multi:', err);
       res.end(`
 <!DOCTYPE html>
 <html lang="es">
@@ -160,7 +157,7 @@ module.exports = async (req, res) => {
 <body class="bg-black text-white min-h-screen flex items-center justify-center p-6">
   <div class="bg-red-950/60 p-10 rounded-2xl border border-red-800 text-center max-w-lg">
     <h2 class="text-3xl font-bold text-red-400 mb-6">Error al cargar las listas</h2>
-    <p class="text-red-300 mb-8">${err.message || 'No se pudo cargar el archivo XML/TXT'}</p>
+    <p class="text-red-300 mb-8">${err.message || 'Problema con el archivo'}</p>
     <a href="${basePath}" class="inline-block px-10 py-5 bg-red-700 hover:bg-red-600 rounded-xl font-bold transition">Volver</a>
   </div>
 </body>
@@ -170,7 +167,7 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // Modo lista única (tu código original intacto)
+  // ── Modo lista única (visor completo, sin formulario arriba) ──────────────
   try {
     const response = await fetch(url.trim(), {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Heimdallr/1.0)' },
@@ -179,6 +176,7 @@ module.exports = async (req, res) => {
     });
     if (!response.ok) throw new Error(`HTTP ${response.status} - ${response.statusText}`);
     const text = await response.text();
+
     let channels = [];
     try {
       const playlist = parse(text);
@@ -191,6 +189,7 @@ module.exports = async (req, res) => {
           group: item.attrs?.['group-title'] || 'Sin categoría',
         }));
     } catch (e) { console.error('Parser falló:', e); }
+
     if (channels.length === 0 && text.includes('#EXTINF')) {
       const lines = text.split('\n');
       let current = null;
@@ -212,17 +211,21 @@ module.exports = async (req, res) => {
         }
       }
     }
+
     channels.sort((a, b) => a.name.localeCompare(b.name));
     const total = channels.length;
     const title = 'Lista IPTV';
+
     const groups = {};
     channels.forEach(ch => {
-      const g = ch.group;
+      const g = ch.group || 'Sin categoría';
       if (!groups[g]) groups[g] = [];
       groups[g].push(ch);
     });
+
     const groupNames = Object.keys(groups).sort();
     const channelsJSON = JSON.stringify(groups);
+
     let htmlGroups = groupNames.map(group => `
       <details class="mb-4" data-group="${group.replace(/"/g, '&quot;')}">
         <summary class="bg-gray-800 p-4 rounded-xl cursor-pointer font-bold text-xl flex justify-between items-center">
@@ -231,9 +234,11 @@ module.exports = async (req, res) => {
         <div class="group-content grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4 px-4"></div>
       </details>
     `).join('');
+
     if (total === 0) {
-      htmlGroups = '<p class="text-center text-gray-500 text-xl py-20">No se encontraron canales válidos</p>';
+      htmlGroups = '<p class="text-center col-span-full text-gray-500 text-xl py-20">No se encontraron canales válidos</p>';
     }
+
     res.end(`
 <!DOCTYPE html>
 <html lang="es">
@@ -255,21 +260,32 @@ module.exports = async (req, res) => {
   </style>
 </head>
 <body class="bg-black text-white min-h-screen">
-  ${formHtml}
   <div class="max-w-7xl mx-auto px-6 pb-10">
+    <div class="text-center py-10">
+      <h1 class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
+        ${title}
+      </h1>
+      <p class="text-gray-400 mt-2 text-xl">${total} canales encontrados</p>
+    </div>
+
+    <!-- Búsqueda -->
     <div class="mb-8">
       <input type="text" id="searchInput" onkeyup="filterChannels()" placeholder="Buscar por nombre o grupo..." class="w-full px-6 py-4 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-600 outline-none text-lg" />
     </div>
+
     <div id="groupsContainer">
       ${htmlGroups}
     </div>
+
     <div id="searchResults" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
     <div class="mt-12 text-center space-x-6">
       <a href="${basePath}" class="text-gray-400 hover:text-white px-6 py-3 border border-gray-700 rounded-xl hover:bg-gray-800 transition">← Nueva lista</a>
       <a href="/" class="text-gray-400 hover:text-white px-6 py-3 border border-gray-700 rounded-xl hover:bg-gray-800 transition">Volver al panel</a>
     </div>
   </div>
 
+  <!-- Modal reproductor -->
   <div id="playerModal" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center z-50">
     <div class="bg-gray-900 p-6 rounded-2xl max-w-5xl w-full relative">
       <button onclick="closePlayer()" class="absolute top-4 right-4 text-white text-3xl hover:text-red-500">&times;</button>
