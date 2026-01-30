@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
   const basePath = '/comprobar';
   const domain = 'https://listas-sand.vercel.app';
 
-  // Formulario solo si no hay url ni xml
+  // Formulario solo si no hay parámetros
   if (!url && !xml) {
     return res.end(`
 <!DOCTYPE html>
@@ -148,7 +148,10 @@ module.exports = async (req, res) => {
     </h1>
   </div>
   <div class="max-w-7xl mx-auto px-6">
-    ${formHtml}
+    <div class="bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-2xl p-10 border border-gray-800 mb-12">
+      <!-- Formulario siempre visible en modo multi -->
+      ${formHtml.replace(/required/g, '')} <!-- Quitamos required para no bloquear -->
+    </div>
     ${html}
   </div>
 </body>
@@ -173,7 +176,7 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // Visor de canales única (sin formulario arriba)
+  // Modo lista única (visor completo sin formulario)
   try {
     const response = await fetch(url.trim(), {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Heimdallr/1.0)' },
