@@ -13,7 +13,8 @@
 # http://vipipjpapi.top:8080/get.php?username=VIP0115174023890722&password=91740238907762&type=m3u_plus&output=m3u8
 # https://github.com/dvovalle/old/blob/main/M3UListas/listaCompleta.m3u
 
-
+#EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Hollywood" group-title="Cine & Series", Hollywood (pgracefuaapi)
+http://pgracefuaapi.top:8080/6721757267005916/179939ad542d/5619
 #EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Hollywood" group-title="Cine & Series", Hollywood (espeeoydee)
 http://espeeoydee.top:8080/es9421764617325381/b1482d9655d8/35
 #EXTINF:-1 tvg-id="Hollywood.es" tvg-logo="https://res.cloudinary.com/doimszxld/image/upload/ar_0.675,g_center,w_405,f_auto/Canales/Hollywood" group-title="Cine & Series", Hollywood (vipipjpapi)
